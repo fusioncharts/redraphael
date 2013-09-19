@@ -1,0 +1,59 @@
+#!/usr/bin/env node
+var ujs = require('uglify-js'),
+    fs = require('fs'),
+
+    noticeText = function() {
+/**!
+ * RedRaphael 1.0.0 - JavaScript Vector Library
+ * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
+ *
+ * Raphael 2.1.0
+ * Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
+ * Copyright © 2008-2012 Sencha Labs <http://sencha.com>
+ *
+ * Licensed under the MIT license.
+ */
+ }.toString().slice(14,-3),
+
+	input = {
+		core : 'raphael.core.js',
+		svg  : 'raphael.svg.js',
+		vml  : 'raphael.vml.js',
+		canvas: 'raphael.canvas.js',
+		eve  : 'eve/eve.js'
+	},
+	outPath = "../package/",
+	output = {
+		'raphael-min.js'     : ['eve', 'core', 'svg', 'vml', 'canvas'],
+		'raphael.js'         : ['eve', 'core', 'svg', 'vml', 'canvas']
+	};
+
+for (var file in input) {
+	input[file] = fs.readFileSync(input[file], 'utf8');
+}
+for (file in output) {
+	var out = '';
+	if (file.indexOf('min') !== -1) {
+		console.log('Compressing ' + file);
+		for (var i = 0, l = output[file].length; i < l; i++) {
+			var o = ujs.minify(input[output[file][i]], {
+				fromString : true
+			});
+			out += o.code;
+		}
+	} else {
+		console.log('Concatinating ' + file);
+		for (i = 0, l = output[file].length; i < l; i++) {
+			out += input[output[file][i]] + '\n';
+		}
+	}
+	(function(f, code){
+		fs.writeFile(f, noticeText + '\n' + code, function(err) {
+			if (err) {
+				console.log(err);
+			} else {
+				console.log('Saved to \033[32m' + f + '\033[0m\n');
+			}
+		});
+	})(outPath + file, out);
+}

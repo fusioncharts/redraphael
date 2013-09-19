@@ -1,2 +1,4 @@
-RedRaphael <sup>beta</sup>
-==========================
+redraphael
+==========
+
+Red Raphael

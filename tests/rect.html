@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type='text/javascript'>
+            if (window.top && window.top.MyRaphaelConfig) {
+                window.top.MyRaphaelConfig(window);
+            }
+            else {
+                window.ENABLE_RED_CANVAS = true;
+                window.onload = function () {
+                    render();
+                }
+            }
+        </script>
+        <script type="text/javascript" src="../source/eve/eve.js"></script>
+        <script type="text/javascript" src="../source/raphael.core.js"></script>
+        <script type="text/javascript" src="../source/raphael.svg.js"></script>
+        <script type="text/javascript" src="../source/raphael.vml.js"></script>
+        <script type="text/javascript" src="../source/raphael.canvas.js"></script>
+        <script type="text/javascript">
+
+            function render () {
+                console.log("isCanvas? " + Boolean(window.ENABLE_RED_CANVAS));
+                Raphael(document.getElementById('containerDiv'), function () {
+                    paper = this;
+
+                    rect1 = paper.rect(10, 10, 50, 200, 25);
+
+                    rect1.click(function () {
+                        console.log("RECT BANG!");
+                    });
+
+                    rect1.hover(function () {
+                        this.attr({
+                            fill: '#ff0000'
+                        });
+                    }, function () {
+                        this.attr({
+                            fill: 'none'
+                        });
+                    });
+
+                    circle1 = paper.circle(100, 50, 25);
+                    circle1.click(function () {
+                        console.log("CIRCLE BANG!");
+                    });
+                    circle1.hover(function () {
+                        this.attr({
+                            fill: '#0000ff'
+                        })
+                    }, function () {
+                        this.attr({
+                            fill: 'none'
+                        })
+                    });
+
+                    circle2 = paper.circle(100, 70, 30);
+                    circle2.hover(function () {
+                        this.attr({
+                            fill: '#00ff00'
+                        })
+                    }, function () {
+                        this.attr({
+                            fill: 'none'
+                        })
+                    });
+
+                    group1 = paper.group("first");
+                    //circle3 = paper.circle(200, 200, 20);
+                    circle3 = paper.circle(30, 200, 20, group1);
+                    circle3.hover(function () {
+                        this.attr({
+                            fill: '#00ff00'
+                        })
+                    }, function () {
+                        this.attr({
+                            fill: 'none'
+                        })
+                    });
+
+                    //group2 = paper.group("second", group1);
+                    rect2 = paper.rect(30, 150, 40, 40, group1);
+
+                    //rect2.rotate(45);
+
+                    rect2.attr("fill", "#ff0f0f");
+                    rect2.hover(function () {
+                        this.attr('fill', '#00ff00');
+                    }, function () {
+                        this.attr('fill', '#ff0f0f');
+                    });
+                    console.log("adding drag");
+                    var origX, origY;
+
+                    circle1.drag(function () {
+
+                        console.log('moving');
+                        this.attr({
+                            cx: origX + arguments[0],
+                            cy: origY + arguments[1]
+                        });
+
+                    }, function () {
+
+                        origX = this.attrs.cx;
+                        origY = this.attrs.cy;
+                        console.log(['started cx: ', origX, ' cy: ', origY].join(""));
+
+                    }, function () {
+
+                        console.log('ended');
+                        origX = origY = null;
+
+                    });
+                    //group2.scale(0.5, 0.5);
+
+                    //ellipse1 = paper.ellipse(50, 200, 40, 80);
+                    rect2.attr({
+                        x: 100
+                    });
+
+                    path1 = paper.path(["M",100,100,"L",150,100,"L",150,150,"Z"], group1);
+                    //debugger;
+                    path1.attr({
+                        fill: "#0000ff"
+                    });
+
+                    path2 = paper.path(["M",200,100,"L",200,150,"L",250,150,"C",250,50,150,50,150,150,"Z"], group1).attr({
+                        fill: "#ff0000"
+                    }).hover(function () {
+                        this.attr({
+                            fill: "#00ff00"
+                        });
+                    }, function () {
+                        this.attr({
+                            fill: "#ff0000"
+                        });
+                    });
+
+                    path2.click(function () {
+                        conole.log("PATH CLICKED!!");
+                    })
+
+                });
+            };
+        </script>
+    </head>
+    <body>
+        <div id='containerDiv' style='border:1px solid red;position:absolute;width:600px;height:600px;top:10px;left:10px;'></div>
+    </body>
+</html>

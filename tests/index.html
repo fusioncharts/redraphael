@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- <script type="text/javascript" src="../helper/logger.js"></script> -->
+        <script type='text/javascript'>
+            //window.ENABLE_RED_CANVAS = true;
+            console.log("isCanvas? " + Boolean(window.ENABLE_RED_CANVAS));
+        </script>
+        <script type="text/javascript" src="../source/eve/eve.js"></script>
+        <script type="text/javascript" src="../source/raphael.core.js"></script>
+        <script type="text/javascript" src="../source/raphael.svg.js"></script>
+        <script type="text/javascript" src="../source/raphael.vml.js"></script>
+        <script type="text/javascript" src="../source/raphael.canvas.js"></script>
+        <script type="text/javascript">
+            window.onload = function () {
+				var p = Raphael(document.getElementById('containerDiv'), 300, 300);
+
+
+				setTimeout(
+				function(){
+					  var l2 = p.path('M0,140L300,140');
+				  l2.attr({
+					  'stroke-width': '10px',
+					  'arrow-end': 'classic-narrow-medium',
+					  stroke: 'green'
+					});
+
+				},3000);
+
+				setTimeout(
+				function(){
+					  var l2 = p.path('M0,90L200,90');
+				  l2.attr({
+					  'stroke-width': '10px',
+					  'arrow-end': 'classic-narrow-medium',
+					  stroke: 'blue'
+					});
+
+				},2000);
+
+				setTimeout(
+				function(){
+					  var l2 = p.path('M0,50L100,50');
+				  l2.attr({
+					  'stroke-width': '10px',
+					  'arrow-end': 'classic-narrow-medium',
+					  stroke: 'red'
+					});
+
+				},1000);
+
+				var l1 = p.path('M0,10L50,10');
+				l1.attr({
+					'stroke-width': '10px',
+					'arrow-end': 'classic-narrow-medium',
+					stroke: 'black'
+				});
+            };
+        </script>
+    </head>
+    <body>
+        <div id='containerDiv' style='border:1px solid red;position:absolute;width:600px;height:600px;top:100px;left:100px;'></div>
+    </body>
+</html>

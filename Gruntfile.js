@@ -8,7 +8,7 @@ module.exports = function(grunt) {
     grunt.initConfig({
         // Metadata.
         pkg: pkg,
-        banner: grunt.file.read("copy.js").replace(/@VERSION/, pkg.version).replace(/@RVERSION/, pkg.rversion),
+        banner: grunt.file.read("source/copy.js").replace(/@VERSION/, pkg.version).replace(/@RVERSION/, pkg.rversion),
         // Task configuration.
         uglify: {
             options: {

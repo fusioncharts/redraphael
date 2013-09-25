@@ -1,6 +1,6 @@
-# RedRaphaël - A JavaScript graphics library on steroids!
+# RedRaphaï¿½l - A JavaScript graphics library on steroids!
 
-RedRaphaël is a graphics library built on the foundation laid down by Raphaël.
+RedRaphaï¿½l is a graphics library built on the foundation laid down by Raphaï¿½l.
 
 ## Getting started
 
@@ -17,7 +17,7 @@ RedRaphaël is a graphics library built on the foundation laid down by Raphaël.
 
 ## Usage
 
-To learn how to use Raphaël visit their [documentaiton page].(www.raphaeljs.com/reference.html)
+To learn how to use Raphaï¿½l visit their [documentaiton page](www.raphaeljs.com/reference.html)
 
 
 ## RedRaphael specific features

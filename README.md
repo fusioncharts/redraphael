@@ -1,7 +1,5 @@
 # RedRaphaël - A JavaScript graphics library on steroids!
 
-RedRaphaël is a graphics library built on the foundation laid down by Raphaël.
-
 ## Getting started
 
 - `git clone https://github.com/fusioncharts/redraphael.git`

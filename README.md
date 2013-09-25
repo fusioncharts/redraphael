@@ -82,7 +82,8 @@ var rectEl = paper.rect(x, y, width, height);
 rectEl.ca.borderWidth = function (value) {
 	this.attr('stroke-width', value);
 
-	// Returning false will prevent the attribute from being processed any further by the element.attr method
+	// Returning false will prevent the attribute from being processed
+	// any further by the element.attr method
 	return false;
 }
 
@@ -97,7 +98,15 @@ Note: The original Raphaël way of adding [custom attributes](http://raphaeljs.co
 
 RedRaphël has encapsulated all the ways of extending the framework in the `define` API.
 
-`Raphael.define(name, initializing_funciton, custom_attributes, element_specific_methods, pre_defined_eventlisteners);`
+```js
+Raphael.define(
+	name,
+	initializing_funciton,
+	custom_attributes,
+	element_specific_methods,
+	pre_defined_eventlisteners
+);
+```
 
 [See it in action](http://jsfiddle.net/sushantbs/khBQj/6/)
 

@@ -15,7 +15,7 @@
 
 ## Usage
 
-To learn how to use Raphaël visit their [documentaiton page](www.raphaeljs.com/reference.html)
+To learn how to use Raphaël visit their [documentation page](http://raphaeljs.com/reference.html)
 
 
 ## RedRaphaël specific features

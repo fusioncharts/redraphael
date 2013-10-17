@@ -1,5 +1,7 @@
 # RedRaphaël - A JavaScript graphics library on steroids!
 
+[![Build Status](https://travis-ci.org/fusioncharts/redraphael.png?branch=master)](https://travis-ci.org/fusioncharts/redraphael)
+
 ## Getting started
 
 - `git clone https://github.com/fusioncharts/redraphael.git`

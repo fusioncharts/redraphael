@@ -10,3 +10,6 @@ branches:
 
 script: "grunt"
 
+before_script:
+ "npm install -g grunt-cli"
+

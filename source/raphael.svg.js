@@ -1562,6 +1562,22 @@ window.Raphael && window.Raphael.svg && function(R) {
         }
     };
 
+    R.prototype._desc = function (txt) {
+        var desc = this.desc;
+
+        if (!desc) {
+            this.desc = desc = $("desc");
+            this.canvas.appendChild(desc);
+        }
+        else {
+            while (desc.firstChild) {
+                desc.removeChild(desc.firstChild);
+            }
+        }
+        desc.appendChild(R._g.doc.createTextNode(R.is(txt, "string") ? txt : ("Created with Red Rapha\xebl " +
+            R.version)));
+    };
+
     R.prototype.clear = function() {
         eve("raphael.clear", this);
         var c = this.canvas;
@@ -1569,9 +1585,7 @@ window.Raphael && window.Raphael.svg && function(R) {
             c.removeChild(c.firstChild);
         }
         this.bottom = this.top = null;
-        (this.desc = $("desc")).appendChild(R._g.doc.createTextNode(R.is(R.desc, "string") && R.desc ||
-            "Created with Red Rapha\xebl " + R.version));
-        c.appendChild(this.desc);
+        this._desc(R.desc);
         c.appendChild(this.defs = $("defs"));
     };
 

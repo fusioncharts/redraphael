@@ -1,0 +1,41 @@
+{
+    "folders":
+    [
+        {
+            "follow_symlinks": true,
+            "path": "./"
+        }
+    ],
+
+    "settings":
+    {
+        // Set to true to ensure the last line of the file ends in a newline
+        // character when saving
+        "ensure_newline_at_eof_on_save": false,
+
+        // Columns in which to display vertical rulers
+        "rulers": [120],
+
+        // The number of spaces a tab is considered equal to
+        "tab_size": 4,
+
+        // Set to true to insert spaces when tab is pressed
+        "translate_tabs_to_spaces": true,
+
+        // Set to true to removing trailing white space on save
+        "trim_trailing_white_space_on_save": true,
+
+        // Whether the words following the tags should align.
+        // Possible values are 'no', 'shallow' and 'deep'
+        "jsdocs_align_tags": "no",
+
+        // If true, primitive data types are added in lower case, eg "number"
+        // instead of "Number". Default: false
+        "jsdocs_lower_case_primitives": true,
+
+        // The text which should be used for a @return tag. By default,
+        // @return is used, however this can be changed to @returns if you
+        // use that style.
+        "jsdocs_return_tag": "returns"
+    }
+}

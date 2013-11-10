@@ -110,32 +110,28 @@ window.Raphael && window.Raphael.define && function (R) {
             "polypath-sides": function (value) {
                 var o = this,
                     attr = o.attrs.polypath;
-
-                o.attr(POLYPATH, (attr[0] = value, attr);
+                o.attr(POLYPATH, (attr[0] = value, attr));
                 return false;
             },
 
             "polypath-cx": function (value) {
                 var o = this,
                     attr = o.attrs.polypath;
-
-                o.attr(POLYPATH, (attr[1] = value, attr);
+                o.attr(POLYPATH, (attr[1] = value, attr));
                 return false;
             },
 
             "polypath-cy": function (value) {
                 var o = this,
                     attr = o.attrs.polypath;
-
-                o.attr(POLYPATH, (attr[2] = value, attr);
+                o.attr(POLYPATH, (attr[2] = value, attr));
                 return false;
             },
 
             "polypath-radius": (polypathRadius = function (value) {
                 var o = this,
                     attr = o.attrs.polypath;
-
-                o.attr(POLYPATH, (attr[3] = value, attr);
+                o.attr(POLYPATH, (attr[3] = value, attr));
                 return false;
             }),
             r: polypathRadius,
@@ -143,16 +139,14 @@ window.Raphael && window.Raphael.define && function (R) {
             "polypath-angle": function (value) {
                 var o = this,
                     attr = o.attrs.polypath;
-
-                o.attr(POLYPATH, (attr[4] = value, attr);
+                o.attr(POLYPATH, (attr[4] = value, attr));
                 return false;
             },
 
             "polypath-dip": function (value) {
                 var o = this,
                     attr = o.attrs.polypath;
-
-                o.attr(POLYPATH, (attr[5] = value, attr);
+                o.attr(POLYPATH, (attr[5] = value, attr));
                 return false;
             }
         }

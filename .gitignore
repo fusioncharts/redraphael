@@ -3,4 +3,3 @@
 node_modules
 dr.js
 *.sublime-*
-!properties.sublime-project

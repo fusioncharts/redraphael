@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- <script type="text/javascript" src="../helper/logger.js"></script> -->
+        <script type="text/javascript" src="../source/eve/eve.js"></script>
+        <script type="text/javascript" src="../source/raphael.core.js"></script>
+        <script type="text/javascript" src="../source/raphael.svg.js"></script>
+        <script type="text/javascript" src="../source/raphael.vml.js"></script>
+        <script type="text/javascript">
+        var p, r, g;
+        window.onload = function () {
+
+            var dofn = function (x, y) {
+                var attrs = Raphael._serializeArgs(arguments, "x", 0, "y", 0);
+
+                console.log(attrs);
+            }
+
+            // dofn(30);
+            // dofn({x: 30});
+		  p = Raphael(document.getElementById('containerDiv'), 300, 300);
+          g = p.group();
+          //r = p.rect(30, 30, 50, 50)
+          r = p.text({
+            x: 30, y: 30, r: 50, ry: 50, text: "baal"
+          }, g);
+        };
+        </script>
+    </head>
+    <body>
+        <div id='containerDiv' style='border:1px solid red;position:absolute;width:600px;height:600px;top:100px;left:100px;'></div>
+    </body>
+</html>

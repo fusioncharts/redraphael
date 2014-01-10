@@ -500,7 +500,15 @@
                 ii;
 
             if (R.is(arg0, 'object') && arg0.type !== 'group') {
+
                 attrs = arg0;
+
+                if (arg0.path) {
+                    pathString = arg0.path;
+                    pathString && !R.is(pathString, string) &&
+                        !R.is(pathString[0], array) && (pathString += E);
+                }
+
                 for (i = 1, ii = arguments.length; i < ii; i += 2) {
                     if (!attrs[arguments[i]]) {
                         attrs[arguments[i]] = arguments[i + 1];
@@ -4053,14 +4061,10 @@
         var paper = this,
             args = arguments,
             group = lastArgIfGroup(args, true),
-            pathString,
+            attrs = serializeArgs(args, "path", E),
             out;
 
-        pathString = args[0];
-        pathString && !R.is(pathString, string) &&
-            !R.is(pathString[0], array) && (pathString += E);
-
-        out = R._engine.path(R.format[apply](R, arguments), paper, group);
+        out = R._engine.path(paper, attrs, group);
 
         paper.__set__ && paper.__set__.push(out);
         return out;

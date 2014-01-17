@@ -101,6 +101,11 @@ module.exports = function(grunt) {
             });
 
             grunt.file.write( name, compiled );
+            grunt.file.write( name, compiled );
+            if (grunt.option("fc")) {
+               grunt.file.write("package/FusionCharts.JS-raphael.js",
+                   grunt.file.read("source/fc.js").replace(/@REDRAPHAEL_CODE/, compiled));
+            }
         }
     );
 

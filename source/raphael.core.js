@@ -4061,13 +4061,10 @@
         var paper = this,
             args = arguments,
             group = lastArgIfGroup(args, true),
-            attrs = serializeArgs(args, "path", E),
-            out;
-
-        out = R._engine.path(paper, attrs, group);
-
-        paper.__set__ && paper.__set__.push(out);
-        return out;
+            attrs = serializeArgs(args,
+                "path", E),
+            out = R._engine.path(paper, attrs, group);
+        return (paper.__set__ && paper.__set__.push(out), out);
     };
 
     /*\

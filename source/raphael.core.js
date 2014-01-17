@@ -4062,7 +4062,9 @@
             args = arguments,
             group = lastArgIfGroup(args, true),
             attrs = serializeArgs(args,
-                "path", E),
+                "path", E,
+                "fill", none,
+                "stroke", black),
             out = R._engine.path(paper, attrs, group);
         return (paper.__set__ && paper.__set__.push(out), out);
     };

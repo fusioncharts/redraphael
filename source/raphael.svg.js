@@ -1316,7 +1316,7 @@ window.Raphael && window.Raphael.svg && function(R) {
 
     R._engine.path = function(svg, attrs, group) {
         var el = $("path"),
-            res = new Element(el, SVG, group);
+            res = new Element(el, svg, group);
 
         res.type = "path";
         setFillAndStroke(res, attrs);

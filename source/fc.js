@@ -29,7 +29,7 @@ FusionCharts(['private', 'modules.renderer.js-raphael', function () {
         @REDRAPHAEL_CODE
 	
 	
-	}).apply(window)
+	})();
 
 	
     // Restore old Raphael or remove it from global scope

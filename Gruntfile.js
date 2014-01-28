@@ -25,6 +25,8 @@ module.exports = function(grunt) {
             },
             dist: {
                 dest: "package/raphael.js",
+                fc: "package/raphael-fusioncharts.js",
+                fcsrc: "source/fc.js",
                 src: [
                     "source/eve/eve.js",
                     "source/raphael.core.js",
@@ -34,21 +36,21 @@ module.exports = function(grunt) {
                 ]
             }
         },
-		jasmine: {
-			pivotal: {
-				src: 'package/raphael-min.js',
-				options: {
-					specs: 'tests/*Spec.js',
-					helpers: 'tests/*Helper.js'
-				}
-			}
-		}
+        jasmine: {
+            pivotal: {
+                src: 'package/raphael-min.js',
+                options: {
+                    specs: 'tests/*Spec.js',
+                    helpers: 'tests/*Helper.js'
+                }
+            }
+        }
     });
 
 
     // These plugins provide necessary tasks.
     grunt.loadNpmTasks("grunt-contrib-uglify");
-	grunt.loadNpmTasks("grunt-contrib-jasmine");
+    grunt.loadNpmTasks("grunt-contrib-jasmine");
 
     // Special concat/build task to handle RedRaphael's build requirements
     grunt.registerMultiTask(
@@ -57,6 +59,8 @@ module.exports = function(grunt) {
         function() {
             var data = this.data,
                 name = data.dest,
+                fcName = data.fc,
+                fcSrcName = data.fcsrc,
                 src = data.src,
                 options = this.options({
                     banner: ""
@@ -101,10 +105,9 @@ module.exports = function(grunt) {
             });
 
             grunt.file.write( name, compiled );
-            grunt.file.write( name, compiled );
             if (grunt.option("fc")) {
-               grunt.file.write("package/FusionCharts.JS-raphael.js",
-                   grunt.file.read("source/fc.js").replace(/@REDRAPHAEL_CODE/, compiled));
+               grunt.file.write(fcName,
+                   grunt.file.read(fcSrcName).replace(/@REDRAPHAEL_CODE/, compiled));
             }
         }
     );

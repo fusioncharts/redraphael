@@ -25,6 +25,8 @@ module.exports = function(grunt) {
             },
             dist: {
                 dest: "package/raphael.js",
+                fc: "package/raphael-fusioncharts.js",
+                fcsrc: "source/fc.js",
                 src: [
                     "source/eve/eve.js",
                     "source/raphael.core.js",
@@ -34,21 +36,21 @@ module.exports = function(grunt) {
                 ]
             }
         },
-		jasmine: {
-			pivotal: {
-				src: 'package/raphael-min.js',
-				options: {
-					specs: 'tests/*Spec.js',
-					helpers: 'tests/*Helper.js'
-				}
-			}
-		}
+        jasmine: {
+            pivotal: {
+                src: 'package/raphael-min.js',
+                options: {
+                    specs: 'tests/*Spec.js',
+                    helpers: 'tests/*Helper.js'
+                }
+            }
+        }
     });
 
 
     // These plugins provide necessary tasks.
     grunt.loadNpmTasks("grunt-contrib-uglify");
-	grunt.loadNpmTasks("grunt-contrib-jasmine");
+    grunt.loadNpmTasks("grunt-contrib-jasmine");
 
     // Special concat/build task to handle RedRaphael's build requirements
     grunt.registerMultiTask(
@@ -57,12 +59,15 @@ module.exports = function(grunt) {
         function() {
             var data = this.data,
                 name = data.dest,
+                fcName = data.fc,
+                fcSrcName = data.fcsrc,
                 src = data.src,
                 options = this.options({
                     banner: ""
                 }),
                 // Start with banner
                 compiled = options.banner,
+                compiledFc = options.banner,
                 svgorvmlRegex = /\.(svg|vml|canvas)\.js/,
                 closureRegex = /window\.Raphael.*\(R\)\s*\{/,
                 closureEndRegex = /\}\(window\.Raphael\);\s*$/,
@@ -95,12 +100,29 @@ module.exports = function(grunt) {
                         compiled = (text.slice(0, index) + source + text.slice(index));
                     });
 
+                    // Excluding canvas.js in raphael-fusioncharts.js
+                    if (!/canvas\.js/.test(path)) {
+                        // Add source before EXPOSE line
+                        compiledFc.replace(exposeRegex, function () {
+                            // Using this method instead of the raphael way as it makes it difficult to
+                            // to have the string '$1' in the target file like raphael.svg.js.
+                            var text = arguments[3],
+                                index = arguments[2];
+
+                            compiledFc = (text.slice(0, index) + source + text.slice(index));
+                        });
+                    }
                 } else {
                     compiled += source;
+                    compiledFc += source;
                 }
             });
 
             grunt.file.write( name, compiled );
+            if (grunt.option("fc")) {
+               grunt.file.write(fcName,
+                   grunt.file.read(fcSrcName).replace(/@REDRAPHAEL_CODE/, compiledFc));
+            }
         }
     );
 

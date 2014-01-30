@@ -18,13 +18,13 @@ window.FusionCharts && window.FusionCharts.register(['private', 'modules.rendere
 
     (function () {
 
-        
+
 @REDRAPHAEL_CODE
-    
-    
+
+
     })();
 
-    
+
     // Restore old Raphael or remove it from global scope
     lib.Raphael = RedRaphael;
     lib.Raphael.desc = "";

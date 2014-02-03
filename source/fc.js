@@ -3,35 +3,28 @@
 /*global window: true, FusionCharts */
 
 /**
- * Raphael 2.1.0 - JavaScript Vector Library
- * Modified and rechristened as "Red Raphael" by FusionCharts Technologies.
- *
- * Copyright (c) 2008-2012 Dmitry Baranovskiy (http://raphaeljs.com)
- * Copyright (c) 2008-2012 Sencha Labs (http://sencha.com)
- * Licensed under the MIT (http://raphaeljs.com/license.html) license.
- *
- * Eve 0.3.4 - JavaScript Events Library
- * Copyright (c) 2008-2011 Dmitry Baranovskiy (http://dmitry.baranovskiy.com/)
- * Licensed under the MIT (http://www.opensource.org/licenses/mit-license.php) license.
+ * FusionCharts module for RedRaphael integration
+ * @private
+ * @module fusioncharts.redraphael
+ * @requires fusioncharts.renderer.javascript.lib
  */
-
-FusionCharts(['private', 'modules.renderer.js-raphael', function () {
+window.FusionCharts && window.FusionCharts.register(['private', 'modules.renderer.js-raphael', function () {
     var global = this,
     lib = global.hcLib,
-    eve,
     someRaphael = window.Raphael,
+    eve,
     RedRaphael;
 
 
-	(function () {
+    (function () {
 
-		
-        @REDRAPHAEL_CODE
-	
-	
-	})();
 
-	
+@REDRAPHAEL_CODE
+
+
+    })();
+
+
     // Restore old Raphael or remove it from global scope
     lib.Raphael = RedRaphael;
     lib.Raphael.desc = "";

@@ -1,33 +1,28 @@
-/*jslint forin: true, regexp: true, todo: true, white: false, browser: true,
- sloppy: true, white: true, eqeq: false, newcap: true, nomen: true */
-/*global window: true, FusionCharts */
-
 /**
- * Raphael 2.1.0 - JavaScript Vector Library
- * Modified and rechristened as "Red Raphael" by FusionCharts Technologies.
+ * @fileOverview This file serves as a template for building FusionCharts module loader compatible RedRaphel script.
+ * The Grunt build system with distribution named "fusioncharts" uses this template to wrap RedRaphael within.
  *
- * Copyright (c) 2008-2012 Dmitry Baranovskiy (http://raphaeljs.com)
- * Copyright (c) 2008-2012 Sencha Labs (http://sencha.com)
- * Licensed under the MIT (http://raphaeljs.com/license.html) license.
- *
- * Eve 0.3.4 - JavaScript Events Library
- * Copyright (c) 2008-2011 Dmitry Baranovskiy (http://dmitry.baranovskiy.com/)
- * Licensed under the MIT (http://www.opensource.org/licenses/mit-license.php) license.
+ * @suppress {nonStandardJsDocs|es5Strict}
  */
-
-FusionCharts(['private', 'modules.renderer.js-raphael', function () {
+/**
+ * FusionCharts module for RedRaphael integration
+ * @private
+ * @module fusioncharts.redraphael
+ * @requires fusioncharts.renderer.javascript.lib
+ */
+window.FusionCharts && window.FusionCharts.register('module', ['private', 'modules.renderer.js-raphael', function () {
     var global = this,
-    lib = global.hcLib,
-    eve,
-    someRaphael = window.Raphael,
-    RedRaphael;
+        lib = global.hcLib,
+        someRaphael = window.Raphael,
+        eve,
+        RedRaphael;
 
 
-	(function () {
+    (function () {
 
-		
-        /**!
- * RedRaphael 1.0.0 - JavaScript Vector Library
+
+/**!
+ * RedRaphael 1.0.1 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0
@@ -506,11 +501,11 @@ FusionCharts(['private', 'modules.renderer.js-raphael', function () {
             }
         }
     }
-	
-	RedRaphael = R;
+
     R.upgrade = "1.0.0";
     R.version = "2.1.0";
     R.eve = eve;
+    RedRaphael = R;
 
     var loaded,
 
@@ -9613,14 +9608,14 @@ FusionCharts(['private', 'modules.renderer.js-raphael', function () {
 
     return R;
 }));
-	
-	
-	})();
 
-	
+
+    })();
+
+
     // Restore old Raphael or remove it from global scope
     lib.Raphael = RedRaphael;
-    lib.Raphael.desc = "";
+    lib.Raphael.desc = '';
     if (someRaphael && someRaphael !== RedRaphael) {
         window.Raphael = someRaphael;
     }

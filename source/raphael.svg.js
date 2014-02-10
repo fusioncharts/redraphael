@@ -177,7 +177,7 @@ window.Raphael && window.Raphael.svg && function(R) {
                         specs[5] && (spread = specs[5]);
                     }
 
-                    /* @todo apply angle rotation and validation */
+                    /** @todo apply angle rotation and validation */
                     vector = [
                         specs[0] || "0%", specs[1] || "0%",
                         specs[2] || "100%", specs[3] || "0%"
@@ -1445,7 +1445,6 @@ window.Raphael && window.Raphael.svg && function(R) {
         setFillAndStroke(res, res.attrs);
         return res;
     };
-    /* @diffend */
 
     R._engine.setSize = function(width, height) {
         this.width = width || this.width;

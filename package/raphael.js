@@ -6881,7 +6881,7 @@
                         specs[5] && (spread = specs[5]);
                     }
 
-                    /* @todo apply angle rotation and validation */
+                    /** @todo apply angle rotation and validation */
                     vector = [
                         specs[0] || "0%", specs[1] || "0%",
                         specs[2] || "100%", specs[3] || "0%"
@@ -8149,7 +8149,6 @@
         setFillAndStroke(res, res.attrs);
         return res;
     };
-    /* @diffend */
 
     R._engine.setSize = function(width, height) {
         this.width = width || this.width;
@@ -8553,7 +8552,7 @@
                 rect[2] = +rect[2] + rect[0];
                 rect[3] = +rect[3] + rect[1];
 
-                /* @todo create separate element for group clip-rect to
+                /** @todo create separate element for group clip-rect to
                  * avoid unclipping issue */
                 var div = isGroup ? node : (node.clipRect ||
                         R._g.doc.createElement("div")),
@@ -8570,7 +8569,7 @@
                     rect[2] -= offset[0];
                     rect[3] -= offset[1];
                     // Fix for bug in ie clip-auto when height/width is not defined
-                    /* @todo set dynamic w/h based on clip bounds or find
+                    /** @todo set dynamic w/h based on clip bounds or find
                      * another workaround fix */
                     dstyle.width = "10800px";
                     dstyle.height = "10800px";
@@ -9292,7 +9291,7 @@
         s.top = ty + "px";
         s.zoom = (o._.tzoom = matrix.get(0)) + E;
 
-        /* @todo try perform relative group transform, thus avoiding
+        /** @todo try perform relative group transform, thus avoiding
          * transform on clipping */
         c && (s.clip = R.format("rect({1}px {2}px {3}px {0}px)", [
             c[0] - tx, c[1] - ty, c[2] - tx, c[3] - ty
@@ -9621,7 +9620,7 @@
         DEFAULT_STROKE = "#000",
         has = "hasOwnProperty",
         S = " ",
-        /* @todo: detect touch */
+        /** @todo: detect touch */
         supportsTouch = (('ontouchstart' in win) || (navigator.msMaxTouchPoints > 0)),
         events = ("click dblclick mousedown mousemove mouseout mouseover mouseup touchstart touchmove touchend touchcancel").split(S),
         noHandle = false,
@@ -9662,7 +9661,7 @@
                     //parent = node.parentNode,
                     //display = node.style.display;
 
-                 /* @todo: implement raphael.drag.over */
+                 /** @todo: implement raphael.drag.over */
 
                 //g.win.opera && parent.removeChild(node);
                 //node.style.display = "none";
@@ -9728,7 +9727,7 @@
             return;
         }
 
-        /* @todo: do not use offsetX and offsetY */
+        /** @todo: do not use offsetX and offsetY */
         var x = event.offsetX,//mathFloor(event.pageX || (event.clientX + doc.body.scrollLeft + doc.documentElement.scrollLeft) || 0),
             y = event.offsetY,//mathFloor(event.pageY || (event.clientY + doc.body.scrollTop + doc.documentElement.scrollTop) || 0),
             type = event.type,
@@ -9856,7 +9855,7 @@
                 ctx = o.context,
                 bbox = o._bbox;
 
-            /* @todo: while clearing the stroke-width also needs to be accounted for. */
+            /** @todo: while clearing the stroke-width also needs to be accounted for. */
             if (bbox) {
                 ctx.clearRect(bbox.x, bbox.y, bbox.width, bbox.height);
             }
@@ -9885,7 +9884,7 @@
                     map.appendChild(area);
                 }
 
-                /* @todo: should be put this check here */
+                /** @todo: should be put this check here */
                 o._mouseArea = area;
 
                 // Needed for paths.
@@ -10227,7 +10226,7 @@
                                     transition = false;
 
                                 return function (event) {
-                                    /* @todo: replace layerX and layerY with
+                                    /** @todo: replace layerX and layerY with
                                      * standard ways of determining mouse position.
                                      */
                                     var x = event.layerX,
@@ -11001,7 +11000,7 @@
                 w = attrs.width,
                 h = attrs.height,
                 r = attrs.r,
-                /* @todo: provide support for rx, ry */
+                /** @todo: provide support for rx, ry */
                 rx = r || attrs.rx,
                 ry = r || attrs.ry;
 
@@ -11170,7 +11169,7 @@
                 x = attrs.cx,
                 y = attrs.cy,
                 r = attrs.r,
-                /* @todo: provide support for rx, ry */
+                /** @todo: provide support for rx, ry */
                 rx = r || attrs.rx,
                 ry = r || attrs.ry;
 
@@ -11387,7 +11386,7 @@
                 attrs = el.attrs,
                 childNode = list.bottom;
 
-            /* @todo: Clean this up */
+            /** @todo: Clean this up */
             if (attrs.opacity !== undefined) {
                 this.layerItems.each(function () {
                     this.getContext().globalAlpha = attrs.opacity;
@@ -11604,10 +11603,10 @@
 
         cs.width = (paper.width = (+w || paper.width)) + PX;
         cs.height = (paper.height = (+h || paper.height)) + PX;
-        /* @todo call setViewBox from setSize() */
+        /** @todo call setViewBox from setSize() */
         return paper;
     };
-    /* @todo implement setViewBox() */
+    /** @todo implement setViewBox() */
     R._engine.create = function () {
         var con = R._getContainer.apply(0, arguments) || {},
             container = con.container,
@@ -11991,7 +11990,7 @@
             }
             res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
             res.transform = o._.transform;
-            /* @todo res.visibility = o.node.style.display === "none" ? "hidden" : "visible"; */
+            /** @todo res.visibility = o.node.style.display === "none" ? "hidden" : "visible"; */
             return res;
         }
 
@@ -12003,7 +12002,7 @@
             if (name == "transform") {
                 return o._.transform;
             }
-            /* @todo if (name == "visibility") {
+            /** @todo if (name == "visibility") {
                 return this.node.style.display === "none" ? "hidden" : "visible";
             }*/
 
@@ -12214,7 +12213,7 @@
 
         R._extractTransform(o, tstr);
 
-        /* @todo: what changes to be made here in the context of canvas */
+        /** @todo: what changes to be made here in the context of canvas */
         /*o.clip && !_.clipispath && $(o.clip, {
             transform: o.matrix.invert()
         });

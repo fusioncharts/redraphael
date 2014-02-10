@@ -233,7 +233,7 @@ window.Raphael && window.Raphael.vml && function(R) {
                 rect[2] = +rect[2] + rect[0];
                 rect[3] = +rect[3] + rect[1];
 
-                /* @todo create separate element for group clip-rect to
+                /** @todo create separate element for group clip-rect to
                  * avoid unclipping issue */
                 var div = isGroup ? node : (node.clipRect ||
                         R._g.doc.createElement("div")),
@@ -250,7 +250,7 @@ window.Raphael && window.Raphael.vml && function(R) {
                     rect[2] -= offset[0];
                     rect[3] -= offset[1];
                     // Fix for bug in ie clip-auto when height/width is not defined
-                    /* @todo set dynamic w/h based on clip bounds or find
+                    /** @todo set dynamic w/h based on clip bounds or find
                      * another workaround fix */
                     dstyle.width = "10800px";
                     dstyle.height = "10800px";
@@ -972,7 +972,7 @@ window.Raphael && window.Raphael.vml && function(R) {
         s.top = ty + "px";
         s.zoom = (o._.tzoom = matrix.get(0)) + E;
 
-        /* @todo try perform relative group transform, thus avoiding
+        /** @todo try perform relative group transform, thus avoiding
          * transform on clipping */
         c && (s.clip = R.format("rect({1}px {2}px {3}px {0}px)", [
             c[0] - tx, c[1] - ty, c[2] - tx, c[3] - ty

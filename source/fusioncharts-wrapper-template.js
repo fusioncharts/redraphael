@@ -1,16 +1,10 @@
 /**
- * @fileOverview This file serves as a template for building FusionCharts module loader compatible RedRaphel script.
- * The Grunt build system with distribution named "fusioncharts" uses this template to wrap RedRaphael within.
- *
- * @suppress {nonStandardJsDocs|es5Strict}
- */
-/**
  * FusionCharts module for RedRaphael integration
  * @private
- * @module fusioncharts.redraphael
+ * @module fusioncharts.vendor.redraphael
  * @requires fusioncharts.renderer.javascript.lib
  */
-window.FusionCharts && window.FusionCharts.register('module', ['private', 'modules.renderer.js-raphael', function () {
+window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendor.redraphael', function () {
     var global = this,
         lib = global.hcLib,
         someRaphael = window.Raphael,

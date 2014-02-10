@@ -101,6 +101,7 @@
     R.upgrade = "1.0.0";
     R.version = "2.1.0";
     R.eve = eve;
+    RedRaphael = R;
 
     var loaded,
 

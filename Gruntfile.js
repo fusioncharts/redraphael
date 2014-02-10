@@ -25,8 +25,8 @@ module.exports = function(grunt) {
             },
             dist: {
                 dest: "package/raphael.js",
-                fc: "package/raphael-fusioncharts.js",
-                fcsrc: "source/fc.js",
+                fusioncharts: "package/raphael-fusioncharts.js",
+                fusionchartsWrapper: "source/fusioncharts-wrapper-template.js",
                 src: [
                     "source/eve/eve.js",
                     "source/raphael.core.js",
@@ -59,8 +59,8 @@ module.exports = function(grunt) {
         function() {
             var data = this.data,
                 name = data.dest,
-                fcName = data.fc,
-                fcSrcName = data.fcsrc,
+                fcName = data.fusioncharts,
+                fcSrcName = data.fusionchartsWrapper,
                 src = data.src,
                 options = this.options({
                     banner: ""
@@ -119,10 +119,7 @@ module.exports = function(grunt) {
             });
 
             grunt.file.write( name, compiled );
-            if (grunt.option("fc")) {
-               grunt.file.write(fcName,
-                   grunt.file.read(fcSrcName).replace(/@REDRAPHAEL_CODE/, compiledFc));
-            }
+            grunt.file.write(fcName, grunt.file.read(fcSrcName).replace(/@REDRAPHAEL_CODE/, compiledFc));
         }
     );
 

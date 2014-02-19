@@ -891,6 +891,8 @@ window.Raphael && window.Raphael.svg && function(R) {
         var o = this,
             parent = group || svg;
 
+        parent.canvas && parent.canvas.appendChild(node);
+
         o.node = o[0] = node;
         node.raphael = true;
         node.raphaelid = o.id = R._oid++;
@@ -936,22 +938,6 @@ window.Raphael && window.Raphael.svg && function(R) {
     R._engine.getLastNode = function (el) {
         var node = el.node || el[el.length - 1].node;
         return node.titleNode || node;
-    };
-
-    R._engine.path = function(pathString, SVG, group) {
-        var el = $("path");
-
-        (group && group.canvas && group.canvas.appendChild(el)) ||
-        (SVG.canvas && SVG.canvas.appendChild(el));
-
-        var p = new Element(el, SVG, group);
-        p.type = "path";
-        setFillAndStroke(p, {
-            fill: "none",
-            stroke: "#000",
-            path: pathString
-        });
-        return p;
     };
 
     elproto.rotate = function(deg, cx, cy) {
@@ -1328,121 +1314,67 @@ window.Raphael && window.Raphael.svg && function(R) {
         return this;
     };
 
+    R._engine.path = function(svg, attrs, group) {
+        var el = $("path"),
+            res = new Element(el, svg, group);
+
+        res.type = "path";
+        setFillAndStroke(res, attrs);
+        return res;
+    };
 
     R._engine.group = function(svg, id, group) {
-        var el = $("g");
-        (group && group.canvas && group.canvas.appendChild(el)) ||
-        (svg.canvas && svg.canvas.appendChild(el));
+        var el = $("g"),
+            res = new Element(el, svg, group);
 
-        var g = new Element(el, svg, group);
-        g.type = "group";
-        g.canvas = g.node;
-        g.top = null;
-        g.bottom = null;
-        id && el.setAttribute('class', ['red', id, g.id].join('-'));
-
-        return g;
+        res.type = "group";
+        res.canvas = res.node;
+        res.top = res.bottom = null;
+        id && el.setAttribute('class', ['red', id, res.id].join('-'));
+        return res;
     };
 
-    R._engine.circle = function(svg, x, y, r, group) {
-        var el = $("circle");
-        (group && group.canvas && group.canvas.appendChild(el)) ||
-        (svg.canvas && svg.canvas.appendChild(el));
+    R._engine.circle = function(svg, attrs, group) {
+        var el = $("circle"),
+            res = new Element(el, svg, group);
 
-        var res = new Element(el, svg, group);
-        res.attrs = {
-            cx: x,
-            cy: y,
-            r: r,
-            fill: "none",
-            stroke: "#000"
-        };
         res.type = "circle";
-        $(el, res.attrs);
+        setFillAndStroke(res, attrs);
         return res;
     };
-    R._engine.rect = function(svg, x, y, w, h, r, group) {
-        var el = $("rect");
-        (group && group.canvas && group.canvas.appendChild(el)) ||
-        (svg.canvas && svg.canvas.appendChild(el));
+    R._engine.rect = function(svg, attrs, group) {
+        var el = $("rect"),
+            res = new Element(el, svg, group);
 
-        var res = new Element(el, svg, group);
-        res.attrs = {
-            x: x,
-            y: y,
-            width: w,
-            height: h,
-            r: r || 0,
-            rx: r || 0,
-            ry: r || 0,
-            fill: "none",
-            stroke: "#000"
-        };
         res.type = "rect";
-        $(el, res.attrs);
+        attrs.rx = attrs.ry = attrs.r;
+        setFillAndStroke(res, attrs);
         return res;
     };
-    R._engine.ellipse = function(svg, x, y, rx, ry, group) {
-        var el = $("ellipse");
-        (group && group.canvas && group.canvas.appendChild(el)) ||
-        (svg.canvas && svg.canvas.appendChild(el));
+    R._engine.ellipse = function(svg, attrs, group) {
+        var el = $("ellipse"),
+            res = new Element(el, svg, group);
 
-        var res = new Element(el, svg, group);
-        res.attrs = {
-            cx: x,
-            cy: y,
-            rx: rx,
-            ry: ry,
-            fill: "none",
-            stroke: "#000"
-        };
         res.type = "ellipse";
-        $(el, res.attrs);
+        setFillAndStroke(res, attrs);
         return res;
     };
-    R._engine.image = function(svg, src, x, y, w, h, group) {
-        var el = $("image");
-        $(el, {
-            x: x,
-            y: y,
-            width: w,
-            height: h,
-            preserveAspectRatio: "none"
-        });
-        el.setAttributeNS(xlink, "href", src);
-        (group && group.canvas && group.canvas.appendChild(el)) ||
-        (svg.canvas && svg.canvas.appendChild(el));
+    R._engine.image = function(svg, attrs, group) {
+        var el = $("image"),
+            src = attrs.src,
+            res = new Element(el, svg, group);
 
-        var res = new Element(el, svg, group);
-        res.attrs = {
-            x: x,
-            y: y,
-            width: w,
-            height: h,
-            src: src
-        };
         res.type = "image";
+        el.setAttribute("preserveAspectRatio", "none");
+        setFillAndStroke(res, attrs);
         return res;
     };
-    R._engine.text = function(svg, x, y, text, group) {
-        var el = $("text");
-        (group && group.canvas && group.canvas.appendChild(el)) ||
-        (svg.canvas && svg.canvas.appendChild(el));
-
-        var res = new Element(el, svg, group);
-        res.attrs = {
-            x: x,
-            y: y,
-            "text-anchor": "middle",
-            "vertical-align": "middle",
-            text: text,
-            //font: R._availableAttrs.font,
-            stroke: "none",
-            fill: "#000"
-        };
+    R._engine.text = function(svg, attrs, group) {
+        var el = $("text"),
+            res = new Element(el, svg, group);
         res.type = "text";
         res._textdirty = true;
-        setFillAndStroke(res, res.attrs);
+        setFillAndStroke(res, attrs);
         return res;
     };
 

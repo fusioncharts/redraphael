@@ -734,14 +734,12 @@ window.Raphael && window.Raphael.vml && function(R) {
         while (i = this.followers.pop()) {
             i.el.remove();
         }
-        if (o.children) {
-            while (i = o.children.pop()) {
-                i.remove();
-            }
+        while (i = o.bottom) {
+            i.remove();
         }
         this.shape && this.shape.parentNode.removeChild(this.shape);
         thisNode.parentNode.removeChild(thisNode);
-        R._tear(this, this.paper);
+        R._tear(this, this.parent);
         for (var i in this) {
             this[i] = typeof this[i] == "function" ? R._removedFactory(i) : null;
         }

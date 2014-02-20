@@ -1062,6 +1062,11 @@ window.Raphael && window.Raphael.svg && function(R) {
         while (i = o.followers.pop()) {
             i.el.remove();
         }
+        if (o.children) {
+            while (i = o.children.pop()) {
+                i.remove();
+            }
+        }
         o.parent.canvas.removeChild(node);
         R._tear(o, paper);
         for (i in o) {
@@ -1510,8 +1515,14 @@ window.Raphael && window.Raphael.svg && function(R) {
     };
 
     R.prototype.clear = function() {
+        var c;
         eve("raphael.clear", this);
-        var c = this.canvas;
+
+        while (c = this.bottom) {
+            c.remove();
+        }
+
+        c = this.canvas;
         while (c.firstChild) {
             c.removeChild(c.firstChild);
         }
@@ -1521,9 +1532,15 @@ window.Raphael && window.Raphael.svg && function(R) {
     };
 
     R.prototype.remove = function() {
+        var i;
         eve("raphael.remove", this);
+
+        while (i = this.bottom) {
+            i.remove();
+        }
+
         this.canvas.parentNode && this.canvas.parentNode.removeChild(this.canvas);
-        for (var i in this) {
+        for (i in this) {
             this[i] = typeof this[i] == "function" ? R._removedFactory(i) : null;
         }
         this.removed = true;

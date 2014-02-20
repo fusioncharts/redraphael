@@ -124,6 +124,7 @@
         setAttribute = "setAttribute",
         split = "split",
         none = "none",
+        black = "#000",
         OBJECTSTRING = "object",
         arrayToStr = "[object Array]",
         objectToStr = "[object Object]",
@@ -491,6 +492,37 @@
                 }
                 return arg;
             }
+        },
+
+        serializeArgs = R._serializeArgs = function (args) {
+            var arg0 = args[0],
+                attrs,
+                i,
+                ii;
+
+            if (R.is(arg0, 'object') && arg0.type !== 'group') {
+
+                attrs = arg0;
+
+                if (arg0.path) {
+                    pathString = arg0.path;
+                    pathString && !R.is(pathString, string) &&
+                        !R.is(pathString[0], array) && (pathString += E);
+                }
+
+                for (i = 1, ii = arguments.length; i < ii; i += 2) {
+                    if (!attrs[arguments[i]]) {
+                        attrs[arguments[i]] = arguments[i + 1];
+                    }
+                }
+            }
+            else {
+                attrs = {};
+                for (i = 1, ii = arguments.length; i < ii; i += 2) {
+                    attrs[arguments[i]] = args[(i-1) / 2] || arguments[i+1];
+                }
+            }
+            return attrs;
         },
 
         merge = R.merge = function (obj1, obj2, skipUndef, tgtArr, srcArr) {
@@ -3885,14 +3917,10 @@
     \*/
     paperproto.group = function () { // id
         var paper = this,
-            out,
             args = arguments,
-            group = lastArgIfGroup(args, true);
-
-        out = R._engine.group(paper, args[0], group);
-
-        paper.__set__ && paper.__set__.push(out);
-        return out;
+            group = lastArgIfGroup(args, true),
+            out = R._engine.group(paper, args[0], group);
+        return (paper.__set__ && paper.__set__.push(out), out);
     };
 
     /*\
@@ -3915,13 +3943,15 @@
         var paper = this,
             args = arguments,
             group = lastArgIfGroup(args, true),
-            out;
+            attrs = serializeArgs(args,
+                "cx", 0,
+                "cy", 0,
+                "r", 0,
+                "fill", none,
+                "stroke", black),
+            out = R._engine.circle(paper, attrs, group);
 
-        out = R._engine.circle(paper, args[0] || 0, args[1] || 0,
-            args[2] || 0, group);
-
-        paper.__set__ && paper.__set__.push(out);
-        return out;
+        return (paper.__set__ && paper.__set__.push(out), out);
     };
 
 
@@ -3950,13 +3980,17 @@
         var paper = this,
             args = arguments,
             group = lastArgIfGroup(args, true),
-            out;
+            attrs = serializeArgs(args,
+                "x", 0,
+                "y", 0,
+                "width", 0,
+                "height", 0,
+                "r", 0,
+                "fill", none,
+                "stroke", black),
+            out = R._engine.rect(paper, attrs, group);
 
-        out = R._engine.rect(paper, args[0] || 0, args[1] || 0, args[2] || 0,
-            args[3] || 0, args[4] || 0, group);
-
-        paper.__set__ && paper.__set__.push(out);
-        return out;
+        return (paper.__set__ && paper.__set__.push(out), out);
     };
 
     /*\
@@ -3980,13 +4014,16 @@
         var paper = this,
             args = arguments,
             group = lastArgIfGroup(args, true),
-            out;
+            attrs = serializeArgs(args,
+                "x", 0,
+                "y", 0,
+                "rx", 0,
+                "ry", 0,
+                "fill", none,
+                "stroke", black),
+            out = R._engine.ellipse(this, attrs, group);
 
-        out = R._engine.ellipse(this, args[0] || 0, args[1] || 0,
-            args[2] || 0, args[3] || 0, group);
-
-        paper.__set__ && paper.__set__.push(out);
-        return out;
+        return (paper.__set__ && paper.__set__.push(out), out);
     };
 
     /*\
@@ -4025,17 +4062,12 @@
         var paper = this,
             args = arguments,
             group = lastArgIfGroup(args, true),
-            pathString,
-            out;
-
-        pathString = args[0];
-        pathString && !R.is(pathString, string) &&
-            !R.is(pathString[0], array) && (pathString += E);
-
-        out = R._engine.path(R.format[apply](R, arguments), paper, group);
-
-        paper.__set__ && paper.__set__.push(out);
-        return out;
+            attrs = serializeArgs(args,
+                "path", E,
+                "fill", none,
+                "stroke", black),
+            out = R._engine.path(paper, attrs, group);
+        return (paper.__set__ && paper.__set__.push(out), out);
     };
 
     /*\
@@ -4060,13 +4092,14 @@
         var paper = this,
             args = arguments,
             group = lastArgIfGroup(args, true),
-            out;
-
-        out = R._engine.image(paper, args[0] || "about:blank", args[1] || 0,
-            args[2] || 0, args[3] || 0, args[4] || 0, group);
-
-        paper.__set__ && paper.__set__.push(out);
-        return out;
+            attrs = serializeArgs(args,
+                "src", "about:blank",
+                "x", 0,
+                "y", 0,
+                "width", 0,
+                "height", 0)
+            out = R._engine.image(paper, attrs, group);
+        return (paper.__set__ && paper.__set__.push(out), out);
     };
 
     /*\
@@ -4089,12 +4122,17 @@
         var paper = this,
             args = arguments,
             group = lastArgIfGroup(args, true),
-            out;
+            attrs = serializeArgs(args,
+                "x", 0,
+                "y", 0,
+                "text", E,
+                "stroke", none,
+                "fill", black,
+                "text-anchor", "middle",
+                "vertical-align", "middle"),
 
-        out = R._engine.text(paper, args[0] || 0, args[1] || 0, Str(args[2] || E),
-            group);
-        paper.__set__ && paper.__set__.push(out);
-        return out;
+            out = R._engine.text(paper, attrs, group);
+        return (paper.__set__ && paper.__set__.push(out), out);
     };
 
     /*\

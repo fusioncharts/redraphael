@@ -1062,13 +1062,11 @@ window.Raphael && window.Raphael.svg && function(R) {
         while (i = o.followers.pop()) {
             i.el.remove();
         }
-        if (o.children) {
-            while (i = o.children.pop()) {
-                i.remove();
-            }
+        while (i = o.bottom) {
+            i.remove();
         }
         o.parent.canvas.removeChild(node);
-        R._tear(o, paper);
+        R._tear(o, o.parent);
         for (i in o) {
             o[i] = typeof o[i] === "function" ? R._removedFactory(i) : null;
         }

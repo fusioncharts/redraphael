@@ -7821,6 +7821,11 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         while (i = o.followers.pop()) {
             i.el.remove();
         }
+        if (o.children) {
+            while (i = o.children.pop()) {
+                i.remove();
+            }
+        }
         o.parent.canvas.removeChild(node);
         R._tear(o, paper);
         for (i in o) {
@@ -8269,8 +8274,14 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
     };
 
     R.prototype.clear = function() {
+        var c;
         eve("raphael.clear", this);
-        var c = this.canvas;
+
+        while (c = this.bottom) {
+            c.remove();
+        }
+
+        c = this.canvas;
         while (c.firstChild) {
             c.removeChild(c.firstChild);
         }
@@ -8280,9 +8291,15 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
     };
 
     R.prototype.remove = function() {
+        var i;
         eve("raphael.remove", this);
+
+        while (i = this.bottom) {
+            i.remove();
+        }
+
         this.canvas.parentNode && this.canvas.parentNode.removeChild(this.canvas);
-        for (var i in this) {
+        for (i in this) {
             this[i] = typeof this[i] == "function" ? R._removedFactory(i) : null;
         }
         this.removed = true;
@@ -9040,6 +9057,11 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         while (i = this.followers.pop()) {
             i.el.remove();
         }
+        if (o.children) {
+            while (i = o.children.pop()) {
+                i.remove();
+            }
+        }
         this.shape && this.shape.parentNode.removeChild(this.shape);
         thisNode.parentNode.removeChild(thisNode);
         R._tear(this, this.paper);
@@ -9522,7 +9544,11 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         return res;
     };
     R.prototype.clear = function() {
+        var c;
         eve("raphael.clear", this);
+        while (c = this.bottom) {
+            c.remove();
+        }
         this.canvas.innerHTML = E;
         this.span = R._g.doc.createElement("span");
         this.span.style.cssText = "position:absolute;left:-9999em;top:-9999em;padding:0;margin:0;line-height:1;display:inline;";
@@ -9530,9 +9556,13 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         this.bottom = this.top = null;
     };
     R.prototype.remove = function() {
+        var i;
         eve("raphael.remove", this);
+        while (i = this.bottom) {
+            i.remove();
+        }
         this.canvas.parentNode.removeChild(this.canvas);
-        for (var i in this) {
+        for (i in this) {
             this[i] = typeof this[i] == "function" ? R._removedFactory(i) : null;
         }
         return true;

@@ -16,7 +16,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
 
 
 /**!
- * RedRaphael 1.0.1 - JavaScript Vector Library
+ * RedRaphael 1.0.2 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0
@@ -6671,7 +6671,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
      **
      - definition (object) the shape definition
     \*/
-    R.define = function (name, init, ca, fn, e) {
+    R.define = function (name, init, ca, fn, e, data) {
         var i,
             ii;
 
@@ -6684,7 +6684,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         }
         // object definition
         else if (R.is(name, object)) {
-            R.define(name.name, name[name.name], name.ca, name.fn, name.e);
+            R.define(name.name, name[name.name], name.ca, name.fn, name.e, name.data);
             return;
         }
         // invalid or duplicate definition
@@ -6732,6 +6732,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         if (ca) { R.fn[name].ca = ca; }
         if (fn) { R.fn[name].fn = fn; }
         if (e) { R.fn[name].e = e; }
+        if (data) { R.fn[name].data = data; }
 
         return R.fn[name];
     };

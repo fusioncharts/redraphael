@@ -6273,7 +6273,7 @@
      **
      - definition (object) the shape definition
     \*/
-    R.define = function (name, init, ca, fn, e) {
+    R.define = function (name, init, ca, fn, e, data) {
         var i,
             ii;
 
@@ -6286,7 +6286,7 @@
         }
         // object definition
         else if (R.is(name, object)) {
-            R.define(name.name, name[name.name], name.ca, name.fn, name.e);
+            R.define(name.name, name[name.name], name.ca, name.fn, name.e, name.data);
             return;
         }
         // invalid or duplicate definition
@@ -6334,6 +6334,7 @@
         if (ca) { R.fn[name].ca = ca; }
         if (fn) { R.fn[name].fn = fn; }
         if (e) { R.fn[name].e = e; }
+        if (data) { R.fn[name].data = data; }
 
         return R.fn[name];
     };

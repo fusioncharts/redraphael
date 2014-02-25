@@ -75,10 +75,11 @@
         var args,
             f;
 
+        // if (R._url) { // reinitialize URL to be safe from popstate event
+        //     R._url = (R._g && R._g.win || window).location.href.replace(/#.*?$/, "");
+        // }
+        R._url = '';
 
-        if (R._url) { // reinitialize URL to be safe from popstate event
-            R._url = (R._g && R._g.win || window).location.href.replace(/#.*?$/, "");
-        }
         if (R.is(first, "function")) {
             return loaded ? first() : eve.on("raphael.DOMload", first);
         }

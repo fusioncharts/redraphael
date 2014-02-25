@@ -43,18 +43,19 @@ window.Raphael && window.Raphael.svg && function(R) {
     };
 
     // Automatic gradient and other reference update on state change
-    R._url = (/msie/i.test(navigator.userAgent) && !window.opera) ?
-        E : updateReferenceUrl();
-    if (R._url && R._g.win.history.pushState) {
-        R._g.win.history.pushState = (function () {
-            var fn = R._g.win.history.pushState;
-            return function () {
-                var ret = fn.apply(R._g.win.history, arguments);
-                return updateReferenceUrl(), ret;
-            };
-        }());
-        R._g.win.addEventListener("popstate", updateReferenceUrl, false);
-    }
+    // R._url = (/msie/i.test(navigator.userAgent) && !window.opera) ?
+    //     E : updateReferenceUrl();
+    // if (R._url && R._g.win.history.pushState) {
+    //     R._g.win.history.pushState = (function () {
+    //         var fn = R._g.win.history.pushState;
+    //         return function () {
+    //             var ret = fn.apply(R._g.win.history, arguments);
+    //             return updateReferenceUrl(), ret;
+    //         };
+    //     }());
+    //     R._g.win.addEventListener("popstate", updateReferenceUrl, false);
+    // }
+    R._url = E;
 
     var $ = R._createNode = function(el, attr) {
         if (attr) {

@@ -1,7 +1,7 @@
 {
     "name": "redraphael",
     "filename": "raphael",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "rversion": "2.1.0",
     "description": "RedRaphael",
     "main": "index.js",

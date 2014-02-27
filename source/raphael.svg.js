@@ -501,6 +501,10 @@ window.Raphael && window.Raphael.svg && function(R) {
                         }
                         node.titleNode = pn;
                         break;
+                    case "class":
+                        value = value || E;
+                        node.setAttribute('class', o.type === 'group' ? value && (o._id + S + value) || o._id : value);
+                        break;
                     case "cursor":
                         s.cursor = value;
                         break;
@@ -1333,7 +1337,7 @@ window.Raphael && window.Raphael.svg && function(R) {
         res.type = "group";
         res.canvas = res.node;
         res.top = res.bottom = null;
-        id && el.setAttribute('class', ['red', id, res.id].join('-'));
+        id && el.setAttribute('class', res._id = ['red', id, res.id].join('-'));
         return res;
     };
 

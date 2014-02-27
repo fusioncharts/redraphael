@@ -739,6 +739,7 @@ window.Raphael && window.Raphael.vml && function(R) {
         }
         this.shape && this.shape.parentNode.removeChild(this.shape);
         thisNode.parentNode.removeChild(thisNode);
+        delete paper._elementsById[o.id]; // delete from lookup hash
         R._tear(this, this.parent);
         for (var i in this) {
             this[i] = typeof this[i] == "function" ? R._removedFactory(i) : null;

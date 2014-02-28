@@ -1,3 +1,10 @@
+describe("RedRaphael", function () {
+	it("should be accessible through global scope", function () {
+		expect(Raphael)
+			.toBeDefined();
+	});
+});
+
 describe('My First Test', function () {
 	var paper,
 		first,

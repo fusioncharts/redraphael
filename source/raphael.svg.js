@@ -1065,9 +1065,11 @@ window.Raphael && window.Raphael.svg && function(R) {
         while (i = o.bottom) {
             i.remove();
         }
+
         o.parent.canvas.removeChild(node);
         delete paper._elementsById[o.id]; // remove from lookup hash
         R._tear(o, o.parent);
+
         for (i in o) {
             o[i] = typeof o[i] === "function" ? R._removedFactory(i) : null;
         }

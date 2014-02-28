@@ -597,6 +597,7 @@
             this.ca = this.customAttributes = new CustomAttributes();
             this._CustomAttributes = function () {};
             this._CustomAttributes.prototype = this.ca;
+            this._elementsById = {};
         },
 
         /*\
@@ -4301,7 +4302,7 @@
             args = arguments,
             group = lastArgIfGroup(args, true),
             out = R._engine.group(paper, args[0], group);
-        return (paper.__set__ && paper.__set__.push(out), out);
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 
     /*\
@@ -4332,7 +4333,7 @@
                 "stroke", black),
             out = R._engine.circle(paper, attrs, group);
 
-        return (paper.__set__ && paper.__set__.push(out), out);
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 
 
@@ -4371,7 +4372,7 @@
                 "stroke", black),
             out = R._engine.rect(paper, attrs, group);
 
-        return (paper.__set__ && paper.__set__.push(out), out);
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 
     /*\
@@ -4404,7 +4405,7 @@
                 "stroke", black),
             out = R._engine.ellipse(this, attrs, group);
 
-        return (paper.__set__ && paper.__set__.push(out), out);
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 
     /*\
@@ -4448,7 +4449,7 @@
                 "fill", none,
                 "stroke", black),
             out = R._engine.path(paper, attrs, group);
-        return (paper.__set__ && paper.__set__.push(out), out);
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 
     /*\
@@ -4480,7 +4481,7 @@
                 "width", 0,
                 "height", 0)
             out = R._engine.image(paper, attrs, group);
-        return (paper.__set__ && paper.__set__.push(out), out);
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 
     /*\
@@ -4513,7 +4514,7 @@
                 "vertical-align", "middle"),
 
             out = R._engine.text(paper, attrs, group);
-        return (paper.__set__ && paper.__set__.push(out), out);
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 
     /*\
@@ -4704,14 +4705,7 @@
      };
 
     paperproto.getById = function(id) {
-        var bot = this.bottom;
-        while (bot) {
-            if (bot.id == id) {
-                return bot;
-            }
-            bot = bot.next;
-        }
-        return null;
+        return this._elementsById[id] || null;
     };
 
     /*\
@@ -7809,10 +7803,12 @@
             i.remove();
         }
         o.parent.canvas.removeChild(node);
+        delete paper._elementsById[o.id]; // remove from lookup hash
         R._tear(o, o.parent);
         for (i in o) {
             o[i] = typeof o[i] === "function" ? R._removedFactory(i) : null;
         }
+
         o.removed = true;
     };
     elproto._getBBox = function() {
@@ -9044,6 +9040,7 @@
         }
         this.shape && this.shape.parentNode.removeChild(this.shape);
         thisNode.parentNode.removeChild(thisNode);
+        delete paper._elementsById[o.id]; // delete from lookup hash
         R._tear(this, this.parent);
         for (var i in this) {
             this[i] = typeof this[i] == "function" ? R._removedFactory(i) : null;

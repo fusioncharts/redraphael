@@ -40,8 +40,8 @@ module.exports = function(grunt) {
             pivotal: {
                 src: 'package/raphael-min.js',
                 options: {
-                    specs: 'tests/*Spec.js',
-                    helpers: 'tests/*Helper.js'
+                    specs: 'tests/unit/*-spec.js',
+                    helpers: 'tests/unit/*-helper.js'
                 }
             }
         }

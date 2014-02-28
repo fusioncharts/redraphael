@@ -196,6 +196,10 @@ window.Raphael && window.Raphael.vml && function(R) {
         params.target && (node.target = params.target);
         params.cursor && (s.cursor = params.cursor);
         "blur" in params && o.blur(params.blur);
+
+        ("class" in params) && (node.className = isGroup ?
+            params["class"] && (o._id + S + params["class"]) || o._id : ("rvml " + params["class"]));
+
         if (params.path && o.type == "path" || newpath) {
             node.path = path2vml(~Str(a.path).toLowerCase().indexOf("r") ? R._pathToAbsolute(a.path) : a.path);
             if (o.type == "image") {
@@ -941,7 +945,7 @@ window.Raphael && window.Raphael.vml && function(R) {
 
         el.style.cssText = cssDot;
 
-        id && (el.className = ['red', id, p.id].join('-'));
+        id && (el.className = (p._id = ['red', id, p.id].join('-')));
         (group || vml).canvas.appendChild(el);
 
         p.type = 'group';

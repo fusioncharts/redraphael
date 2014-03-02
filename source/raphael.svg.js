@@ -56,6 +56,25 @@ window.Raphael && window.Raphael.svg && function(R) {
         R._g.win.addEventListener("popstate", updateReferenceUrl, false);
     }
 
+    var updateGradientReference = function (element, newGradient) {
+        var gradient = element.gradient;
+        if (gradient) {
+            if (gradient === newGradient) {
+                return; // no change
+            }
+            gradient.refCount--;
+            if (!gradient.refCount) {
+                gradient.parentNode.removeChild(gradient);
+                delete element.gradient;
+            }
+        }
+
+        if (newGradient) { // add new gradient
+            element.gradient = newGradient;
+            newGradient.refCount++;
+        }
+    };
+
     var $ = R._createNode = function(el, attr) {
         if (attr) {
             if (typeof el == "string") {
@@ -84,14 +103,19 @@ window.Raphael && window.Raphael.svg && function(R) {
         repeat: 'repeat'
     },
     addGradientFill = function(element, gradient) {
+        if (!element.paper || !element.paper.defs) {
+            return 0;
+        }
+
         var type = "linear",
-        id = element.id + gradient,
-        fx = .5, fy = .5, r, cx, cy, units, spread,
-        o = element.node,
-        SVG = element.paper,
-        s = o.style,
-        el = R._g.doc.getElementById(id);
-        if (!el && SVG.defs) {
+            SVG = element.paper,
+            id = (paper.id + '-' + gradient).replace(/[\(\)\s,\xb0#]/g, "_"),
+            fx = .5, fy = .5, r, cx, cy, units, spread,
+            o = element.node,
+            s = o.style,
+            el = R._g.doc.getElementById(id);
+
+        if (!el) {
             gradient = Str(gradient).replace(R._radial_gradient, function(all, opts) {
                 type = "radial";
                 opts = opts && opts.split(',') || [];
@@ -202,52 +226,47 @@ window.Raphael && window.Raphael.svg && function(R) {
             if (!dots) {
                 return null;
             }
-            id = id.replace(/[\(\)\s,\xb0#]/g, "_");
 
-            if (element.gradient && id !== element.gradient.id) {
-                SVG.defs.removeChild(element.gradient);
-                delete element.gradient;
+            el = $(type + "Gradient", {
+                id: id
+            });
+            el.refCount = 0;
+            (units in gradientUnitNames) &&
+                    el.setAttribute('gradientUnits', Str(units));
+            (spread in gradientSpreadNames) &&
+                    el.setAttribute('spreadMethod', Str(spread));
+            if (type === "radial") {
+                (r !== undefined) && el.setAttribute('r', Str(r));
+
+                if (cx !== undefined && cy !== undefined) {
+                    el.setAttribute('cx', Str(cx));
+                    el.setAttribute('cy', Str(cy));
+                }
+                el.setAttribute('fx', Str(fx));
+                el.setAttribute('fy', Str(fy));
             }
-
-            if (!element.gradient) {
-                el = $(type + "Gradient", {
-                    id: id
+            else {
+                $(el, {
+                    x1: vector[0],
+                    y1: vector[1],
+                    x2: vector[2],
+                    y2: vector[3]
                 });
-                element.gradient = el;
-                (units in gradientUnitNames) &&
-                        el.setAttribute('gradientUnits', Str(units));
-                (spread in gradientSpreadNames) &&
-                        el.setAttribute('spreadMethod', Str(spread));
-                if (type === "radial") {
-                    (r !== undefined) && el.setAttribute('r', Str(r));
-
-                    if (cx !== undefined && cy !== undefined) {
-                        el.setAttribute('cx', Str(cx));
-                        el.setAttribute('cy', Str(cy));
-                    }
-                    el.setAttribute('fx', Str(fx));
-                    el.setAttribute('fy', Str(fy));
-                }
-                else {
-                    $(el, {
-                        x1: vector[0],
-                        y1: vector[1],
-                        x2: vector[2],
-                        y2: vector[3],
-                        gradientTransform: element.matrix.invert()
-                    });
-                }
-                SVG.defs.appendChild(el);
-                for (var i = 0, ii = dots.length; i < ii; i++) {
-                    el.appendChild($("stop", {
-                        offset: dots[i].offset ? dots[i].offset : i ? "100%" : "0%",
-                        "stop-color": dots[i].color || "#fff",
-                        //add stop opacity information
-                        "stop-opacity": dots[i].opacity === undefined ? 1 : dots[i].opacity
-                    }));
-                }
             }
+
+            for (var i = 0, ii = dots.length; i < ii; i++) {
+                el.appendChild($("stop", {
+                    offset: dots[i].offset ? dots[i].offset : i ? "100%" : "0%",
+                    "stop-color": dots[i].color || "#fff",
+                    //add stop opacity information
+                    "stop-opacity": dots[i].opacity === undefined ? 1 : dots[i].opacity
+                }));
+            }
+            SVG.defs.appendChild(el);
         }
+
+        updateGradientReference(element, el);
+
         $(o, {
             fill: "url('" + R._url + "#" + id + "')",
             opacity: 1,
@@ -715,6 +734,7 @@ window.Raphael && window.Raphael.svg && function(R) {
                                 $(node, {
                                     "fill-opacity": attrs["fill-opacity"]
                                 });
+                                o.gradient && updateGradientReference(o);
                         } else if ((o.type == "circle" || o.type == "ellipse" || Str(value).charAt() != "r") && addGradientFill(o, value)) {
                             if ("opacity" in attrs || "fill-opacity" in attrs) {
                                 var gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\(#|\)$/g, E));
@@ -1056,12 +1076,11 @@ window.Raphael && window.Raphael.svg && function(R) {
             defs = paper.defs,
             i;
 
-
         paper.__set__ && paper.__set__.exclude(o);
         eve.unbind("raphael.*.*." + o.id);
 
         if (o.gradient && defs) {
-            defs.removeChild(o.gradient);
+            updateGradientReference(o);
         }
         while (i = o.followers.pop()) {
             i.el.remove();
@@ -1545,6 +1564,7 @@ window.Raphael && window.Raphael.svg && function(R) {
             i.remove();
         }
 
+        this.defs && this.defs.parentNode.removeChild(this.defs);
         this.canvas.parentNode && this.canvas.parentNode.removeChild(this.canvas);
         for (i in this) {
             this[i] = typeof this[i] == "function" ? R._removedFactory(i) : null;

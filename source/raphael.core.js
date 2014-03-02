@@ -217,6 +217,7 @@
             this._CustomAttributes = function () {};
             this._CustomAttributes.prototype = this.ca;
             this._elementsById = {};
+            this.id = R._oid++;
         },
 
         /*\

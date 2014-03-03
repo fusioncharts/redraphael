@@ -16,7 +16,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
 
 
 /**!
- * RedRaphael 1.0.1 - JavaScript Vector Library
+ * RedRaphael 1.0.3 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0
@@ -473,6 +473,8 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         var args,
             f;
 
+        // Code commented as resources will now be referenced using relative urls.
+        // @todo Remove once we have acertained that there are no issues in any environment.
         // if (R._url) { // reinitialize URL to be safe from popstate event
         //     R._url = (R._g && R._g.win || window).location.href.replace(/#.*?$/, "");
         // }
@@ -523,6 +525,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         setAttribute = "setAttribute",
         split = "split",
         none = "none",
+        black = "#000",
         OBJECTSTRING = "object",
         arrayToStr = "[object Array]",
         objectToStr = "[object Object]",
@@ -614,6 +617,8 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             this.ca = this.customAttributes = new CustomAttributes();
             this._CustomAttributes = function () {};
             this._CustomAttributes.prototype = this.ca;
+            this._elementsById = {};
+            this.id = R._oid++;
         },
 
         /*\
@@ -707,6 +712,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             "arrow-end": none,
             "arrow-start": none,
             blur: 0,
+            "class": "",
             "clip-rect": "0 0 1e9 1e9",
             "clip-path": E,
             cursor: "default",
@@ -890,6 +896,37 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                 }
                 return arg;
             }
+        },
+
+        serializeArgs = R._serializeArgs = function (args) {
+            var arg0 = args[0],
+                attrs,
+                i,
+                ii;
+
+            if (R.is(arg0, 'object') && arg0.type !== 'group') {
+
+                attrs = arg0;
+
+                if (arg0.path) {
+                    pathString = arg0.path;
+                    pathString && !R.is(pathString, string) &&
+                        !R.is(pathString[0], array) && (pathString += E);
+                }
+
+                for (i = 1, ii = arguments.length; i < ii; i += 2) {
+                    if (!attrs[arguments[i]]) {
+                        attrs[arguments[i]] = arguments[i + 1];
+                    }
+                }
+            }
+            else {
+                attrs = {};
+                for (i = 1, ii = arguments.length; i < ii; i += 2) {
+                    attrs[arguments[i]] = args[(i-1) / 2] || arguments[i+1];
+                }
+            }
+            return attrs;
         },
 
         merge = R.merge = function (obj1, obj2, skipUndef, tgtArr, srcArr) {
@@ -4284,14 +4321,10 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
     \*/
     paperproto.group = function () { // id
         var paper = this,
-            out,
             args = arguments,
-            group = lastArgIfGroup(args, true);
-
-        out = R._engine.group(paper, args[0], group);
-
-        paper.__set__ && paper.__set__.push(out);
-        return out;
+            group = lastArgIfGroup(args, true),
+            out = R._engine.group(paper, args[0], group);
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 
     /*\
@@ -4314,13 +4347,15 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         var paper = this,
             args = arguments,
             group = lastArgIfGroup(args, true),
-            out;
+            attrs = serializeArgs(args,
+                "cx", 0,
+                "cy", 0,
+                "r", 0,
+                "fill", none,
+                "stroke", black),
+            out = R._engine.circle(paper, attrs, group);
 
-        out = R._engine.circle(paper, args[0] || 0, args[1] || 0,
-            args[2] || 0, group);
-
-        paper.__set__ && paper.__set__.push(out);
-        return out;
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 
 
@@ -4349,13 +4384,17 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         var paper = this,
             args = arguments,
             group = lastArgIfGroup(args, true),
-            out;
+            attrs = serializeArgs(args,
+                "x", 0,
+                "y", 0,
+                "width", 0,
+                "height", 0,
+                "r", 0,
+                "fill", none,
+                "stroke", black),
+            out = R._engine.rect(paper, attrs, group);
 
-        out = R._engine.rect(paper, args[0] || 0, args[1] || 0, args[2] || 0,
-            args[3] || 0, args[4] || 0, group);
-
-        paper.__set__ && paper.__set__.push(out);
-        return out;
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 
     /*\
@@ -4379,13 +4418,16 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         var paper = this,
             args = arguments,
             group = lastArgIfGroup(args, true),
-            out;
+            attrs = serializeArgs(args,
+                "x", 0,
+                "y", 0,
+                "rx", 0,
+                "ry", 0,
+                "fill", none,
+                "stroke", black),
+            out = R._engine.ellipse(this, attrs, group);
 
-        out = R._engine.ellipse(this, args[0] || 0, args[1] || 0,
-            args[2] || 0, args[3] || 0, group);
-
-        paper.__set__ && paper.__set__.push(out);
-        return out;
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 
     /*\
@@ -4424,17 +4466,12 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         var paper = this,
             args = arguments,
             group = lastArgIfGroup(args, true),
-            pathString,
-            out;
-
-        pathString = args[0];
-        pathString && !R.is(pathString, string) &&
-            !R.is(pathString[0], array) && (pathString += E);
-
-        out = R._engine.path(R.format[apply](R, arguments), paper, group);
-
-        paper.__set__ && paper.__set__.push(out);
-        return out;
+            attrs = serializeArgs(args,
+                "path", E,
+                "fill", none,
+                "stroke", black),
+            out = R._engine.path(paper, attrs, group);
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 
     /*\
@@ -4459,13 +4496,14 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         var paper = this,
             args = arguments,
             group = lastArgIfGroup(args, true),
-            out;
-
-        out = R._engine.image(paper, args[0] || "about:blank", args[1] || 0,
-            args[2] || 0, args[3] || 0, args[4] || 0, group);
-
-        paper.__set__ && paper.__set__.push(out);
-        return out;
+            attrs = serializeArgs(args,
+                "src", "about:blank",
+                "x", 0,
+                "y", 0,
+                "width", 0,
+                "height", 0)
+            out = R._engine.image(paper, attrs, group);
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 
     /*\
@@ -4488,12 +4526,17 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         var paper = this,
             args = arguments,
             group = lastArgIfGroup(args, true),
-            out;
+            attrs = serializeArgs(args,
+                "x", 0,
+                "y", 0,
+                "text", E,
+                "stroke", none,
+                "fill", black,
+                "text-anchor", "middle",
+                "vertical-align", "middle"),
 
-        out = R._engine.text(paper, args[0] || 0, args[1] || 0, Str(args[2] || E),
-            group);
-        paper.__set__ && paper.__set__.push(out);
-        return out;
+            out = R._engine.text(paper, attrs, group);
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 
     /*\
@@ -4684,14 +4727,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
      };
 
     paperproto.getById = function(id) {
-        var bot = this.bottom;
-        while (bot) {
-            if (bot.id == id) {
-                return bot;
-            }
-            bot = bot.next;
-        }
-        return null;
+        return this._elementsById[id] || null;
     };
 
     /*\
@@ -6634,7 +6670,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
      **
      - definition (object) the shape definition
     \*/
-    R.define = function (name, init, ca, fn, e) {
+    R.define = function (name, init, ca, fn, e, data) {
         var i,
             ii;
 
@@ -6647,7 +6683,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         }
         // object definition
         else if (R.is(name, object)) {
-            R.define(name.name, name[name.name], name.ca, name.fn, name.e);
+            R.define(name.name, name[name.name], name.ca, name.fn, name.e, name.data);
             return;
         }
         // invalid or duplicate definition
@@ -6695,6 +6731,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         if (ca) { R.fn[name].ca = ca; }
         if (fn) { R.fn[name].fn = fn; }
         if (e) { R.fn[name].e = e; }
+        if (data) { R.fn[name].data = data; }
 
         return R.fn[name];
     };
@@ -6764,6 +6801,8 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         return  "Your browser supports SVG.\nYou are running Rapha\xebl " + this.version;
     };
 
+    // Code commented as resources will now be referenced using relative urls.
+    // @todo Remove once we have acertained that there are no issues in any environment.
     // Automatic gradient and other reference update on state change
     // R._url = (/msie/i.test(navigator.userAgent) && !window.opera) ?
     //     E : updateReferenceUrl();
@@ -6778,6 +6817,25 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
     //     R._g.win.addEventListener("popstate", updateReferenceUrl, false);
     // }
     R._url = E;
+
+    var updateGradientReference = function (element, newGradient) {
+        var gradient = element.gradient;
+        if (gradient) {
+            if (gradient === newGradient) {
+                return; // no change
+            }
+            gradient.refCount--;
+            if (!gradient.refCount) {
+                gradient.parentNode.removeChild(gradient);
+                delete element.gradient;
+            }
+        }
+
+        if (newGradient) { // add new gradient
+            element.gradient = newGradient;
+            newGradient.refCount++;
+        }
+    };
 
     var $ = R._createNode = function(el, attr) {
         if (attr) {
@@ -6807,14 +6865,19 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         repeat: 'repeat'
     },
     addGradientFill = function(element, gradient) {
+        if (!element.paper || !element.paper.defs) {
+            return 0;
+        }
+
         var type = "linear",
-        id = element.id + gradient,
-        fx = .5, fy = .5, r, cx, cy, units, spread,
-        o = element.node,
-        SVG = element.paper,
-        s = o.style,
-        el = R._g.doc.getElementById(id);
-        if (!el && SVG.defs) {
+            SVG = element.paper,
+            id = (SVG.id + '-' + gradient).replace(/[\(\)\s,\xb0#]/g, "_"),
+            fx = .5, fy = .5, r, cx, cy, units, spread,
+            o = element.node,
+            s = o.style,
+            el = R._g.doc.getElementById(id);
+
+        if (!el) {
             gradient = Str(gradient).replace(R._radial_gradient, function(all, opts) {
                 type = "radial";
                 opts = opts && opts.split(',') || [];
@@ -6925,52 +6988,47 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             if (!dots) {
                 return null;
             }
-            id = id.replace(/[\(\)\s,\xb0#]/g, "_");
 
-            if (element.gradient && id !== element.gradient.id) {
-                SVG.defs.removeChild(element.gradient);
-                delete element.gradient;
+            el = $(type + "Gradient", {
+                id: id
+            });
+            el.refCount = 0;
+            (units in gradientUnitNames) &&
+                    el.setAttribute('gradientUnits', Str(units));
+            (spread in gradientSpreadNames) &&
+                    el.setAttribute('spreadMethod', Str(spread));
+            if (type === "radial") {
+                (r !== undefined) && el.setAttribute('r', Str(r));
+
+                if (cx !== undefined && cy !== undefined) {
+                    el.setAttribute('cx', Str(cx));
+                    el.setAttribute('cy', Str(cy));
+                }
+                el.setAttribute('fx', Str(fx));
+                el.setAttribute('fy', Str(fy));
             }
-
-            if (!element.gradient) {
-                el = $(type + "Gradient", {
-                    id: id
+            else {
+                $(el, {
+                    x1: vector[0],
+                    y1: vector[1],
+                    x2: vector[2],
+                    y2: vector[3]
                 });
-                element.gradient = el;
-                (units in gradientUnitNames) &&
-                        el.setAttribute('gradientUnits', Str(units));
-                (spread in gradientSpreadNames) &&
-                        el.setAttribute('spreadMethod', Str(spread));
-                if (type === "radial") {
-                    (r !== undefined) && el.setAttribute('r', Str(r));
-
-                    if (cx !== undefined && cy !== undefined) {
-                        el.setAttribute('cx', Str(cx));
-                        el.setAttribute('cy', Str(cy));
-                    }
-                    el.setAttribute('fx', Str(fx));
-                    el.setAttribute('fy', Str(fy));
-                }
-                else {
-                    $(el, {
-                        x1: vector[0],
-                        y1: vector[1],
-                        x2: vector[2],
-                        y2: vector[3],
-                        gradientTransform: element.matrix.invert()
-                    });
-                }
-                SVG.defs.appendChild(el);
-                for (var i = 0, ii = dots.length; i < ii; i++) {
-                    el.appendChild($("stop", {
-                        offset: dots[i].offset ? dots[i].offset : i ? "100%" : "0%",
-                        "stop-color": dots[i].color || "#fff",
-                        //add stop opacity information
-                        "stop-opacity": dots[i].opacity === undefined ? 1 : dots[i].opacity
-                    }));
-                }
             }
+
+            for (var i = 0, ii = dots.length; i < ii; i++) {
+                el.appendChild($("stop", {
+                    offset: dots[i].offset ? dots[i].offset : i ? "100%" : "0%",
+                    "stop-color": dots[i].color || "#fff",
+                    //add stop opacity information
+                    "stop-opacity": dots[i].opacity === undefined ? 1 : dots[i].opacity
+                }));
+            }
+            SVG.defs.appendChild(el);
         }
+
+        updateGradientReference(element, el);
+
         $(o, {
             fill: "url('" + R._url + "#" + id + "')",
             opacity: 1,
@@ -7224,6 +7282,10 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                         }
                         node.titleNode = pn;
                         break;
+                    case "class":
+                        value = value || E;
+                        node.setAttribute('class', o.type === 'group' ? value && (o._id + S + value) || o._id : value);
+                        break;
                     case "cursor":
                         s.cursor = value;
                         break;
@@ -7434,6 +7496,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                                 $(node, {
                                     "fill-opacity": attrs["fill-opacity"]
                                 });
+                                o.gradient && updateGradientReference(o);
                         } else if ((o.type == "circle" || o.type == "ellipse" || Str(value).charAt() != "r") && addGradientFill(o, value)) {
                             if ("opacity" in attrs || "fill-opacity" in attrs) {
                                 var gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\(#|\)$/g, E));
@@ -7614,6 +7677,8 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         var o = this,
             parent = group || svg;
 
+        parent.canvas && parent.canvas.appendChild(node);
+
         o.node = o[0] = node;
         node.raphael = true;
         node.raphaelid = o.id = R._oid++;
@@ -7659,22 +7724,6 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
     R._engine.getLastNode = function (el) {
         var node = el.node || el[el.length - 1].node;
         return node.titleNode || node;
-    };
-
-    R._engine.path = function(pathString, SVG, group) {
-        var el = $("path");
-
-        (group && group.canvas && group.canvas.appendChild(el)) ||
-        (SVG.canvas && SVG.canvas.appendChild(el));
-
-        var p = new Element(el, SVG, group);
-        p.type = "path";
-        setFillAndStroke(p, {
-            fill: "none",
-            stroke: "#000",
-            path: pathString
-        });
-        return p;
     };
 
     elproto.rotate = function(deg, cx, cy) {
@@ -7789,21 +7838,27 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             defs = paper.defs,
             i;
 
-
         paper.__set__ && paper.__set__.exclude(o);
         eve.unbind("raphael.*.*." + o.id);
 
         if (o.gradient && defs) {
-            defs.removeChild(o.gradient);
+            updateGradientReference(o);
         }
         while (i = o.followers.pop()) {
             i.el.remove();
         }
+        while (i = o.bottom) {
+            i.remove();
+        }
+
         o.parent.canvas.removeChild(node);
-        R._tear(o, paper);
+        delete paper._elementsById[o.id]; // remove from lookup hash
+        R._tear(o, o.parent);
+
         for (i in o) {
             o[i] = typeof o[i] === "function" ? R._removedFactory(i) : null;
         }
+
         o.removed = true;
     };
     elproto._getBBox = function() {
@@ -8051,121 +8106,67 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         return this;
     };
 
+    R._engine.path = function(svg, attrs, group) {
+        var el = $("path"),
+            res = new Element(el, svg, group);
+
+        res.type = "path";
+        setFillAndStroke(res, attrs);
+        return res;
+    };
 
     R._engine.group = function(svg, id, group) {
-        var el = $("g");
-        (group && group.canvas && group.canvas.appendChild(el)) ||
-        (svg.canvas && svg.canvas.appendChild(el));
+        var el = $("g"),
+            res = new Element(el, svg, group);
 
-        var g = new Element(el, svg, group);
-        g.type = "group";
-        g.canvas = g.node;
-        g.top = null;
-        g.bottom = null;
-        id && el.setAttribute('class', ['red', id, g.id].join('-'));
-
-        return g;
+        res.type = "group";
+        res.canvas = res.node;
+        res.top = res.bottom = null;
+        id && el.setAttribute('class', res._id = ['red', id, res.id].join('-'));
+        return res;
     };
 
-    R._engine.circle = function(svg, x, y, r, group) {
-        var el = $("circle");
-        (group && group.canvas && group.canvas.appendChild(el)) ||
-        (svg.canvas && svg.canvas.appendChild(el));
+    R._engine.circle = function(svg, attrs, group) {
+        var el = $("circle"),
+            res = new Element(el, svg, group);
 
-        var res = new Element(el, svg, group);
-        res.attrs = {
-            cx: x,
-            cy: y,
-            r: r,
-            fill: "none",
-            stroke: "#000"
-        };
         res.type = "circle";
-        $(el, res.attrs);
+        setFillAndStroke(res, attrs);
         return res;
     };
-    R._engine.rect = function(svg, x, y, w, h, r, group) {
-        var el = $("rect");
-        (group && group.canvas && group.canvas.appendChild(el)) ||
-        (svg.canvas && svg.canvas.appendChild(el));
+    R._engine.rect = function(svg, attrs, group) {
+        var el = $("rect"),
+            res = new Element(el, svg, group);
 
-        var res = new Element(el, svg, group);
-        res.attrs = {
-            x: x,
-            y: y,
-            width: w,
-            height: h,
-            r: r || 0,
-            rx: r || 0,
-            ry: r || 0,
-            fill: "none",
-            stroke: "#000"
-        };
         res.type = "rect";
-        $(el, res.attrs);
+        attrs.rx = attrs.ry = attrs.r;
+        setFillAndStroke(res, attrs);
         return res;
     };
-    R._engine.ellipse = function(svg, x, y, rx, ry, group) {
-        var el = $("ellipse");
-        (group && group.canvas && group.canvas.appendChild(el)) ||
-        (svg.canvas && svg.canvas.appendChild(el));
+    R._engine.ellipse = function(svg, attrs, group) {
+        var el = $("ellipse"),
+            res = new Element(el, svg, group);
 
-        var res = new Element(el, svg, group);
-        res.attrs = {
-            cx: x,
-            cy: y,
-            rx: rx,
-            ry: ry,
-            fill: "none",
-            stroke: "#000"
-        };
         res.type = "ellipse";
-        $(el, res.attrs);
+        setFillAndStroke(res, attrs);
         return res;
     };
-    R._engine.image = function(svg, src, x, y, w, h, group) {
-        var el = $("image");
-        $(el, {
-            x: x,
-            y: y,
-            width: w,
-            height: h,
-            preserveAspectRatio: "none"
-        });
-        el.setAttributeNS(xlink, "href", src);
-        (group && group.canvas && group.canvas.appendChild(el)) ||
-        (svg.canvas && svg.canvas.appendChild(el));
+    R._engine.image = function(svg, attrs, group) {
+        var el = $("image"),
+            src = attrs.src,
+            res = new Element(el, svg, group);
 
-        var res = new Element(el, svg, group);
-        res.attrs = {
-            x: x,
-            y: y,
-            width: w,
-            height: h,
-            src: src
-        };
         res.type = "image";
+        el.setAttribute("preserveAspectRatio", "none");
+        setFillAndStroke(res, attrs);
         return res;
     };
-    R._engine.text = function(svg, x, y, text, group) {
-        var el = $("text");
-        (group && group.canvas && group.canvas.appendChild(el)) ||
-        (svg.canvas && svg.canvas.appendChild(el));
-
-        var res = new Element(el, svg, group);
-        res.attrs = {
-            x: x,
-            y: y,
-            "text-anchor": "middle",
-            "vertical-align": "middle",
-            text: text,
-            //font: R._availableAttrs.font,
-            stroke: "none",
-            fill: "#000"
-        };
+    R._engine.text = function(svg, attrs, group) {
+        var el = $("text"),
+            res = new Element(el, svg, group);
         res.type = "text";
         res._textdirty = true;
-        setFillAndStroke(res, res.attrs);
+        setFillAndStroke(res, attrs);
         return res;
     };
 
@@ -8301,8 +8302,14 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
     };
 
     R.prototype.clear = function() {
+        var c;
         eve("raphael.clear", this);
-        var c = this.canvas;
+
+        while (c = this.bottom) {
+            c.remove();
+        }
+
+        c = this.canvas;
         while (c.firstChild) {
             c.removeChild(c.firstChild);
         }
@@ -8312,9 +8319,16 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
     };
 
     R.prototype.remove = function() {
+        var i;
         eve("raphael.remove", this);
+
+        while (i = this.bottom) {
+            i.remove();
+        }
+
+        this.defs && this.defs.parentNode.removeChild(this.defs);
         this.canvas.parentNode && this.canvas.parentNode.removeChild(this.canvas);
-        for (var i in this) {
+        for (i in this) {
             this[i] = typeof this[i] == "function" ? R._removedFactory(i) : null;
         }
         this.removed = true;
@@ -8534,6 +8548,10 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         params.target && (node.target = params.target);
         params.cursor && (s.cursor = params.cursor);
         "blur" in params && o.blur(params.blur);
+
+        ("class" in params) && (node.className = isGroup ?
+            params["class"] && (o._id + S + params["class"]) || o._id : ("rvml " + params["class"]));
+
         if (params.path && o.type == "path" || newpath) {
             node.path = path2vml(~Str(a.path).toLowerCase().indexOf("r") ? R._pathToAbsolute(a.path) : a.path);
             if (o.type == "image") {
@@ -8877,7 +8895,14 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
     },
     Element = function(node, vml, group) {
         var o = this,
-            parent = group || vml;
+            parent = group || vml,
+			skew;
+
+		parent.canvas && parent.canvas.appendChild(node);
+		skew = createNode("skew");
+        skew.on = true;
+        node.appendChild(skew);
+        o.skew = skew;
 
         o.node = o[0] = node;
         node.raphael = true;
@@ -9058,21 +9083,35 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         if (this.removed || !this.parent.canvas) {
             return;
         }
-        var i,
-            thisNode = R._engine.getNode(this);
-        this.paper.__set__ && this.paper.__set__.exclude(this);
-        eve.unbind("raphael.*.*." + this.id);
-        while (i = this.followers.pop()) {
+
+        var o = this,
+            node = R._engine.getNode(o),
+            paper = o.paper,
+            shape = o.shape,
+            i;
+
+        paper.__set__ && paper.__set__.exclude(o);
+        eve.unbind("raphael.*.*." + o.id);
+
+        shape && shape.parentNode.removeChild(shape);
+
+        while (i = o.followers.pop()) {
             i.el.remove();
         }
-        this.shape && this.shape.parentNode.removeChild(this.shape);
-        thisNode.parentNode.removeChild(thisNode);
-        R._tear(this, this.paper);
-        for (var i in this) {
-            this[i] = typeof this[i] == "function" ? R._removedFactory(i) : null;
+        while (i = o.bottom) {
+            i.remove();
         }
-        this.removed = true;
+
+        o.parent.canvas.removeChild(node);
+        delete paper._elementsById[o.id];
+        R._tear(o, o.parent);
+
+        for (var i in o) {
+            o[i] = typeof o[i] === "function" ? R._removedFactory(i) : null;
+        }
+        o.removed = true;
     };
+
     elproto.css = function (name, value) {
         // do not parse css in case element is removed.
         if (this.removed) {
@@ -9269,7 +9308,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
 
         el.style.cssText = cssDot;
 
-        id && (el.className = ['red', id, p.id].join('-'));
+        id && (el.className = (p._id = ['red', id, p.id].join('-')));
         (group || vml).canvas.appendChild(el);
 
         p.type = 'group';
@@ -9319,136 +9358,119 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         return o;
     };
 
-    R._engine.path = function(pathString, vml, group) {
+    R._engine.path = function(vml, attrs, group) {
         var el = createNode("shape");
         el.style.cssText = cssDot;
         el.coordsize = zoom + S + zoom;
         el.coordorigin = vml.coordorigin;
-        var p = new Element(el, vml, group),
-        attr = {
-            fill: "none",
-            stroke: "#000"
-        };
 
-        pathString && (attr.path = pathString);
-        p.type = "path";
-        p.path = [];
+		var p = new Element(el, vml, group);
+        p.type = attrs.type || "path";
+		p.path = [];
         p.Path = E;
-        setFillAndStroke(p, attr);
-        (group || vml).canvas.appendChild(el);
 
-        var skew = createNode("skew");
-        skew.on = true;
-        el.appendChild(skew);
-        p.skew = skew;
+		attrs.type && (delete attrs.type);
+        setFillAndStroke(p, attrs);
+
         return p;
     };
 
-    R._engine.rect = function(vml, x, y, w, h, r, group) {
-        var path = R._rectPath(x, y, w, h, r),
-        res = vml.path(path, group),
+    R._engine.rect = function(vml, attrs, group) {
+        var path = R._rectPath(attrs.x, attrs.y, attrs.w, attrs.h, attrs.r);
+
+		attrs.path = path;
+		attrs.type = "rect";
+
+		var res = vml.path(attrs, group),
         a = res.attrs;
+        res.X = a.x;
+        res.Y = a.y;
+        res.W = a.width;
+        res.H = a.height;
+        a.path = path;
+
+		return res;
+    };
+    R._engine.ellipse = function(vml, attrs, group) {
+		attrs.type = "ellipse";
+
+		var res = vml.path(attrs, group),
+			a = res.attrs;
+        res.X = a.x - a.rx;
+        res.Y = a.y - a.ry;
+        res.W = a.rx * 2;
+        res.H = a.ry * 2;
+
+        return res;
+    };
+    R._engine.circle = function(vml, attrs, group) {
+        attrs.type = "circle";
+
+        var res = vml.path(attrs, group),
+			a = res.attrs;
+
+        res.X = a.x - a.r;
+        res.Y = a.y - a.r;
+        res.W = res.H = a.r * 2;
+        return res;
+    };
+    R._engine.image = function(vml, attrs, group) {
+        var path = R._rectPath(attrs.x, attrs.y, attrs.w, attrs.h);
+
+		attrs.path = path;
+		attrs.type = "image";
+		attrs.stroke = "none";
+        var res = vml.path(attrs, group),
+			a = res.attrs,
+			node = res.node,
+			fill = node.getElementsByTagName(fillString)[0];
+
+		a.src = attrs.src;
         res.X = a.x = x;
         res.Y = a.y = y;
         res.W = a.width = w;
         res.H = a.height = h;
-        a.r = r;
-        a.path = path;
-        res.type = "rect";
-        return res;
-    };
-    R._engine.ellipse = function(vml, x, y, rx, ry, group) {
-        var res = vml.path(undefined, group);
-        res.X = x - rx;
-        res.Y = y - ry;
-        res.W = rx * 2;
-        res.H = ry * 2;
-        res.type = "ellipse";
-        setFillAndStroke(res, {
-            cx: x,
-            cy: y,
-            rx: rx,
-            ry: ry
-        });
-        return res;
-    };
-    R._engine.circle = function(vml, x, y, r, group) {
-        var res = vml.path(undefined, group);
-        res.X = x - r;
-        res.Y = y - r;
-        res.W = res.H = r * 2;
-        res.type = "circle";
-        setFillAndStroke(res, {
-            cx: x,
-            cy: y,
-            r: r
-        });
-        return res;
-    };
-    R._engine.image = function(vml, src, x, y, w, h, group) {
-        var path = R._rectPath(x, y, w, h),
-        res = vml.path(path, group).attr({
-            stroke: "none"
-        }),
-        a = res.attrs,
-        node = res.node,
-        fill = node.getElementsByTagName(fillString)[0];
-        a.src = src;
-        res.X = a.x = x;
-        res.Y = a.y = y;
-        res.W = a.width = w;
-        res.H = a.height = h;
-        a.path = path;
-        res.type = "image";
-        fill.parentNode == node && node.removeChild(fill);
+
+		fill.parentNode == node && node.removeChild(fill);
         fill.rotate = true;
-        fill.src = src;
+        fill.src = a.src;
         fill.type = "tile";
-        res._.fillpos = [x, y];
-        res._.fillsize = [w, h];
+        res._.fillpos = [a.x, a.y];
+        res._.fillsize = [a.w, a.h];
         node.appendChild(fill);
         setCoords(res, 1, 1, 0, 0, 0);
         return res;
     };
-    R._engine.text = function(vml, x, y, text, group) {
+    R._engine.text = function(vml, attrs, group) {
         var el = createNode("shape"),
-        path = createNode("path"),
-        o = createNode("textpath");
-        x = x || 0;
-        y = y || 0;
-        text = text;
-        path.v = R.format("m{0},{1}l{2},{1}", round(x * zoom), round(y * zoom), round(x * zoom) + 1);
+			path = createNode("path"),
+			o = createNode("textpath");
+        x = attrs.x || 0;
+        y = attrs.y || 0;
+        text = attrs.text;
+        path.v = R.format("m{0},{1}l{2},{1}", round(attrs.x * zoom), round(attrs.y * zoom), round(attrs.x * zoom) + 1);
         path.textpathok = true;
-        o.string = Str(text).replace(/<br\s*?\/?>/ig, '\n');
+        o.string = Str(attrs.text).replace(/<br\s*?\/?>/ig, '\n');
         o.on = true;
         el.style.cssText = cssDot;
         el.coordsize = zoom + S + zoom;
         el.coordorigin = "0 0";
-        var p = new Element(el, vml, group),
-        attr = {
-            fill: "#000",
-            stroke: "none",
-            text: text
-        };
+        var p = new Element(el, vml, group);
 
         p.shape = el;
         p.path = path;
         p.textpath = o;
         p.type = "text";
-        p.attrs.text = Str(text || E);
-        p.attrs.x = x;
-        p.attrs.y = y;
+        p.attrs.text = Str(attrs.text || E);
+        p.attrs.x = attrs.x;
+        p.attrs.y = attrs.y;
         p.attrs.w = 1;
         p.attrs.h = 1;
-        setFillAndStroke(p, attr);
+        setFillAndStroke(p, attrs);
+
         el.appendChild(o);
         el.appendChild(path);
-        (group || vml).canvas.appendChild(el);
 
-        var skew = createNode("skew");
-        skew.on = true;
-        el.appendChild(skew);
-        p.skew = skew;
         return p;
     };
 
@@ -9564,7 +9586,11 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         return res;
     };
     R.prototype.clear = function() {
+        var c;
         eve("raphael.clear", this);
+        while (c = this.bottom) {
+            c.remove();
+        }
         this.canvas.innerHTML = E;
         this.span = R._g.doc.createElement("span");
         this.span.style.cssText = "position:absolute;left:-9999em;top:-9999em;padding:0;margin:0;line-height:1;display:inline;";
@@ -9572,9 +9598,13 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         this.bottom = this.top = null;
     };
     R.prototype.remove = function() {
+        var i;
         eve("raphael.remove", this);
+        while (i = this.bottom) {
+            i.remove();
+        }
         this.canvas.parentNode.removeChild(this.canvas);
-        for (var i in this) {
+        for (i in this) {
             this[i] = typeof this[i] == "function" ? R._removedFactory(i) : null;
         }
         return true;

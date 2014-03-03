@@ -196,6 +196,10 @@ window.Raphael && window.Raphael.vml && function(R) {
         params.target && (node.target = params.target);
         params.cursor && (s.cursor = params.cursor);
         "blur" in params && o.blur(params.blur);
+
+        ("class" in params) && (node.className = isGroup ?
+            params["class"] && (o._id + S + params["class"]) || o._id : ("rvml " + params["class"]));
+
         if (params.path && o.type == "path" || newpath) {
             node.path = path2vml(~Str(a.path).toLowerCase().indexOf("r") ? R._pathToAbsolute(a.path) : a.path);
             if (o.type == "image") {
@@ -539,7 +543,14 @@ window.Raphael && window.Raphael.vml && function(R) {
     },
     Element = function(node, vml, group) {
         var o = this,
-            parent = group || vml;
+            parent = group || vml,
+			skew;
+
+		parent.canvas && parent.canvas.appendChild(node);
+		skew = createNode("skew");
+        skew.on = true;
+        node.appendChild(skew);
+        o.skew = skew;
 
         o.node = o[0] = node;
         node.raphael = true;
@@ -720,21 +731,35 @@ window.Raphael && window.Raphael.vml && function(R) {
         if (this.removed || !this.parent.canvas) {
             return;
         }
-        var i,
-            thisNode = R._engine.getNode(this);
-        this.paper.__set__ && this.paper.__set__.exclude(this);
-        eve.unbind("raphael.*.*." + this.id);
-        while (i = this.followers.pop()) {
+
+        var o = this,
+            node = R._engine.getNode(o),
+            paper = o.paper,
+            shape = o.shape,
+            i;
+
+        paper.__set__ && paper.__set__.exclude(o);
+        eve.unbind("raphael.*.*." + o.id);
+
+        shape && shape.parentNode.removeChild(shape);
+
+        while (i = o.followers.pop()) {
             i.el.remove();
         }
-        this.shape && this.shape.parentNode.removeChild(this.shape);
-        thisNode.parentNode.removeChild(thisNode);
-        R._tear(this, this.paper);
-        for (var i in this) {
-            this[i] = typeof this[i] == "function" ? R._removedFactory(i) : null;
+        while (i = o.bottom) {
+            i.remove();
         }
-        this.removed = true;
+
+        o.parent.canvas.removeChild(node);
+        delete paper._elementsById[o.id];
+        R._tear(o, o.parent);
+
+        for (var i in o) {
+            o[i] = typeof o[i] === "function" ? R._removedFactory(i) : null;
+        }
+        o.removed = true;
     };
+
     elproto.css = function (name, value) {
         // do not parse css in case element is removed.
         if (this.removed) {
@@ -931,7 +956,7 @@ window.Raphael && window.Raphael.vml && function(R) {
 
         el.style.cssText = cssDot;
 
-        id && (el.className = ['red', id, p.id].join('-'));
+        id && (el.className = (p._id = ['red', id, p.id].join('-')));
         (group || vml).canvas.appendChild(el);
 
         p.type = 'group';
@@ -981,136 +1006,119 @@ window.Raphael && window.Raphael.vml && function(R) {
         return o;
     };
 
-    R._engine.path = function(pathString, vml, group) {
+    R._engine.path = function(vml, attrs, group) {
         var el = createNode("shape");
         el.style.cssText = cssDot;
         el.coordsize = zoom + S + zoom;
         el.coordorigin = vml.coordorigin;
-        var p = new Element(el, vml, group),
-        attr = {
-            fill: "none",
-            stroke: "#000"
-        };
 
-        pathString && (attr.path = pathString);
-        p.type = "path";
-        p.path = [];
+		var p = new Element(el, vml, group);
+        p.type = attrs.type || "path";
+		p.path = [];
         p.Path = E;
-        setFillAndStroke(p, attr);
-        (group || vml).canvas.appendChild(el);
 
-        var skew = createNode("skew");
-        skew.on = true;
-        el.appendChild(skew);
-        p.skew = skew;
+		attrs.type && (delete attrs.type);
+        setFillAndStroke(p, attrs);
+
         return p;
     };
 
-    R._engine.rect = function(vml, x, y, w, h, r, group) {
-        var path = R._rectPath(x, y, w, h, r),
-        res = vml.path(path, group),
+    R._engine.rect = function(vml, attrs, group) {
+        var path = R._rectPath(attrs.x, attrs.y, attrs.w, attrs.h, attrs.r);
+
+		attrs.path = path;
+		attrs.type = "rect";
+
+		var res = vml.path(attrs, group),
         a = res.attrs;
+        res.X = a.x;
+        res.Y = a.y;
+        res.W = a.width;
+        res.H = a.height;
+        a.path = path;
+
+		return res;
+    };
+    R._engine.ellipse = function(vml, attrs, group) {
+		attrs.type = "ellipse";
+
+		var res = vml.path(attrs, group),
+			a = res.attrs;
+        res.X = a.x - a.rx;
+        res.Y = a.y - a.ry;
+        res.W = a.rx * 2;
+        res.H = a.ry * 2;
+
+        return res;
+    };
+    R._engine.circle = function(vml, attrs, group) {
+        attrs.type = "circle";
+
+        var res = vml.path(attrs, group),
+			a = res.attrs;
+
+        res.X = a.x - a.r;
+        res.Y = a.y - a.r;
+        res.W = res.H = a.r * 2;
+        return res;
+    };
+    R._engine.image = function(vml, attrs, group) {
+        var path = R._rectPath(attrs.x, attrs.y, attrs.w, attrs.h);
+
+		attrs.path = path;
+		attrs.type = "image";
+		attrs.stroke = "none";
+        var res = vml.path(attrs, group),
+			a = res.attrs,
+			node = res.node,
+			fill = node.getElementsByTagName(fillString)[0];
+
+		a.src = attrs.src;
         res.X = a.x = x;
         res.Y = a.y = y;
         res.W = a.width = w;
         res.H = a.height = h;
-        a.r = r;
-        a.path = path;
-        res.type = "rect";
-        return res;
-    };
-    R._engine.ellipse = function(vml, x, y, rx, ry, group) {
-        var res = vml.path(undefined, group);
-        res.X = x - rx;
-        res.Y = y - ry;
-        res.W = rx * 2;
-        res.H = ry * 2;
-        res.type = "ellipse";
-        setFillAndStroke(res, {
-            cx: x,
-            cy: y,
-            rx: rx,
-            ry: ry
-        });
-        return res;
-    };
-    R._engine.circle = function(vml, x, y, r, group) {
-        var res = vml.path(undefined, group);
-        res.X = x - r;
-        res.Y = y - r;
-        res.W = res.H = r * 2;
-        res.type = "circle";
-        setFillAndStroke(res, {
-            cx: x,
-            cy: y,
-            r: r
-        });
-        return res;
-    };
-    R._engine.image = function(vml, src, x, y, w, h, group) {
-        var path = R._rectPath(x, y, w, h),
-        res = vml.path(path, group).attr({
-            stroke: "none"
-        }),
-        a = res.attrs,
-        node = res.node,
-        fill = node.getElementsByTagName(fillString)[0];
-        a.src = src;
-        res.X = a.x = x;
-        res.Y = a.y = y;
-        res.W = a.width = w;
-        res.H = a.height = h;
-        a.path = path;
-        res.type = "image";
-        fill.parentNode == node && node.removeChild(fill);
+
+		fill.parentNode == node && node.removeChild(fill);
         fill.rotate = true;
-        fill.src = src;
+        fill.src = a.src;
         fill.type = "tile";
-        res._.fillpos = [x, y];
-        res._.fillsize = [w, h];
+        res._.fillpos = [a.x, a.y];
+        res._.fillsize = [a.w, a.h];
         node.appendChild(fill);
         setCoords(res, 1, 1, 0, 0, 0);
         return res;
     };
-    R._engine.text = function(vml, x, y, text, group) {
+    R._engine.text = function(vml, attrs, group) {
         var el = createNode("shape"),
-        path = createNode("path"),
-        o = createNode("textpath");
-        x = x || 0;
-        y = y || 0;
-        text = text;
-        path.v = R.format("m{0},{1}l{2},{1}", round(x * zoom), round(y * zoom), round(x * zoom) + 1);
+			path = createNode("path"),
+			o = createNode("textpath");
+        x = attrs.x || 0;
+        y = attrs.y || 0;
+        text = attrs.text;
+        path.v = R.format("m{0},{1}l{2},{1}", round(attrs.x * zoom), round(attrs.y * zoom), round(attrs.x * zoom) + 1);
         path.textpathok = true;
-        o.string = Str(text).replace(/<br\s*?\/?>/ig, '\n');
+        o.string = Str(attrs.text).replace(/<br\s*?\/?>/ig, '\n');
         o.on = true;
         el.style.cssText = cssDot;
         el.coordsize = zoom + S + zoom;
         el.coordorigin = "0 0";
-        var p = new Element(el, vml, group),
-        attr = {
-            fill: "#000",
-            stroke: "none",
-            text: text
-        };
+        var p = new Element(el, vml, group);
 
         p.shape = el;
         p.path = path;
         p.textpath = o;
         p.type = "text";
-        p.attrs.text = Str(text || E);
-        p.attrs.x = x;
-        p.attrs.y = y;
+        p.attrs.text = Str(attrs.text || E);
+        p.attrs.x = attrs.x;
+        p.attrs.y = attrs.y;
         p.attrs.w = 1;
         p.attrs.h = 1;
-        setFillAndStroke(p, attr);
+        setFillAndStroke(p, attrs);
+
         el.appendChild(o);
         el.appendChild(path);
-        (group || vml).canvas.appendChild(el);
 
-        var skew = createNode("skew");
-        skew.on = true;
-        el.appendChild(skew);
-        p.skew = skew;
         return p;
     };
 
@@ -1226,7 +1234,11 @@ window.Raphael && window.Raphael.vml && function(R) {
         return res;
     };
     R.prototype.clear = function() {
+        var c;
         eve("raphael.clear", this);
+        while (c = this.bottom) {
+            c.remove();
+        }
         this.canvas.innerHTML = E;
         this.span = R._g.doc.createElement("span");
         this.span.style.cssText = "position:absolute;left:-9999em;top:-9999em;padding:0;margin:0;line-height:1;display:inline;";
@@ -1234,9 +1246,13 @@ window.Raphael && window.Raphael.vml && function(R) {
         this.bottom = this.top = null;
     };
     R.prototype.remove = function() {
+        var i;
         eve("raphael.remove", this);
+        while (i = this.bottom) {
+            i.remove();
+        }
         this.canvas.parentNode.removeChild(this.canvas);
-        for (var i in this) {
+        for (i in this) {
             this[i] = typeof this[i] == "function" ? R._removedFactory(i) : null;
         }
         return true;

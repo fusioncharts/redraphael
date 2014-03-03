@@ -506,7 +506,7 @@
                 i,
                 ii;
 
-            if (R.is(arg0, 'object') && arg0.type !== 'group') {
+            if (R.is(arg0, 'object') && !R.is(arg0, 'array') && arg0.type !== 'group') {
 
                 attrs = arg0;
 

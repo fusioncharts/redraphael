@@ -196,6 +196,10 @@ window.Raphael && window.Raphael.vml && function(R) {
         params.target && (node.target = params.target);
         params.cursor && (s.cursor = params.cursor);
         "blur" in params && o.blur(params.blur);
+
+        ("class" in params) && (node.className = isGroup ?
+            params["class"] && (o._id + S + params["class"]) || o._id : ("rvml " + params["class"]));
+
         if (params.path && o.type == "path" || newpath) {
             node.path = path2vml(~Str(a.path).toLowerCase().indexOf("r") ? R._pathToAbsolute(a.path) : a.path);
             if (o.type == "image") {
@@ -727,24 +731,35 @@ window.Raphael && window.Raphael.vml && function(R) {
         if (this.removed || !this.parent.canvas) {
             return;
         }
-        var i,
-            thisNode = R._engine.getNode(this);
-        this.paper.__set__ && this.paper.__set__.exclude(this);
-        eve.unbind("raphael.*.*." + this.id);
-        while (i = this.followers.pop()) {
+
+        var o = this,
+            node = R._engine.getNode(o),
+            paper = o.paper,
+            shape = o.shape,
+            i;
+
+        paper.__set__ && paper.__set__.exclude(o);
+        eve.unbind("raphael.*.*." + o.id);
+
+        shape && shape.parentNode.removeChild(shape);
+
+        while (i = o.followers.pop()) {
             i.el.remove();
         }
         while (i = o.bottom) {
             i.remove();
         }
-        this.shape && this.shape.parentNode.removeChild(this.shape);
-        thisNode.parentNode.removeChild(thisNode);
-        R._tear(this, this.parent);
-        for (var i in this) {
-            this[i] = typeof this[i] == "function" ? R._removedFactory(i) : null;
+
+        o.parent.canvas.removeChild(node);
+        delete paper._elementsById[o.id];
+        R._tear(o, o.parent);
+
+        for (var i in o) {
+            o[i] = typeof o[i] === "function" ? R._removedFactory(i) : null;
         }
-        this.removed = true;
+        o.removed = true;
     };
+
     elproto.css = function (name, value) {
         // do not parse css in case element is removed.
         if (this.removed) {
@@ -941,7 +956,7 @@ window.Raphael && window.Raphael.vml && function(R) {
 
         el.style.cssText = cssDot;
 
-        id && (el.className = ['red', id, p.id].join('-'));
+        id && (el.className = (p._id = ['red', id, p.id].join('-')));
         (group || vml).canvas.appendChild(el);
 
         p.type = 'group';

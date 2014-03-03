@@ -38,10 +38,10 @@ module.exports = function(grunt) {
         },
         jasmine: {
             pivotal: {
-                src: 'package/raphael-min.js',
+                src: 'package/raphael.js',
                 options: {
-                    specs: 'tests/*Spec.js',
-                    helpers: 'tests/*Helper.js'
+                    specs: 'tests/unit/*-spec.js',
+                    helpers: 'tests/unit/*-helper.js'
                 }
             }
         }

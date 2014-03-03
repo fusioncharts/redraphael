@@ -109,7 +109,7 @@ window.Raphael && window.Raphael.svg && function(R) {
 
         var type = "linear",
             SVG = element.paper,
-            id = (paper.id + '-' + gradient).replace(/[\(\)\s,\xb0#]/g, "_"),
+            id = (SVG.id + '-' + gradient).replace(/[\(\)\s,\xb0#]/g, "_"),
             fx = .5, fy = .5, r, cx, cy, units, spread,
             o = element.node,
             s = o.style,

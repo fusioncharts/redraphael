@@ -598,6 +598,7 @@
             this._CustomAttributes = function () {};
             this._CustomAttributes.prototype = this.ca;
             this._elementsById = {};
+            this.id = R._oid++;
         },
 
         /*\
@@ -691,6 +692,7 @@
             "arrow-end": none,
             "arrow-start": none,
             blur: 0,
+            "class": "",
             "clip-rect": "0 0 1e9 1e9",
             "clip-path": E,
             cursor: "default",
@@ -6793,6 +6795,25 @@
         R._g.win.addEventListener("popstate", updateReferenceUrl, false);
     }
 
+    var updateGradientReference = function (element, newGradient) {
+        var gradient = element.gradient;
+        if (gradient) {
+            if (gradient === newGradient) {
+                return; // no change
+            }
+            gradient.refCount--;
+            if (!gradient.refCount) {
+                gradient.parentNode.removeChild(gradient);
+                delete element.gradient;
+            }
+        }
+
+        if (newGradient) { // add new gradient
+            element.gradient = newGradient;
+            newGradient.refCount++;
+        }
+    };
+
     var $ = R._createNode = function(el, attr) {
         if (attr) {
             if (typeof el == "string") {
@@ -6821,14 +6842,19 @@
         repeat: 'repeat'
     },
     addGradientFill = function(element, gradient) {
+        if (!element.paper || !element.paper.defs) {
+            return 0;
+        }
+
         var type = "linear",
-        id = element.id + gradient,
-        fx = .5, fy = .5, r, cx, cy, units, spread,
-        o = element.node,
-        SVG = element.paper,
-        s = o.style,
-        el = R._g.doc.getElementById(id);
-        if (!el && SVG.defs) {
+            SVG = element.paper,
+            id = (paper.id + '-' + gradient).replace(/[\(\)\s,\xb0#]/g, "_"),
+            fx = .5, fy = .5, r, cx, cy, units, spread,
+            o = element.node,
+            s = o.style,
+            el = R._g.doc.getElementById(id);
+
+        if (!el) {
             gradient = Str(gradient).replace(R._radial_gradient, function(all, opts) {
                 type = "radial";
                 opts = opts && opts.split(',') || [];
@@ -6939,52 +6965,47 @@
             if (!dots) {
                 return null;
             }
-            id = id.replace(/[\(\)\s,\xb0#]/g, "_");
 
-            if (element.gradient && id !== element.gradient.id) {
-                SVG.defs.removeChild(element.gradient);
-                delete element.gradient;
+            el = $(type + "Gradient", {
+                id: id
+            });
+            el.refCount = 0;
+            (units in gradientUnitNames) &&
+                    el.setAttribute('gradientUnits', Str(units));
+            (spread in gradientSpreadNames) &&
+                    el.setAttribute('spreadMethod', Str(spread));
+            if (type === "radial") {
+                (r !== undefined) && el.setAttribute('r', Str(r));
+
+                if (cx !== undefined && cy !== undefined) {
+                    el.setAttribute('cx', Str(cx));
+                    el.setAttribute('cy', Str(cy));
+                }
+                el.setAttribute('fx', Str(fx));
+                el.setAttribute('fy', Str(fy));
             }
-
-            if (!element.gradient) {
-                el = $(type + "Gradient", {
-                    id: id
+            else {
+                $(el, {
+                    x1: vector[0],
+                    y1: vector[1],
+                    x2: vector[2],
+                    y2: vector[3]
                 });
-                element.gradient = el;
-                (units in gradientUnitNames) &&
-                        el.setAttribute('gradientUnits', Str(units));
-                (spread in gradientSpreadNames) &&
-                        el.setAttribute('spreadMethod', Str(spread));
-                if (type === "radial") {
-                    (r !== undefined) && el.setAttribute('r', Str(r));
-
-                    if (cx !== undefined && cy !== undefined) {
-                        el.setAttribute('cx', Str(cx));
-                        el.setAttribute('cy', Str(cy));
-                    }
-                    el.setAttribute('fx', Str(fx));
-                    el.setAttribute('fy', Str(fy));
-                }
-                else {
-                    $(el, {
-                        x1: vector[0],
-                        y1: vector[1],
-                        x2: vector[2],
-                        y2: vector[3],
-                        gradientTransform: element.matrix.invert()
-                    });
-                }
-                SVG.defs.appendChild(el);
-                for (var i = 0, ii = dots.length; i < ii; i++) {
-                    el.appendChild($("stop", {
-                        offset: dots[i].offset ? dots[i].offset : i ? "100%" : "0%",
-                        "stop-color": dots[i].color || "#fff",
-                        //add stop opacity information
-                        "stop-opacity": dots[i].opacity === undefined ? 1 : dots[i].opacity
-                    }));
-                }
             }
+
+            for (var i = 0, ii = dots.length; i < ii; i++) {
+                el.appendChild($("stop", {
+                    offset: dots[i].offset ? dots[i].offset : i ? "100%" : "0%",
+                    "stop-color": dots[i].color || "#fff",
+                    //add stop opacity information
+                    "stop-opacity": dots[i].opacity === undefined ? 1 : dots[i].opacity
+                }));
+            }
+            SVG.defs.appendChild(el);
         }
+
+        updateGradientReference(element, el);
+
         $(o, {
             fill: "url('" + R._url + "#" + id + "')",
             opacity: 1,
@@ -7238,6 +7259,10 @@
                         }
                         node.titleNode = pn;
                         break;
+                    case "class":
+                        value = value || E;
+                        node.setAttribute('class', o.type === 'group' ? value && (o._id + S + value) || o._id : value);
+                        break;
                     case "cursor":
                         s.cursor = value;
                         break;
@@ -7448,6 +7473,7 @@
                                 $(node, {
                                     "fill-opacity": attrs["fill-opacity"]
                                 });
+                                o.gradient && updateGradientReference(o);
                         } else if ((o.type == "circle" || o.type == "ellipse" || Str(value).charAt() != "r") && addGradientFill(o, value)) {
                             if ("opacity" in attrs || "fill-opacity" in attrs) {
                                 var gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\(#|\)$/g, E));
@@ -7789,12 +7815,11 @@
             defs = paper.defs,
             i;
 
-
         paper.__set__ && paper.__set__.exclude(o);
         eve.unbind("raphael.*.*." + o.id);
 
         if (o.gradient && defs) {
-            defs.removeChild(o.gradient);
+            updateGradientReference(o);
         }
         while (i = o.followers.pop()) {
             i.el.remove();
@@ -7802,9 +7827,11 @@
         while (i = o.bottom) {
             i.remove();
         }
+
         o.parent.canvas.removeChild(node);
         delete paper._elementsById[o.id]; // remove from lookup hash
         R._tear(o, o.parent);
+
         for (i in o) {
             o[i] = typeof o[i] === "function" ? R._removedFactory(i) : null;
         }
@@ -8072,7 +8099,7 @@
         res.type = "group";
         res.canvas = res.node;
         res.top = res.bottom = null;
-        id && el.setAttribute('class', ['red', id, res.id].join('-'));
+        id && el.setAttribute('class', res._id = ['red', id, res.id].join('-'));
         return res;
     };
 
@@ -8276,6 +8303,7 @@
             i.remove();
         }
 
+        this.defs && this.defs.parentNode.removeChild(this.defs);
         this.canvas.parentNode && this.canvas.parentNode.removeChild(this.canvas);
         for (i in this) {
             this[i] = typeof this[i] == "function" ? R._removedFactory(i) : null;
@@ -8497,6 +8525,10 @@
         params.target && (node.target = params.target);
         params.cursor && (s.cursor = params.cursor);
         "blur" in params && o.blur(params.blur);
+
+        ("class" in params) && (node.className = isGroup ?
+            params["class"] && (o._id + S + params["class"]) || o._id : ("rvml " + params["class"]));
+
         if (params.path && o.type == "path" || newpath) {
             node.path = path2vml(~Str(a.path).toLowerCase().indexOf("r") ? R._pathToAbsolute(a.path) : a.path);
             if (o.type == "image") {
@@ -9028,25 +9060,35 @@
         if (this.removed || !this.parent.canvas) {
             return;
         }
-        var i,
-            thisNode = R._engine.getNode(this);
-        this.paper.__set__ && this.paper.__set__.exclude(this);
-        eve.unbind("raphael.*.*." + this.id);
-        while (i = this.followers.pop()) {
+
+        var o = this,
+            node = R._engine.getNode(o),
+            paper = o.paper,
+            shape = o.shape,
+            i;
+
+        paper.__set__ && paper.__set__.exclude(o);
+        eve.unbind("raphael.*.*." + o.id);
+
+        shape && shape.parentNode.removeChild(shape);
+
+        while (i = o.followers.pop()) {
             i.el.remove();
         }
         while (i = o.bottom) {
             i.remove();
         }
-        this.shape && this.shape.parentNode.removeChild(this.shape);
-        thisNode.parentNode.removeChild(thisNode);
-        delete paper._elementsById[o.id]; // delete from lookup hash
-        R._tear(this, this.parent);
-        for (var i in this) {
-            this[i] = typeof this[i] == "function" ? R._removedFactory(i) : null;
+
+        o.parent.canvas.removeChild(node);
+        delete paper._elementsById[o.id];
+        R._tear(o, o.parent);
+
+        for (var i in o) {
+            o[i] = typeof o[i] === "function" ? R._removedFactory(i) : null;
         }
-        this.removed = true;
+        o.removed = true;
     };
+
     elproto.css = function (name, value) {
         // do not parse css in case element is removed.
         if (this.removed) {
@@ -9243,7 +9285,7 @@
 
         el.style.cssText = cssDot;
 
-        id && (el.className = ['red', id, p.id].join('-'));
+        id && (el.className = (p._id = ['red', id, p.id].join('-')));
         (group || vml).canvas.appendChild(el);
 
         p.type = 'group';

@@ -42,6 +42,8 @@ window.Raphael && window.Raphael.svg && function(R) {
         return  "Your browser supports SVG.\nYou are running Rapha\xebl " + this.version;
     };
 
+    // Code commented as resources will now be referenced using relative urls.
+    // @todo Remove once we have acertained that there are no issues in any environment.
     // Automatic gradient and other reference update on state change
     // R._url = (/msie/i.test(navigator.userAgent) && !window.opera) ?
     //     E : updateReferenceUrl();

@@ -751,6 +751,7 @@ window.Raphael && window.Raphael.vml && function(R) {
         }
 
         o.parent.canvas.removeChild(node);
+        o.removeData();
         delete paper._elementsById[o.id];
         R._tear(o, o.parent);
 

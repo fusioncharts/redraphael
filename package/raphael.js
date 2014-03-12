@@ -7835,6 +7835,7 @@
         }
 
         o.parent.canvas.removeChild(node);
+        o.removeData();
         delete paper._elementsById[o.id]; // remove from lookup hash
         R._tear(o, o.parent);
 
@@ -9086,6 +9087,7 @@
         }
 
         o.parent.canvas.removeChild(node);
+        o.removeData();
         delete paper._elementsById[o.id];
         R._tear(o, o.parent);
 

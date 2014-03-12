@@ -42,19 +42,22 @@ window.Raphael && window.Raphael.svg && function(R) {
         return  "Your browser supports SVG.\nYou are running Rapha\xebl " + this.version;
     };
 
+    // Code commented as resources will now be referenced using relative urls.
+    // @todo Remove once we have acertained that there are no issues in any environment.
     // Automatic gradient and other reference update on state change
-    R._url = (/msie/i.test(navigator.userAgent) && !window.opera) ?
-        E : updateReferenceUrl();
-    if (R._url && R._g.win.history.pushState) {
-        R._g.win.history.pushState = (function () {
-            var fn = R._g.win.history.pushState;
-            return function () {
-                var ret = fn.apply(R._g.win.history, arguments);
-                return updateReferenceUrl(), ret;
-            };
-        }());
-        R._g.win.addEventListener("popstate", updateReferenceUrl, false);
-    }
+    // R._url = (/msie/i.test(navigator.userAgent) && !window.opera) ?
+    //     E : updateReferenceUrl();
+    // if (R._url && R._g.win.history.pushState) {
+    //     R._g.win.history.pushState = (function () {
+    //         var fn = R._g.win.history.pushState;
+    //         return function () {
+    //             var ret = fn.apply(R._g.win.history, arguments);
+    //             return updateReferenceUrl(), ret;
+    //         };
+    //     }());
+    //     R._g.win.addEventListener("popstate", updateReferenceUrl, false);
+    // }
+    R._url = E;
 
     var updateGradientReference = function (element, newGradient) {
         var gradient = element.gradient;
@@ -1090,6 +1093,7 @@ window.Raphael && window.Raphael.svg && function(R) {
         }
 
         o.parent.canvas.removeChild(node);
+        o.removeData();
         delete paper._elementsById[o.id]; // remove from lookup hash
         R._tear(o, o.parent);
 

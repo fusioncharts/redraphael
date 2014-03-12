@@ -456,10 +456,13 @@
         var args,
             f;
 
+        // Code commented as resources will now be referenced using relative urls.
+        // @todo Remove once we have acertained that there are no issues in any environment.
+        // if (R._url) { // reinitialize URL to be safe from popstate event
+        //     R._url = (R._g && R._g.win || window).location.href.replace(/#.*?$/, "");
+        // }
+        R._url = '';
 
-        if (R._url) { // reinitialize URL to be safe from popstate event
-            R._url = (R._g && R._g.win || window).location.href.replace(/#.*?$/, "");
-        }
         if (R.is(first, "function")) {
             return loaded ? first() : eve.on("raphael.DOMload", first);
         }
@@ -884,7 +887,7 @@
                 i,
                 ii;
 
-            if (R.is(arg0, 'object') && arg0.type !== 'group') {
+            if (R.is(arg0, 'object') && !R.is(arg0, 'array') && arg0.type !== 'group') {
 
                 attrs = arg0;
 
@@ -6781,19 +6784,22 @@
         return  "Your browser supports SVG.\nYou are running Rapha\xebl " + this.version;
     };
 
+    // Code commented as resources will now be referenced using relative urls.
+    // @todo Remove once we have acertained that there are no issues in any environment.
     // Automatic gradient and other reference update on state change
-    R._url = (/msie/i.test(navigator.userAgent) && !window.opera) ?
-        E : updateReferenceUrl();
-    if (R._url && R._g.win.history.pushState) {
-        R._g.win.history.pushState = (function () {
-            var fn = R._g.win.history.pushState;
-            return function () {
-                var ret = fn.apply(R._g.win.history, arguments);
-                return updateReferenceUrl(), ret;
-            };
-        }());
-        R._g.win.addEventListener("popstate", updateReferenceUrl, false);
-    }
+    // R._url = (/msie/i.test(navigator.userAgent) && !window.opera) ?
+    //     E : updateReferenceUrl();
+    // if (R._url && R._g.win.history.pushState) {
+    //     R._g.win.history.pushState = (function () {
+    //         var fn = R._g.win.history.pushState;
+    //         return function () {
+    //             var ret = fn.apply(R._g.win.history, arguments);
+    //             return updateReferenceUrl(), ret;
+    //         };
+    //     }());
+    //     R._g.win.addEventListener("popstate", updateReferenceUrl, false);
+    // }
+    R._url = E;
 
     var updateGradientReference = function (element, newGradient) {
         var gradient = element.gradient;
@@ -7829,6 +7835,7 @@
         }
 
         o.parent.canvas.removeChild(node);
+        o.removeData();
         delete paper._elementsById[o.id]; // remove from lookup hash
         R._tear(o, o.parent);
 
@@ -9080,6 +9087,7 @@
         }
 
         o.parent.canvas.removeChild(node);
+        o.removeData();
         delete paper._elementsById[o.id];
         R._tear(o, o.parent);
 

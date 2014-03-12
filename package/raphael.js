@@ -1,5 +1,5 @@
 /**!
- * RedRaphael 1.0.3 - JavaScript Vector Library
+ * RedRaphael 1.0.4 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0
@@ -8311,6 +8311,7 @@
         }
 
         this.defs && this.defs.parentNode.removeChild(this.defs);
+        this.desc && this.desc.parentNode.removeChild(this.desc);
         this.canvas.parentNode && this.canvas.parentNode.removeChild(this.canvas);
         for (i in this) {
             this[i] = typeof this[i] == "function" ? R._removedFactory(i) : null;

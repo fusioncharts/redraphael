@@ -1569,6 +1569,7 @@ window.Raphael && window.Raphael.svg && function(R) {
         }
 
         this.defs && this.defs.parentNode.removeChild(this.defs);
+        this.desc && this.desc.parentNode.removeChild(this.desc);
         this.canvas.parentNode && this.canvas.parentNode.removeChild(this.canvas);
         for (i in this) {
             this[i] = typeof this[i] == "function" ? R._removedFactory(i) : null;

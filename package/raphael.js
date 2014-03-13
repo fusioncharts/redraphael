@@ -7834,6 +7834,12 @@
             i.remove();
         }
 
+        if (o.events)  {
+            while (i = o.events.pop()) {
+                i.unbind();
+            }
+        }
+
         o.parent.canvas.removeChild(node);
         o.removeData();
         delete paper._elementsById[o.id]; // remove from lookup hash
@@ -9085,6 +9091,12 @@
         }
         while (i = o.bottom) {
             i.remove();
+        }
+
+        if (o.events)  {
+            while (i = o.events.pop()) {
+                i.unbind();
+            }
         }
 
         o.parent.canvas.removeChild(node);

@@ -512,6 +512,8 @@ window.Raphael && window.Raphael.svg && function(R) {
                         if (pn.tagName.toLowerCase() != "a") {
                             if (value == E) { break; }
                             var hl = $("a");
+                            hl.raphael = true;
+                            hl.raphaelid = node.raphaelid;
                             pn.insertBefore(hl, node);
                             hl.appendChild(node);
                             pn = hl;
@@ -1498,7 +1500,7 @@ window.Raphael && window.Raphael.svg && function(R) {
             c.removeChild(c.firstChild);
         }
         this.bottom = this.top = null;
-        this._desc(R.desc);
+        c.appendChild(this.desc = $("desc"));
         c.appendChild(this.defs = $("defs"));
     };
 

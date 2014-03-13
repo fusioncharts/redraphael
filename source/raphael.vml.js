@@ -266,6 +266,8 @@ window.Raphael && window.Raphael.vml && function(R) {
                     dstyle.height = o.paper.height + "px";
                     node.parentNode.insertBefore(div, node);
                     div.appendChild(node);
+                    div.raphael = true;
+                    div.raphaelid = node.raphaelid;
                     node.clipRect = div;
                 }
                 dstyle.position = "absolute";

@@ -7254,6 +7254,8 @@
                         if (pn.tagName.toLowerCase() != "a") {
                             if (value == E) { break; }
                             var hl = $("a");
+                            hl.raphael = true;
+                            hl.raphaelid = node.raphaelid;
                             pn.insertBefore(hl, node);
                             hl.appendChild(node);
                             pn = hl;
@@ -8240,7 +8242,7 @@
             c.removeChild(c.firstChild);
         }
         this.bottom = this.top = null;
-        this._desc(R.desc);
+        c.appendChild(this.desc = $("desc"));
         c.appendChild(this.defs = $("defs"));
     };
 
@@ -8545,6 +8547,8 @@
                     dstyle.height = o.paper.height + "px";
                     node.parentNode.insertBefore(div, node);
                     div.appendChild(node);
+                    div.raphael = true;
+                    div.raphaelid = node.raphaelid;
                     node.clipRect = div;
                 }
                 dstyle.position = "absolute";

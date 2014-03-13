@@ -7271,6 +7271,8 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                         if (pn.tagName.toLowerCase() != "a") {
                             if (value == E) { break; }
                             var hl = $("a");
+                            hl.raphael = true;
+                            hl.raphaelid = node.raphaelid;
                             pn.insertBefore(hl, node);
                             hl.appendChild(node);
                             pn = hl;
@@ -8257,7 +8259,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             c.removeChild(c.firstChild);
         }
         this.bottom = this.top = null;
-        this._desc(R.desc);
+        c.appendChild(this.desc = $("desc"));
         c.appendChild(this.defs = $("defs"));
     };
 
@@ -8562,6 +8564,8 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                     dstyle.height = o.paper.height + "px";
                     node.parentNode.insertBefore(div, node);
                     div.appendChild(node);
+                    div.raphael = true;
+                    div.raphaelid = node.raphaelid;
                     node.clipRect = div;
                 }
                 dstyle.position = "absolute";

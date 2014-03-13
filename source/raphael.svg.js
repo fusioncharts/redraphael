@@ -512,6 +512,8 @@ window.Raphael && window.Raphael.svg && function(R) {
                         if (pn.tagName.toLowerCase() != "a") {
                             if (value == E) { break; }
                             var hl = $("a");
+                            hl.raphael = true;
+                            hl.raphaelid = node.raphaelid;
                             pn.insertBefore(hl, node);
                             hl.appendChild(node);
                             pn = hl;
@@ -928,7 +930,6 @@ window.Raphael && window.Raphael.svg && function(R) {
         o.realPath = null;
 
         o.attrs = o.attrs || {};
-        o.styles = o.styles || {};
         o.followers = o.followers || [];
 
         o.paper = svg;
@@ -1153,69 +1154,6 @@ window.Raphael && window.Raphael.svg && function(R) {
         }
         hide && o.hide();
         return bbox;
-    };
-
-    elproto.css = function (name, value) {
-        // do not parse css in case element is removed.
-        if (this.removed) {
-            return this;
-        }
-
-        // process as getter when a single key is sent as parameter.
-        if (value == null && R.is(name, "string")) {
-            var names = name.split(separator),
-            out = {};
-            for (var i = 0, ii = names.length; i < ii; i++) {
-                name = names[i];
-                if (name in this.styles) {
-                    out[name] = this.styles[name];
-                }
-            }
-            return ii - 1 ? out : out[names[0]];
-        }
-        // process as getter when multiple keys are pre-sent as array.
-        if (value == null && R.is(name, "array")) {
-            out = {};
-            for (i = 0, ii = name.length; i < ii; i++) {
-                out[name[i]] = this.styles(name[i]);
-            }
-            return out;
-        }
-        // convert single key-value setter into object style standard.
-        if (value != null) {
-            var params = {};
-            params[name] = value;
-        } else if (name != null && R.is(name, "object")) {
-            params = name;
-        }
-        // iterate on keys and set style or raise events.
-        var otherkey, doattrs = {};
-        for (var key in params) {
-            otherkey = key.replace(/\B([A-Z]{1})/g, "-$1").toLowerCase();
-
-            // If keys are supported via attr then use attr instead of css.
-            if (R._availableAttrs[has](otherkey) || otherkey === 'color') {
-                // Replace "color" with fill
-                (otherkey === 'color' && this.type === 'text') && (otherkey = 'fill');
-
-                doattrs[otherkey] = params[key];
-                doattrs.dirty = true;
-                continue;
-            }
-            eve("raphael.css." + otherkey + "." + this.id, this, params[key], otherkey);
-            this.node.style[otherkey] = params[key];
-            this.styles[otherkey] = params[key];
-        }
-        // run on followers
-        for (i = 0, ii = this.followers.length; i < ii; i++) {
-            this.followers[i].el.css(params);
-        }
-        // apply css via attrs
-        if (doattrs[has]("dirty")) {
-            delete doattrs.dirty;
-            this.attr(doattrs);
-        }
-        return this;
     };
 
     elproto.attr = function(name, value) {
@@ -1562,7 +1500,7 @@ window.Raphael && window.Raphael.svg && function(R) {
             c.removeChild(c.firstChild);
         }
         this.bottom = this.top = null;
-        this._desc(R.desc);
+        c.appendChild(this.desc = $("desc"));
         c.appendChild(this.defs = $("defs"));
     };
 

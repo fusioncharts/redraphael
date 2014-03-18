@@ -2502,10 +2502,6 @@ window.Raphael && window.Raphael.canvas && function (R) {
         return this;
     };
 
-    elproto.css = function (name, value) {
-        return this;
-    };
-
 
 
 

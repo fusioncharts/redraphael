@@ -8167,6 +8167,9 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         container.width = width;
         container.height = height;
         container.canvas = cnvs;
+        $(cnvs, {
+            id: "raphael-paper-" + container.id
+        });
         container.clear();
         container._left = container._top = 0;
         isFloating && (container.renderfix = function() {
@@ -9458,6 +9461,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         height == +height && (height += "px");
         res.coordsize = zoom * 1e3 + S + zoom * 1e3;
         res.coordorigin = "0 0";
+        c.id = "raphael-paper-" + res.id;
         res.span = R._g.doc.createElement("span");
         res.span.style.cssText = "position:absolute;left:-9999em;top:-9999em;padding:0;margin:0;line-height:1;";
         c.appendChild(res.span);

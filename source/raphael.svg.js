@@ -1407,6 +1407,9 @@ window.Raphael && window.Raphael.svg && function(R) {
         container.width = width;
         container.height = height;
         container.canvas = cnvs;
+        $(cnvs, {
+            id: "raphael-paper-" + container.id
+        });
         container.clear();
         container._left = container._top = 0;
         isFloating && (container.renderfix = function() {

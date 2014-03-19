@@ -9179,8 +9179,8 @@
             p = new Element(el, vml, group);
 
         el.style.cssText = cssDot;
-
-        id && (el.className = (p._id = ['red', id, p.id].join('-')));
+        p._id = id || E;
+        id && (el.className = 'raphael-group-' + p.id + '-' + id);
         (group || vml).canvas.appendChild(el);
 
         p.type = 'group';

@@ -197,9 +197,6 @@ window.Raphael && window.Raphael.vml && function(R) {
         params.cursor && (s.cursor = params.cursor);
         "blur" in params && o.blur(params.blur);
 
-        ("class" in params) && (node.className = isGroup ?
-            params["class"] && (o._id + S + params["class"]) || o._id : ("rvml " + params["class"]));
-
         if (params.path && o.type == "path" || newpath) {
             node.path = path2vml(~Str(a.path).toLowerCase().indexOf("r") ? R._pathToAbsolute(a.path) : a.path);
             if (o.type == "image") {
@@ -904,8 +901,8 @@ window.Raphael && window.Raphael.vml && function(R) {
             p = new Element(el, vml, group);
 
         el.style.cssText = cssDot;
-
-        id && (el.className = (p._id = ['red', id, p.id].join('-')));
+        p._id = id || E;
+        id && (el.className = 'raphael-group-' + p.id + '-' + id);
         (group || vml).canvas.appendChild(el);
 
         p.type = 'group';
@@ -1162,6 +1159,7 @@ window.Raphael && window.Raphael.vml && function(R) {
         height == +height && (height += "px");
         res.coordsize = zoom * 1e3 + S + zoom * 1e3;
         res.coordorigin = "0 0";
+        c.id = "raphael-paper-" + res.id;
         res.span = R._g.doc.createElement("span");
         res.span.style.cssText = "position:absolute;left:-9999em;top:-9999em;padding:0;margin:0;line-height:1;";
         c.appendChild(res.span);

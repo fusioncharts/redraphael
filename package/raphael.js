@@ -1,5 +1,5 @@
 /**!
- * RedRaphael 1.0.5 - JavaScript Vector Library
+ * RedRaphael 1.0.8 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0
@@ -602,6 +602,7 @@
             this._CustomAttributes.prototype = this.ca;
             this._elementsById = {};
             this.id = R._oid++;
+            eve('raphael.new', this);
         },
 
         /*\
@@ -695,7 +696,6 @@
             "arrow-end": none,
             "arrow-start": none,
             blur: 0,
-            "class": "",
             "clip-rect": "0 0 1e9 1e9",
             "clip-path": E,
             cursor: "default",
@@ -7267,10 +7267,6 @@
                         }
                         node.titleNode = pn;
                         break;
-                    case "class":
-                        value = value || E;
-                        node.setAttribute('class', o.type === 'group' ? value && (o._id + S + value) || o._id : value);
-                        break;
                     case "cursor":
                         s.cursor = value;
                         break;
@@ -8050,7 +8046,8 @@
         res.type = "group";
         res.canvas = res.node;
         res.top = res.bottom = null;
-        id && el.setAttribute('class', res._id = ['red', id, res.id].join('-'));
+        res._id = id || E;
+        id && el.setAttribute('class', 'raphael-group-' + res.id + '-' + id);
         return res;
     };
 
@@ -8149,6 +8146,9 @@
         container.width = width;
         container.height = height;
         container.canvas = cnvs;
+        $(cnvs, {
+            id: "raphael-paper-" + container.id
+        });
         container.clear();
         container._left = container._top = 0;
         isFloating && (container.renderfix = function() {
@@ -8477,9 +8477,6 @@
         params.target && (node.target = params.target);
         params.cursor && (s.cursor = params.cursor);
         "blur" in params && o.blur(params.blur);
-
-        ("class" in params) && (node.className = isGroup ?
-            params["class"] && (o._id + S + params["class"]) || o._id : ("rvml " + params["class"]));
 
         if (params.path && o.type == "path" || newpath) {
             node.path = path2vml(~Str(a.path).toLowerCase().indexOf("r") ? R._pathToAbsolute(a.path) : a.path);
@@ -9185,8 +9182,8 @@
             p = new Element(el, vml, group);
 
         el.style.cssText = cssDot;
-
-        id && (el.className = (p._id = ['red', id, p.id].join('-')));
+        p._id = id || E;
+        id && (el.className = 'raphael-group-' + p.id + '-' + id);
         (group || vml).canvas.appendChild(el);
 
         p.type = 'group';
@@ -9443,6 +9440,7 @@
         height == +height && (height += "px");
         res.coordsize = zoom * 1e3 + S + zoom * 1e3;
         res.coordorigin = "0 0";
+        c.id = "raphael-paper-" + res.id;
         res.span = R._g.doc.createElement("span");
         res.span.style.cssText = "position:absolute;left:-9999em;top:-9999em;padding:0;margin:0;line-height:1;";
         c.appendChild(res.span);

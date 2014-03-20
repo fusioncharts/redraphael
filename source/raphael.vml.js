@@ -506,9 +506,7 @@ window.Raphael && window.Raphael.vml && function(R) {
         }
         o = o.shape || o.node;
         if (dots.length) {
-            if (fill.parentNode === o) {
-                o.removeChild(fill);
-            }
+            fill.parentNode && fill.parentNode.removeChild(fill);
             fill.on = true;
             fill.method = "none";
             fill.color = dots[0].color;
@@ -755,10 +753,10 @@ window.Raphael && window.Raphael.vml && function(R) {
         }
 
         shape && shape.parentNode.removeChild(shape);
+        node.clipRect && o.node.clipRect.parentNode.removeChild(node.clipRect);
+        node.clipRect = null;
+        node.parentNode && node.parentNode.removeChild(node);
 
-        if (o.parent.canvas === node.parentNode) {
-            o.parent.canvas.removeChild(node);
-        }
 
         o.removeData();
         delete paper._elementsById[o.id];

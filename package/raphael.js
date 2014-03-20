@@ -8602,7 +8602,7 @@
             if (fill.on && params.fill) {
                 var isURL = Str(params.fill).match(R._ISURL);
                 if (isURL) {
-                    fill.parentNode == node && fill.parentNode.removeChild(fill);
+                    fill.parentNode && fill.parentNode.removeChild(fill);
                     fill.rotate = true;
                     fill.src = isURL[1];
                     fill.type = "tile";

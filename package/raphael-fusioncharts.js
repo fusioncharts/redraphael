@@ -9040,8 +9040,6 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         paper.__set__ && paper.__set__.exclude(o);
         eve.unbind("raphael.*.*." + o.id);
 
-        shape && shape.parentNode.removeChild(shape);
-
         while (i = o.followers.pop()) {
             i.el.remove();
         }
@@ -9055,7 +9053,12 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             }
         }
 
-        o.parent.canvas.removeChild(node);
+        shape && shape.parentNode.removeChild(shape);
+
+        if (o.parent.canvas === node.parentNode) {
+            o.parent.canvas.removeChild(node);
+        }
+
         o.removeData();
         delete paper._elementsById[o.id];
         R._tear(o, o.parent);

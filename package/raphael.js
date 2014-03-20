@@ -8402,7 +8402,7 @@
         if (fillpos || _.fillsize) {
             var fill = o.getElementsByTagName(fillString);
             fill = fill && fill[0];
-            o.removeChild(fill);
+            fill.parentNode && fill.parentNode.removeChild(fill);
             if (fillpos) {
                 c = compensation(deg, m.x(fillpos[0], fillpos[1]), m.y(fillpos[0], fillpos[1]));
                 fill.position = c.dx * y + S + c.dy * y;
@@ -8602,7 +8602,7 @@
             if (fill.on && params.fill) {
                 var isURL = Str(params.fill).match(R._ISURL);
                 if (isURL) {
-                    fill.parentNode == node && node.removeChild(fill);
+                    fill.parentNod && fill.parentNode.removeChild(fill);
                     fill.rotate = true;
                     fill.src = isURL[1];
                     fill.type = "tile";
@@ -8787,7 +8787,7 @@
         }
         o = o.shape || o.node;
         if (dots.length) {
-            o.removeChild(fill);
+            fill.parentNode && fill.parentNode.removeChild(fill);
             fill.on = true;
             fill.method = "none";
             fill.color = dots[0].color;
@@ -9020,8 +9020,6 @@
         paper.__set__ && paper.__set__.exclude(o);
         eve.unbind("raphael.*.*." + o.id);
 
-        shape && shape.parentNode.removeChild(shape);
-
         while (i = o.followers.pop()) {
             i.el.remove();
         }
@@ -9035,7 +9033,11 @@
             }
         }
 
-        o.parent.canvas.removeChild(node);
+        shape && shape.parentNode.removeChild(shape);
+        node.clipRect && o.node.clipRect.parentNode.removeChild(node.clipRect);
+        node.clipRect = null;
+        node.parentNode && node.parentNode.removeChild(node);
+
         o.removeData();
         delete paper._elementsById[o.id];
         R._tear(o, o.parent);
@@ -9303,7 +9305,7 @@
         res.W = a.width = w;
         res.H = a.height = h;
 
-		fill.parentNode == node && node.removeChild(fill);
+		fill.parentNode && fill.parentNode.removeChild(fill);
         fill.rotate = true;
         fill.src = a.src;
         fill.type = "tile";

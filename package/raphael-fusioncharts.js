@@ -8804,7 +8804,9 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         }
         o = o.shape || o.node;
         if (dots.length) {
-            o.removeChild(fill);
+            if (fill.parentNode === o) {
+                o.removeChild(fill);
+            }
             fill.on = true;
             fill.method = "none";
             fill.color = dots[0].color;

@@ -8402,7 +8402,7 @@
         if (fillpos || _.fillsize) {
             var fill = o.getElementsByTagName(fillString);
             fill = fill && fill[0];
-            fill.parentNode && fill.parentNode.removeChild(fill);
+            o.removeChild(fill);
             if (fillpos) {
                 c = compensation(deg, m.x(fillpos[0], fillpos[1]), m.y(fillpos[0], fillpos[1]));
                 fill.position = c.dx * y + S + c.dy * y;
@@ -8602,7 +8602,7 @@
             if (fill.on && params.fill) {
                 var isURL = Str(params.fill).match(R._ISURL);
                 if (isURL) {
-                    fill.parentNod && fill.parentNode.removeChild(fill);
+                    fill.parentNode == node && node.removeChild(fill);
                     fill.rotate = true;
                     fill.src = isURL[1];
                     fill.type = "tile";
@@ -8787,7 +8787,7 @@
         }
         o = o.shape || o.node;
         if (dots.length) {
-            fill.parentNode && fill.parentNode.removeChild(fill);
+            fill.parentNode == o && o.removeChild(fill);
             fill.on = true;
             fill.method = "none";
             fill.color = dots[0].color;
@@ -8824,10 +8824,10 @@
     Element = function(node, vml, group) {
         var o = this,
             parent = group || vml,
-			skew;
+            skew;
 
-		parent.canvas && parent.canvas.appendChild(node);
-		skew = createNode("skew");
+        parent.canvas && parent.canvas.appendChild(node);
+        skew = createNode("skew");
         skew.on = true;
         node.appendChild(skew);
         o.skew = skew;
@@ -9238,12 +9238,12 @@
         el.coordsize = zoom + S + zoom;
         el.coordorigin = vml.coordorigin;
 
-		var p = new Element(el, vml, group);
+        var p = new Element(el, vml, group);
         p.type = attrs.type || "path";
-		p.path = [];
+        p.path = [];
         p.Path = E;
 
-		attrs.type && (delete attrs.type);
+        attrs.type && (delete attrs.type);
         setFillAndStroke(p, attrs);
 
         return p;
@@ -9252,10 +9252,10 @@
     R._engine.rect = function(vml, attrs, group) {
         var path = R._rectPath(attrs.x, attrs.y, attrs.w, attrs.h, attrs.r);
 
-		attrs.path = path;
-		attrs.type = "rect";
+        attrs.path = path;
+        attrs.type = "rect";
 
-		var res = vml.path(attrs, group),
+        var res = vml.path(attrs, group),
         a = res.attrs;
         res.X = a.x;
         res.Y = a.y;
@@ -9263,13 +9263,13 @@
         res.H = a.height;
         a.path = path;
 
-		return res;
+        return res;
     };
     R._engine.ellipse = function(vml, attrs, group) {
-		attrs.type = "ellipse";
+        attrs.type = "ellipse";
 
-		var res = vml.path(attrs, group),
-			a = res.attrs;
+        var res = vml.path(attrs, group),
+            a = res.attrs;
         res.X = a.x - a.rx;
         res.Y = a.y - a.ry;
         res.W = a.rx * 2;
@@ -9281,7 +9281,7 @@
         attrs.type = "circle";
 
         var res = vml.path(attrs, group),
-			a = res.attrs;
+            a = res.attrs;
 
         res.X = a.x - a.r;
         res.Y = a.y - a.r;
@@ -9291,21 +9291,21 @@
     R._engine.image = function(vml, attrs, group) {
         var path = R._rectPath(attrs.x, attrs.y, attrs.w, attrs.h);
 
-		attrs.path = path;
-		attrs.type = "image";
-		attrs.stroke = "none";
+        attrs.path = path;
+        attrs.type = "image";
+        attrs.stroke = "none";
         var res = vml.path(attrs, group),
-			a = res.attrs,
-			node = res.node,
-			fill = node.getElementsByTagName(fillString)[0];
+            a = res.attrs,
+            node = res.node,
+            fill = node.getElementsByTagName(fillString)[0];
 
-		a.src = attrs.src;
+        a.src = attrs.src;
         res.X = a.x = x;
         res.Y = a.y = y;
         res.W = a.width = w;
         res.H = a.height = h;
 
-		fill.parentNode && fill.parentNode.removeChild(fill);
+        fill.parentNode == node && node.removeChild(fill);
         fill.rotate = true;
         fill.src = a.src;
         fill.type = "tile";
@@ -9317,8 +9317,8 @@
     };
     R._engine.text = function(vml, attrs, group) {
         var el = createNode("shape"),
-			path = createNode("path"),
-			o = createNode("textpath");
+            path = createNode("path"),
+            o = createNode("textpath");
         x = attrs.x || 0;
         y = attrs.y || 0;
         text = attrs.text;

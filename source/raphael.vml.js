@@ -121,7 +121,7 @@ window.Raphael && window.Raphael.vml && function(R) {
         if (fillpos || _.fillsize) {
             var fill = o.getElementsByTagName(fillString);
             fill = fill && fill[0];
-            o.removeChild(fill);
+            fill.parentNode && fill.parentNode.removeChild(fill);
             if (fillpos) {
                 c = compensation(deg, m.x(fillpos[0], fillpos[1]), m.y(fillpos[0], fillpos[1]));
                 fill.position = c.dx * y + S + c.dy * y;
@@ -321,7 +321,7 @@ window.Raphael && window.Raphael.vml && function(R) {
             if (fill.on && params.fill) {
                 var isURL = Str(params.fill).match(R._ISURL);
                 if (isURL) {
-                    fill.parentNode == node && node.removeChild(fill);
+                    fill.parentNode == node && fill.parentNode.removeChild(fill);
                     fill.rotate = true;
                     fill.src = isURL[1];
                     fill.type = "tile";
@@ -506,7 +506,7 @@ window.Raphael && window.Raphael.vml && function(R) {
         }
         o = o.shape || o.node;
         if (dots.length) {
-            o.removeChild(fill);
+            fill.parentNode && fill.parentNode.removeChild(fill);
             fill.on = true;
             fill.method = "none";
             fill.color = dots[0].color;
@@ -740,6 +740,7 @@ window.Raphael && window.Raphael.vml && function(R) {
         eve.unbind("raphael.*.*." + o.id);
 
         shape && shape.parentNode.removeChild(shape);
+        node.parentNode && node.parentNode.removeChild(node);
 
         while (i = o.followers.pop()) {
             i.el.remove();
@@ -754,7 +755,6 @@ window.Raphael && window.Raphael.vml && function(R) {
             }
         }
 
-        o.parent.canvas.removeChild(node);
         o.removeData();
         delete paper._elementsById[o.id];
         R._tear(o, o.parent);
@@ -1022,7 +1022,7 @@ window.Raphael && window.Raphael.vml && function(R) {
         res.W = a.width = w;
         res.H = a.height = h;
 
-		fill.parentNode == node && node.removeChild(fill);
+		fill.parentNode && fill.parentNode.removeChild(fill);
         fill.rotate = true;
         fill.src = a.src;
         fill.type = "tile";

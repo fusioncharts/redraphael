@@ -2,10 +2,6 @@
 <html>
     <head>
         <!-- <script type="text/javascript" src="../helper/logger.js"></script> -->
-        <script type='text/javascript'>
-            //window.ENABLE_RED_CANVAS = true;
-            console.log("isCanvas? " + Boolean(window.ENABLE_RED_CANVAS));
-        </script>
         <script type="text/javascript" src="../source/eve/eve.js"></script>
         <script type="text/javascript" src="../source/raphael.core.js"></script>
         <script type="text/javascript" src="../source/raphael.svg.js"></script>
@@ -38,6 +34,13 @@
                     height: 100,
                     fill: '#ff0000'
                 }, g);
+
+                p.text({
+                    text: 'hello world',
+                    title: 'blah'
+                });
+
+                p.clear();
 
             };
         </script>

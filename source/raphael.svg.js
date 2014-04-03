@@ -825,14 +825,19 @@ window.Raphael && window.Raphael.svg && function(R) {
             return;
         }
         var a = el.attrs,
-        node = el.node,
-        computedStyle = node.firstChild && R._g.doc.defaultView.getComputedStyle(node.firstChild, E),
-        fontSize = computedStyle ? toFloat(R._g.doc.defaultView.getComputedStyle(node.firstChild, E).getPropertyValue("font-size")) : 10,
-        lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading,
-        valign = a[has]("vertical-align") ? a["vertical-align"] : "middle";
+            node = el.node,
+            computedStyle = node.firstChild && R._g.doc.defaultView.getComputedStyle(node.firstChild, E),
+            fontSize = computedStyle ?
+                toFloat(R._g.doc.defaultView.getComputedStyle(node.firstChild, E).getPropertyValue("font-size")) : 10,
+            lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading,
+            valign = a[has]("vertical-align") ? a["vertical-align"] : "middle";
 
         if (isNaN(lineHeight)) {
             lineHeight = fontSize * leading;
+        }
+
+        if (R.is(params.text, 'array')) {
+            params.text = params.text.join('<br>');
         }
 
         valign = valign === 'top' ? -0.5 : (valign === 'bottom' ? 0.5 : 0);

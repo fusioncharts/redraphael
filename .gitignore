@@ -5,3 +5,5 @@ npm-edubg.log
 dr.js
 *.sublime-*
 !redraphael.sublime-project
+
+tests/spec-*.html

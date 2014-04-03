@@ -61,15 +61,17 @@ window.Raphael && window.Raphael.svg && function(R) {
 
     var updateGradientReference = function (element, newGradient) {
         var gradient = element.gradient;
+
         if (gradient) {
             if (gradient === newGradient) {
                 return; // no change
             }
+            // else gradient is specified and it is not same as newGradient, implying a dereference
             gradient.refCount--;
             if (!gradient.refCount) {
                 gradient.parentNode.removeChild(gradient);
-                delete element.gradient;
             }
+            delete element.gradient;
         }
 
         if (newGradient) { // add new gradient

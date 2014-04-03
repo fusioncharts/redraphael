@@ -814,7 +814,7 @@ window.Raphael && window.Raphael.svg && function(R) {
             }
         }
 
-        tuneText(o, params);
+        (o.type === 'text') && tuneText(o, params);
         s.visibility = vis;
     },
     leading = 1.2,

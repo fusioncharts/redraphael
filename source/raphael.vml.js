@@ -360,7 +360,7 @@ window.Raphael && window.Raphael.vml && function(R) {
             }
             node.appendChild(fill);
             var stroke = (node.getElementsByTagName("stroke") && node.getElementsByTagName("stroke")[0]),
-            newstroke = false;
+                newstroke = false;
             !stroke && (newstroke = stroke = createNode("stroke"));
             if ((params.stroke && params.stroke != "none") ||
                 params["stroke-width"] ||
@@ -838,6 +838,9 @@ window.Raphael && window.Raphael.vml && function(R) {
                 }
             // this.paper.canvas.style.display = "none";
             if ('text' in params && this.type == "text") {
+                if (R.is(params.text, 'array')) {
+                    params.text = params.text.join('<br>');
+                }
                 this.textpath.string = params.text.replace(/<br\s*?\/?>/ig, '\n');
             }
             setFillAndStroke(this, params);

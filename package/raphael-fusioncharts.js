@@ -16,7 +16,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
 
 
 /**!
- * RedRaphael 1.0.11 - JavaScript Vector Library
+ * RedRaphael 1.1.0 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0
@@ -6820,15 +6820,17 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
 
     var updateGradientReference = function (element, newGradient) {
         var gradient = element.gradient;
+
         if (gradient) {
             if (gradient === newGradient) {
                 return; // no change
             }
+            // else gradient is specified and it is not same as newGradient, implying a dereference
             gradient.refCount--;
             if (!gradient.refCount) {
                 gradient.parentNode.removeChild(gradient);
-                delete element.gradient;
             }
+            delete element.gradient;
         }
 
         if (newGradient) { // add new gradient
@@ -7573,7 +7575,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             }
         }
 
-        tuneText(o, params);
+        (o.type === 'text') && tuneText(o, params);
         s.visibility = vis;
     },
     leading = 1.2,
@@ -7584,14 +7586,19 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             return;
         }
         var a = el.attrs,
-        node = el.node,
-        computedStyle = node.firstChild && R._g.doc.defaultView.getComputedStyle(node.firstChild, E),
-        fontSize = computedStyle ? toFloat(R._g.doc.defaultView.getComputedStyle(node.firstChild, E).getPropertyValue("font-size")) : 10,
-        lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading,
-        valign = a[has]("vertical-align") ? a["vertical-align"] : "middle";
+            node = el.node,
+            computedStyle = node.firstChild && R._g.doc.defaultView.getComputedStyle(node.firstChild, E),
+            fontSize = computedStyle ?
+                toFloat(R._g.doc.defaultView.getComputedStyle(node.firstChild, E).getPropertyValue("font-size")) : 10,
+            lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading,
+            valign = a[has]("vertical-align") ? a["vertical-align"] : "middle";
 
         if (isNaN(lineHeight)) {
             lineHeight = fontSize * leading;
+        }
+
+        if (R.is(params.text, 'array')) {
+            params.text = params.text.join('<br>');
         }
 
         valign = valign === 'top' ? -0.5 : (valign === 'bottom' ? 0.5 : 0);
@@ -8658,7 +8665,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             }
             node.appendChild(fill);
             var stroke = (node.getElementsByTagName("stroke") && node.getElementsByTagName("stroke")[0]),
-            newstroke = false;
+                newstroke = false;
             !stroke && (newstroke = stroke = createNode("stroke"));
             if ((params.stroke && params.stroke != "none") ||
                 params["stroke-width"] ||
@@ -9138,6 +9145,9 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                 }
             // this.paper.canvas.style.display = "none";
             if ('text' in params && this.type == "text") {
+                if (R.is(params.text, 'array')) {
+                    params.text = params.text.join('<br>');
+                }
                 this.textpath.string = params.text.replace(/<br\s*?\/?>/ig, '\n');
             }
             setFillAndStroke(this, params);

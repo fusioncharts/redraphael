@@ -61,15 +61,17 @@ window.Raphael && window.Raphael.svg && function(R) {
 
     var updateGradientReference = function (element, newGradient) {
         var gradient = element.gradient;
+
         if (gradient) {
             if (gradient === newGradient) {
                 return; // no change
             }
+            // else gradient is specified and it is not same as newGradient, implying a dereference
             gradient.refCount--;
             if (!gradient.refCount) {
                 gradient.parentNode.removeChild(gradient);
-                delete element.gradient;
             }
+            delete element.gradient;
         }
 
         if (newGradient) { // add new gradient
@@ -814,7 +816,7 @@ window.Raphael && window.Raphael.svg && function(R) {
             }
         }
 
-        tuneText(o, params);
+        (o.type === 'text') && tuneText(o, params);
         s.visibility = vis;
     },
     leading = 1.2,
@@ -825,14 +827,19 @@ window.Raphael && window.Raphael.svg && function(R) {
             return;
         }
         var a = el.attrs,
-        node = el.node,
-        computedStyle = node.firstChild && R._g.doc.defaultView.getComputedStyle(node.firstChild, E),
-        fontSize = computedStyle ? toFloat(R._g.doc.defaultView.getComputedStyle(node.firstChild, E).getPropertyValue("font-size")) : 10,
-        lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading,
-        valign = a[has]("vertical-align") ? a["vertical-align"] : "middle";
+            node = el.node,
+            computedStyle = node.firstChild && R._g.doc.defaultView.getComputedStyle(node.firstChild, E),
+            fontSize = computedStyle ?
+                toFloat(R._g.doc.defaultView.getComputedStyle(node.firstChild, E).getPropertyValue("font-size")) : 10,
+            lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading,
+            valign = a[has]("vertical-align") ? a["vertical-align"] : "middle";
 
         if (isNaN(lineHeight)) {
             lineHeight = fontSize * leading;
+        }
+
+        if (R.is(params.text, 'array')) {
+            params.text = params.text.join('<br>');
         }
 
         valign = valign === 'top' ? -0.5 : (valign === 'bottom' ? 0.5 : 0);

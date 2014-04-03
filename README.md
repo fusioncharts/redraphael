@@ -113,6 +113,9 @@ Raphael.define(
 [See it in action](http://jsfiddle.net/sushantbs/khBQj/6/)
 
 
+## Unreleased features and improvements
+
+- array as multi-line text
 
 ## Guidelines for contribution
 

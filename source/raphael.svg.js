@@ -1096,6 +1096,10 @@ window.Raphael && window.Raphael.svg && function(R) {
             i.remove();
         }
 
+        if (o._drag) {
+            o.undrag();
+        }
+
         if (o.events)  {
             while (i = o.events.pop()) {
                 i.unbind();

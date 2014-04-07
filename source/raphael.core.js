@@ -3316,14 +3316,17 @@
             };
         }
     })(),
+
     drag = [],
+
     dragMove = function(e) {
         var x = e.clientX,
-        y = e.clientY,
-        scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
-        scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
-        dragi,
-        j = drag.length;
+            y = e.clientY,
+            scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
+            scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
+            dragi,
+            j = drag.length;
+
         while (j--) {
             dragi = drag[j];
             if (supportsTouch) {
@@ -3341,12 +3344,19 @@
             } else {
                 e.preventDefault();
             }
-            var node = dragi.el.node,
-            o,
-            next = node.nextSibling,
-            parent = node.parentNode,
-            display = node.style.display;
+
+            if (dragi.el.removed) {
+                continue;
+            }
+
+            var node = R._engine.getNode(dragi.el),
+                o,
+                next = node.nextSibling,
+                parent = node.parentNode,
+                display = node.style.display;
+
             g.win.opera && parent.removeChild(node);
+
             node.style.display = "none";
             o = dragi.el.paper.getElementByPoint(x, y);
             node.style.display = display;
@@ -3360,7 +3370,8 @@
     dragUp = function(e) {
         R.unmousemove(dragMove).unmouseup(dragUp);
         var i = drag.length,
-        dragi;
+            dragi;
+
         while (i--) {
             dragi = drag[i];
             dragi.el._drag = {};
@@ -3796,17 +3807,21 @@
         function start(e) {
             (e.originalEvent || e).preventDefault();
             var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
-            scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft;
+                scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft;
+
             this._drag.x = e.clientX + scrollX;
             this._drag.y = e.clientY + scrollY;
             this._drag.id = e.identifier;
+
             !drag.length && R.mousemove(dragMove).mouseup(dragUp);
+
             drag.push({
                 el: this,
                 move_scope: move_scope,
                 start_scope: start_scope,
                 end_scope: end_scope
             });
+
             onstart && eve.on("raphael.drag.start." + this.id, onstart);
             onmove && eve.on("raphael.drag.move." + this.id, onmove);
             onend && eve.on("raphael.drag.end." + this.id, onend);
@@ -3841,13 +3856,16 @@
     \*/
     elproto.undrag = function() {
         var i = draggable.length;
-        while (i--)
+        while (i--) {
             if (draggable[i].el == this) {
                 this.unmousedown(draggable[i].start);
                 draggable.splice(i, 1);
                 eve.unbind("raphael.drag.*." + this.id);
             }
+        }
+
         !draggable.length && R.unmousemove(dragMove).unmouseup(dragUp);
+        delete this._drag;
     };
 
     elproto.follow = function(el, callback, stalk) {

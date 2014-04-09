@@ -1,5 +1,5 @@
 /**!
- * RedRaphael 1.1.1 - JavaScript Vector Library
+ * RedRaphael 1.1.2 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0
@@ -7245,6 +7245,15 @@
             }
         }
     },
+
+    applyCustomAttributes = function (o, attrs) {
+        for (var key in o.ca) {
+            if (attrs.hasOwnProperty(key)) {
+                o.attr(key, attrs[key]);
+            }
+        }
+    },
+
     setFillAndStroke = R._setFillAndStroke = function(o, params) {
         if (!o.paper.canvas) {
             return;
@@ -8065,6 +8074,7 @@
 
         res.type = "path";
         setFillAndStroke(res, attrs);
+        applyCustomAttributes(res, attrs);
         return res;
     };
 
@@ -8086,6 +8096,7 @@
 
         res.type = "circle";
         setFillAndStroke(res, attrs);
+        applyCustomAttributes(res, attrs);
         return res;
     };
     R._engine.rect = function(svg, attrs, group) {
@@ -8095,6 +8106,7 @@
         res.type = "rect";
         attrs.rx = attrs.ry = attrs.r;
         setFillAndStroke(res, attrs);
+        applyCustomAttributes(res, attrs);
         return res;
     };
     R._engine.ellipse = function(svg, attrs, group) {
@@ -8103,6 +8115,7 @@
 
         res.type = "ellipse";
         setFillAndStroke(res, attrs);
+        applyCustomAttributes(res, attrs);
         return res;
     };
     R._engine.image = function(svg, attrs, group) {
@@ -8113,6 +8126,7 @@
         res.type = "image";
         el.setAttribute("preserveAspectRatio", "none");
         setFillAndStroke(res, attrs);
+        applyCustomAttributes(res, attrs);
         return res;
     };
     R._engine.text = function(svg, attrs, group) {
@@ -8121,6 +8135,7 @@
         res.type = "text";
         res._textdirty = true;
         setFillAndStroke(res, attrs);
+        applyCustomAttributes(res, attrs);
         return res;
     };
 
@@ -8479,6 +8494,15 @@
         stroke[se + "arrowlength"] = w;
         stroke[se + "arrowwidth"] = h;
     },
+
+    applyCustomAttributes = function (o, attrs) {
+        for (var key in o.ca) {
+            if (attrs.hasOwnProperty(key)) {
+                o.attr(key, attrs[key]);
+            }
+        }
+    },
+
     setFillAndStroke = R._setFillAndStroke = function(o, params) {
         if (!o.paper.canvas) return;
         // o.paper.canvas.style.display = "none";
@@ -8728,6 +8752,7 @@
             s.fontSize = fontSize * m + "px";
             lineHeight = toFloat(a["line-height"] || lineHeight && lineHeight[0]) || 12;
             a["line-height"] && (s.lineHeight = lineHeight * m + 'px');
+            R.is(params.text, 'array') && (params.text = res.textpath.string = params.text.join('\n').replace(/<br\s*?\/?>/ig, '\n'));
             res.textpath.string && (span.innerHTML = Str(res.textpath.string).replace(/</g, "&#60;").replace(/&/g, "&#38;").replace(/\n/g, "<br>"));
             var brect = span.getBoundingClientRect();
             res.W = a.w = (brect.right - brect.left) / m;
@@ -9135,7 +9160,7 @@
         }
         if (params) {
             var todel = {};
-            for (key in this.ca)
+            for (key in this.ca) {
                 if (this.ca[key] && params[has](key) && R.is(this.ca[key], "function") && !this.ca['_invoked' + key]) {
                     this.ca['_invoked' + key] = true; // prevent recursion
                     var par = this.ca[key].apply(this, [].concat(params[key]));
@@ -9152,11 +9177,11 @@
                         delete params[key];
                     }
                 }
+            }
+
             // this.paper.canvas.style.display = "none";
             if ('text' in params && this.type == "text") {
-                if (R.is(params.text, 'array')) {
-                    params.text = params.text.join('<br>');
-                }
+                R.is(params.text, 'array') && (params.text = params.text.join('\n'));
                 this.textpath.string = params.text.replace(/<br\s*?\/?>/ig, '\n');
             }
             setFillAndStroke(this, params);
@@ -9281,7 +9306,7 @@
 
         attrs.type && (delete attrs.type);
         setFillAndStroke(p, attrs);
-
+        applyCustomAttributes(p, attrs);
         return p;
     };
 
@@ -9377,6 +9402,7 @@
         p.attrs.w = 1;
         p.attrs.h = 1;
         setFillAndStroke(p, attrs);
+        applyCustomAttributes(p, attrs);
 
         el.appendChild(o);
         el.appendChild(path);

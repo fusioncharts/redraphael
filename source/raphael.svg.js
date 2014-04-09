@@ -485,6 +485,15 @@ window.Raphael && window.Raphael.svg && function(R) {
             }
         }
     },
+
+    applyCustomAttributes = function (o, attrs) {
+        for (var key in o.ca) {
+            if (attrs.hasOwnProperty(key)) {
+                o.attr(key, attrs[key]);
+            }
+        }
+    },
+
     setFillAndStroke = R._setFillAndStroke = function(o, params) {
         if (!o.paper.canvas) {
             return;
@@ -1305,6 +1314,7 @@ window.Raphael && window.Raphael.svg && function(R) {
 
         res.type = "path";
         setFillAndStroke(res, attrs);
+        applyCustomAttributes(res, attrs);
         return res;
     };
 
@@ -1326,6 +1336,7 @@ window.Raphael && window.Raphael.svg && function(R) {
 
         res.type = "circle";
         setFillAndStroke(res, attrs);
+        applyCustomAttributes(res, attrs);
         return res;
     };
     R._engine.rect = function(svg, attrs, group) {
@@ -1335,6 +1346,7 @@ window.Raphael && window.Raphael.svg && function(R) {
         res.type = "rect";
         attrs.rx = attrs.ry = attrs.r;
         setFillAndStroke(res, attrs);
+        applyCustomAttributes(res, attrs);
         return res;
     };
     R._engine.ellipse = function(svg, attrs, group) {
@@ -1343,6 +1355,7 @@ window.Raphael && window.Raphael.svg && function(R) {
 
         res.type = "ellipse";
         setFillAndStroke(res, attrs);
+        applyCustomAttributes(res, attrs);
         return res;
     };
     R._engine.image = function(svg, attrs, group) {
@@ -1353,6 +1366,7 @@ window.Raphael && window.Raphael.svg && function(R) {
         res.type = "image";
         el.setAttribute("preserveAspectRatio", "none");
         setFillAndStroke(res, attrs);
+        applyCustomAttributes(res, attrs);
         return res;
     };
     R._engine.text = function(svg, attrs, group) {
@@ -1361,6 +1375,7 @@ window.Raphael && window.Raphael.svg && function(R) {
         res.type = "text";
         res._textdirty = true;
         setFillAndStroke(res, attrs);
+        applyCustomAttributes(res, attrs);
         return res;
     };
 

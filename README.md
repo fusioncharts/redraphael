@@ -113,9 +113,25 @@ Raphael.define(
 [See it in action](http://jsfiddle.net/sushantbs/khBQj/6/)
 
 
-## Unreleased features and improvements
+## Undocumented features and improvements
 
 - array as multi-line text
+- directly pass attr object during element construction
+- Support for alpha on every gradient stop in SVG and support for first and last alpha in VML
+- Support for radial gradient on every shape and support for gradient radius using `xr(fx,fy,r,cx,cy,unit)`
+- Suport for linear gradient options `angle(units,spread)`
+- Support for `shape-rendering` attribute
+- `R.cispBound` amd `Element.crisp` for avoiding sub-pixel blurring
+- Global mouseUp tracking using el.mouseup(fn, scope, true);
+- Support for customizable dash-style
+- Support for attribute `key` in attr.* events
+- upport for Raphael.ca for common customAttributes across papers
+- Support for text-bound: [stroke, fill, stroke-width, padding, corner-radius, dash-style] on texts
+- Support for opacity in fill color (rgba, hsla, etc) for elements
+- Support for `visibility` on elements via attr
+- Support for element rotation via rotation attr
+- Support for `vertical-align` attr on text
+
 
 ## Guidelines for contribution
 

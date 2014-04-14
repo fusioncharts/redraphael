@@ -777,7 +777,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             x: nu,
             y: nu
         },
-        eldata = window.eeldata = {},
+        eldata = {},
 
         sortByKey = function(a, b) {
             return a.key - b.key;

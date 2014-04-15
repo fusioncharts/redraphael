@@ -3703,7 +3703,7 @@
         return clone(eldata[this.id] || {});
     };
 
-    var downables = window.ddownables = [],
+    var downables = [],
         mouseDown = function () {
             this.untrack = addEvent(g.doc, 'mouseup', mouseUp, this);
         },

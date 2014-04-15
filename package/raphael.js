@@ -1,5 +1,5 @@
 /**!
- * RedRaphael 1.1.3 - JavaScript Vector Library
+ * RedRaphael 1.1.4 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0
@@ -760,7 +760,7 @@
             x: nu,
             y: nu
         },
-        eldata = window.eeldata = {},
+        eldata = {},
 
         sortByKey = function(a, b) {
             return a.key - b.key;
@@ -4084,7 +4084,7 @@
         return clone(eldata[this.id] || {});
     };
 
-    var downables = window.ddownables = [],
+    var downables = [],
         mouseDown = function () {
             this.untrack = addEvent(g.doc, 'mouseup', mouseUp, this);
         },

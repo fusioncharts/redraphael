@@ -725,9 +725,11 @@ window.Raphael && window.Raphael.svg && function(R) {
                                 });
                             })(el);
                             paper.defs.appendChild(el);
+                            s.fill = "url('" + R._url + "#" + el.id + "')";
                             $(node, {
-                                fill: "url('" + R._url + "#" + el.id + "')"
+                                fill: s.fill
                             });
+
                             o.pattern = el;
                             o.pattern && updatePosition(o);
                             break;

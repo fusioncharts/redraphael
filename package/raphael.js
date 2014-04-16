@@ -1,5 +1,5 @@
 /**!
- * RedRaphael 1.1.4 - JavaScript Vector Library
+ * RedRaphael 1.1.5 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0
@@ -7485,9 +7485,11 @@
                                 });
                             })(el);
                             paper.defs.appendChild(el);
+                            s.fill = "url('" + R._url + "#" + el.id + "')";
                             $(node, {
-                                fill: "url('" + R._url + "#" + el.id + "')"
+                                fill: s.fill
                             });
+
                             o.pattern = el;
                             o.pattern && updatePosition(o);
                             break;
@@ -7506,8 +7508,9 @@
                                 $(node, {
                                     "fill-opacity": attrs["fill-opacity"]
                                 });
-                                o.gradient && updateGradientReference(o);
-                        } else if ((o.type == "circle" || o.type == "ellipse" || Str(value).charAt() != "r") && addGradientFill(o, value)) {
+                            o.gradient && updateGradientReference(o);
+                        }
+                        else if ((o.type == "circle" || o.type == "ellipse" || Str(value).charAt() != "r") && addGradientFill(o, value)) {
                             if ("opacity" in attrs || "fill-opacity" in attrs) {
                                 var gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\(#|\)$/g, E));
                                 if (gradient) {
@@ -7519,30 +7522,44 @@
                             }
                             attrs.gradient = value;
                             attrs.fill = "none";
+                            s.fill = E;
                             break;
                         }
                         if (clr[has]("opacity")) {
                             $(node, {
                                 "fill-opacity": (s.fillOpacity =
-                                        (clr.opacity > 1 ? clr.opacity / 100 : clr.opacity))
+                                    (clr.opacity > 1 ? clr.opacity / 100 : clr.opacity))
                             });
-                            o._.opacitydirty = true;
+                            o._.fillOpacityDirty = true;
                         }
-                        else if (o._.opacitydirty && R.is(attrs['fill-opacity'], "undefined") &&
+                        else if (o._.fillOpacityDirty && R.is(attrs['fill-opacity'], "undefined") &&
                                 R.is(params["fill-opacity"], "undefined")) {
                             node.removeAttribute('fill-opacity');
                             s.fillOpacity = E;
-                            delete o._.opacitydirty;
+                            delete o._.fillOpacityDirty;
                         }
                     case "stroke":
                         clr = R.getRGB(value);
                         node.setAttribute(att, clr.hex);
-                        att == "stroke" && clr[has]("opacity") && $(node, {
-                            "stroke-opacity": clr.opacity > 1 ? clr.opacity / 100 : clr.opacity
-                        });
-                        if (att == "stroke" && o._.arrows) {
-                            "startString" in o._.arrows && addArrow(o, o._.arrows.startString);
-                            "endString" in o._.arrows && addArrow(o, o._.arrows.endString, 1);
+                        s[att] = clr.hex;
+                        if (att == "stroke") { // remove stroke opacity when stroke is set to none
+                            if (clr[has]("opacity")) {
+                                $(node, {
+                                    "stroke-opacity": (s.strokeOpacity =
+                                        (clr.opacity > 1 ? clr.opacity / 100 : clr.opacity))
+                                });
+                                o._.strokeOpacityDirty = true;
+                            }
+                            else if (o._.strokeOpacityDirty && R.is(attrs['stroke-opacity'], "undefined") &&
+                                    R.is(params["stroke-opacity"], "undefined")) {
+                                node.removeAttribute('stroke-opacity');
+                                s.strokeOpacity = E;
+                                delete o._.strokeOpacityDirty;
+                            }
+                            if (o._.arrows) {
+                                "startString" in o._.arrows && addArrow(o, o._.arrows.startString);
+                                "endString" in o._.arrows && addArrow(o, o._.arrows.endString, 1);
+                            }
                         }
                         break;
                     case "gradient":

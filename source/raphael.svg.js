@@ -762,6 +762,7 @@ window.Raphael && window.Raphael.svg && function(R) {
                             }
                             attrs.gradient = value;
                             attrs.fill = "none";
+                            s.fill = E;
                             break;
                         }
                         if (clr[has]("opacity")) {
@@ -780,6 +781,7 @@ window.Raphael && window.Raphael.svg && function(R) {
                     case "stroke":
                         clr = R.getRGB(value);
                         node.setAttribute(att, clr.hex);
+                        s[att] = clr.hex;
                         if (att == "stroke") { // remove stroke opacity when stroke is set to none
                             if (clr[has]("opacity")) {
                                 $(node, {

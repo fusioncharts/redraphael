@@ -16,7 +16,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
 
 
 /**!
- * RedRaphael 1.1.5 - JavaScript Vector Library
+ * RedRaphael 1.1.6 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0
@@ -892,6 +892,8 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
 
             if (arg && (arg.constructor === R.el.constructor) && arg.type === 'group') {
                 if (clear) {
+                    args[last] = undefined;
+                    delete args[last];
                     arraySplice.call(args, last, 1);
                 }
                 return arg;

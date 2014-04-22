@@ -494,6 +494,8 @@
 
             if (arg && (arg.constructor === R.el.constructor) && arg.type === 'group') {
                 if (clear) {
+                    args[last] = undefined;
+                    delete args[last];
                     arraySplice.call(args, last, 1);
                 }
                 return arg;

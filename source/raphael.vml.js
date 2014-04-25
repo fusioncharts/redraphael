@@ -121,15 +121,17 @@ window.Raphael && window.Raphael.vml && function(R) {
         if (fillpos || _.fillsize) {
             var fill = o.getElementsByTagName(fillString);
             fill = fill && fill[0];
-            o.removeChild(fill);
-            if (fillpos) {
-                c = compensation(deg, m.x(fillpos[0], fillpos[1]), m.y(fillpos[0], fillpos[1]));
-                fill.position = c.dx * y + S + c.dy * y;
+            if (fill) {
+                o.removeChild(fill);
+                if (fillpos) {
+                    c = compensation(deg, m.x(fillpos[0], fillpos[1]), m.y(fillpos[0], fillpos[1]));
+                    fill.position = c.dx * y + S + c.dy * y;
+                }
+                if (_.fillsize) {
+                    fill.size = _.fillsize[0] * abs(sx) + S + _.fillsize[1] * abs(sy);
+                }
+                o.appendChild(fill);
             }
-            if (_.fillsize) {
-                fill.size = _.fillsize[0] * abs(sx) + S + _.fillsize[1] * abs(sy);
-            }
-            o.appendChild(fill);
         }
         s.visibility = "visible";
     };
@@ -436,6 +438,7 @@ window.Raphael && window.Raphael.vml && function(R) {
             res.X = a.x;
             res.Y = a.y;
             var leading = lineHeight - fontSize;
+
             switch(a["vertical-align"]) {
                 case "top":
                     res.bby = res.H / 2; // + leading;
@@ -1036,10 +1039,10 @@ window.Raphael && window.Raphael.vml && function(R) {
             fill = node.getElementsByTagName(fillString)[0];
 
         a.src = attrs.src;
-        res.X = a.x = x;
-        res.Y = a.y = y;
-        res.W = a.width = w;
-        res.H = a.height = h;
+        res.X = a.x = attrs.x;
+        res.Y = a.y = attrs.y;
+        res.W = a.width = attrs.w;
+        res.H = a.height = attrs.h;
 
         fill.parentNode == node && node.removeChild(fill);
         fill.rotate = true;

@@ -122,7 +122,7 @@ window.Raphael && window.Raphael.vml && function(R) {
             var fill = o.getElementsByTagName(fillString);
             fill = fill && fill[0];
             if (fill) {
-                fill.parentNode && fill.parentNode.removeChild(fill);
+                o.removeChild(fill);
                 if (fillpos) {
                     c = compensation(deg, m.x(fillpos[0], fillpos[1]), m.y(fillpos[0], fillpos[1]));
                     fill.position = c.dx * y + S + c.dy * y;
@@ -332,7 +332,7 @@ window.Raphael && window.Raphael.vml && function(R) {
             if (fill.on && params.fill) {
                 var isURL = Str(params.fill).match(R._ISURL);
                 if (isURL) {
-                    fill.parentNode && fill.parentNode.removeChild(fill);
+                    fill.parentNode == node && node.removeChild(fill);
                     fill.rotate = true;
                     fill.src = isURL[1];
                     fill.type = "tile";
@@ -519,7 +519,7 @@ window.Raphael && window.Raphael.vml && function(R) {
         }
         o = o.shape || o.node;
         if (dots.length) {
-            fill.parentNode && fill.parentNode.removeChild(fill);
+            fill.parentNode == o && o.removeChild(fill);
             fill.on = true;
             fill.method = "none";
             fill.color = dots[0].color;
@@ -1042,7 +1042,7 @@ window.Raphael && window.Raphael.vml && function(R) {
         res.W = a.width = attrs.w;
         res.H = a.height = attrs.h;
 
-		fill.parentNode && fill.parentNode.removeChild(fill);
+        fill.parentNode == node && node.removeChild(fill);
         fill.rotate = true;
         fill.src = a.src;
         fill.type = "tile";

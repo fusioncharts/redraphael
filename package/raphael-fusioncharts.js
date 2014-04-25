@@ -16,7 +16,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
 
 
 /**!
- * RedRaphael 1.1.6 - JavaScript Vector Library
+ * RedRaphael 1.1.7 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0
@@ -8482,15 +8482,17 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         if (fillpos || _.fillsize) {
             var fill = o.getElementsByTagName(fillString);
             fill = fill && fill[0];
-            o.removeChild(fill);
-            if (fillpos) {
-                c = compensation(deg, m.x(fillpos[0], fillpos[1]), m.y(fillpos[0], fillpos[1]));
-                fill.position = c.dx * y + S + c.dy * y;
+            if (fill) {
+                o.removeChild(fill);
+                if (fillpos) {
+                    c = compensation(deg, m.x(fillpos[0], fillpos[1]), m.y(fillpos[0], fillpos[1]));
+                    fill.position = c.dx * y + S + c.dy * y;
+                }
+                if (_.fillsize) {
+                    fill.size = _.fillsize[0] * abs(sx) + S + _.fillsize[1] * abs(sy);
+                }
+                o.appendChild(fill);
             }
-            if (_.fillsize) {
-                fill.size = _.fillsize[0] * abs(sx) + S + _.fillsize[1] * abs(sy);
-            }
-            o.appendChild(fill);
         }
         s.visibility = "visible";
     };
@@ -8797,6 +8799,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             res.X = a.x;
             res.Y = a.y;
             var leading = lineHeight - fontSize;
+
             switch(a["vertical-align"]) {
                 case "top":
                     res.bby = res.H / 2; // + leading;
@@ -8914,10 +8917,10 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
     Element = function(node, vml, group) {
         var o = this,
             parent = group || vml,
-            skew;
+			skew;
 
-        parent.canvas && parent.canvas.appendChild(node);
-        skew = createNode("skew");
+		parent.canvas && parent.canvas.appendChild(node);
+		skew = createNode("skew");
         skew.on = true;
         node.appendChild(skew);
         o.skew = skew;
@@ -9110,6 +9113,9 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         paper.__set__ && paper.__set__.exclude(o);
         eve.unbind("raphael.*.*." + o.id);
 
+        shape && shape.parentNode.removeChild(shape);
+        node.parentNode && node.parentNode.removeChild(node);
+
         while (i = o.followers.pop()) {
             i.el.remove();
         }
@@ -9126,11 +9132,6 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                 i.unbind();
             }
         }
-
-        shape && shape.parentNode.removeChild(shape);
-        node.clipRect && o.node.clipRect.parentNode.removeChild(node.clipRect);
-        node.clipRect = null;
-        node.parentNode && node.parentNode.removeChild(node);
 
         o.removeData();
         delete paper._elementsById[o.id];
@@ -9335,12 +9336,12 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         el.coordsize = zoom + S + zoom;
         el.coordorigin = vml.coordorigin;
 
-        var p = new Element(el, vml, group);
+		var p = new Element(el, vml, group);
         p.type = attrs.type || "path";
-        p.path = [];
+		p.path = [];
         p.Path = E;
 
-        attrs.type && (delete attrs.type);
+		attrs.type && (delete attrs.type);
         setFillAndStroke(p, attrs);
         applyCustomAttributes(p, attrs);
         return p;
@@ -9349,10 +9350,10 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
     R._engine.rect = function(vml, attrs, group) {
         var path = R._rectPath(attrs.x, attrs.y, attrs.w, attrs.h, attrs.r);
 
-        attrs.path = path;
-        attrs.type = "rect";
+		attrs.path = path;
+		attrs.type = "rect";
 
-        var res = vml.path(attrs, group),
+		var res = vml.path(attrs, group),
         a = res.attrs;
         res.X = a.x;
         res.Y = a.y;
@@ -9360,13 +9361,13 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         res.H = a.height;
         a.path = path;
 
-        return res;
+		return res;
     };
     R._engine.ellipse = function(vml, attrs, group) {
-        attrs.type = "ellipse";
+		attrs.type = "ellipse";
 
-        var res = vml.path(attrs, group),
-            a = res.attrs;
+		var res = vml.path(attrs, group),
+			a = res.attrs;
         res.X = a.x - a.rx;
         res.Y = a.y - a.ry;
         res.W = a.rx * 2;
@@ -9378,7 +9379,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         attrs.type = "circle";
 
         var res = vml.path(attrs, group),
-            a = res.attrs;
+			a = res.attrs;
 
         res.X = a.x - a.r;
         res.Y = a.y - a.r;
@@ -9388,19 +9389,19 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
     R._engine.image = function(vml, attrs, group) {
         var path = R._rectPath(attrs.x, attrs.y, attrs.w, attrs.h);
 
-        attrs.path = path;
-        attrs.type = "image";
-        attrs.stroke = "none";
+		attrs.path = path;
+		attrs.type = "image";
+		attrs.stroke = "none";
         var res = vml.path(attrs, group),
-            a = res.attrs,
-            node = res.node,
-            fill = node.getElementsByTagName(fillString)[0];
+			a = res.attrs,
+			node = res.node,
+			fill = node.getElementsByTagName(fillString)[0];
 
         a.src = attrs.src;
-        res.X = a.x = x;
-        res.Y = a.y = y;
-        res.W = a.width = w;
-        res.H = a.height = h;
+        res.X = a.x = attrs.x;
+        res.Y = a.y = attrs.y;
+        res.W = a.width = attrs.w;
+        res.H = a.height = attrs.h;
 
         fill.parentNode == node && node.removeChild(fill);
         fill.rotate = true;
@@ -9414,8 +9415,8 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
     };
     R._engine.text = function(vml, attrs, group) {
         var el = createNode("shape"),
-            path = createNode("path"),
-            o = createNode("textpath");
+			path = createNode("path"),
+			o = createNode("textpath");
         x = attrs.x || 0;
         y = attrs.y || 0;
         text = attrs.text;

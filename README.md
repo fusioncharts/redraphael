@@ -1,4 +1,4 @@
-# RedRaphaël - A JavaScript graphics library on steroids!
+# RedRaphaï¿½l - A JavaScript graphics library on steroids!
 
 [![Build Status](https://travis-ci.org/fusioncharts/redraphael.png?branch=master)](https://travis-ci.org/fusioncharts/redraphael)
 
@@ -17,14 +17,14 @@
 
 ## Usage
 
-To learn how to use Raphaël visit their [documentation page](http://raphaeljs.com/reference.html)
+To learn how to use Raphaï¿½l visit their [documentation page](http://raphaeljs.com/reference.html)
 
 
-## RedRaphaël specific features
+## RedRaphaï¿½l specific features
 
 ### Group
 
-Creating a RedRaphaël group
+Creating a RedRaphaï¿½l group
 ```js
 var mygroup = paper.group([optional_group_name]);
 ```
@@ -57,7 +57,7 @@ Groups come in especially handy when you have to perform transformations on the 
 
 ### Followers & Stalkers
 
-Any element in RedRaphaël can be converted into a follower element (or stalker element) by invoking the
+Any element in RedRaphaï¿½l can be converted into a follower element (or stalker element) by invoking the
 `follow` method.
 
 `element.follow(<target_element>, [supervisor_function], ['before' || 'after']);`
@@ -68,7 +68,7 @@ are changed using the `element.attr` method.
 
 The third argument, when provided will make the follower element position the itself w.r.t to the target
 element based on the value of the parameter. If the target element is now moved around the DOM tree using
-Raphaël methods `insertBefore` or `insertAfter` etc, the follower (now a stalker) will also move along with
+Raphaï¿½l methods `insertBefore` or `insertAfter` etc, the follower (now a stalker) will also move along with
 it.
 
 [Check out a demo here](http://jsfiddle.net/sushantbs/xZrwe/4/)
@@ -76,7 +76,7 @@ it.
 
 ### Custom Attributes
 
-With RedRaphaël, custom attributes can be added per element using `element.ca` object.
+With RedRaphaï¿½l, custom attributes can be added per element using `element.ca` object.
 
 ```js
 var rectEl = paper.rect(x, y, width, height);
@@ -93,12 +93,12 @@ rectEl.ca.borderWidth = function (value) {
 rectEl.attr('borderWidth', '5');
 ```
 
-Note: The original Raphaël way of adding [custom attributes](http://raphaeljs.com/reference.html#Paper.ca) is also supported.
+Note: The original Raphaï¿½l way of adding [custom attributes](http://raphaeljs.com/reference.html#Paper.ca) is also supported.
 
 
 ### Raphael.define
 
-RedRaphël has encapsulated all the ways of extending the framework in the `define` API.
+RedRaphï¿½l has encapsulated all the ways of extending the framework in the `define` API.
 
 ```js
 Raphael.define(
@@ -138,4 +138,4 @@ Raphael.define(
 - To be added
 
 
-
+[![Analytics](https://ga-beacon.appspot.com/UA-45124206-2/redraphael/index)](https://github.com/igrigorik/ga-beacon)

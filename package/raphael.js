@@ -1,5 +1,5 @@
 /**!
- * RedRaphael 1.1.7 - JavaScript Vector Library
+ * RedRaphael 1.1.8 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0
@@ -6876,7 +6876,7 @@
 
         var type = "linear",
             SVG = element.paper,
-            id = (SVG.id + '-' + gradient).replace(/[\(\)\s,\xb0#]/g, "_"),
+            id = (SVG.id + '-' + gradient).replace(/[\(\)\s%:,\xb0#]/g, "_"),
             fx = .5, fy = .5, r, cx, cy, units, spread,
             o = element.node,
             s = o.style,

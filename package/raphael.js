@@ -1,5 +1,5 @@
 /**!
- * RedRaphael 1.1.8 - JavaScript Vector Library
+ * RedRaphael 1.1.9 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0
@@ -7249,10 +7249,9 @@
     },
 
     applyCustomAttributes = function (o, attrs) {
-        for (var key in o.ca) {
-            if (attrs.hasOwnProperty(key)) {
-                o.attr(key, attrs[key]);
-            }
+        for (var key in attrs) {
+            eve("raphael.attr." + key + "." + o.id, o, attrs[key], key);
+            o.ca[key] && o.attr(key, attrs[key]);
         }
     },
 
@@ -8517,10 +8516,9 @@
     },
 
     applyCustomAttributes = function (o, attrs) {
-        for (var key in o.ca) {
-            if (attrs.hasOwnProperty(key)) {
-                o.attr(key, attrs[key]);
-            }
+        for (var key in attrs) {
+            eve("raphael.attr." + key + "." + o.id, o, attrs[key], key);
+            o.ca[key] && o.attr(key, attrs[key]);
         }
     },
 

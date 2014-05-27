@@ -504,6 +504,7 @@
 
         serializeArgs = R._serializeArgs = function (args) {
             var arg0 = args[0],
+                pathString,
                 attrs,
                 i,
                 ii;

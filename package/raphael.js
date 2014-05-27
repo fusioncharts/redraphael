@@ -1,5 +1,5 @@
 /**!
- * RedRaphael 1.1.9 - JavaScript Vector Library
+ * RedRaphael 1.1.10 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0
@@ -885,6 +885,7 @@
 
         serializeArgs = R._serializeArgs = function (args) {
             var arg0 = args[0],
+                pathString,
                 attrs,
                 i,
                 ii;

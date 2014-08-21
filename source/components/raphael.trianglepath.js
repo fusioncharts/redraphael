@@ -26,10 +26,20 @@ window.Raphael && (window.Raphael.define && function (R) {
         },
 
         ca: {
-            trianglepath: function (x1, y1, x2, y2, x3, y3) {
+            trianglepath: function (x1, y1, x2, y2, x3, y3, r) {
+                /* Create the triangle path with the provided vertices.
+                 * Make rounded triangle corners if radius is provided. */
                 return {
                     path: [M, x1, y1, L, x2, y2, x3, y3, Z]
                 };
+            },
+
+            "rotate": function (deg, x, y) {
+                /* Rotate the trianglepath about a given point. */
+            },
+
+            "drop-shadow": function (dx, dy, spread, color) {
+                // Show a shadow effect for the trianglepath
             }
         }
     });

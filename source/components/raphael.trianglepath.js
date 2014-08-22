@@ -9,7 +9,25 @@ window.Raphael && (window.Raphael.define && function (R) {
         L = 'L',
         Z = 'Z',
         Q = 'Q',
-        isNaN = win.isNaN;
+        isNaN = win.isNaN,
+
+        sqrt = win.Math.sqrt,
+        pow = win.Math.pow,
+        acos = win.Math.acos,
+
+        p2pdistance = R._cacher(function (x1, y1, x2, y2) {
+            // Returns distance between two points (in pixels)
+            return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
+        }),
+
+        enclosedAngles = R._cacher(function (ab, bc, ca) {
+            // Returns the three angles of a triangle formed by the given sides
+            return [
+                acos((pow(ab, 2) + pow(ca, 2) - pow(bc, 2)) / (2 * ab * ca)),
+                acos((pow(ab, 2) + pow(bc, 2) - pow(ca, 2)) / (2 * ab * bc)),
+                acos((pow(ca, 2) + pow(bc, 2) - pow(ab, 2)) / (2 * ca * bc))
+            ];
+        })
 
     R.define({
         // Name of the component goes here.
@@ -19,9 +37,8 @@ window.Raphael && (window.Raphael.define && function (R) {
         trianglepath: function () { // args: [x1, y1, x2, y2, x3, y3, r]
             var paper = this,
                 args = arguments,
-                group = R._lastArgIfGroup(args);
-
-            var face = paper.path(group);
+                group = R._lastArgIfGroup(args),
+                face = paper.path(group);
 
             return face.attr("trianglepath", [
                 args[0], args[1],
@@ -32,37 +49,12 @@ window.Raphael && (window.Raphael.define && function (R) {
 
         fn: {
             sides: function (points) {
-                // Method to return length of sides
-                var triangle = this;
+                // Use p2pdistance library function to compute sides. Return from cache when available
                 return [
-                    // x1, y1 and x2, y2
-                    triangle.getDistance(points[0], points[1], points[2], points[3]),
-
-                    // x2, y2 and x3, y3
-                    triangle.getDistance(points[2], points[3], points[4], points[5]),
-
-                    // x3, y3 and x1, y1
-                    triangle.getDistance(points[4], points[5], points[0], points[1])
+                    p2pdistance(points[0], points[1], points[2], points[3]), // p1
+                    p2pdistance(points[2], points[3], points[4], points[5]), // p2
+                    p2pdistance(points[4], points[5], points[0], points[1])  // p3
                 ];
-            },
-
-            angles : function (sides) {
-                var triangle = this;
-                return [
-                    this.getAngle(sides[0], sides[2], sides[1]),
-                    this.getAngle(sides[0], sides[1], sides[2]),
-                    this.getAngle(sides[2], sides[1], sides[0])
-                ];
-            },
-
-            getDistance: function (x1, y1, x2, y2) {
-                // Return distance betweem two points
-                return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-            },
-
-            getAngle: function (a, b, c) {
-                // Return angle enclosed by sides a and b
-                return Math.acos((Math.pow(a, 2) + Math.pow(b, 2) - Math.pow(c, 2)) / (2 * a * b));
             }
         },
 
@@ -75,7 +67,7 @@ window.Raphael && (window.Raphael.define && function (R) {
                 if (r) {
                     var paper = this.paper;
                     var sideLengths = this.sides(arguments);
-                    var angles = this.angles(sideLengths);
+                    var angles = enclosedAngles(sideLengths);
                     var curveDistance = [
                         r / Math.tan(angles[0]/2),
                         r / Math.tan(angles[1]/2),

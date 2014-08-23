@@ -14,20 +14,38 @@ window.Raphael && (window.Raphael.define && function (R) {
         sqrt = win.Math.sqrt,
         pow = win.Math.pow,
         acos = win.Math.acos,
+        tan = win.Math.tan,
 
         p2pdistance = R._cacher(function (x1, y1, x2, y2) {
-            // Returns distance between two points (in pixels)
+            // Returns distance between two points
             return sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
         }),
 
-        enclosedAngles = R._cacher(function (ab, bc, ca) {
-            // Returns the three angles of a triangle formed by the given sides
-            return [
-                acos((pow(ab, 2) + pow(ca, 2) - pow(bc, 2)) / (2 * ab * ca)),
-                acos((pow(ab, 2) + pow(bc, 2) - pow(ca, 2)) / (2 * ab * bc)),
-                acos((pow(ca, 2) + pow(bc, 2) - pow(ab, 2)) / (2 * ca * bc))
-            ];
-        })
+        pointAtLength = R._cacher(function (x1, y1, x2, y2, d) {
+            /* Returns the coordinates of the point at distance 'd' from point (x1, y1)
+             * on the line between point (x1, y1) and point (x2, y2).
+             */
+
+            // Calculate vectors along path
+            var vx = x2 - x1,
+                vy = y2 - y1;
+
+            // Calculate total length of the path
+            var l = p2pdistance(x1, y1, x2, y2);
+
+            // Normalize the vectors
+            vx /= l;
+            vy /= l;
+
+            // Calculate required point coordinates
+            var px = x1 + vx * d,
+                py = y1 + vy * d;
+
+            return {
+                x: px,
+                y: py
+            }
+        });
 
     R.define({
         // Name of the component goes here.
@@ -51,9 +69,19 @@ window.Raphael && (window.Raphael.define && function (R) {
             sides: function (points) {
                 // Use p2pdistance library function to compute sides. Return from cache when available
                 return [
-                    p2pdistance(points[0], points[1], points[2], points[3]), // p1
-                    p2pdistance(points[2], points[3], points[4], points[5]), // p2
-                    p2pdistance(points[4], points[5], points[0], points[1])  // p3
+                    p2pdistance(points[0], points[1], points[2], points[3]), // p1, p2
+                    p2pdistance(points[2], points[3], points[4], points[5]), // p2, p3
+                    p2pdistance(points[4], points[5], points[0], points[1])  // p3, p1
+                ];
+            },
+
+            enclosedAngles: function () {
+                // Returns the three angles of a triangle formed by the given sides
+                var edges = this._sides;
+                return [
+                    acos((pow(edges[0], 2) + pow(edges[2], 2) - pow(edges[1], 2)) / (2 * edges[0] * edges[2])),
+                    acos((pow(edges[0], 2) + pow(edges[1], 2) - pow(edges[2], 2)) / (2 * edges[0] * edges[1])),
+                    acos((pow(edges[2], 2) + pow(edges[1], 2) - pow(edges[0], 2)) / (2 * edges[2] * edges[1]))
                 ];
             }
         },
@@ -62,52 +90,33 @@ window.Raphael && (window.Raphael.define && function (R) {
             trianglepath: function (x1, y1, x2, y2, x3, y3, r) {
                 /* Create the triangle path with the provided vertices.
                  * Make rounded triangle corners if radius is provided. */
-                //console.log(this.angles(this.sides(arguments)));
-                //console.log(this.attrs);
                 if (r) {
-                    var paper = this.paper;
-                    var sideLengths = this.sides(arguments);
-                    var angles = enclosedAngles(sideLengths);
+                    // Calculate length of all sides of the triangle
+                    this._sides = this.sides(arguments);
+
+                    // Get all the angles of the triangle
+                    var angles = this.enclosedAngles();
+
+                    // Get distance of points of curves from corresponding vertices
                     var curveDistance = [
-                        r / Math.tan(angles[0]/2),
-                        r / Math.tan(angles[1]/2),
-                        r / Math.tan(angles[2]/2)
+                        r / tan(angles[0]/2),
+                        r / tan(angles[1]/2),
+                        r / tan(angles[2]/2)
                     ];
 
-                    // From here on, the code is, for lack of a better word, crappy.
-                    // It needs modification.
-                    var sideAC = paper.path([M, x1, y1, L, x3, y3]).hide();
-                    var sideAB = paper.path([M, x1, y1, L, x2, y2]).hide();
-
-                    var sideBA = paper.path([M, x2, y2, L, x1, y1]).hide();
-                    var sideBC = paper.path([M, x2, y2, L, x3, y3]).hide();
-
-                    var sideCB = paper.path([M, x3, y3, L, x2, y2]).hide();
-                    var sideCA = paper.path([M, x3, y3, L, x1, y1]).hide();
-
+                    // Get coordinates of the points of curve on the triangle
                     var curvePoints = [
-                        sideAC.getPointAtLength(curveDistance[0]),
-                        sideAB.getPointAtLength(curveDistance[0]),
+                        pointAtLength(x1, y1, x3, y3, curveDistance[0]),
+                        pointAtLength(x1, y1, x2, y2, curveDistance[0]),
 
-                        sideBA.getPointAtLength(curveDistance[1]),
-                        sideBC.getPointAtLength(curveDistance[1]),
+                        pointAtLength(x2, y2, x1, y1, curveDistance[1]),
+                        pointAtLength(x2, y2, x3, y3, curveDistance[1]),
 
-                        sideCB.getPointAtLength(curveDistance[2]),
-                        sideCA.getPointAtLength(curveDistance[2])
+                        pointAtLength(x3, y3, x2, y2, curveDistance[2]),
+                        pointAtLength(x3, y3, x1, y1, curveDistance[2])
                     ];
 
-                    sideAC.remove();
-                    sideAB.remove();
-
-                    sideBA.remove();
-                    sideBC.remove();
-
-                    sideCB.remove();
-                    sideCA.remove();
-
-                    // Crappy code ends
-
-                    // Draw the triangle path and curves
+                    // Draw the triangle path with rounded corners
                     this.attr({
                         path: [
                             M, curvePoints[0].x, curvePoints[0].y, Q, x1, y1, curvePoints[1].x, curvePoints[1].y,

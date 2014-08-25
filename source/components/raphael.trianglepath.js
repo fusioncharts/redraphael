@@ -9,7 +9,6 @@ window.Raphael && (window.Raphael.define && function (R) {
         L = 'L',
         Z = 'Z',
         Q = 'Q',
-        isNaN = win.isNaN,
 
         sqrt = win.Math.sqrt,
         pow = win.Math.pow,
@@ -28,23 +27,24 @@ window.Raphael && (window.Raphael.define && function (R) {
 
             // Calculate vectors along path
             var vx = x2 - x1,
-                vy = y2 - y1;
+                vy = y2 - y1,
+                l, px, py;
 
             // Calculate total length of the path
-            var l = p2pdistance(x1, y1, x2, y2);
+            l = p2pdistance(x1, y1, x2, y2);
 
             // Normalize the vectors
             vx /= l;
             vy /= l;
 
             // Calculate required point coordinates
-            var px = x1 + vx * d,
-                py = y1 + vy * d;
+            px = x1 + vx * d;
+            py = y1 + vy * d;
 
             return {
                 x: px,
                 y: py
-            }
+            };
         });
 
     R.define({
@@ -66,8 +66,9 @@ window.Raphael && (window.Raphael.define && function (R) {
         },
 
         fn: {
-            sides: function (points) {
-                // Use p2pdistance library function to compute sides. Return from cache when available
+            sides: function () {
+                // Use p2pdistance library function to compute sides of a triangle.
+                var points = this._args;
                 return [
                     p2pdistance(points[0], points[1], points[2], points[3]), // p1, p2
                     p2pdistance(points[2], points[3], points[4], points[5]), // p2, p3
@@ -91,21 +92,26 @@ window.Raphael && (window.Raphael.define && function (R) {
                 /* Create the triangle path with the provided vertices.
                  * Make rounded triangle corners if radius is provided. */
                 if (r) {
+                    // Store arguments in trianglepath element
+                    this._args = arguments;
+
                     // Calculate length of all sides of the triangle
-                    this._sides = this.sides(arguments);
+                    this._sides = this.sides();
 
                     // Get all the angles of the triangle
-                    var angles = this.enclosedAngles();
+                    var angles = this.enclosedAngles(),
+                        curveDistance,
+                        curvePoints;
 
                     // Get distance of points of curves from corresponding vertices
-                    var curveDistance = [
-                        r / tan(angles[0]/2),
-                        r / tan(angles[1]/2),
-                        r / tan(angles[2]/2)
+                    curveDistance = [
+                        r / tan(angles[0] / 2),
+                        r / tan(angles[1] / 2),
+                        r / tan(angles[2] / 2)
                     ];
 
                     // Get coordinates of the points of curve on the triangle
-                    var curvePoints = [
+                    curvePoints = [
                         pointAtLength(x1, y1, x3, y3, curveDistance[0]),
                         pointAtLength(x1, y1, x2, y2, curveDistance[0]),
 
@@ -130,15 +136,7 @@ window.Raphael && (window.Raphael.define && function (R) {
                         path: [M, x1, y1, L, x2, y2, x3, y3, Z]
                     });
                 }
-            },
-
-            "rotate": function (deg, x, y) {
-                /* Rotate the trianglepath about a given point. */
-            },
-
-            "drop-shadow": function (dx, dy, spread, color) {
-                // Show a shadow effect for the trianglepath
             }
         }
     });
-}) (window.Raphael);
+})(window.Raphael);

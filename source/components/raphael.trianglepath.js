@@ -68,7 +68,7 @@ window.Raphael && (window.Raphael.define && function (R) {
         fn: {
             sides: function () {
                 // Use p2pdistance library function to compute sides of a triangle.
-                var points = this._args;
+                var points = this._trianglePathAttr;
                 return [
                     p2pdistance(points[0], points[1], points[2], points[3]), // p1, p2
                     p2pdistance(points[2], points[3], points[4], points[5]), // p2, p3
@@ -93,7 +93,7 @@ window.Raphael && (window.Raphael.define && function (R) {
                  * Make rounded triangle corners if radius is provided. */
                 if (r) {
                     // Store arguments in trianglepath element
-                    this._args = arguments;
+                    this._trianglePathAttr = arguments;
 
                     // Calculate length of all sides of the triangle
                     this._sides = this.sides();

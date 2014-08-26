@@ -133,6 +133,10 @@
         objectToStr = "[object Object]",
         arraySlice = Array.prototype.slice,
         arraySplice = Array.prototype.splice,
+        hasPrototypeBug = (function () {
+            var a = function () {};
+            return a.hasOwnProperty("prototype");
+        }()),
         g = {
             doc: document,
             win: window
@@ -679,40 +683,40 @@
                 (type == "array" && Array.isArray && Array.isArray(o)) ||
                 objectToString.call(o).slice(8, -1).toLowerCase() == type;
         },
-
         /*\
           * Raphael.clone
           [ method ]
           **
           * Returns a recursively cloned version of an object.
          \*/
-        clone = R.clone = function (obj) {
-            if (Object(obj) !== obj) {
-                return obj;
-            }
-            var res = new obj.constructor;
-            for (var key in obj)
-                if (obj[has](key)) {
-                    res[key] = clone(obj[key]);
-                }
-            return res;
-        },
+        clone;
 
-         /*\
-          * Raphael.createUUID
-          [ method ]
-          **
-          * Returns RFC4122, version 4 ID
-         \*/
-        createUUID = R.createUUID = (function(uuidRegEx, uuidReplacer) {
-            return function() {
-                return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(uuidRegEx, uuidReplacer).toUpperCase();
-            };
-        })(/[xy]/g, function(c) {
-            var r = math.random() * 16 | 0,
-                v = c == "x" ? r : (r & 3 | 8);
-            return v.toString(16);
-        });
+        if (hasPrototypeBug) {
+            clone = R.clone = function (obj) {
+                if (Object(obj) !== obj) {
+                    return obj;
+                }
+                var res = new obj.constructor;
+                for (var key in obj)
+                    if (key !== "prototype" && obj[has](key)) {
+                        res[key] = clone(obj[key]);
+                    }
+                return res;
+            }
+        }
+        else {
+            clone = R.clone = function (obj) {
+                if (Object(obj) !== obj) {
+                    return obj;
+                }
+                var res = new obj.constructor;
+                for (var key in obj)
+                    if (obj[has](key)) {
+                        res[key] = clone(obj[key]);
+                    }
+                return res;
+            }
+        }
 
     R._g = g;
 

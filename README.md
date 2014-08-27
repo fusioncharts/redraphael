@@ -1,30 +1,20 @@
-# RedRapha�l - A JavaScript graphics library on steroids!
+# RedRaphael - A JavaScript graphics library on steroids!
 
 [![Build Status](https://travis-ci.org/fusioncharts/redraphael.png?branch=master)](https://travis-ci.org/fusioncharts/redraphael)
 
-## Getting started
-
-- `git clone https://github.com/fusioncharts/redraphael.git`
-
-- `git submodule init && git init && npm install`
-
-
-## Dependencies
-
-- [eve](https://github.com/adobe-webplatform/eve)
-- [grunt](https://github.com/gruntjs/grunt)
-
-
 ## Usage
+RedRaphael is a fork of Raphael with a number of added features and slightly changed development philosophy.
+The best place to start is the API and usage docuentation.
 
-To learn how to use Rapha�l visit their [documentation page](http://raphaeljs.com/reference.html)
+To learn how to use RedRaphael visit [documentation page](http://fusioncharts.github.io/redraphael/)
 
+## RedRaphael specific features
 
-## RedRapha�l specific features
+Here is a brief overview of added benefits of using RedRaphael.
 
 ### Group
 
-Creating a RedRapha�l group
+Creating a RedRaphael group
 ```js
 var mygroup = paper.group([optional_group_name]);
 ```
@@ -57,7 +47,7 @@ Groups come in especially handy when you have to perform transformations on the 
 
 ### Followers & Stalkers
 
-Any element in RedRapha�l can be converted into a follower element (or stalker element) by invoking the
+Any element in RedRaphael can be converted into a follower element (or stalker element) by invoking the
 `follow` method.
 
 `element.follow(<target_element>, [supervisor_function], ['before' || 'after']);`
@@ -68,7 +58,7 @@ are changed using the `element.attr` method.
 
 The third argument, when provided will make the follower element position the itself w.r.t to the target
 element based on the value of the parameter. If the target element is now moved around the DOM tree using
-Rapha�l methods `insertBefore` or `insertAfter` etc, the follower (now a stalker) will also move along with
+Raphael methods `insertBefore` or `insertAfter` etc, the follower (now a stalker) will also move along with
 it.
 
 [Check out a demo here](http://jsfiddle.net/sushantbs/xZrwe/4/)
@@ -76,7 +66,7 @@ it.
 
 ### Custom Attributes
 
-With RedRapha�l, custom attributes can be added per element using `element.ca` object.
+With RedRaphaelel, custom attributes can be added per element using `element.ca` object.
 
 ```js
 var rectEl = paper.rect(x, y, width, height);
@@ -93,12 +83,12 @@ rectEl.ca.borderWidth = function (value) {
 rectEl.attr('borderWidth', '5');
 ```
 
-Note: The original Rapha�l way of adding [custom attributes](http://raphaeljs.com/reference.html#Paper.ca) is also supported.
+Note: The original Raphael way of adding [custom attributes](http://raphaeljs.com/reference.html#Paper.ca) is also supported.
 
 
 ### Raphael.define
 
-RedRaph�l has encapsulated all the ways of extending the framework in the `define` API.
+RedRaphel has encapsulated all the ways of extending the framework in the `define` API.
 
 ```js
 Raphael.define(
@@ -108,6 +98,15 @@ Raphael.define(
 	element_specific_methods,
 	pre_defined_eventlisteners
 );
+
+Raphael.define({
+    name: 'componentName',
+    componentName: initializing_funciton,
+    ca: { /* custom_attributes */ },
+    fn: { /* element_specific_methods */ },
+    e: { /* pre_defined_eventlisteners */ },
+    data: { /* element_specific_data */ }
+});
 ```
 
 [See it in action](http://jsfiddle.net/sushantbs/khBQj/6/)
@@ -135,7 +134,7 @@ Raphael.define(
 
 ## Guidelines for contribution
 
-- To be added
+Fork and send PR!
 
 
 [![Analytics](https://ga-beacon.appspot.com/UA-45124206-2/redraphael/index)](https://github.com/igrigorik/ga-beacon)

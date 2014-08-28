@@ -684,15 +684,27 @@
                 objectToString.call(o).slice(8, -1).toLowerCase() == type;
         },
         /*\
+          * Raphael.createUUID
+          [ method ]
+          **
+          * Returns RFC4122, version 4 ID
+         \*/
+        createUUID = R.createUUID = (function(uuidRegEx, uuidReplacer) {
+            return function() {
+                return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(uuidRegEx, uuidReplacer).toUpperCase();
+            };
+        })(/[xy]/g, function(c) {
+            var r = math.random() * 16 | 0,
+                v = c == "x" ? r : (r & 3 | 8);
+            return v.toString(16);
+        }),
+        /*\
           * Raphael.clone
           [ method ]
           **
           * Returns a recursively cloned version of an object.
          \*/
-        clone;
-
-        if (hasPrototypeBug) {
-            clone = R.clone = function (obj) {
+        clone = R.clone = hasPrototypeBug ? function (obj) {
                 if (Object(obj) !== obj) {
                     return obj;
                 }
@@ -702,10 +714,7 @@
                         res[key] = clone(obj[key]);
                     }
                 return res;
-            }
-        }
-        else {
-            clone = R.clone = function (obj) {
+            } : function (obj) {
                 if (Object(obj) !== obj) {
                     return obj;
                 }
@@ -715,8 +724,7 @@
                         res[key] = clone(obj[key]);
                     }
                 return res;
-            }
-        }
+            };
 
     R._g = g;
 

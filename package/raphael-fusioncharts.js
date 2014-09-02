@@ -16,7 +16,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
 
 
 /**!
- * RedRaphael 1.1.10 - JavaScript Vector Library
+ * RedRaphael 1.1.11 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0
@@ -531,6 +531,10 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         objectToStr = "[object Object]",
         arraySlice = Array.prototype.slice,
         arraySplice = Array.prototype.splice,
+        hasPrototypeBug = (function () {
+            var a = function () {};
+            return a.hasOwnProperty("prototype");
+        }()),
         g = {
             doc: document,
             win: window
@@ -1077,26 +1081,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                 (type == "array" && Array.isArray && Array.isArray(o)) ||
                 objectToString.call(o).slice(8, -1).toLowerCase() == type;
         },
-
         /*\
-          * Raphael.clone
-          [ method ]
-          **
-          * Returns a recursively cloned version of an object.
-         \*/
-        clone = R.clone = function (obj) {
-            if (Object(obj) !== obj) {
-                return obj;
-            }
-            var res = new obj.constructor;
-            for (var key in obj)
-                if (obj[has](key)) {
-                    res[key] = clone(obj[key]);
-                }
-            return res;
-        },
-
-         /*\
           * Raphael.createUUID
           [ method ]
           **
@@ -1110,7 +1095,34 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             var r = math.random() * 16 | 0,
                 v = c == "x" ? r : (r & 3 | 8);
             return v.toString(16);
-        });
+        }),
+        /*\
+          * Raphael.clone
+          [ method ]
+          **
+          * Returns a recursively cloned version of an object.
+         \*/
+        clone = R.clone = hasPrototypeBug ? function (obj) {
+                if (Object(obj) !== obj) {
+                    return obj;
+                }
+                var res = new obj.constructor;
+                for (var key in obj)
+                    if (key !== "prototype" && obj[has](key)) {
+                        res[key] = clone(obj[key]);
+                    }
+                return res;
+            } : function (obj) {
+                if (Object(obj) !== obj) {
+                    return obj;
+                }
+                var res = new obj.constructor;
+                for (var key in obj)
+                    if (obj[has](key)) {
+                        res[key] = clone(obj[key]);
+                    }
+                return res;
+            };
 
     R._g = g;
 

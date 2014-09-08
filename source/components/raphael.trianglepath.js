@@ -52,7 +52,7 @@ window.Raphael && (window.Raphael.define && function (R) {
         name: 'trianglepath',
 
         // Constructor of the component goes here. Must be same name as the name of the component.
-        trianglepath: function () { // args: [x1, y1, x2, y2, x3, y3, r]
+        trianglepath: function () { // args: [x1, y1, x2, y2, x3, y3, r1, r2, r3]
             var paper = this,
                 args = arguments,
                 group = R._lastArgIfGroup(args),
@@ -61,7 +61,10 @@ window.Raphael && (window.Raphael.define && function (R) {
             return face.attr("trianglepath", [
                 args[0], args[1],
                 args[2], args[3],
-                args[4], args[5], args[6]
+                args[4], args[5], 
+                args[6] || 0, 
+                args[7] || 0, 
+                args[8] || 0
             ]);
         },
 
@@ -88,10 +91,12 @@ window.Raphael && (window.Raphael.define && function (R) {
         },
 
         ca: {
-            trianglepath: function (x1, y1, x2, y2, x3, y3, r) {
+            trianglepath: function (x1, y1, x2, y2, x3, y3, r1, r2, r3) {
                 /* Create the triangle path with the provided vertices.
-                 * Make rounded triangle corners if radius is provided. */
-                if (r) {
+                 * Make rounded triangle corners if radius is provided. 
+                 * r1, r2, r3 correspond to the radius at respective vertices
+                 */
+                if (r1 || r2 || r3) {
                     // Store arguments in trianglepath element
                     this._trianglePathAttr = arguments;
 
@@ -105,9 +110,9 @@ window.Raphael && (window.Raphael.define && function (R) {
 
                     // Get distance of points of curves from corresponding vertices
                     curveDistance = [
-                        r / tan(angles[0] / 2),
-                        r / tan(angles[1] / 2),
-                        r / tan(angles[2] / 2)
+                        r1 / tan(angles[0] / 2),
+                        r2 / tan(angles[1] / 2),
+                        r3 / tan(angles[2] / 2)
                     ];
 
                     // Get coordinates of the points of curve on the triangle

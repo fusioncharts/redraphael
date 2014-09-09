@@ -14,6 +14,7 @@ window.Raphael && (window.Raphael.define && function (R) {
         pow = win.Math.pow,
         acos = win.Math.acos,
         tan = win.Math.tan,
+        mathMin = win.Math.min,
 
         p2pdistance = R._cacher(function (x1, y1, x2, y2) {
             // Returns distance between two points
@@ -87,6 +88,12 @@ window.Raphael && (window.Raphael.define && function (R) {
                     acos((pow(edges[0], 2) + pow(edges[1], 2) - pow(edges[2], 2)) / (2 * edges[0] * edges[1])),
                     acos((pow(edges[2], 2) + pow(edges[1], 2) - pow(edges[0], 2)) / (2 * edges[2] * edges[1]))
                 ];
+            },
+
+            semiperimeter: function () {
+                // Returns the semiperimeter of triangle
+                var sides = this._sides || this.sides();
+                return ( (sides[0] + sides[1] + sides[2]) / 2);
             }
         },
 
@@ -106,13 +113,19 @@ window.Raphael && (window.Raphael.define && function (R) {
                     // Get all the angles of the triangle
                     var angles = this.enclosedAngles(),
                         curveDistance,
-                        curvePoints;
+                        curvePoints,
+                        inradius,
+                        s = this.semiperimeter();
+
+                    // Calculate inradius of triangle
+                    inradius = sqrt(s * (s - this._sides[0]) * (s - this._sides[1]) * (s - this._sides[2])) / s;
 
                     // Get distance of points of curves from corresponding vertices
+                    // Impose an upper limit on radius which is inradius of triangle
                     curveDistance = [
-                        r1 / tan(angles[0] / 2),
-                        r2 / tan(angles[1] / 2),
-                        r3 / tan(angles[2] / 2)
+                        mathMin(r1, inradius) / tan(angles[0] / 2),
+                        mathMin(r2, inradius) / tan(angles[1] / 2),
+                        mathMin(r3, inradius) / tan(angles[2] / 2)
                     ];
 
                     // Get coordinates of the points of curve on the triangle

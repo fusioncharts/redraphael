@@ -71,7 +71,7 @@ module.exports = function(grunt) {
                 svgorvmlRegex = /\.(svg|vml|canvas)\.js/,
                 closureRegex = /window\.Raphael.*\(R\)\s*\{/,
                 closureEndRegex = /\}\(window\.Raphael\);\s*$/,
-                exposeRegex = /(\r?\n\s*\/\/\s*EXPOSE(?:\r|\n|.)*\}\)\);)/;
+                exposeRegex = /(\r?\n\s*\/\/\s*EXPOSE(?:\r|\n|.)*\)\);)/;
 
             // Concatenate src
             src.forEach(function(path) {

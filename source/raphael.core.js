@@ -8,9 +8,9 @@
  *
  * Licensed under the MIT license.
  */
-(function (glob, factory) {
+(function (glob, factory, optOutModulePattern) {
     // AMD support
-    if (typeof define === "function" && define.amd) {
+    if (!optOutModulePattern && typeof define === "function" && define.amd) {
         // Define as an anonymous module
         define(["eve"], function( eve ) {
             return factory(glob, eve);
@@ -6397,4 +6397,4 @@
     oldRaphael.was ? (g.win.Raphael = R) : (Raphael = R);
 
     return R;
-}));
+}, (typeof optOutModulePattern != "undefined" ? optOutModulePattern : false)));

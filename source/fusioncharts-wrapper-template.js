@@ -9,7 +9,8 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         lib = global.hcLib,
         someRaphael = window.Raphael,
         eve,
-        RedRaphael;
+        RedRaphael,
+        optOutModulePattern = true;
 
 
     (function () {

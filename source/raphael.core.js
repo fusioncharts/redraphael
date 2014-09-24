@@ -5670,6 +5670,15 @@
 
         return o;
     };
+    elproto.clear = function () {
+    	if (this.removed || this.type !== 'group') {
+		return;
+	}
+        var o = this;
+        while (o.top) {
+             o.top.remove();
+        }
+    };
 
     // Set
     var Set = function(items) {

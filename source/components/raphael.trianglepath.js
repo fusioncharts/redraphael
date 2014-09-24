@@ -57,15 +57,29 @@ window.Raphael && (window.Raphael.define && function (R) {
             var paper = this,
                 args = arguments,
                 group = R._lastArgIfGroup(args),
-                face = paper.path(group);
+                face = paper.path(group),
+                argsLen = args.length,
+                r1 = 0,
+                r2 = 0,
+                r3 = 0;
+
+            if (argsLen == 6) {
+                r1 = r2 = r3 = 0;
+            }
+            else if (argsLen == 7) {
+                r1 = r2 = r3 = args[6];
+            } 
+            else if (argsLen == 9) {
+                r1 = args[6];
+                r2 = args[7];
+                r3 = args[8];
+            }
 
             return face.attr("trianglepath", [
                 args[0], args[1],
                 args[2], args[3],
-                args[4], args[5], 
-                args[6] || 0, 
-                args[7] || 0, 
-                args[8] || 0
+                args[4], args[5],
+                r1, r2, r3
             ]);
         },
 
@@ -93,14 +107,14 @@ window.Raphael && (window.Raphael.define && function (R) {
             semiperimeter: function () {
                 // Returns the semiperimeter of triangle
                 var sides = this._sides || this.sides();
-                return ( (sides[0] + sides[1] + sides[2]) / 2);
+                return ((sides[0] + sides[1] + sides[2]) / 2);
             }
         },
 
         ca: {
             trianglepath: function (x1, y1, x2, y2, x3, y3, r1, r2, r3) {
                 /* Create the triangle path with the provided vertices.
-                 * Make rounded triangle corners if radius is provided. 
+                 * Make rounded triangle corners if radius is provided.
                  * r1, r2, r3 correspond to the radius at respective vertices
                  */
                 if (r1 || r2 || r3) {

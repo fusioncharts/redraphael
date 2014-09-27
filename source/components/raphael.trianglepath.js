@@ -64,9 +64,9 @@ window.Raphael && (window.Raphael.define && function (R) {
                 r3 = 0;
 
             r1 = r2 = r3 = (args[6] || 0);
-	    if (argsLen > 7) {
+            if (argsLen > 7) {
                 r2 = args[7];
-		r3 = args[8];
+                r3 = args[8];
             }
 
             return face.attr("trianglepath", [
@@ -84,7 +84,7 @@ window.Raphael && (window.Raphael.define && function (R) {
                 return [
                     p2pdistance(points[0], points[1], points[2], points[3]), // p1, p2
                     p2pdistance(points[2], points[3], points[4], points[5]), // p2, p3
-                    p2pdistance(points[4], points[5], points[0], points[1])  // p3, p1
+                    p2pdistance(points[4], points[5], points[0], points[1]) // p3, p1
                 ];
             },
 

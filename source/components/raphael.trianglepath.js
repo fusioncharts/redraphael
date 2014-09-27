@@ -63,16 +63,10 @@ window.Raphael && (window.Raphael.define && function (R) {
                 r2 = 0,
                 r3 = 0;
 
-            if (argsLen == 6) {
-                r1 = r2 = r3 = 0;
-            }
-            else if (argsLen == 7) {
-                r1 = r2 = r3 = args[6];
-            } 
-            else if (argsLen == 9) {
-                r1 = args[6];
+            r1 = r2 = r3 = (args[6] || 0);
+	    if (argsLen > 7) {
                 r2 = args[7];
-                r3 = args[8];
+		r3 = args[8];
             }
 
             return face.attr("trianglepath", [
@@ -113,10 +107,9 @@ window.Raphael && (window.Raphael.define && function (R) {
 
         ca: {
             trianglepath: function (x1, y1, x2, y2, x3, y3, r1, r2, r3) {
-                /* Create the triangle path with the provided vertices.
-                 * Make rounded triangle corners if radius is provided.
-                 * r1, r2, r3 correspond to the radius at respective vertices
-                 */
+                // Create the triangle path with the provided vertices.
+                // Make rounded triangle corners if radius is provided.
+                // r1, r2, r3 correspond to the radius at respective vertices
                 if (r1 || r2 || r3) {
                     // Store arguments in trianglepath element
                     this._trianglePathAttr = arguments;

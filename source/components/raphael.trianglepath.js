@@ -14,6 +14,7 @@ window.Raphael && (window.Raphael.define && function (R) {
         pow = win.Math.pow,
         acos = win.Math.acos,
         tan = win.Math.tan,
+        mathMin = win.Math.min,
 
         p2pdistance = R._cacher(function (x1, y1, x2, y2) {
             // Returns distance between two points
@@ -52,16 +53,27 @@ window.Raphael && (window.Raphael.define && function (R) {
         name: 'trianglepath',
 
         // Constructor of the component goes here. Must be same name as the name of the component.
-        trianglepath: function () { // args: [x1, y1, x2, y2, x3, y3, r]
+        trianglepath: function () { // args: [x1, y1, x2, y2, x3, y3, r1, r2, r3]
             var paper = this,
                 args = arguments,
                 group = R._lastArgIfGroup(args),
-                face = paper.path(group);
+                face = paper.path(group),
+                argsLen = args.length,
+                r1 = 0,
+                r2 = 0,
+                r3 = 0;
+
+            r1 = r2 = r3 = (args[6] || 0);
+            if (argsLen > 7) {
+                r2 = args[7];
+                r3 = args[8];
+            }
 
             return face.attr("trianglepath", [
                 args[0], args[1],
                 args[2], args[3],
-                args[4], args[5], args[6]
+                args[4], args[5],
+                r1, r2, r3
             ]);
         },
 
@@ -72,7 +84,7 @@ window.Raphael && (window.Raphael.define && function (R) {
                 return [
                     p2pdistance(points[0], points[1], points[2], points[3]), // p1, p2
                     p2pdistance(points[2], points[3], points[4], points[5]), // p2, p3
-                    p2pdistance(points[4], points[5], points[0], points[1])  // p3, p1
+                    p2pdistance(points[4], points[5], points[0], points[1]) // p3, p1
                 ];
             },
 
@@ -84,14 +96,21 @@ window.Raphael && (window.Raphael.define && function (R) {
                     acos((pow(edges[0], 2) + pow(edges[1], 2) - pow(edges[2], 2)) / (2 * edges[0] * edges[1])),
                     acos((pow(edges[2], 2) + pow(edges[1], 2) - pow(edges[0], 2)) / (2 * edges[2] * edges[1]))
                 ];
+            },
+
+            semiperimeter: function () {
+                // Returns the semiperimeter of triangle
+                var sides = this._sides || this.sides();
+                return ((sides[0] + sides[1] + sides[2]) / 2);
             }
         },
 
         ca: {
-            trianglepath: function (x1, y1, x2, y2, x3, y3, r) {
-                /* Create the triangle path with the provided vertices.
-                 * Make rounded triangle corners if radius is provided. */
-                if (r) {
+            trianglepath: function (x1, y1, x2, y2, x3, y3, r1, r2, r3) {
+                // Create the triangle path with the provided vertices.
+                // Make rounded triangle corners if radius is provided.
+                // r1, r2, r3 correspond to the radius at respective vertices
+                if (r1 || r2 || r3) {
                     // Store arguments in trianglepath element
                     this._trianglePathAttr = arguments;
 
@@ -101,13 +120,19 @@ window.Raphael && (window.Raphael.define && function (R) {
                     // Get all the angles of the triangle
                     var angles = this.enclosedAngles(),
                         curveDistance,
-                        curvePoints;
+                        curvePoints,
+                        inradius,
+                        s = this.semiperimeter();
+
+                    // Calculate inradius of triangle
+                    inradius = sqrt(s * (s - this._sides[0]) * (s - this._sides[1]) * (s - this._sides[2])) / s;
 
                     // Get distance of points of curves from corresponding vertices
+                    // Impose an upper limit on radius which is inradius of triangle
                     curveDistance = [
-                        r / tan(angles[0] / 2),
-                        r / tan(angles[1] / 2),
-                        r / tan(angles[2] / 2)
+                        mathMin(r1, inradius) / tan(angles[0] / 2),
+                        mathMin(r2, inradius) / tan(angles[1] / 2),
+                        mathMin(r3, inradius) / tan(angles[2] / 2)
                     ];
 
                     // Get coordinates of the points of curve on the triangle

@@ -456,17 +456,22 @@ window.Raphael && window.Raphael.svg && function(R) {
         var predefValue = dasharray[Str(value).toLowerCase()];
         value = predefValue || ((value !== undefined) && [].concat(value));
         if (value) {
-            var width = o.attrs["stroke-width"] || "1",
+            var width = o.attrs["stroke-width"] || 1,
                     butt = {
                     round: width,
                     square: width,
                     butt: 0
                 }[o.attrs["stroke-linecap"] || params["stroke-linecap"]] || 0,
                     i,
-                    l = i = value.length;
+                    l = i = value.length,
+                    calculatedValues;
             if (predefValue) {
+                calculatedValues = [];
                 while (i--) {
-                    value[i] = value[i] * width + ((i % 2) ? 1 : -1) * butt;
+                    calculatedValues[i] = value[i] * width + ((i % 2) ? 1 : -1) * butt;
+                    if (calculatedValues[i] <= 0) {
+                        calculatedValues[i] = 0.1;
+                    }
                 }
             }
             else {
@@ -477,10 +482,11 @@ window.Raphael && window.Raphael.svg && function(R) {
                         value[i] = 0.1;
                     }
                 }
+                calculatedValues = value;
             }
             if (R.is(value, 'array')) {
                 $(o.node, {
-                    "stroke-dasharray": value.join(",")
+                    "stroke-dasharray": calculatedValues.join(",")
                 });
             }
         }

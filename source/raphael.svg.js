@@ -469,8 +469,8 @@ window.Raphael && window.Raphael.svg && function(R) {
                 calculatedValues = [];
                 while (i--) {
                     calculatedValues[i] = value[i] * width + ((i % 2) ? 1 : -1) * butt;
-                    if (calculatedValues[i] <= 0) {
-                        calculatedValues[i] = 0.1;
+                    if (calculatedValues[i] < 0) {
+                        calculatedValues[i] = 0;
                     }
                 }
             }

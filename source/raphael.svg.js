@@ -453,37 +453,32 @@ window.Raphael && window.Raphael.svg && function(R) {
         "--..": [8, 3, 1, 3, 1, 3]
     },
     addDashes = function(o, value, params) {
-        var predefValue = dasharray[Str(value).toLowerCase()];
+        var predefValue = dasharray[Str(value).toLowerCase()],
+            calculatedValues,
+            width,
+            butt,
+            i,
+            l,
+            widthFactor;
+
         value = predefValue || ((value !== undefined) && [].concat(value));
         if (value) {
-            var width = o.attrs["stroke-width"] || 1,
-                    butt = {
-                    round: width,
-                    square: width,
-                    butt: 0
-                }[o.attrs["stroke-linecap"] || params["stroke-linecap"]] || 0,
-                    i,
-                    l = i = value.length,
-                    calculatedValues;
-            if (predefValue) {
-                calculatedValues = [];
-                while (i--) {
-                    calculatedValues[i] = value[i] * width + ((i % 2) ? 1 : -1) * butt;
-                    if (calculatedValues[i] < 0) {
-                        calculatedValues[i] = 0;
-                    }
-                }
+
+            width = o.attrs["stroke-width"] || 1;
+            butt = {
+                round: width,
+                square: width,
+                butt: 0
+            }[o.attrs["stroke-linecap"] || params["stroke-linecap"]] || 0;
+            l = i = value.length;
+            widthFactor = predefValue ? width : 1;
+
+            calculatedValues = [];
+            while (i--) {
+                calculatedValues[i] = value[i] * widthFactor + ((i % 2) ? 1 : -1) * butt;
+                calculatedValues[i] < 0 && (calculatedValues[i] = 0);
             }
-            else {
-                for (i = 0; i < l; i += 2) {
-                    value[i] -= butt;
-                    value[i + 1] && (value[i + 1] += butt);
-                    if (value[i] <= 0) {
-                        value[i] = 0.1;
-                    }
-                }
-                calculatedValues = value;
-            }
+
             if (R.is(value, 'array')) {
                 $(o.node, {
                     "stroke-dasharray": calculatedValues.join(",")

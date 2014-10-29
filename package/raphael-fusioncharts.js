@@ -17,7 +17,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
 
 
 /**!
- * RedRaphael 1.1.12 - JavaScript Vector Library
+ * RedRaphael 1.1.13 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0
@@ -7199,7 +7199,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                 attr = {};
                 attr["marker-" + se] = "url('" + R._url + "#" + markerId + "')";
                 if (to || from) {
-                    attr.d = Raphael.getSubpath(attrs.path, from, to);
+                    attr.d = R.getSubpath(attrs.path, from, to);
                 }
                 $(node, attr);
                 o._.arrows[se + "Path"] = pathId;
@@ -7216,7 +7216,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                     to = R.getTotalLength(attrs.path) - (o._.arrows.enddx * stroke || 0);
                 }
                 o._.arrows[se + "Path"] && $(node, {
-                    d: Raphael.getSubpath(attrs.path, from, to)
+                    d: R.getSubpath(attrs.path, from, to)
                 });
                 delete o._.arrows[se + "Path"];
                 delete o._.arrows[se + "Marker"];
@@ -7246,34 +7246,35 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         "--..": [8, 3, 1, 3, 1, 3]
     },
     addDashes = function(o, value, params) {
-        var predefValue = dasharray[Str(value).toLowerCase()];
+        var predefValue = dasharray[Str(value).toLowerCase()],
+            calculatedValues,
+            width,
+            butt,
+            i,
+            l,
+            widthFactor;
+
         value = predefValue || ((value !== undefined) && [].concat(value));
         if (value) {
-            var width = o.attrs["stroke-width"] || "1",
-                    butt = {
-                    round: width,
-                    square: width,
-                    butt: 0
-                }[o.attrs["stroke-linecap"] || params["stroke-linecap"]] || 0,
-                    i,
-                    l = i = value.length;
-            if (predefValue) {
-                while (i--) {
-                    value[i] = value[i] * width + ((i % 2) ? 1 : -1) * butt;
-                }
+
+            width = o.attrs["stroke-width"] || 1;
+            butt = {
+                round: width,
+                square: width,
+                butt: 0
+            }[o.attrs["stroke-linecap"] || params["stroke-linecap"]] || 0;
+            l = i = value.length;
+            widthFactor = predefValue ? width : 1;
+
+            calculatedValues = [];
+            while (i--) {
+                calculatedValues[i] = value[i] * widthFactor + ((i % 2) ? 1 : -1) * butt;
+                calculatedValues[i] < 0 && (calculatedValues[i] = 0);
             }
-            else {
-                for (i = 0; i < l; i += 2) {
-                    value[i] -= butt;
-                    value[i + 1] && (value[i + 1] += butt);
-                    if (value[i] <= 0) {
-                        value[i] = 0.1;
-                    }
-                }
-            }
+
             if (R.is(value, 'array')) {
                 $(o.node, {
-                    "stroke-dasharray": value.join(",")
+                    "stroke-dasharray": calculatedValues.join(",")
                 });
             }
         }

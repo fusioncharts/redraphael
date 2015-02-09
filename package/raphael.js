@@ -456,12 +456,16 @@
         var args,
             f;
 
-        // Code commented as resources will now be referenced using relative urls.
-        // @todo Remove once we have acertained that there are no issues in any environment.
-        // if (R._url) { // reinitialize URL to be safe from popstate event
+        // Code commented as resources will now be referenced using relative URLs.
+        // @todo Remove once we have ascertained that there are no issues in any environment.
+        // if (R._url) { // Reinitialize URLs to be safe from pop state event
         //     R._url = (R._g && R._g.win || window).location.href.replace(/#.*?$/, "");
         // }
-        R._url = '';
+        // If the URL is undefined only then initialize the URL with blank in order to support
+        // both relative as well as absolute URLs
+        if (R._url === undefined) {
+            R._url = "";
+        }
 
         if (R.is(first, "function")) {
             return loaded ? first() : eve.on("raphael.DOMload", first);

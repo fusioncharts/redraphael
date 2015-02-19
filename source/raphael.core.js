@@ -82,6 +82,7 @@
         // }
         // If the URL is undefined only then initialize the URL with blank in order to support
         // both relative as well as absolute URLs
+        // @todo Need to track the URL change and modify the URL for the gradient and other elements dynamically.
         if (R._url === undefined) {
             R._url = "";
         }

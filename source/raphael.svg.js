@@ -858,7 +858,10 @@ window.Raphael && window.Raphael.svg && function(R) {
             fontSize = computedStyle ?
                 toFloat(R._g.doc.defaultView.getComputedStyle(node.firstChild, E).getPropertyValue("font-size")) : 10,
             lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading,
-            valign = a[has]("vertical-align") ? a["vertical-align"] : "middle";
+            valign = a[has]("vertical-align") ? a["vertical-align"] : "middle",
+            direction = (params["direction"] || computedStyle ? computedStyle.getPropertyValue("direction") : "initial")
+                .toLowerCase(),
+            isIE = /*@cc_on!@*/false || !!document.documentMode;
 
         if (isNaN(lineHeight)) {
             lineHeight = fontSize * leading;
@@ -899,22 +902,50 @@ window.Raphael && window.Raphael.svg && function(R) {
                 tspan.appendChild(R._g.doc.createTextNode(texts[i]));
                 node.appendChild(tspan);
                 tspans[i] = tspan;
+
+                if (!isIE && direction === "rtl" && i < ii - 1) {
+                    tspan = $("tspan");
+                    $(tspan, {
+                        visibility: "hidden",
+                        "font-size": "0px"
+                    });
+                    tspan.appendChild(R._g.doc.createTextNode("i"));
+                    node.appendChild(tspan);
+                }
             }
             el._textdirty = false;
         } else {
             tspans = node.getElementsByTagName("tspan");
-            for (i = 0, ii = tspans.length; i < ii; i++)
+            var obj,
+                numDummyTspans = 0;
+
+            for (i = 0, ii = tspans.length; i < ii; i++) {
+                tspan = tspans[i];
+                obj = tspan.attributes[0];
+
+                if (obj && (obj.name === "visibility" || obj.nodeName === "visibility") &&
+                        (obj.value === "hidden" || obj.nodeValue === "hidden")) {
+                    continue;
+                }
+
                 if (i) {
-                    $(tspans[i], {
+                    $(tspan, {
                         dy: lineHeight,
                         x: a.x
                     });
                 } else {
+                    obj = tspans[1] && tspans[1].attributes[0];
+                    if (obj && (obj.name === "visibility" || obj.nodeName === "visibility") &&
+                            (obj.value === "hidden" || obj.nodeValue === "hidden")) {
+                        numDummyTspans = math.floor(tspans.length * 0.5);
+                    }
+
                     $(tspans[0], {
-                        dy: lineHeight * tspans.length * valign,
+                        dy: lineHeight * (tspans.length - numDummyTspans) * valign,
                         x: a.x
                     });
                 }
+            }
         }
         $(node, {
             x: a.x,

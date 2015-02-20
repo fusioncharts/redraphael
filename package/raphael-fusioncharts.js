@@ -554,6 +554,11 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
 
         supportsTouch = R.supportsTouch = "createTouch" in doc,
 
+        // The devices which both touch and pointer.
+        supportsOnlyTouch = R.supportsOnlyTouch = (supportsTouch &&
+                        !(win.navigator.maxTouchPoints ||
+                        win.navigator.msMaxTouchPoints)),
+
         CustomAttributes = function () {
             /*\
              * Raphael.ca
@@ -669,11 +674,17 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             image: 1,
             group: 1
         },
-        events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchstart touchmove touchend touchcancel"[split](S),
+        // Add new dragstart, dragmove and dragend events in order to support touch drag in both touch and hybrid devices
+        events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchstart touchmove touchend touchcancel dragstart dragmove dragend"[split](S),
         touchMap = R._touchMap = {
             mousedown: "touchstart",
             mousemove: "touchmove",
             mouseup: "touchend"
+        },
+        dragEventMap = R._dragEventMap = {
+            dragstart: "mousedown",
+            dragmove: "mousemove",
+            dragend: "mouseup"
         },
 
         Str = win.String,
@@ -3690,11 +3701,15 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
     addEvent = R.addEvent = (function() {
         if (g.doc.addEventListener) {
             return function(obj, type, fn, element) {
-                var realName = supportsTouch && touchMap[type] ? touchMap[type] : type,
+                var realName = supportsOnlyTouch && touchMap[type] || type,
+                    f;
+
+                touchMap[dragEventMap[type]] && (realName = touchMap[dragEventMap[type]]);
+
                 f = function(e) {
                     var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
                         scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft;
-                    if (supportsTouch && touchMap[has](type)) {
+                    if (supportsTouch && touchMap[has](supportsOnlyTouch ? type : dragEventMap[type])) {
                         for (var i = 0, ii = e.targetTouches && e.targetTouches.length; i < ii; i++) {
                             if (e.targetTouches[i].target == obj) {
                                 var olde = e;
@@ -3748,7 +3763,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
 
         while (j--) {
             dragi = drag[j];
-            if (supportsTouch) {
+            if (supportsTouch && e.type === 'touchmove') {
                 var i = e.touches.length,
                 touch;
                 while (i--) {
@@ -4234,6 +4249,10 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
 
             !drag.length && R.mousemove(dragMove).mouseup(dragUp);
 
+            // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
+            if (supportsTouch && !supportsOnlyTouch) {
+                !drag.length && R.dragmove(dragMove).dragend(dragUp);
+            }
             drag.push({
                 el: this,
                 move_scope: move_scope,
@@ -4252,6 +4271,10 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             start: start
         });
         this.mousedown(start);
+        // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
+        if (supportsTouch && !supportsOnlyTouch) {
+            this.dragstart(start);
+        }
         return this;
     };
 
@@ -7656,7 +7679,10 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             fontSize = computedStyle ?
                 toFloat(R._g.doc.defaultView.getComputedStyle(node.firstChild, E).getPropertyValue("font-size")) : 10,
             lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading,
-            valign = a[has]("vertical-align") ? a["vertical-align"] : "middle";
+            valign = a[has]("vertical-align") ? a["vertical-align"] : "middle",
+            direction = (params["direction"] || computedStyle ? computedStyle.getPropertyValue("direction") : "initial")
+                .toLowerCase(),
+            isIE = /*@cc_on!@*/false || !!document.documentMode;
 
         if (isNaN(lineHeight)) {
             lineHeight = fontSize * leading;
@@ -7697,22 +7723,50 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                 tspan.appendChild(R._g.doc.createTextNode(texts[i]));
                 node.appendChild(tspan);
                 tspans[i] = tspan;
+
+                if (!isIE && direction === "rtl" && i < ii - 1) {
+                    tspan = $("tspan");
+                    $(tspan, {
+                        visibility: "hidden",
+                        "font-size": "0px"
+                    });
+                    tspan.appendChild(R._g.doc.createTextNode("i"));
+                    node.appendChild(tspan);
+                }
             }
             el._textdirty = false;
         } else {
             tspans = node.getElementsByTagName("tspan");
-            for (i = 0, ii = tspans.length; i < ii; i++)
+            var obj,
+                numDummyTspans = 0;
+
+            for (i = 0, ii = tspans.length; i < ii; i++) {
+                tspan = tspans[i];
+                obj = tspan.attributes[0];
+
+                if (obj && (obj.name === "visibility" || obj.nodeName === "visibility") &&
+                        (obj.value === "hidden" || obj.nodeValue === "hidden")) {
+                    continue;
+                }
+
                 if (i) {
-                    $(tspans[i], {
+                    $(tspan, {
                         dy: lineHeight,
                         x: a.x
                     });
                 } else {
+                    obj = tspans[1] && tspans[1].attributes[0];
+                    if (obj && (obj.name === "visibility" || obj.nodeName === "visibility") &&
+                            (obj.value === "hidden" || obj.nodeValue === "hidden")) {
+                        numDummyTspans = math.floor(tspans.length * 0.5);
+                    }
+
                     $(tspans[0], {
-                        dy: lineHeight * tspans.length * valign,
+                        dy: lineHeight * (tspans.length - numDummyTspans) * valign,
                         x: a.x
                     });
                 }
+            }
         }
         $(node, {
             x: a.x,

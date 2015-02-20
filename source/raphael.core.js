@@ -155,6 +155,11 @@
 
         supportsTouch = R.supportsTouch = "createTouch" in doc,
 
+        // The devices which both touch and pointer.
+        supportsOnlyTouch = R.supportsOnlyTouch = (supportsTouch &&
+                        !(win.navigator.maxTouchPoints ||
+                        win.navigator.msMaxTouchPoints)),
+
         CustomAttributes = function () {
             /*\
              * Raphael.ca
@@ -270,11 +275,17 @@
             image: 1,
             group: 1
         },
-        events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchstart touchmove touchend touchcancel"[split](S),
+        // Add new dragstart, dragmove and dragend events in order to support touch drag in both touch and hybrid devices
+        events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchstart touchmove touchend touchcancel dragstart dragmove dragend"[split](S),
         touchMap = R._touchMap = {
             mousedown: "touchstart",
             mousemove: "touchmove",
             mouseup: "touchend"
+        },
+        dragEventMap = R._dragEventMap = {
+            dragstart: "mousedown",
+            dragmove: "mousemove",
+            dragend: "mouseup"
         },
 
         Str = win.String,
@@ -3291,11 +3302,15 @@
     addEvent = R.addEvent = (function() {
         if (g.doc.addEventListener) {
             return function(obj, type, fn, element) {
-                var realName = supportsTouch && touchMap[type] ? touchMap[type] : type,
+                var realName = supportsOnlyTouch && touchMap[type] || type,
+                    f;
+
+                touchMap[dragEventMap[type]] && (realName = touchMap[dragEventMap[type]]);
+
                 f = function(e) {
                     var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
                         scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft;
-                    if (supportsTouch && touchMap[has](type)) {
+                    if (supportsTouch && touchMap[has](supportsOnlyTouch ? type : dragEventMap[type])) {
                         for (var i = 0, ii = e.targetTouches && e.targetTouches.length; i < ii; i++) {
                             if (e.targetTouches[i].target == obj) {
                                 var olde = e;
@@ -3349,7 +3364,7 @@
 
         while (j--) {
             dragi = drag[j];
-            if (supportsTouch) {
+            if (supportsTouch && e.type === 'touchmove') {
                 var i = e.touches.length,
                 touch;
                 while (i--) {
@@ -3835,6 +3850,10 @@
 
             !drag.length && R.mousemove(dragMove).mouseup(dragUp);
 
+            // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
+            if (supportsTouch && !supportsOnlyTouch) {
+                !drag.length && R.dragmove(dragMove).dragend(dragUp);
+            }
             drag.push({
                 el: this,
                 move_scope: move_scope,
@@ -3853,6 +3872,10 @@
             start: start
         });
         this.mousedown(start);
+        // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
+        if (supportsTouch && !supportsOnlyTouch) {
+            this.dragstart(start);
+        }
         return this;
     };
 

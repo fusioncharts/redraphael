@@ -456,12 +456,17 @@
         var args,
             f;
 
-        // Code commented as resources will now be referenced using relative urls.
-        // @todo Remove once we have acertained that there are no issues in any environment.
-        // if (R._url) { // reinitialize URL to be safe from popstate event
+        // Code commented as resources will now be referenced using relative URLs.
+        // @todo Remove once we have ascertained that there are no issues in any environment.
+        // if (R._url) { // Reinitialize URLs to be safe from pop state event
         //     R._url = (R._g && R._g.win || window).location.href.replace(/#.*?$/, "");
         // }
-        R._url = '';
+        // If the URL is undefined only then initialize the URL with blank in order to support
+        // both relative as well as absolute URLs
+        // @todo Need to track the URL change and modify the URL for the gradient and other elements dynamically.
+        if (R._url === undefined) {
+            R._url = "";
+        }
 
         if (R.is(first, "function")) {
             return loaded ? first() : eve.on("raphael.DOMload", first);
@@ -7656,7 +7661,10 @@
             fontSize = computedStyle ?
                 toFloat(R._g.doc.defaultView.getComputedStyle(node.firstChild, E).getPropertyValue("font-size")) : 10,
             lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading,
-            valign = a[has]("vertical-align") ? a["vertical-align"] : "middle";
+            valign = a[has]("vertical-align") ? a["vertical-align"] : "middle",
+            direction = (params["direction"] || computedStyle ? computedStyle.getPropertyValue("direction") : "initial")
+                .toLowerCase(),
+            isIE = /*@cc_on!@*/false || !!document.documentMode;
 
         if (isNaN(lineHeight)) {
             lineHeight = fontSize * leading;
@@ -7697,22 +7705,50 @@
                 tspan.appendChild(R._g.doc.createTextNode(texts[i]));
                 node.appendChild(tspan);
                 tspans[i] = tspan;
+
+                if (!isIE && direction === "rtl" && i < ii - 1) {
+                    tspan = $("tspan");
+                    $(tspan, {
+                        visibility: "hidden",
+                        "font-size": "0px"
+                    });
+                    tspan.appendChild(R._g.doc.createTextNode("i"));
+                    node.appendChild(tspan);
+                }
             }
             el._textdirty = false;
         } else {
             tspans = node.getElementsByTagName("tspan");
-            for (i = 0, ii = tspans.length; i < ii; i++)
+            var obj,
+                numDummyTspans = 0;
+
+            for (i = 0, ii = tspans.length; i < ii; i++) {
+                tspan = tspans[i];
+                obj = tspan.attributes[0];
+
+                if (obj && (obj.name === "visibility" || obj.nodeName === "visibility") &&
+                        (obj.value === "hidden" || obj.nodeValue === "hidden")) {
+                    continue;
+                }
+
                 if (i) {
-                    $(tspans[i], {
+                    $(tspan, {
                         dy: lineHeight,
                         x: a.x
                     });
                 } else {
+                    obj = tspans[1] && tspans[1].attributes[0];
+                    if (obj && (obj.name === "visibility" || obj.nodeName === "visibility") &&
+                            (obj.value === "hidden" || obj.nodeValue === "hidden")) {
+                        numDummyTspans = math.floor(tspans.length * 0.5);
+                    }
+
                     $(tspans[0], {
-                        dy: lineHeight * tspans.length * valign,
+                        dy: lineHeight * (tspans.length - numDummyTspans) * valign,
                         x: a.x
                     });
                 }
+            }
         }
         $(node, {
             x: a.x,

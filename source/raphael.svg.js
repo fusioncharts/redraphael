@@ -859,8 +859,8 @@ window.Raphael && window.Raphael.svg && function(R) {
                 toFloat(R._g.doc.defaultView.getComputedStyle(node.firstChild, E).getPropertyValue("font-size")) : 10,
             lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading,
             valign = a[has]("vertical-align") ? a["vertical-align"] : "middle",
-            direction = (params["direction"] || (computedStyle ? computedStyle.getPropertyValue("direction") : "initial"))
-                .toLowerCase(),
+            direction = (params["direction"] || (computedStyle ?
+                computedStyle.getPropertyValue("direction") : "initial")).toLowerCase(),
             isIE = /*@cc_on!@*/false || !!document.documentMode;
 
         if (isNaN(lineHeight)) {

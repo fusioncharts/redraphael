@@ -3693,7 +3693,7 @@
                         scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft;
                     if (supportsTouch && touchMap[has](supportsOnlyTouch ? type : dragEventMap[type])) {
                         for (var i = 0, ii = e.targetTouches && e.targetTouches.length; i < ii; i++) {
-                            if (e.targetTouches[i].target == obj) {
+                            if (e.targetTouches[i].target == obj || e.targetTouches[i].target.nodeName == 'tspan') {
                                 var olde = e;
                                 e = e.targetTouches[i];
                                 e.originalEvent = olde;

@@ -3690,10 +3690,12 @@
 
                 f = function(e) {
                     var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
-                        scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft;
+                        scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
+                        target;
                     if (supportsTouch && touchMap[has](supportsOnlyTouch ? type : dragEventMap[type])) {
                         for (var i = 0, ii = e.targetTouches && e.targetTouches.length; i < ii; i++) {
-                            if (e.targetTouches[i].target == obj || e.targetTouches[i].target.nodeName == 'tspan') {
+                            target = e.targetTouches[i].target;
+                            if (target == obj || (target.nodeName == 'tspan' && target.parentNode == obj)) {
                                 var olde = e;
                                 e = e.targetTouches[i];
                                 e.originalEvent = olde;

@@ -39,7 +39,7 @@ window.Raphael && window.Raphael.svg && function(R) {
         // To fix this issue the attribute "stroke-dasharray" will not be applied
         // if the value is "none"
         // Define an object that contains the property "none", this will be used for
-        // Comparision of "none" value
+        // comparison of "none" value
         strokeValue = {
             "none": true
         },
@@ -689,8 +689,7 @@ window.Raphael && window.Raphael.svg && function(R) {
                         node.setAttribute(att, value);
                         if (attrs["stroke-dasharray"]) {
                             // If the value of "stroke-dasharray" is "none" don't apply the attribute
-                            !strokeValue[attrs["stroke-dasharray"]] &&
-                                    addDashes(o, attrs["stroke-dasharray"], params);
+                            !strokeValue[attrs["stroke-dasharray"]] && addDashes(o, attrs["stroke-dasharray"], params);
                         }
                         if (o._.arrows) {
                             "startString" in o._.arrows && addArrow(o, o._.arrows.startString);

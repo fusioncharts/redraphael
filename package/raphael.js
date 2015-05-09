@@ -7244,8 +7244,13 @@
         }
     },
     dasharray = {
-        "": [0],
-        "none": [0],
+        // In Firefox 37.0.1 the value of "stroke-dasharray" attribute `0` make the stroke/border invisible.
+        // The actual issue is setting `none` as the value of `stroke-dasharray` attribute
+        // redraphael internally changes the "none" value to "0", thus the stroke/border becomes invisible
+        // To fix this issue now instead of setting the value as `0` for `stroke-dasharray` attribute
+        // now using `none` string as none is a w3c standard value for stroke-dasharray
+        "": "none",
+        "none": "none",
         "-": [3, 1],
         ".": [1, 1],
         "-.": [3, 1, 1, 1],

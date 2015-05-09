@@ -34,15 +34,6 @@ window.Raphael && window.Raphael.svg && function(R) {
             oval: "M2.5,0A2.5,2.5,0,0,1,2.5,5 2.5,2.5,0,0,1,2.5,0z"
         },
         markerCounter = {},
-        // Due to a bug in Firefox if the value of "stroke-dasharray" attribute is "none"
-        // the stroke border will not be visible in Firefox 37.0.1
-        // To fix this issue the attribute "stroke-dasharray" will not be applied
-        // if the value is "none"
-        // Define an object that contains the property "none", this will be used for
-        // Comparision of "none" value
-        strokeValue = {
-            "none": true
-        },
         updateReferenceUrl = function () {
             return R._url = R._g.win.location.href.replace(/#.*?$/, E);
         };
@@ -688,9 +679,7 @@ window.Raphael && window.Raphael.svg && function(R) {
                         }
                         node.setAttribute(att, value);
                         if (attrs["stroke-dasharray"]) {
-                            // If the value of "stroke-dasharray" is "none" don't apply the attribute
-                            !strokeValue[attrs["stroke-dasharray"]] &&
-                                    addDashes(o, attrs["stroke-dasharray"], params);
+                            addDashes(o, attrs["stroke-dasharray"], params);
                         }
                         if (o._.arrows) {
                             "startString" in o._.arrows && addArrow(o, o._.arrows.startString);
@@ -698,8 +687,7 @@ window.Raphael && window.Raphael.svg && function(R) {
                         }
                         break;
                     case "stroke-dasharray":
-                        // If the value of "stroke-dasharray" is "none" don't apply the attribute
-                        !strokeValue[value] && addDashes(o, value, params);
+                        addDashes(o, value, params);
                         break;
                     case "fill":
                         var isURL = Str(value).match(R._ISURL);

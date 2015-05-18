@@ -7249,8 +7249,8 @@
         // redraphael internally changes the "none" value to "0", thus the stroke/border becomes invisible
         // To fix this issue now instead of setting the value as `0` for `stroke-dasharray` attribute
         // now using `none` string as none is a w3c standard value for stroke-dasharray
-        "": "none",
-        "none": "none",
+        "": ["none"],
+        "none": ["none"],
         "-": [3, 1],
         ".": [1, 1],
         "-.": [3, 1, 1, 1],
@@ -7285,7 +7285,7 @@
 
             calculatedValues = [];
             while (i--) {
-                calculatedValues[i] = value[i] * widthFactor + ((i % 2) ? 1 : -1) * butt;
+                calculatedValues[i] = (value[i] * widthFactor + ((i % 2) ? 1 : -1) * butt) || value[i];
                 calculatedValues[i] < 0 && (calculatedValues[i] = 0);
             }
 

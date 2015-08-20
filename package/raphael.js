@@ -8712,11 +8712,11 @@
             }
             if (!params["clip-rect"]) {
                 if (isGroup && o.clip) {
-                    node.style.clip = "rect(auto auto auto auto)";
+                    node.style.clip = "rect(0px 10800px 10800px 0px)";
                     delete o.clip;
                 }
                 else if (node.clipRect) {
-                    node.clipRect.style.clip = "rect(auto auto auto auto)";
+                    node.clipRect.style.clip = "rect(0px 10800px 10800px 0px)";
                 }
             }
         }

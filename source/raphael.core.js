@@ -3405,12 +3405,8 @@
         }
     },
     dragUp = function(e) {
-        if (supportsTouch && !supportsOnlyTouch) {
-            R.undragmove(dragMove).undragend(dragUp);
-        }
-        else {
-            R.unmousemove(dragMove).unmouseup(dragUp);
-        }
+        R.undragmove(dragMove).undragend(dragUp);
+        R.unmousemove(dragMove).unmouseup(dragUp);
         var i = drag.length,
             dragi;
 
@@ -3858,9 +3854,8 @@
             if (supportsTouch && !supportsOnlyTouch) {
                 !drag.length && R.dragmove(dragMove).dragend(dragUp);
             }
-            else {
-                !drag.length && R.mousemove(dragMove).mouseup(dragUp);
-            }
+            !drag.length && R.mousemove(dragMove).mouseup(dragUp);
+            
             
             drag.push({
                 el: this,
@@ -3883,9 +3878,8 @@
         if (supportsTouch && !supportsOnlyTouch) {
             this.dragstart(start);
         }
-        else {
-            this.mousedown(start);
-        }
+        this.mousedown(start);
+        
         return this;
     };
 

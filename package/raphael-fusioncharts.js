@@ -3804,6 +3804,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         }
     },
     dragUp = function(e) {
+        R.undragmove(dragMove).undragend(dragUp);
         R.unmousemove(dragMove).unmouseup(dragUp);
         var i = drag.length,
             dragi;
@@ -4241,7 +4242,6 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
     \*/
     elproto.drag = function(onmove, onstart, onend, move_scope, start_scope, end_scope) {
         function start(e) {
-            (e.originalEvent || e).preventDefault();
             var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
                 scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft;
 
@@ -4249,12 +4249,13 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             this._drag.y = e.clientY + scrollY;
             this._drag.id = e.identifier;
 
-            !drag.length && R.mousemove(dragMove).mouseup(dragUp);
-
             // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
             if (supportsTouch && !supportsOnlyTouch) {
                 !drag.length && R.dragmove(dragMove).dragend(dragUp);
             }
+            !drag.length && R.mousemove(dragMove).mouseup(dragUp);
+            
+            
             drag.push({
                 el: this,
                 move_scope: move_scope,
@@ -4272,11 +4273,12 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             el: this,
             start: start
         });
-        this.mousedown(start);
         // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
         if (supportsTouch && !supportsOnlyTouch) {
             this.dragstart(start);
         }
+        this.mousedown(start);
+        
         return this;
     };
 

@@ -480,8 +480,8 @@ window.Raphael && window.Raphael.svg && function(R) {
 
             calculatedValues = [];
             while (i--) {
-                calculatedValues[i] = (value[i] * widthFactor + ((i % 2) ? 1 : -1) * butt) || value[i];
-                calculatedValues[i] < 0 && (calculatedValues[i] = abs(calculatedValues[i]));
+                calculatedValues[i] = (value[i] * widthFactor + ((i % 2) ? 1 : -1) * butt);
+                (calculatedValues[i] <= 0) && (calculatedValues[i] = 0.01);
             }
 
             if (R.is(value, 'array')) {

@@ -17,7 +17,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
 
 
 /**!
- * RedRaphael 1.1.13 - JavaScript Vector Library
+ * RedRaphael 1.1.15 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0
@@ -474,12 +474,17 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         var args,
             f;
 
-        // Code commented as resources will now be referenced using relative urls.
-        // @todo Remove once we have acertained that there are no issues in any environment.
-        // if (R._url) { // reinitialize URL to be safe from popstate event
+        // Code commented as resources will now be referenced using relative URLs.
+        // @todo Remove once we have ascertained that there are no issues in any environment.
+        // if (R._url) { // Reinitialize URLs to be safe from pop state event
         //     R._url = (R._g && R._g.win || window).location.href.replace(/#.*?$/, "");
         // }
-        R._url = '';
+        // If the URL is undefined only then initialize the URL with blank in order to support
+        // both relative as well as absolute URLs
+        // @todo Need to track the URL change and modify the URL for the gradient and other elements dynamically.
+        if (R._url === undefined) {
+            R._url = "";
+        }
 
         if (R.is(first, "function")) {
             return loaded ? first() : eve.on("raphael.DOMload", first);
@@ -548,6 +553,11 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         win = g.win,
 
         supportsTouch = R.supportsTouch = "createTouch" in doc,
+
+        // The devices which both touch and pointer.
+        supportsOnlyTouch = R.supportsOnlyTouch = (supportsTouch &&
+                        !(win.navigator.maxTouchPoints ||
+                        win.navigator.msMaxTouchPoints)),
 
         CustomAttributes = function () {
             /*\
@@ -664,11 +674,17 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             image: 1,
             group: 1
         },
-        events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchstart touchmove touchend touchcancel"[split](S),
+        // Add new dragstart, dragmove and dragend events in order to support touch drag in both touch and hybrid devices
+        events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchstart touchmove touchend touchcancel dragstart dragmove dragend"[split](S),
         touchMap = R._touchMap = {
             mousedown: "touchstart",
             mousemove: "touchmove",
             mouseup: "touchend"
+        },
+        dragEventMap = R._dragEventMap = {
+            dragstart: "mousedown",
+            dragmove: "mousemove",
+            dragend: "mouseup"
         },
 
         Str = win.String,
@@ -3685,13 +3701,19 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
     addEvent = R.addEvent = (function() {
         if (g.doc.addEventListener) {
             return function(obj, type, fn, element) {
-                var realName = supportsTouch && touchMap[type] ? touchMap[type] : type,
+                var realName = supportsOnlyTouch && touchMap[type] || type,
+                    f;
+
+                touchMap[dragEventMap[type]] && (realName = touchMap[dragEventMap[type]]);
+
                 f = function(e) {
                     var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
-                        scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft;
-                    if (supportsTouch && touchMap[has](type)) {
+                        scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
+                        target;
+                    if (supportsTouch && touchMap[has](supportsOnlyTouch ? type : dragEventMap[type])) {
                         for (var i = 0, ii = e.targetTouches && e.targetTouches.length; i < ii; i++) {
-                            if (e.targetTouches[i].target == obj) {
+                            target = e.targetTouches[i].target;
+                            if (target == obj || (target.nodeName == 'tspan' && target.parentNode == obj)) {
                                 var olde = e;
                                 e = e.targetTouches[i];
                                 e.originalEvent = olde;
@@ -3743,7 +3765,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
 
         while (j--) {
             dragi = drag[j];
-            if (supportsTouch) {
+            if (supportsTouch && e.type === 'touchmove') {
                 var i = e.touches.length,
                 touch;
                 while (i--) {
@@ -3782,6 +3804,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         }
     },
     dragUp = function(e) {
+        R.undragmove(dragMove).undragend(dragUp);
         R.unmousemove(dragMove).unmouseup(dragUp);
         var i = drag.length,
             dragi;
@@ -4219,7 +4242,6 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
     \*/
     elproto.drag = function(onmove, onstart, onend, move_scope, start_scope, end_scope) {
         function start(e) {
-            (e.originalEvent || e).preventDefault();
             var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
                 scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft;
 
@@ -4227,8 +4249,13 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             this._drag.y = e.clientY + scrollY;
             this._drag.id = e.identifier;
 
+            // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
+            if (supportsTouch && !supportsOnlyTouch) {
+                !drag.length && R.dragmove(dragMove).dragend(dragUp);
+            }
             !drag.length && R.mousemove(dragMove).mouseup(dragUp);
-
+            
+            
             drag.push({
                 el: this,
                 move_scope: move_scope,
@@ -4246,7 +4273,12 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             el: this,
             start: start
         });
+        // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
+        if (supportsTouch && !supportsOnlyTouch) {
+            this.dragstart(start);
+        }
         this.mousedown(start);
+        
         return this;
     };
 
@@ -7232,8 +7264,13 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         }
     },
     dasharray = {
-        "": [0],
-        "none": [0],
+        // In Firefox 37.0.1 the value of "stroke-dasharray" attribute `0` make the stroke/border invisible.
+        // The actual issue is setting `none` as the value of `stroke-dasharray` attribute
+        // redraphael internally changes the "none" value to "0", thus the stroke/border becomes invisible
+        // To fix this issue now instead of setting the value as `0` for `stroke-dasharray` attribute
+        // now using `none` string as none is a w3c standard value for stroke-dasharray
+        "": ["none"],
+        "none": ["none"],
         "-": [3, 1],
         ".": [1, 1],
         "-.": [3, 1, 1, 1],
@@ -7268,8 +7305,8 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
 
             calculatedValues = [];
             while (i--) {
-                calculatedValues[i] = value[i] * widthFactor + ((i % 2) ? 1 : -1) * butt;
-                calculatedValues[i] < 0 && (calculatedValues[i] = 0);
+                calculatedValues[i] = (value[i] * widthFactor + ((i % 2) ? 1 : -1) * butt) || value[i];
+                calculatedValues[i] < 0 && (calculatedValues[i] = abs(calculatedValues[i]));
             }
 
             if (R.is(value, 'array')) {
@@ -7296,7 +7333,13 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             paper = o.paper,
             s = node.style,
             vis = s.visibility;
-
+        // Convert all the &lt; and &gt; to < and > and if there is any <br/> tag in between &lt; and &gt;
+        // then convert them into <<br/> and ><br/> respectively.
+        if (params && params.text) {
+            params.text = params.text.replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+                .replace(/&[l,t]*<br\/>[l,t]*;/g, "<<br/>")
+                .replace(/&[g,t]*<br\/>[g,t]*;/g, "><br/>");
+        }
         s.visibility = "hidden";
         for (var att in params) {
             if (params[has](att)) {
@@ -7651,7 +7694,10 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             fontSize = computedStyle ?
                 toFloat(R._g.doc.defaultView.getComputedStyle(node.firstChild, E).getPropertyValue("font-size")) : 10,
             lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading,
-            valign = a[has]("vertical-align") ? a["vertical-align"] : "middle";
+            valign = a[has]("vertical-align") ? a["vertical-align"] : "middle",
+            direction = (params["direction"] || (computedStyle ?
+                computedStyle.getPropertyValue("direction") : "initial")).toLowerCase(),
+            isIE = /*@cc_on!@*/false || !!document.documentMode;
 
         if (isNaN(lineHeight)) {
             lineHeight = fontSize * leading;
@@ -7692,22 +7738,50 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                 tspan.appendChild(R._g.doc.createTextNode(texts[i]));
                 node.appendChild(tspan);
                 tspans[i] = tspan;
+
+                if (!isIE && direction === "rtl" && i < ii - 1) {
+                    tspan = $("tspan");
+                    $(tspan, {
+                        visibility: "hidden",
+                        "font-size": "0px"
+                    });
+                    tspan.appendChild(R._g.doc.createTextNode("i"));
+                    node.appendChild(tspan);
+                }
             }
             el._textdirty = false;
         } else {
             tspans = node.getElementsByTagName("tspan");
-            for (i = 0, ii = tspans.length; i < ii; i++)
+            var obj,
+                numDummyTspans = 0;
+
+            for (i = 0, ii = tspans.length; i < ii; i++) {
+                tspan = tspans[i];
+                obj = tspan.attributes[0];
+
+                if (obj && (obj.name === "visibility" || obj.nodeName === "visibility") &&
+                        (obj.value === "hidden" || obj.nodeValue === "hidden")) {
+                    continue;
+                }
+
                 if (i) {
-                    $(tspans[i], {
+                    $(tspan, {
                         dy: lineHeight,
                         x: a.x
                     });
                 } else {
+                    obj = tspans[1] && tspans[1].attributes[0];
+                    if (obj && (obj.name === "visibility" || obj.nodeName === "visibility") &&
+                            (obj.value === "hidden" || obj.nodeValue === "hidden")) {
+                        numDummyTspans = math.floor(tspans.length * 0.5);
+                    }
+
                     $(tspans[0], {
-                        dy: lineHeight * tspans.length * valign,
+                        dy: lineHeight * (tspans.length - numDummyTspans) * valign,
                         x: a.x
                     });
                 }
+            }
         }
         $(node, {
             x: a.x,
@@ -8638,8 +8712,15 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                     // Fix for bug in ie clip-auto when height/width is not defined
                     /** @todo set dynamic w/h based on clip bounds or find
                      * another workaround fix */
-                    dstyle.width = "10800px";
-                    dstyle.height = "10800px";
+                    //dstyle.width = "10800px";
+                    //dstyle.height = "10800px";
+
+                    // Not sure about the above fix
+                    // Revert the fix because it's creating another issue.
+                    // Setting the Group style, width/height as "10800px" makes the other group inaccessible
+                    // which is below this group
+                    dstyle.width = "1px";
+                    dstyle.height = "1px";
                 }
                 else if (!node.clipRect) {
                     dstyle.top = "0";
@@ -8657,11 +8738,11 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             }
             if (!params["clip-rect"]) {
                 if (isGroup && o.clip) {
-                    node.style.clip = "rect(auto auto auto auto)";
+                    node.style.clip = "rect(0px 10800px 10800px 0px)";
                     delete o.clip;
                 }
                 else if (node.clipRect) {
-                    node.clipRect.style.clip = "rect(auto auto auto auto)";
+                    node.clipRect.style.clip = "rect(0px 10800px 10800px 0px)";
                 }
             }
         }

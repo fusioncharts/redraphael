@@ -439,8 +439,13 @@ window.Raphael && window.Raphael.svg && function(R) {
         }
     },
     dasharray = {
-        "": [0],
-        "none": [0],
+        // In Firefox 37.0.1 the value of "stroke-dasharray" attribute `0` make the stroke/border invisible.
+        // The actual issue is setting `none` as the value of `stroke-dasharray` attribute
+        // redraphael internally changes the "none" value to "0", thus the stroke/border becomes invisible
+        // To fix this issue now instead of setting the value as `0` for `stroke-dasharray` attribute
+        // now using `none` string as none is a w3c standard value for stroke-dasharray
+        "": ["none"],
+        "none": ["none"],
         "-": [3, 1],
         ".": [1, 1],
         "-.": [3, 1, 1, 1],
@@ -475,8 +480,8 @@ window.Raphael && window.Raphael.svg && function(R) {
 
             calculatedValues = [];
             while (i--) {
-                calculatedValues[i] = value[i] * widthFactor + ((i % 2) ? 1 : -1) * butt;
-                calculatedValues[i] < 0 && (calculatedValues[i] = 0);
+                calculatedValues[i] = (value[i] * widthFactor + ((i % 2) ? 1 : -1) * butt) || value[i];
+                calculatedValues[i] < 0 && (calculatedValues[i] = abs(calculatedValues[i]));
             }
 
             if (R.is(value, 'array')) {
@@ -503,7 +508,13 @@ window.Raphael && window.Raphael.svg && function(R) {
             paper = o.paper,
             s = node.style,
             vis = s.visibility;
-
+        // Convert all the &lt; and &gt; to < and > and if there is any <br/> tag in between &lt; and &gt;
+        // then convert them into <<br/> and ><br/> respectively.
+        if (params && params.text) {
+            params.text = params.text.replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+                .replace(/&[l,t]*<br\/>[l,t]*;/g, "<<br/>")
+                .replace(/&[g,t]*<br\/>[g,t]*;/g, "><br/>");
+        }
         s.visibility = "hidden";
         for (var att in params) {
             if (params[has](att)) {
@@ -858,7 +869,10 @@ window.Raphael && window.Raphael.svg && function(R) {
             fontSize = computedStyle ?
                 toFloat(R._g.doc.defaultView.getComputedStyle(node.firstChild, E).getPropertyValue("font-size")) : 10,
             lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading,
-            valign = a[has]("vertical-align") ? a["vertical-align"] : "middle";
+            valign = a[has]("vertical-align") ? a["vertical-align"] : "middle",
+            direction = (params["direction"] || (computedStyle ?
+                computedStyle.getPropertyValue("direction") : "initial")).toLowerCase(),
+            isIE = /*@cc_on!@*/false || !!document.documentMode;
 
         if (isNaN(lineHeight)) {
             lineHeight = fontSize * leading;
@@ -899,22 +913,50 @@ window.Raphael && window.Raphael.svg && function(R) {
                 tspan.appendChild(R._g.doc.createTextNode(texts[i]));
                 node.appendChild(tspan);
                 tspans[i] = tspan;
+
+                if (!isIE && direction === "rtl" && i < ii - 1) {
+                    tspan = $("tspan");
+                    $(tspan, {
+                        visibility: "hidden",
+                        "font-size": "0px"
+                    });
+                    tspan.appendChild(R._g.doc.createTextNode("i"));
+                    node.appendChild(tspan);
+                }
             }
             el._textdirty = false;
         } else {
             tspans = node.getElementsByTagName("tspan");
-            for (i = 0, ii = tspans.length; i < ii; i++)
+            var obj,
+                numDummyTspans = 0;
+
+            for (i = 0, ii = tspans.length; i < ii; i++) {
+                tspan = tspans[i];
+                obj = tspan.attributes[0];
+
+                if (obj && (obj.name === "visibility" || obj.nodeName === "visibility") &&
+                        (obj.value === "hidden" || obj.nodeValue === "hidden")) {
+                    continue;
+                }
+
                 if (i) {
-                    $(tspans[i], {
+                    $(tspan, {
                         dy: lineHeight,
                         x: a.x
                     });
                 } else {
+                    obj = tspans[1] && tspans[1].attributes[0];
+                    if (obj && (obj.name === "visibility" || obj.nodeName === "visibility") &&
+                            (obj.value === "hidden" || obj.nodeValue === "hidden")) {
+                        numDummyTspans = math.floor(tspans.length * 0.5);
+                    }
+
                     $(tspans[0], {
-                        dy: lineHeight * tspans.length * valign,
+                        dy: lineHeight * (tspans.length - numDummyTspans) * valign,
                         x: a.x
                     });
                 }
+            }
         }
         $(node, {
             x: a.x,

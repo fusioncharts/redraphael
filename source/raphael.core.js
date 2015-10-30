@@ -75,12 +75,17 @@
         var args,
             f;
 
-        // Code commented as resources will now be referenced using relative urls.
-        // @todo Remove once we have acertained that there are no issues in any environment.
-        // if (R._url) { // reinitialize URL to be safe from popstate event
+        // Code commented as resources will now be referenced using relative URLs.
+        // @todo Remove once we have ascertained that there are no issues in any environment.
+        // if (R._url) { // Reinitialize URLs to be safe from pop state event
         //     R._url = (R._g && R._g.win || window).location.href.replace(/#.*?$/, "");
         // }
-        R._url = '';
+        // If the URL is undefined only then initialize the URL with blank in order to support
+        // both relative as well as absolute URLs
+        // @todo Need to track the URL change and modify the URL for the gradient and other elements dynamically.
+        if (R._url === undefined) {
+            R._url = "";
+        }
 
         if (R.is(first, "function")) {
             return loaded ? first() : eve.on("raphael.DOMload", first);
@@ -149,6 +154,11 @@
         win = g.win,
 
         supportsTouch = R.supportsTouch = "createTouch" in doc,
+
+        // The devices which both touch and pointer.
+        supportsOnlyTouch = R.supportsOnlyTouch = (supportsTouch &&
+                        !(win.navigator.maxTouchPoints ||
+                        win.navigator.msMaxTouchPoints)),
 
         CustomAttributes = function () {
             /*\
@@ -265,11 +275,17 @@
             image: 1,
             group: 1
         },
-        events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchstart touchmove touchend touchcancel"[split](S),
+        // Add new dragstart, dragmove and dragend events in order to support touch drag in both touch and hybrid devices
+        events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchstart touchmove touchend touchcancel dragstart dragmove dragend"[split](S),
         touchMap = R._touchMap = {
             mousedown: "touchstart",
             mousemove: "touchmove",
             mouseup: "touchend"
+        },
+        dragEventMap = R._dragEventMap = {
+            dragstart: "mousedown",
+            dragmove: "mousemove",
+            dragend: "mouseup"
         },
 
         Str = win.String,
@@ -3286,13 +3302,19 @@
     addEvent = R.addEvent = (function() {
         if (g.doc.addEventListener) {
             return function(obj, type, fn, element) {
-                var realName = supportsTouch && touchMap[type] ? touchMap[type] : type,
+                var realName = supportsOnlyTouch && touchMap[type] || type,
+                    f;
+
+                touchMap[dragEventMap[type]] && (realName = touchMap[dragEventMap[type]]);
+
                 f = function(e) {
                     var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
-                        scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft;
-                    if (supportsTouch && touchMap[has](type)) {
+                        scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
+                        target;
+                    if (supportsTouch && touchMap[has](supportsOnlyTouch ? type : dragEventMap[type])) {
                         for (var i = 0, ii = e.targetTouches && e.targetTouches.length; i < ii; i++) {
-                            if (e.targetTouches[i].target == obj) {
+                            target = e.targetTouches[i].target;
+                            if (target == obj || (target.nodeName == 'tspan' && target.parentNode == obj)) {
                                 var olde = e;
                                 e = e.targetTouches[i];
                                 e.originalEvent = olde;
@@ -3344,7 +3366,7 @@
 
         while (j--) {
             dragi = drag[j];
-            if (supportsTouch) {
+            if (supportsTouch && e.type === 'touchmove') {
                 var i = e.touches.length,
                 touch;
                 while (i--) {
@@ -3383,6 +3405,7 @@
         }
     },
     dragUp = function(e) {
+        R.undragmove(dragMove).undragend(dragUp);
         R.unmousemove(dragMove).unmouseup(dragUp);
         var i = drag.length,
             dragi;
@@ -3820,7 +3843,6 @@
     \*/
     elproto.drag = function(onmove, onstart, onend, move_scope, start_scope, end_scope) {
         function start(e) {
-            (e.originalEvent || e).preventDefault();
             var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
                 scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft;
 
@@ -3828,8 +3850,13 @@
             this._drag.y = e.clientY + scrollY;
             this._drag.id = e.identifier;
 
+            // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
+            if (supportsTouch && !supportsOnlyTouch) {
+                !drag.length && R.dragmove(dragMove).dragend(dragUp);
+            }
             !drag.length && R.mousemove(dragMove).mouseup(dragUp);
-
+            
+            
             drag.push({
                 el: this,
                 move_scope: move_scope,
@@ -3847,7 +3874,12 @@
             el: this,
             start: start
         });
+        // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
+        if (supportsTouch && !supportsOnlyTouch) {
+            this.dragstart(start);
+        }
         this.mousedown(start);
+        
         return this;
     };
 

@@ -263,8 +263,15 @@ window.Raphael && window.Raphael.vml && function(R) {
                     // Fix for bug in ie clip-auto when height/width is not defined
                     /** @todo set dynamic w/h based on clip bounds or find
                      * another workaround fix */
-                    dstyle.width = "10800px";
-                    dstyle.height = "10800px";
+                    //dstyle.width = "10800px";
+                    //dstyle.height = "10800px";
+
+                    // Not sure about the above fix
+                    // Revert the fix because it's creating another issue.
+                    // Setting the Group style, width/height as "10800px" makes the other group inaccessible
+                    // which is below this group
+                    dstyle.width = "1px";
+                    dstyle.height = "1px";
                 }
                 else if (!node.clipRect) {
                     dstyle.top = "0";
@@ -282,11 +289,11 @@ window.Raphael && window.Raphael.vml && function(R) {
             }
             if (!params["clip-rect"]) {
                 if (isGroup && o.clip) {
-                    node.style.clip = "rect(auto auto auto auto)";
+                    node.style.clip = "rect(0px 10800px 10800px 0px)";
                     delete o.clip;
                 }
                 else if (node.clipRect) {
-                    node.clipRect.style.clip = "rect(auto auto auto auto)";
+                    node.clipRect.style.clip = "rect(0px 10800px 10800px 0px)";
                 }
             }
         }

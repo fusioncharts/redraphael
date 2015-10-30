@@ -508,7 +508,13 @@ window.Raphael && window.Raphael.svg && function(R) {
             paper = o.paper,
             s = node.style,
             vis = s.visibility;
-
+        // Convert all the &lt; and &gt; to < and > and if there is any <br/> tag in between &lt; and &gt;
+        // then convert them into <<br/> and ><br/> respectively.
+        if (params && params.text) {
+            params.text = params.text.replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+                .replace(/&[l,t]*<br\/>[l,t]*;/g, "<<br/>")
+                .replace(/&[g,t]*<br\/>[g,t]*;/g, "><br/>");
+        }
         s.visibility = "hidden";
         for (var att in params) {
             if (params[has](att)) {

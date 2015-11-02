@@ -17,7 +17,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
 
 
 /**!
- * RedRaphael 1.1.15 - JavaScript Vector Library
+ * RedRaphael 1.1.16 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0
@@ -7305,8 +7305,8 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
 
             calculatedValues = [];
             while (i--) {
-                calculatedValues[i] = (value[i] * widthFactor + ((i % 2) ? 1 : -1) * butt) || value[i];
-                calculatedValues[i] < 0 && (calculatedValues[i] = abs(calculatedValues[i]));
+                calculatedValues[i] = (value[i] * widthFactor + ((i % 2) ? 1 : -1) * butt);
+                calculatedValues[i] <= 0 && (calculatedValues[i] = 0.01);
             }
 
             if (R.is(value, 'array')) {

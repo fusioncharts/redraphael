@@ -1,5 +1,5 @@
 /**!
- * RedRaphael 1.1.16 - JavaScript Vector Library
+ * RedRaphael 1.1.17 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0
@@ -7316,11 +7316,11 @@
             s = node.style,
             vis = s.visibility;
         // Convert all the &lt; and &gt; to < and > and if there is any <br/> tag in between &lt; and &gt;
-        // then convert them into <<br/> and ><br/> respectively.
+        // then converting them into <<br/> and ><br/> respectively.
         if (params && params.text) {
-            params.text = params.text.replace(/&lt;/g, "<").replace(/&gt;/g, ">")
-                .replace(/&[l,t]*<br\/>[l,t]*;/g, "<<br/>")
-                .replace(/&[g,t]*<br\/>[g,t]*;/g, "><br/>");
+            params.text = params.text.replace(/&lt;/g, "<").replace(/&gt;/g, ">")  
+                .replace(/&<br\/>lt;|&l<br\/>t;|&lt<br\/>;/g, "<<br/>")
+                .replace(/&<br\/>gt;|&g<br\/>t;|&gt<br\/>;/g, "><br/>");
         }
         s.visibility = "hidden";
         for (var att in params) {

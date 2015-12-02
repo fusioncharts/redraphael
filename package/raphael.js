@@ -7274,7 +7274,7 @@
             widthFactor;
 
         value = predefValue || ((value !== undefined) && [].concat(value));
-        if (value) {
+        if (value && (value[0] !== "none")) {
 
             width = o.attrs["stroke-width"] || 1;
             butt = {
@@ -7288,7 +7288,10 @@
             calculatedValues = [];
             while (i--) {
                 calculatedValues[i] = (value[i] * widthFactor + ((i % 2) ? 1 : -1) * butt);
-                calculatedValues[i] <= 0 && (calculatedValues[i] = 0.01);
+                calculatedValues[i] <= 0 && (calculatedValues[i] = 0.01 + (width <= 1 ? butt : 0));
+                if (isNaN(calculatedValues[i])) {
+                   calculatedValues[i] = 0;
+               }
             }
 
             if (R.is(value, 'array')) {
@@ -7318,7 +7321,7 @@
         // Convert all the &lt; and &gt; to < and > and if there is any <br/> tag in between &lt; and &gt;
         // then converting them into <<br/> and ><br/> respectively.
         if (params && params.text) {
-            params.text = params.text.replace(/&lt;/g, "<").replace(/&gt;/g, ">")  
+            params.text = params.text.replace(/&lt;/g, "<").replace(/&gt;/g, ">")
                 .replace(/&<br\/>lt;|&l<br\/>t;|&lt<br\/>;/g, "<<br/>")
                 .replace(/&<br\/>gt;|&g<br\/>t;|&gt<br\/>;/g, "><br/>");
         }

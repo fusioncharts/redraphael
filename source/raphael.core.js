@@ -3855,8 +3855,8 @@
                 !drag.length && R.dragmove(dragMove).dragend(dragUp);
             }
             !drag.length && R.mousemove(dragMove).mouseup(dragUp);
-            
-            
+
+
             drag.push({
                 el: this,
                 move_scope: move_scope,
@@ -3879,7 +3879,7 @@
             this.dragstart(start);
         }
         this.mousedown(start);
-        
+
         return this;
     };
 
@@ -4164,7 +4164,7 @@
             args = arguments,
             group = lastArgIfGroup(args, true),
             attrs = serializeArgs(args,
-                "src", "about:blank",
+                "src", !!navigator.userAgent.match(/Chrome/ig) ? "" : "about:blank",
                 "x", 0,
                 "y", 0,
                 "width", 0,

@@ -4164,7 +4164,7 @@
             args = arguments,
             group = lastArgIfGroup(args, true),
             attrs = serializeArgs(args,
-                "src", !!navigator.userAgent.match(/Chrome/ig) ? "" : "about:blank",
+                "src", "",
                 "x", 0,
                 "y", 0,
                 "width", 0,

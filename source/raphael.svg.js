@@ -478,13 +478,18 @@ window.Raphael && window.Raphael.svg && function(R) {
             l = i = value.length;
             widthFactor = predefValue ? width : 1;
 
-            calculatedValues = [];
-            while (i--) {
-                calculatedValues[i] = (value[i] * widthFactor + ((i % 2) ? 1 : -1) * butt);
-                calculatedValues[i] <= 0 && (calculatedValues[i] = 0.01 + (width <= 1 ? butt : 0));
-                if (isNaN(calculatedValues[i])) {
-                   calculatedValues[i] = 'none';
-               }
+            if (value[0] == 'none') {
+                calculatedValues = ['none'];
+            }
+            else {
+                calculatedValues = [];
+                while (i--) {
+                    calculatedValues[i] = (value[i] * widthFactor + ((i % 2) ? 1 : -1) * butt);
+                    calculatedValues[i] <= 0 && (calculatedValues[i] = 0.01 + (width <= 1 ? butt : 0));
+                    if (isNaN(calculatedValues[i])) {
+                       calculatedValues[i] = 0;
+                   }
+                }
             }
 
             if (R.is(value, 'array')) {

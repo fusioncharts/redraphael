@@ -479,7 +479,7 @@ window.Raphael && window.Raphael.svg && function(R) {
             widthFactor = predefValue ? width : 1;
 
             if (value[0] == 'none') {
-                calculatedValues = value[0];
+                calculatedValues = value;
             }
             else {
                 calculatedValues = [];

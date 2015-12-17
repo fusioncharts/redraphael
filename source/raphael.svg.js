@@ -467,7 +467,7 @@ window.Raphael && window.Raphael.svg && function(R) {
             widthFactor;
 
         value = predefValue || ((value !== undefined) && [].concat(value));
-        if (value && (value[0] !== "none")) {
+        if (value) {
 
             width = o.attrs["stroke-width"] || 1;
             butt = {

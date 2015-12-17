@@ -1,5 +1,5 @@
 /**!
- * RedRaphael 1.1.17 - JavaScript Vector Library
+ * RedRaphael 1.1.18 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0
@@ -4236,8 +4236,8 @@
                 !drag.length && R.dragmove(dragMove).dragend(dragUp);
             }
             !drag.length && R.mousemove(dragMove).mouseup(dragUp);
-            
-            
+
+
             drag.push({
                 el: this,
                 move_scope: move_scope,
@@ -4260,7 +4260,7 @@
             this.dragstart(start);
         }
         this.mousedown(start);
-        
+
         return this;
     };
 
@@ -4545,7 +4545,7 @@
             args = arguments,
             group = lastArgIfGroup(args, true),
             attrs = serializeArgs(args,
-                "src", "about:blank",
+                "src", "",
                 "x", 0,
                 "y", 0,
                 "width", 0,
@@ -7274,7 +7274,7 @@
             widthFactor;
 
         value = predefValue || ((value !== undefined) && [].concat(value));
-        if (value && (value[0] !== "none")) {
+        if (value) {
 
             width = o.attrs["stroke-width"] || 1;
             butt = {
@@ -7285,13 +7285,18 @@
             l = i = value.length;
             widthFactor = predefValue ? width : 1;
 
-            calculatedValues = [];
-            while (i--) {
-                calculatedValues[i] = (value[i] * widthFactor + ((i % 2) ? 1 : -1) * butt);
-                calculatedValues[i] <= 0 && (calculatedValues[i] = 0.01 + (width <= 1 ? butt : 0));
-                if (isNaN(calculatedValues[i])) {
-                   calculatedValues[i] = 0;
-               }
+            if (value[0] == 'none') {
+                calculatedValues = value;
+            }
+            else {
+                calculatedValues = [];
+                while (i--) {
+                    calculatedValues[i] = (value[i] * widthFactor + ((i % 2) ? 1 : -1) * butt);
+                    calculatedValues[i] <= 0 && (calculatedValues[i] = 0.01 + (width <= 1 ? butt : 0));
+                    if (isNaN(calculatedValues[i])) {
+                       calculatedValues[i] = 0;
+                   }
+                }
             }
 
             if (R.is(value, 'array')) {

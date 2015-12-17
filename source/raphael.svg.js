@@ -483,7 +483,7 @@ window.Raphael && window.Raphael.svg && function(R) {
                 calculatedValues[i] = (value[i] * widthFactor + ((i % 2) ? 1 : -1) * butt);
                 calculatedValues[i] <= 0 && (calculatedValues[i] = 0.01 + (width <= 1 ? butt : 0));
                 if (isNaN(calculatedValues[i])) {
-                   calculatedValues[i] = 0;
+                   calculatedValues[i] = 'none';
                }
             }
 

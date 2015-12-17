@@ -17,7 +17,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
 
 
 /**!
- * RedRaphael 1.1.17 - JavaScript Vector Library
+ * RedRaphael 1.1.18 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0
@@ -4254,8 +4254,8 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                 !drag.length && R.dragmove(dragMove).dragend(dragUp);
             }
             !drag.length && R.mousemove(dragMove).mouseup(dragUp);
-            
-            
+
+
             drag.push({
                 el: this,
                 move_scope: move_scope,
@@ -4278,7 +4278,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             this.dragstart(start);
         }
         this.mousedown(start);
-        
+
         return this;
     };
 
@@ -4563,7 +4563,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             args = arguments,
             group = lastArgIfGroup(args, true),
             attrs = serializeArgs(args,
-                "src", "about:blank",
+                "src", "",
                 "x", 0,
                 "y", 0,
                 "width", 0,
@@ -7303,10 +7303,18 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             l = i = value.length;
             widthFactor = predefValue ? width : 1;
 
-            calculatedValues = [];
-            while (i--) {
-                calculatedValues[i] = (value[i] * widthFactor + ((i % 2) ? 1 : -1) * butt);
-                calculatedValues[i] <= 0 && (calculatedValues[i] = 0.01);
+            if (value[0] == 'none') {
+                calculatedValues = value;
+            }
+            else {
+                calculatedValues = [];
+                while (i--) {
+                    calculatedValues[i] = (value[i] * widthFactor + ((i % 2) ? 1 : -1) * butt);
+                    calculatedValues[i] <= 0 && (calculatedValues[i] = 0.01 + (width <= 1 ? butt : 0));
+                    if (isNaN(calculatedValues[i])) {
+                       calculatedValues[i] = 0;
+                   }
+                }
             }
 
             if (R.is(value, 'array')) {
@@ -7336,7 +7344,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         // Convert all the &lt; and &gt; to < and > and if there is any <br/> tag in between &lt; and &gt;
         // then converting them into <<br/> and ><br/> respectively.
         if (params && params.text) {
-            params.text = params.text.replace(/&lt;/g, "<").replace(/&gt;/g, ">")  
+            params.text = params.text.replace(/&lt;/g, "<").replace(/&gt;/g, ">")
                 .replace(/&<br\/>lt;|&l<br\/>t;|&lt<br\/>;/g, "<<br/>")
                 .replace(/&<br\/>gt;|&g<br\/>t;|&gt<br\/>;/g, "><br/>");
         }

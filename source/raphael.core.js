@@ -116,6 +116,7 @@
         undef,
         E = "",
         S = " ",
+        UNIT_INTERVAL = 40,
         proto = "prototype",
         has = "hasOwnProperty",
         appendChild = "appendChild",
@@ -3855,8 +3856,8 @@
                 !drag.length && R.dragmove(dragMove).dragend(dragUp);
             }
             !drag.length && R.mousemove(dragMove).mouseup(dragUp);
-            
-            
+
+
             drag.push({
                 el: this,
                 move_scope: move_scope,
@@ -3879,7 +3880,7 @@
             this.dragstart(start);
         }
         this.mousedown(start);
-        
+
         return this;
     };
 
@@ -4275,6 +4276,188 @@
     \*/
     paperproto.setSize = function(width, height) {
         return R._engine.setSize.call(this, width, height);
+    };
+
+    /*\
+     * paperAnimator
+     [ method ]
+     **
+     * Run the animation to animate paper by changing it's animatable properties step-wise in an interval
+     **
+     > Parameters
+     **
+     - paper (Object) paper object
+     - duration (number) time stretch in milliseconds to complete animation
+     - start (number) start value or initial value of the animatable property
+     - end (number) end value or final value of the animatable property
+     - rule (String) property name which will be animated
+     - effect (String) animation style
+     - callback (function reference) method which will execute at end of animation
+    \*/
+    function paperAnimator(paper, duration, start, end, rule, effect, callback) {
+        var iterations = (duration / UNIT_INTERVAL),
+            diff = (end - start),
+            effects = {
+                linear: function (diff, iterations) {
+                    var
+                        returnArr = [],
+                        increment = (diff / iterations),
+                        i = 0;
+
+                    for (;i < iterations; i += 1) {
+                        returnArr[i] = increment * (i + 1);
+                    }
+
+                    return returnArr;
+                }
+            },
+            incrementArr = effects[effect || 'linear'](diff, iterations),
+            counter = 0,
+            startTime,
+            progress,
+            requestAnimFrame = win.requestAnimationFrame ||
+            win.webkitRequestAnimationFrame ||
+            win.mozRequestAnimationFrame ||
+            win.oRequestAnimationFrame ||
+            win.msRequestAnimationFrame ||
+            function(callback) {
+                setTimeout(callback, UNIT_INTERVAL);
+            },
+            stepFn = function (timestamp) {
+                var diff,
+                    setValue,
+                    val,
+                    value,
+                    attr = {},
+                    reduce = false;
+
+                if (timestamp) {
+                    if (!startTime) {
+                        startTime = timestamp;
+                    }
+                    progress = timestamp - startTime;
+
+                    diff = Math.abs(start - end);
+
+                    reduce = (start - end) < 0 ? false : true;
+
+                    setValue = reduce ?
+                        (Math.max(start - (progress * (diff / duration)), end)) :
+                        (Math.min(start + (progress * (diff / duration)), end));
+
+                    attr[rule] = setValue;
+                    paper.attr(attr);
+
+                    if (progress < duration) {
+                        requestAnimFrame(stepFn);
+                    }
+                    else {
+                        callback && callback();
+                    }
+                }
+                else {
+                    if (counter < iterations) {
+                        val = incrementArr[counter];
+
+                        attr[rule] = start + val;
+                        paper.attr(attr);
+
+                        counter += 1;
+                        setTimeout(stepFn, UNIT_INTERVAL);
+                    }
+                    else {
+                        callback && callback();
+                    }
+                }
+            };
+
+        requestAnimFrame(stepFn);
+    };
+
+    /*\
+     * Paper.attr
+     [ method ]
+     **
+     * If you need to change dimensions of the canvas call this method
+     **
+     > Parameters
+     **
+     - paramsObj (Object or number)
+        - paramsObj (Object)
+        **
+        > Properties of paramsObj
+        - width (number) new width of the canvas
+        - height (number) new height of the canvas
+        **
+        - paramsObj (number) new width of the canvas
+        **
+     - height (number) new height of the canvas
+    \*/
+    paperproto.attr = function(paramsObj, height) {
+        var paper = this,
+            width;
+        // Check if the first argument is an object or not
+        if (typeof(paramsObj) === 'object') {
+            width = paramsObj.width;
+            height = paramsObj.height;
+            paper.setSize(paramsObj.width, paramsObj.height);
+        }
+        else {
+            width = paramsObj;
+            paper.setSize(width, height);
+        }
+    };
+
+    /*\
+     * Paper.animate
+     [ method ]
+     **
+     * If you need to animate dimensions of the canvas call this method
+     **
+     > Parameters
+     **
+     - paramsObj (Object)
+        > Properties of paramsObj
+        **
+        - width (number) new width of the canvas
+        - height (number) new height of the canvas
+     - duration (number) time stretch in milliseconds to complete animation
+     - effect (String) animation style
+     - callback (function reference) method which will execute at end of animation
+    \*/
+    paperproto.animate = function(paramsObj, duration, effect, callback) {
+        var paper = this,
+            finalStyle = {},
+            currentStyle = {},
+            iCB = function () {
+                finished += 1;
+                if (finished === total) {
+                    (typeof callback === 'function') && callback();
+                }
+            },
+            total = 0,
+            finished = 0,
+            rule,
+            attr = {};
+
+        if (duration < UNIT_INTERVAL) {
+            // If the duration of animation is less than the
+            // minimum frame length then apply the styles directly.
+            for (rule in paramsObj) {
+                attr[rule] = paramsObj[rule];
+                paper.attr(attr);
+            }
+
+            callback && callback();
+            return;
+        }
+
+        for (rule in paramsObj) {
+            total += 1;
+            finalStyle[rule] = paramsObj[rule];
+            currentStyle[rule] = paper[rule];
+            paperAnimator(paper, duration, currentStyle[rule], finalStyle[rule], rule, 'linear', iCB);
+        }
     };
 
     /*\

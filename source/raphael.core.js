@@ -4440,6 +4440,9 @@
             rule,
             attr = {};
 
+        // For now it supports only 'linear' animation style
+        effect = 'linear';
+
         if (duration < UNIT_INTERVAL) {
             // If the duration of animation is less than the
             // minimum frame length then apply the styles directly.
@@ -4456,7 +4459,7 @@
             total += 1;
             finalStyle[rule] = paramsObj[rule];
             currentStyle[rule] = paper[rule];
-            paperAnimator(paper, duration, currentStyle[rule], finalStyle[rule], rule, 'linear', iCB);
+            paperAnimator(paper, duration, currentStyle[rule], finalStyle[rule], rule, effect, iCB);
         }
     };
 

@@ -124,7 +124,7 @@ Raphael.define({
 - Global mouseUp tracking using el.mouseup(fn, scope, true);
 - Support for customizable dash-style
 - Support for attribute `key` in attr.* events
-- upport for Raphael.ca for common customAttributes across papers
+- Support for Raphael.ca for common customAttributes across papers
 - Support for text-bound: [stroke, fill, stroke-width, padding, corner-radius, dash-style] on texts
 - Support for opacity in fill color (rgba, hsla, etc) for elements
 - Support for `visibility` on elements via attr

@@ -6574,7 +6574,7 @@
                 // Check if namesake ca exists and apply it
                 if (element.ca[name]) {
                     R._lastArgIfGroup(args, true); // purge group
-                    element.attr(name, arraySlice.call(args))
+                    args.length && element.attr(name, arraySlice.call(args))
                 }
             }
 

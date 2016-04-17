@@ -114,7 +114,7 @@ window.Raphael && window.Raphael.svg && function(R) {
 
         var type = "linear",
             SVG = element.paper,
-            id = "fc_" + (SVG.id + '-' + gradient).replace(/[\(\)\s%:,\xb0#]/g, "_"),
+            id = R.getElementID((SVG.id + '-' + gradient).replace(/[\(\)\s%:,\xb0#]/g, "_")),
             fx = .5, fy = .5, r, cx, cy, units, spread,
             o = element.node,
             s = o.style,
@@ -584,7 +584,7 @@ window.Raphael && window.Raphael.svg && function(R) {
                             o.clip && o.clip.parentNode.parentNode.removeChild(o.clip.parentNode);
                             var el = $("clipPath"),
                             rc = $(pathClip ? "path" : "rect");
-                            el.id = R.createUUID();
+                            el.id = R.getElementID(R.createUUID());
                             $(rc, pathClip ? {
                                 d: value ? attrs['clip-path'] = R._pathToAbsolute(value) : R._availableAttrs.path,
                                 fill: 'none'
@@ -713,7 +713,7 @@ window.Raphael && window.Raphael.svg && function(R) {
                         if (isURL) {
                             el = $("pattern");
                             var ig = $("image");
-                            el.id = R.createUUID();
+                            el.id = R.getElementID(R.createUUID());
                             $(el, {
                                 x: 0,
                                 y: 0,
@@ -1337,7 +1337,7 @@ window.Raphael && window.Raphael.svg && function(R) {
             var fltr = $("filter"),
             blur = $("feGaussianBlur");
             t.attrs.blur = size;
-            fltr.id = R.createUUID();
+            fltr.id = R.getElementID(R.createUUID());
             $(blur, {
                 stdDeviation: +size || 1.5
             });

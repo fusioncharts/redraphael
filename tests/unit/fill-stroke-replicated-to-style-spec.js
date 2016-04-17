@@ -47,7 +47,7 @@ describe('elproto.attr', function () {
 		// now set to gradient
 		shape1.attr('fill', '90-#ff0000-#0000ff');
 
-		expect(shape1.node.getAttribute('fill')).toMatch(/url\('#fc_\d+?-90-_ff0000-_0000ff'\)/);
+		expect(shape1.node.getAttribute('fill')).toMatch(/url\('#rr-\d+?-90-_ff0000-_0000ff'\)/);
 		expect(shape1.node.style.fill).toBe('');
 
 		expect(shape1.node.getAttribute('fill-opacity')).toBe('1');

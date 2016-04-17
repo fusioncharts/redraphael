@@ -715,6 +715,17 @@
                 v = c == "x" ? r : (r & 3 | 8);
             return v.toString(16);
         }),
+
+        /*\
+          * Raphael.getElementID
+          [ method ]
+          **
+          * Add 'rr-' prefix before created IDs
+         \*/
+        getElementID = R.getElementID = function (id) {
+            return "rr-" + id;
+        },
+
         /*\
           * Raphael.clone
           [ method ]

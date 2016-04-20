@@ -1098,9 +1098,9 @@ window.Raphael && window.Raphael.vml && function(R) {
         this.height = height;
         width == +width && (width += "px");
         height == +height && (height += "px");
-        cs.width = width;
-        cs.height = height;
-        cs.clip = "rect(0 " + width + " " + height + " 0)";
+        width && (cs.width = width);
+        height && (cs.height = height);
+        cs.clip = "rect(0 " + cs.width + " " + cs.height + " 0)";
         if (this._viewBox) {
             R._engine.setViewBox.apply(this, this._viewBox);
         }

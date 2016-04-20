@@ -4357,7 +4357,7 @@
                         (Math.min(start + (progress * (diff / duration)), end));
 
                     attr[rule] = setValue;
-                    paper.attr(attr);
+                    paper.setDimension(attr);
 
                     if (progress < duration) {
                         requestAnimFrame(stepFn);
@@ -4371,7 +4371,7 @@
                         val = incrementArr[counter];
 
                         attr[rule] = start + val;
-                        paper.attr(attr);
+                        paper.setDimension(attr);
 
                         counter += 1;
                         setTimeout(stepFn, UNIT_INTERVAL);
@@ -4386,7 +4386,7 @@
     };
 
     /*\
-     * Paper.attr
+     * paper.setDimension
      [ method ]
      **
      * If you need to change dimensions of the canvas call this method
@@ -4404,7 +4404,7 @@
         **
      - height (number) new height of the canvas
     \*/
-    paperproto.attr = function(paramsObj, height) {
+    paperproto.setDimension = function(paramsObj, height) {
         var paper = this,
             width;
         // Check if the first argument is an object or not
@@ -4459,7 +4459,7 @@
             // minimum frame length then apply the styles directly.
             for (rule in paramsObj) {
                 attr[rule] = paramsObj[rule];
-                paper.attr(attr);
+                paper.setDimension(attr);
             }
 
             callback && callback();

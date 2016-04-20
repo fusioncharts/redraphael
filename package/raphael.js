@@ -1,5 +1,5 @@
 /**!
- * RedRaphael 1.1.19 - JavaScript Vector Library
+ * RedRaphael 1.1.20 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0
@@ -1096,6 +1096,17 @@
                 v = c == "x" ? r : (r & 3 | 8);
             return v.toString(16);
         }),
+
+        /*\
+          * Raphael.getElementID
+          [ method ]
+          **
+          * Add 'rr-' prefix before created IDs
+         \*/
+        getElementID = R.getElementID = function (id) {
+            return "rr-" + id;
+        },
+
         /*\
           * Raphael.clone
           [ method ]
@@ -4515,10 +4526,13 @@
         var paper = this,
             args = arguments,
             group = lastArgIfGroup(args, true),
+            paperConfig = paper.config,
+            capStyle = (paperConfig && paperConfig["stroke-linecap"]) || "butt",
             attrs = serializeArgs(args,
                 "path", E,
                 "fill", none,
-                "stroke", black),
+                "stroke", black,
+                "stroke-linecap", capStyle),
             out = R._engine.path(paper, attrs, group);
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
@@ -4610,6 +4624,28 @@
         var out = new Set(itemsArray);
         this.__set__ && this.__set__.push(out);
         return out;
+    };
+
+    /*\
+     * Paper.setConfig
+     [ method ]
+     **
+     * If you need to store any configuration in paper, call this method
+     **
+     > Parameters
+     **
+     - key (String) key name of the key-value pair
+     - value (String or number) value of the key-value pair
+    \*/
+    paperproto.setConfig = function (key, value) {
+        var paper = this;
+
+        if ((key !== undefined) && (value !== undefined)) {
+
+            paper.config = paper.config || {};
+            paper.config[key] = value;
+        }
+        return paper.config;
     };
 
     /*\
@@ -4727,7 +4763,7 @@
                         (Math.min(start + (progress * (diff / duration)), end));
 
                     attr[rule] = setValue;
-                    paper.attr(attr);
+                    paper.setDimension(attr);
 
                     if (progress < duration) {
                         requestAnimFrame(stepFn);
@@ -4741,7 +4777,7 @@
                         val = incrementArr[counter];
 
                         attr[rule] = start + val;
-                        paper.attr(attr);
+                        paper.setDimension(attr);
 
                         counter += 1;
                         setTimeout(stepFn, UNIT_INTERVAL);
@@ -4756,7 +4792,7 @@
     };
 
     /*\
-     * Paper.attr
+     * paper.setDimension
      [ method ]
      **
      * If you need to change dimensions of the canvas call this method
@@ -4774,7 +4810,7 @@
         **
      - height (number) new height of the canvas
     \*/
-    paperproto.attr = function(paramsObj, height) {
+    paperproto.setDimension = function(paramsObj, height) {
         var paper = this,
             width;
         // Check if the first argument is an object or not
@@ -4829,7 +4865,7 @@
             // minimum frame length then apply the styles directly.
             for (rule in paramsObj) {
                 attr[rule] = paramsObj[rule];
-                paper.attr(attr);
+                paper.setDimension(attr);
             }
 
             callback && callback();
@@ -6955,7 +6991,7 @@
                 // Check if namesake ca exists and apply it
                 if (element.ca[name]) {
                     R._lastArgIfGroup(args, true); // purge group
-                    element.attr(name, arraySlice.call(args))
+                    args.length && element.attr(name, arraySlice.call(args))
                 }
             }
 
@@ -7107,7 +7143,7 @@
 
         var type = "linear",
             SVG = element.paper,
-            id = (SVG.id + '-' + gradient).replace(/[\(\)\s%:,\xb0#]/g, "_"),
+            id = R.getElementID((SVG.id + '-' + gradient).replace(/[\(\)\s%:,\xb0#]/g, "_")),
             fx = .5, fy = .5, r, cx, cy, units, spread,
             o = element.node,
             s = o.style,
@@ -7577,7 +7613,7 @@
                             o.clip && o.clip.parentNode.parentNode.removeChild(o.clip.parentNode);
                             var el = $("clipPath"),
                             rc = $(pathClip ? "path" : "rect");
-                            el.id = R.createUUID();
+                            el.id = R.getElementID(R.createUUID());
                             $(rc, pathClip ? {
                                 d: value ? attrs['clip-path'] = R._pathToAbsolute(value) : R._availableAttrs.path,
                                 fill: 'none'
@@ -7706,7 +7742,7 @@
                         if (isURL) {
                             el = $("pattern");
                             var ig = $("image");
-                            el.id = R.createUUID();
+                            el.id = R.getElementID(R.createUUID());
                             $(el, {
                                 x: 0,
                                 y: 0,
@@ -8330,7 +8366,7 @@
             var fltr = $("filter"),
             blur = $("feGaussianBlur");
             t.attrs.blur = size;
-            fltr.id = R.createUUID();
+            fltr.id = R.getElementID(R.createUUID());
             $(blur, {
                 stdDeviation: +size || 1.5
             });
@@ -9723,9 +9759,9 @@
         this.height = height;
         width == +width && (width += "px");
         height == +height && (height += "px");
-        cs.width = width;
-        cs.height = height;
-        cs.clip = "rect(0 " + width + " " + height + " 0)";
+        width && (cs.width = width);
+        height && (cs.height = height);
+        cs.clip = "rect(0 " + cs.width + " " + cs.height + " 0)";
         if (this._viewBox) {
             R._engine.setViewBox.apply(this, this._viewBox);
         }

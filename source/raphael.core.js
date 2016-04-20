@@ -4145,10 +4145,13 @@
         var paper = this,
             args = arguments,
             group = lastArgIfGroup(args, true),
+            paperConfig = paper.config,
+            capStyle = (paperConfig && paperConfig["stroke-linecap"]) || "butt",
             attrs = serializeArgs(args,
                 "path", E,
                 "fill", none,
-                "stroke", black),
+                "stroke", black,
+                "stroke-linecap", capStyle),
             out = R._engine.path(paper, attrs, group);
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
@@ -4240,6 +4243,28 @@
         var out = new Set(itemsArray);
         this.__set__ && this.__set__.push(out);
         return out;
+    };
+
+    /*\
+     * Paper.setConfig
+     [ method ]
+     **
+     * If you need to store any configuration in paper, call this method
+     **
+     > Parameters
+     **
+     - key (String) key name of the key-value pair
+     - value (String or number) value of the key-value pair
+    \*/
+    paperproto.setConfig = function (key, value) {
+        var paper = this;
+
+        if ((key !== undefined) && (value !== undefined)) {
+
+            paper.config = paper.config || {};
+            paper.config[key] = value;
+        }
+        return paper.config;
     };
 
     /*\

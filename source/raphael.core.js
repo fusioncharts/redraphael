@@ -5483,6 +5483,9 @@
                                 break;
                         }
                     }
+                    else {
+                        element.attr(attr, params[attr]);
+                    }
                 }
             var easing = params.easing,
             easyeasy = R.easing_formulas[easing];

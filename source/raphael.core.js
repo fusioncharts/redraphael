@@ -2821,7 +2821,7 @@
                     }
                 } else if (command == "r") {
                     if (tlen == 2) {
-                        bb = bb || el.getBBox(1);
+                        bb = _.bb || (_.bb = el.getBBox(1));
                         m.rotate(t[1], bb.x + bb.width / 2, bb.y + bb.height / 2);
                         deg += t[1];
                     } else if (tlen == 4) {
@@ -2836,7 +2836,7 @@
                     }
                 } else if (command == "s") {
                     if (tlen == 2 || tlen == 3) {
-                        bb = bb || el.getBBox(1);
+                        bb = _.bb || (_.bb = el.getBBox(1));
                         m.scale(t[1], t[tlen - 1], bb.x + bb.width / 2, bb.y + bb.height / 2);
                         sx *= t[1];
                         sy *= t[tlen - 1];

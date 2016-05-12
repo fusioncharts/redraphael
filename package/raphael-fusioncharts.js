@@ -5092,7 +5092,6 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             tr;
         return R.isPointInsidePath(((tr = this.attr('transform')) &&
             tr.length && R.transformPath(rp, tr)) || rp, x, y);
-
     };
 
     /*\
@@ -5538,14 +5537,14 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                 that.attr(set);
                 (function(id, that, anim) {
                     setTimeout(function() {
-                        eve("raphael.anim.frame." + id, that, anim);
+                        R.stopEvent !== false && eve("raphael.anim.frame." + id, that, anim);
                     });
                 })(that.id, that, e.anim);
             } else {
                 (function(f, el, a) {
                     setTimeout(function() {
-                        eve("raphael.anim.frame." + el.id, el, a);
-                        eve("raphael.anim.finish." + el.id, el, a);
+                        R.stopEvent !== false && eve("raphael.anim.frame." + el.id, el, a);
+                        R.stopEvent !== false && eve("raphael.anim.finish." + el.id, el, a);
                         R.is(f, "function") && f.call(el);
                     });
                 })(e.callback, that, e.anim);
@@ -5975,7 +5974,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             isInAnim.initstatus = status;
             isInAnim.start = new Date - isInAnim.ms * status;
         }
-        eve("raphael.anim.start." + element.id, element, anim);
+        R.stopEvent !== false && eve("raphael.anim.start." + element.id, element, anim);
     }
 
     /*\
@@ -5994,7 +5993,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
      **
      = (object) @Animation
     \*/
-    R.animation = function(params, ms, easing, callback) {
+    R.animation = function(params, ms, easing, callback, event) {
         if (params instanceof Animation) {
             return params;
         }
@@ -6002,6 +6001,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             callback = callback || easing || null;
             easing = null;
         }
+        R.stopEvent === undefined &&  (R.stopEvent = event);
         params = Object(params);
         ms = +ms || 0;
         var p = {},
@@ -8386,8 +8386,10 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         } else if (name != null && R.is(name, "object")) {
             params = name;
         }
-        for (var key in params) {
-            eve("raphael.attr." + key + "." + this.id, this, params[key], key);
+        if (R.stopEvent !== false) {
+            for (var key in params) {
+                eve("raphael.attr." + key + "." + this.id, this, params[key], key);
+            }
         }
         var todel = {};
         for (key in this.ca) {
@@ -9564,8 +9566,10 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             params[name] = value;
         }
         value == null && R.is(name, "object") && (params = name);
-        for (var key in params) {
-            eve("raphael.attr." + key + "." + this.id, this, params[key], key);
+        if (R.stopEvent !== false) {
+            for (var key in params) {
+                eve("raphael.attr." + key + "." + this.id, this, params[key], key);
+            }
         }
         if (params) {
             var todel = {};

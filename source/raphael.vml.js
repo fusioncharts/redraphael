@@ -837,8 +837,10 @@ window.Raphael && window.Raphael.vml && function(R) {
             params[name] = value;
         }
         value == null && R.is(name, "object") && (params = name);
-        for (var key in params) {
-            eve("raphael.attr." + key + "." + this.id, this, params[key], key);
+        if (R.stopEvent !== false) {
+            for (var key in params) {
+                eve("raphael.attr." + key + "." + this.id, this, params[key], key);
+            }
         }
         if (params) {
             var todel = {};

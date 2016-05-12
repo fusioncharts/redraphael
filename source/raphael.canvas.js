@@ -2461,8 +2461,10 @@ window.Raphael && window.Raphael.canvas && function (R) {
             params = name;
         }
 
-        for (key in params) {
-            eve("raphael.attr." + key + "." + o.id, o, params[key], key);
+        if (R.stopEvent !== false) {
+            for (key in params) {
+                eve("raphael.attr." + key + "." + o.id, o, params[key], key);
+            }
         }
 
         delkeys = {};

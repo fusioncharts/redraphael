@@ -5199,6 +5199,10 @@
             callback && callback.call(element);
             return element;
         }
+        if (ms == 0) {
+            element.attr (params);
+            return;
+        }
         var a = params instanceof Animation ? params : R.animation(params, ms, easing, callback),
         x, y;
         runAnimation(a, element, a.percents[0], null, element.attr(),undefined, el);
@@ -5736,7 +5740,7 @@
     elproto.pause = function(anim) {
         for (var i = 0; i < animationElements.length; i++) {
             var e = animationElements[i];
-            if ((e.el.id == this.id || (e.parentEl.e.el.id == this.id)) && (!anim || e.anim == anim)) {
+            if ((e.el.id == this.id || (e.parentEl && e.parentEl.e.el.id == this.id)) && (!anim || e.anim == anim)) {
                 if (eve("raphael.anim.pause." + this.id, this, e.anim) !== false) {
                     e.paused = true;
                     e.pauseStart = +new Date;

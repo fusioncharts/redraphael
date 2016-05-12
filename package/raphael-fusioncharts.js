@@ -5089,9 +5089,10 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
     \*/
     elproto.isPointInside = function(x, y) {
         var rp = this.realPath = this.realPath || getPath[this.type](this),
-	      	tr;
-		return R.isPointInsidePath(((tr = this.attr('transform')) &&
-		        tr.length && R.transformPath(rp, tr)) || rp, x, y);
+            tr;
+        return R.isPointInsidePath(((tr = this.attr('transform')) &&
+            tr.length && R.transformPath(rp, tr)) || rp, x, y);
+
     };
 
     /*\
@@ -5445,7 +5446,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         l = 0;
         for (; l < animationElements.length; l++) {
             var e = animationElements[l];
-            if (e.el.removed || e.paused) {
+            if (e.el.removed || e.paused || e.parentEl && e.parentEl.e.paused) {
                 continue;
             }
             var time = Now - e.start,
@@ -5597,9 +5598,13 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             callback && callback.call(element);
             return element;
         }
+        if (ms == 0) {
+            element.attr (params);
+            return;
+        }
         var a = params instanceof Animation ? params : R.animation(params, ms, easing, callback),
         x, y;
-        runAnimation(a, element, a.percents[0], null, element.attr());
+        runAnimation(a, element, a.percents[0], null, element.attr(),undefined, el);
         for (var i = 0, ii = animationElements.length; i < ii; i++) {
             if (animationElements[i].anim == anim && animationElements[i].el == el) {
                 animationElements[ii - 1].start = animationElements[i].start;
@@ -5727,7 +5732,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         a.times = math.floor(mmax(times, 0)) || 1;
         return a;
     };
-    function runAnimation(anim, element, percent, status, totalOrigin, times) {
+    function runAnimation(anim, element, percent, status, totalOrigin, times, parentEl) {
         percent = toFloat(percent);
         var params,
         isInAnim,
@@ -5736,6 +5741,14 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         next,
         prev,
         timestamp,
+        tempDiff,
+        tempDiff1,
+        tempDiff2,
+        tempDiff3,
+        tempDiff4,
+        tempDiff5,
+        tempDiff6,
+        change,
         ms = anim.ms,
         from = {},
         to = {},
@@ -5779,17 +5792,24 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                         from[attr] = element.attr(attr);
                         (from[attr] == null) && (from[attr] = availableAttrs[attr]);
                         to[attr] = params[attr];
+                        change = false;
                         switch (availableAnimAttrs[attr]) {
                             case nu:
-                                diff[attr] = (to[attr] - from[attr]) / ms;
+                                tempDiff = to[attr] - from[attr];
+                                tempDiff && (change = true);
+                                diff[attr] = tempDiff / ms;
                                 break;
                             case "colour":
                                 from[attr] = R.getRGB(from[attr]);
                                 var toColour = R.getRGB(to[attr]);
+                                tempDiff1 = (toColour.r - from[attr].r),
+                                tempDiff2 = (toColour.g - from[attr].g),
+                                tempDiff3 = (toColour.b - from[attr].b);
+                                (tempDiff1 || tempDiff2 || tempDiff3) && (change = true);
                                 diff[attr] = {
-                                    r: (toColour.r - from[attr].r) / ms,
-                                    g: (toColour.g - from[attr].g) / ms,
-                                    b: (toColour.b - from[attr].b) / ms
+                                    r: tempDiff1 / ms,
+                                    g: tempDiff2 / ms,
+                                    b: tempDiff3 / ms
                                 };
                                 break;
                             case "path":
@@ -5800,7 +5820,9 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                                 for (i = 0, ii = from[attr].length; i < ii; i++) {
                                     diff[attr][i] = [0];
                                     for (var j = 1, jj = from[attr][i].length; j < jj; j++) {
-                                        diff[attr][i][j] = (toPath[i][j] - from[attr][i][j]) / ms;
+                                        tempDiff = toPath[i][j] - from[attr][i][j];
+                                        tempDiff && (change = true);
+                                        diff[attr][i][j] =  tempDiff / ms;
                                     }
                                 }
                                 break;
@@ -5815,7 +5837,9 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                                     for (i = 0, ii = from[attr].length; i < ii; i++) {
                                         diff[attr][i] = [from[attr][i][0]];
                                         for (j = 1, jj = from[attr][i].length; j < jj; j++) {
-                                            diff[attr][i][j] = (to[attr][i][j] - from[attr][i][j]) / ms;
+                                            tempDiff = to[attr][i][j] - from[attr][i][j];
+                                            tempDiff && (change = true);
+                                            diff[attr][i][j] = tempDiff / ms;
                                         }
                                     }
                                 } else {
@@ -5838,13 +5862,21 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                                     ];
                                     extractTransform(to2, to[attr]);
                                     to[attr] = to2._.transform;
+                                    tempDiff1 = to2.matrix.a - m.a;
+                                    tempDiff2 = to2.matrix.b - m.b;
+                                    tempDiff3 = to2.matrix.c - m.c;
+                                    tempDiff4 = to2.matrix.d - m.d;
+                                    tempDiff5 = to2.matrix.e - m.e;
+                                    tempDiff6 = to2.matrix.f - m.f;
+                                    (tempDiff1 || tempDiff2 || tempDiff3 || tempDiff4 || tempDiff5 || tempDiff6)
+                                    && (change = true);
                                     diff[attr] = [
-                                    (to2.matrix.a - m.a) / ms,
-                                    (to2.matrix.b - m.b) / ms,
-                                    (to2.matrix.c - m.c) / ms,
-                                    (to2.matrix.d - m.d) / ms,
-                                    (to2.matrix.e - m.e) / ms,
-                                    (to2.matrix.f - m.f) / ms
+                                    tempDiff1 / ms,
+                                    tempDiff2 / ms,
+                                    tempDiff3 / ms,
+                                    tempDiff4 / ms,
+                                    tempDiff5 / ms,
+                                    tempDiff6 / ms
                                     ];
                                 // from[attr] = [_.sx, _.sy, _.deg, _.dx, _.dy];
                                 // var to2 = {_:{}, getBBox: function () { return element.getBBox(); }};
@@ -5866,7 +5898,9 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                                     diff[attr] = [];
                                     i = from2.length;
                                     while (i--) {
-                                        diff[attr][i] = (values[i] - from[attr][i]) / ms;
+                                        tempDiff = values[i] - from[attr][i];
+                                        tempDiff && (change = true);
+                                        diff[attr][i] = tempDiff / ms;
                                     }
                                 }
                                 to[attr] = values;
@@ -5877,13 +5911,16 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                                 diff[attr] = [];
                                 i = element.ca[attr].length;
                                 while (i--) {
-                                    diff[attr][i] = ((values[i] || 0) - (from2[i] || 0)) / ms;
+                                    tempDiff = (values[i] || 0) - (from2[i] || 0);
+                                    tempDiff && (change = true);
+                                    diff[attr][i] = tempDiff / ms;
                                 }
                                 break;
                         }
-                    }
-                    else {
-                        element.attr(attr, params[attr]);
+                        if (!change) {
+                            delete from[attr];
+                            delete diff[attr];
+                        }
                     }
                 }
             var easing = params.easing,
@@ -5900,7 +5937,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                 }
             }
             timestamp = params.start || anim.start || +new Date;
-            e = {
+            element.e =  e = {
                 anim: anim,
                 percent: percent,
                 timestamp: timestamp,
@@ -5919,9 +5956,10 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                 next: next,
                 repeat: times || anim.times,
                 origin: element.attr(),
-                totalOrigin: totalOrigin
+                totalOrigin: totalOrigin,
+                parentEl : parentEl
             };
-            animationElements.push(e);
+            Object.keys(diff).length !== 0 && animationElements.push(e);
             if (status && !isInAnim && !isInAnimSet) {
                 e.stop = true;
                 e.start = new Date - ms * status;
@@ -6057,13 +6095,13 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
      * or
      = (object) original element if `value` is specified
     \*/
-    elproto.status = function(anim, value) {
+    elproto.status = function(anim, value, parentEl) {
         var out = [],
         i = 0,
         len,
         e;
         if (value != null) {
-            runAnimation(anim, this, -1, mmin(value, 1));
+            runAnimation(anim, this, -1, mmin(value, 1), undefined, undefined, parentEl);
             return this;
         } else {
             len = animationElements.length;
@@ -6099,12 +6137,15 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
      = (object) original element
     \*/
     elproto.pause = function(anim) {
-        for (var i = 0; i < animationElements.length; i++)
-            if (animationElements[i].el.id == this.id && (!anim || animationElements[i].anim == anim)) {
-                if (eve("raphael.anim.pause." + this.id, this, animationElements[i].anim) !== false) {
-                    animationElements[i].paused = true;
+        for (var i = 0; i < animationElements.length; i++) {
+            var e = animationElements[i];
+            if ((e.el.id == this.id || (e.parentEl && e.parentEl.e.el.id == this.id)) && (!anim || e.anim == anim)) {
+                if (eve("raphael.anim.pause." + this.id, this, e.anim) !== false) {
+                    e.paused = true;
+                    e.pauseStart = +new Date;
                 }
             }
+        }
         return this;
     };
 
@@ -6121,14 +6162,18 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
      = (object) original element
     \*/
     elproto.resume = function(anim) {
-        for (var i = 0; i < animationElements.length; i++)
-            if (animationElements[i].el.id == this.id && (!anim || animationElements[i].anim == anim)) {
-                var e = animationElements[i];
+        for (var i = 0; i < animationElements.length; i++) {
+            var e = animationElements[i];
+            if ((e.el.id == this.id || (e.parentEl && e.parentEl.e.el.id == this.id)) && (!anim || e.anim == anim)) {
                 if (eve("raphael.anim.resume." + this.id, this, e.anim) !== false) {
                     delete e.paused;
-                    this.status(e.anim, e.status);
+                    e.el.status(e.anim, e.status, e.parentEl);
+                    e.pauseEnd = +new Date;
+                    e.start += (((e.parentEl && e.parentEl.e.pauseEnd || e.pauseEnd) -
+                        (e.parentEl && e.parentEl.e.pauseStart || e.pauseStart)) || 0);
                 }
             }
+        }
         return this;
     };
 

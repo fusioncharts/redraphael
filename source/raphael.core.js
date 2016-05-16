@@ -5199,8 +5199,7 @@
             return element;
         }
         if (ms == 0) {
-            element.attr (params);
-            return;
+            return element.attr (params);
         }
         var a = params instanceof Animation ? params : R.animation(params, ms, easing, callback),
         x, y;

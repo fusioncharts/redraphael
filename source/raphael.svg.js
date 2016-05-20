@@ -1072,6 +1072,7 @@ window.Raphael && window.Raphael.svg && function(R) {
         if (o.removed) {
             return o;
         }
+        updateFollowers(o, 'rotate', deg, cx, cy);
         deg = Str(deg).split(separator);
         if (deg.length - 1) {
             cx = toFloat(deg[1]);
@@ -1094,6 +1095,7 @@ window.Raphael && window.Raphael.svg && function(R) {
         if (o.removed) {
             return o;
         }
+        updateFollowers(o, 'scale', sx, sy, cx, cy);
         sx = Str(sx).split(separator);
         if (sx.length - 1) {
             sy = toFloat(sx[1]);
@@ -1117,6 +1119,7 @@ window.Raphael && window.Raphael.svg && function(R) {
         if (o.removed) {
             return o;
         }
+        updateFollowers(o, 'translate', dx, dy);
         dx = Str(dx).split(separator);
         if (dx.length - 1) {
             dy = toFloat(dx[1]);
@@ -1157,12 +1160,14 @@ window.Raphael && window.Raphael.svg && function(R) {
 
     elproto.hide = function() {
         var o = this;
+        updateFollowers(o, 'hide');
         !o.removed && o.paper.safari(o.node.style.display = "none");
         return o;
     };
 
     elproto.show = function() {
         var o = this;
+        updateFollowers(o, 'show');
         !o.removed && o.paper.safari(o.node.style.display = E);
         return o;
     };

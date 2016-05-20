@@ -680,6 +680,7 @@ window.Raphael && window.Raphael.vml && function(R) {
         if (this.removed) {
             return this;
         }
+        updateFollowers(o, 'rotate', deg, cx, cy);
         if (deg == null) {
             return;
         }
@@ -703,6 +704,7 @@ window.Raphael && window.Raphael.vml && function(R) {
         if (this.removed) {
             return this;
         }
+        updateFollowers(o, 'translate', dx, dy);
         dx = Str(dx).split(separator);
         if (dx.length - 1) {
             dy = toFloat(dx[1]);
@@ -720,6 +722,7 @@ window.Raphael && window.Raphael.vml && function(R) {
         if (this.removed) {
             return this;
         }
+        updateFollowers(o, 'scale', sx, sy, cx, cy);
         sx = Str(sx).split(separator);
         if (sx.length - 1) {
             sy = toFloat(sx[1]);
@@ -743,12 +746,14 @@ window.Raphael && window.Raphael.vml && function(R) {
     };
     elproto.hide = function(soft) {
         var o = this;
+        updateFollowers(o, 'hide', soft);
         !o.removed && (o.node.style.display = "none");
         return o;
     };
 
     elproto.show = function(soft) {
         var o = this;
+        updateFollowers(o, 'show', soft);
         !o.removed && (o.node.style.display = E);
         return o;
     };

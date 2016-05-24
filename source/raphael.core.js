@@ -4333,9 +4333,9 @@
     function paperAnimator(paper, duration, start, end, rule, effect, callback) {
         var iterations = (duration / UNIT_INTERVAL),
             diff = (end - start),
+            ef = R.easing_formulas,
             incrementArr = (function () {
                 var i = 0,
-                    ef = R.easing_formulas,
                     arr = [];
                 for (; i < duration; i += UNIT_INTERVAL) {
                     arr.push(((ef[effect || 'linear'](i / duration)) * diff));
@@ -4358,6 +4358,7 @@
                     setValue,
                     val,
                     value,
+                    weightedProgress,
                     attr = {},
                     reduce = false;
 
@@ -4367,13 +4368,14 @@
                     }
                     progress = timestamp - startTime;
 
+                    weightedProgress = ef[effect || 'linear'](progress / duration);
                     diff = Math.abs(start - end);
 
                     reduce = (start - end) < 0 ? false : true;
 
                     setValue = reduce ?
-                        (Math.max(start - (progress * (diff / duration)), end)) :
-                        (Math.min(start + (progress * (diff / duration)), end));
+                        (Math.max(start - (weightedProgress * diff), end)) :
+                        (Math.min(start + (weightedProgress * diff), end));
 
                     attr[rule] = setValue;
                     paper.setDimension(attr);

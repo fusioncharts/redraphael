@@ -4333,21 +4333,15 @@
     function paperAnimator(paper, duration, start, end, rule, effect, callback) {
         var iterations = (duration / UNIT_INTERVAL),
             diff = (end - start),
-            effects = {
-                linear: function (diff, iterations) {
-                    var
-                        returnArr = [],
-                        increment = (diff / iterations),
-                        i = 0;
-
-                    for (;i < iterations; i += 1) {
-                        returnArr[i] = increment * (i + 1);
-                    }
-
-                    return returnArr;
+            incrementArr = (function () {
+                var i = 0,
+                    ef = R.easing_formulas,
+                    arr = [];
+                for (; i < duration; i += UNIT_INTERVAL) {
+                    arr.push(((ef[effect || 'linear'](i / duration)) * diff));
                 }
-            },
-            incrementArr = effects[effect || 'linear'](diff, iterations),
+                return arr;
+            })(),
             counter = 0,
             startTime,
             progress,

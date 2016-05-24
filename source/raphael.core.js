@@ -4472,8 +4472,6 @@
             rule,
             attr = {};
 
-        // For now it supports only 'linear' animation style
-        effect = 'linear';
 
         if (duration < UNIT_INTERVAL) {
             // If the duration of animation is less than the

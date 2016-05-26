@@ -5598,6 +5598,9 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
             return element;
         }
         if (ms == 0) {
+            setTimeout(function () {
+                R.is(callback, "function") && callback.call(callback);
+            }, 0);
             return element.attr (params);
         }
         var a = params instanceof Animation ? params : R.animation(params, ms, easing, callback),

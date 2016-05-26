@@ -139,6 +139,8 @@
         objectToStr = "[object Object]",
         arraySlice = Array.prototype.slice,
         arraySplice = Array.prototype.splice,
+        arrayShift = Array.prototype.shift,
+        arrayPop = Array.prototype.pop,
         hasPrototypeBug = (function () {
             var a = function () {};
             return a.hasOwnProperty("prototype");

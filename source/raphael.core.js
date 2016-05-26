@@ -2141,9 +2141,6 @@
     \*/
     var pathDimensions = R.pathBBox = function(path) {
         var pth = paths(path);
-        if (pth.bbox) {
-            return pth.bbox;
-        }
         if (!path) {
             return {
                 x: 0,

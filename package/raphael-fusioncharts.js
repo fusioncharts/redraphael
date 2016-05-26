@@ -6188,13 +6188,26 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
      **
      = (object) original element
     \*/
-    elproto.stop = function(anim) {
+    elproto.stop = function(anim, stopAnimation) {
         for (var i = 0; i < animationElements.length; i++)
             if (animationElements[i].el.id == this.id && (!anim || animationElements[i].anim == anim)) {
                 if (eve("raphael.anim.stop." + this.id, this, animationElements[i].anim) !== false) {
                     animationElements.splice(i--, 1);
                 }
             }
+            var e, i;
+            if (stopAnimation) {
+            for (i = animationElements.length - 1; i >= 0; i--) {
+                e = animationElements[i];
+                if ((e.el.id == this.id || (e.parentEl && e.parentEl.id == this.id)) &&
+                    (!anim || animationElements[i].anim == anim)) {
+                    ele = e.el;
+                    ele.attr(e.to);
+                    e.callback.call(ele);
+                    animationElements.splice(i, 1);
+                }
+            }
+        }
         return this;
     };
     function stopAnimation(paper) {

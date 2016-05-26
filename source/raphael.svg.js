@@ -864,6 +864,25 @@ window.Raphael && window.Raphael.svg && function(R) {
         (o.type === 'text') && tuneText(o, params);
         s.visibility = vis;
     },
+    /*
+     * Keeps the follower element in sync with the leaders.
+     * First and second arguments represents the context(element) and the 
+     name of the callBack function respectively.
+     * The callBack is invoked for indivual follower Element with the rest of
+     arguments.
+    */
+    updateFollowers = R._updateFollowers = function () {
+        var i,
+            ii,
+            followerElem,
+            args = arguments,
+            o = arrayShift.call(args),
+            fnName = arrayShift.call(args);
+        for (i = 0, ii = o.followers.length; i < ii; i++) {
+            followerElem = o.followers[i].el;
+            followerElem[fnName].apply(followerElem, args);
+        }
+    },
     leading = 1.2,
     tuneText = function(el, params) {
         if (el.type != "text" || !(params[has]("text") || params[has]("font") ||
@@ -1053,6 +1072,7 @@ window.Raphael && window.Raphael.svg && function(R) {
         if (o.removed) {
             return o;
         }
+        updateFollowers(o, 'rotate', deg, cx, cy);
         deg = Str(deg).split(separator);
         if (deg.length - 1) {
             cx = toFloat(deg[1]);
@@ -1075,6 +1095,7 @@ window.Raphael && window.Raphael.svg && function(R) {
         if (o.removed) {
             return o;
         }
+        updateFollowers(o, 'scale', sx, sy, cx, cy);
         sx = Str(sx).split(separator);
         if (sx.length - 1) {
             sy = toFloat(sx[1]);
@@ -1098,6 +1119,7 @@ window.Raphael && window.Raphael.svg && function(R) {
         if (o.removed) {
             return o;
         }
+        updateFollowers(o, 'translate', dx, dy);
         dx = Str(dx).split(separator);
         if (dx.length - 1) {
             dy = toFloat(dx[1]);
@@ -1138,12 +1160,14 @@ window.Raphael && window.Raphael.svg && function(R) {
 
     elproto.hide = function() {
         var o = this;
+        updateFollowers(o, 'hide');
         !o.removed && o.paper.safari(o.node.style.display = "none");
         return o;
     };
 
     elproto.show = function() {
         var o = this;
+        updateFollowers(o, 'show');
         !o.removed && o.paper.safari(o.node.style.display = E);
         return o;
     };

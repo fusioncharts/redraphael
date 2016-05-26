@@ -5743,9 +5743,6 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         tempDiff1,
         tempDiff2,
         tempDiff3,
-        tempDiff4,
-        tempDiff5,
-        tempDiff6,
         change,
         ms = anim.ms,
         from = {},
@@ -5835,9 +5832,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                                     for (i = 0, ii = from[attr].length; i < ii; i++) {
                                         diff[attr][i] = [from[attr][i][0]];
                                         for (j = 1, jj = from[attr][i].length; j < jj; j++) {
-                                            tempDiff = to[attr][i][j] - from[attr][i][j];
-                                            tempDiff && (change = true);
-                                            diff[attr][i][j] = tempDiff / ms;
+                                            diff[attr][i][j] = (to[attr][i][j] - from[attr][i][j]) / ms;
                                         }
                                     }
                                 } else {
@@ -5860,21 +5855,13 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                                     ];
                                     extractTransform(to2, to[attr]);
                                     to[attr] = to2._.transform;
-                                    tempDiff1 = to2.matrix.a - m.a;
-                                    tempDiff2 = to2.matrix.b - m.b;
-                                    tempDiff3 = to2.matrix.c - m.c;
-                                    tempDiff4 = to2.matrix.d - m.d;
-                                    tempDiff5 = to2.matrix.e - m.e;
-                                    tempDiff6 = to2.matrix.f - m.f;
-                                    (tempDiff1 || tempDiff2 || tempDiff3 || tempDiff4 || tempDiff5 || tempDiff6)
-                                    && (change = true);
                                     diff[attr] = [
-                                    tempDiff1 / ms,
-                                    tempDiff2 / ms,
-                                    tempDiff3 / ms,
-                                    tempDiff4 / ms,
-                                    tempDiff5 / ms,
-                                    tempDiff6 / ms
+                                    (to2.matrix.a - m.a) / ms,
+                                    (to2.matrix.b - m.b) / ms,
+                                    (to2.matrix.c - m.c) / ms,
+                                    (to2.matrix.d - m.d) / ms,
+                                    (to2.matrix.e - m.e) / ms,
+                                    (to2.matrix.f - m.f) / ms
                                     ];
                                 // from[attr] = [_.sx, _.sy, _.deg, _.dx, _.dy];
                                 // var to2 = {_:{}, getBBox: function () { return element.getBBox(); }};
@@ -5915,11 +5902,16 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                                 }
                                 break;
                         }
-                        if (!change) {
+                        if (!change && attr !== 'transform') {
                             delete from[attr];
+                            delete params[attr];
                             delete diff[attr];
                         }
                     }
+                }
+                else {
+                    element.attr(attr, params[attr]);
+                    delete params[attr];
                 }
             var easing = params.easing,
             easyeasy = R.easing_formulas[easing];
@@ -6203,7 +6195,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                     (!anim || animationElements[i].anim == anim)) {
                     ele = e.el;
                     ele.attr(e.to);
-                    e.callback.call(ele);
+                    e.callback && e.callback.call(ele);
                     animationElements.splice(i, 1);
                 }
             }

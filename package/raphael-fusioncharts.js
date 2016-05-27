@@ -5458,8 +5458,10 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                 time = (e.initstatus * e.anim.top - e.prev) / (e.percent - e.prev) * ms;
                 e.status = e.initstatus;
                 delete e.initstatus;
-                delete e.el;
-                e.stop && animationElements.splice(l--, 1);
+                if (e.stop) {
+                    delete e.el;
+                    animationElements.splice(l--, 1);
+                }
             } else {
                 e.status = (e.prev + (e.percent - e.prev) * (time / ms)) / e.anim.top;
             }

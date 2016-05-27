@@ -6064,13 +6064,13 @@
      * or
      = (object) original element if `value` is specified
     \*/
-    elproto.status = function(anim, value, parentEl) {
+    elproto.status = function(anim, value) {
         var out = [],
         i = 0,
         len,
         e;
         if (value != null) {
-            runAnimation(anim, this, -1, mmin(value, 1), undefined, undefined, parentEl);
+            runAnimation(anim, this, -1, mmin(value, 1));
             return this;
         } else {
             len = animationElements.length;
@@ -6102,13 +6102,15 @@
      > Parameters
      **
      - anim (object) #optional animation object
+     - resumeChildAnimation (boolean) #pauses the animation of the elements which are in sync with the current element
      **
      = (object) original element
     \*/
-    elproto.pause = function(anim) {
+    elproto.pause = function(anim, pauseChildAnimation) {
         for (var i = 0; i < animationElements.length; i++) {
             var e = animationElements[i];
-            if ((e.el.id == this.id || (e.parentEl && e.parentEl.e.el.id == this.id)) && (!anim || e.anim == anim)) {
+            if ((e.el.id === this.id || (pauseChildAnimation && e.parentEl && e.parentEl.e.el.id === this.id)) &&
+                (!anim || e.anim == anim)) {
                 if (eve("raphael.anim.pause." + this.id, this, e.anim) !== false) {
                     e.paused = true;
                     e.pauseStart = +new Date;
@@ -6127,16 +6129,18 @@
      > Parameters
      **
      - anim (object) #optional animation object
+     - resumeChildAnimation (boolean) #resumes the animation of the elements which are in sync with the current element
      **
      = (object) original element
     \*/
-    elproto.resume = function(anim) {
+    elproto.resume = function(anim, resumeChildAnimation) {
         for (var i = 0; i < animationElements.length; i++) {
             var e = animationElements[i];
-            if ((e.el.id == this.id || (e.parentEl && e.parentEl.e.el.id == this.id)) && (!anim || e.anim == anim)) {
+            if ((e.el.id === this.id || (resumeChildAnimation && e.parentEl && e.parentEl.e.el.id === this.id)) &&
+                (!anim || e.anim == anim)) {
                 if (eve("raphael.anim.resume." + this.id, this, e.anim) !== false) {
                     delete e.paused;
-                    e.el.status(e.anim, e.status, e.parentEl);
+                    e.el.status(e.anim, e.status);
                     e.pauseEnd = +new Date;
                     e.start += (((e.parentEl && e.parentEl.e.pauseEnd || e.pauseEnd) -
                         (e.parentEl && e.parentEl.e.pauseStart || e.pauseStart)) || 0);
@@ -6155,26 +6159,30 @@
      > Parameters
      **
      - anim (object) #optional animation object
+     - stopChildAnimation (boolean) #optional stops the animation of all the element which are in sync with the current element
+     - jumpToEnd (boolean) #optional takes the current animation to its end value
      **
      = (object) original element
     \*/
-    elproto.stop = function(anim, stopAnimation) {
-        for (var i = 0; i < animationElements.length; i++)
-            if (animationElements[i].el.id == this.id && (!anim || animationElements[i].anim == anim)) {
-                if (eve("raphael.anim.stop." + this.id, this, animationElements[i].anim) !== false) {
-                    animationElements.splice(i--, 1);
-                }
-            }
-            var e, i;
-            if (stopAnimation) {
+    elproto.stop = function(anim, stopChildAnimation, jumpToEnd) {
+        var e, i;
+        if (stopChildAnimation) {
             for (i = animationElements.length - 1; i >= 0; i--) {
                 e = animationElements[i];
-                if ((e.el.id == this.id || (e.parentEl && e.parentEl.id == this.id)) &&
+                if ((e.el.id === this.id || (e.parentEl && e.parentEl.id === this.id)) &&
                     (!anim || animationElements[i].anim == anim)) {
                     ele = e.el;
-                    ele.attr(e.to);
+                    jumpToEnd && ele.attr(e.to);
                     e.callback && e.callback.call(ele);
                     animationElements.splice(i, 1);
+                }
+            }
+        }
+        else {
+            for (var i = 0; i < animationElements.length; i++)
+            if (animationElements[i].el.id === this.id && (!anim || animationElements[i].anim === anim)) {
+                if (eve("raphael.anim.stop." + this.id, this, animationElements[i].anim) !== false) {
+                    animationElements.splice(i--, 1);
                 }
             }
         }

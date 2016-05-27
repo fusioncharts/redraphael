@@ -5749,6 +5749,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                 var e = animationElements[i];
                 if (e.el.id == element.id && e.anim == anim) {
                     if (e.percent != percent) {
+                        delete e.el.e;
                         delete e.el;
                         animationElements.splice(i, 1);
                         isInAnimSet = 1;
@@ -6197,17 +6198,19 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                     ele = e.el;
                     jumpToEnd && ele.attr(e.to);
                     e.callback && e.callback.call(ele);
+                    delete ele.e;
                     delete e.el;
                     animationElements.splice(i, 1);
                 }
             }
         }
         else {
-            for (var i = 0; i < animationElements.length; i++)
-            if (animationElements[i].el.id === this.id && (!anim || animationElements[i].anim === anim)) {
-                if (eve("raphael.anim.stop." + this.id, this, animationElements[i].anim) !== false) {
-                    delete e.el;
-                    animationElements.splice(i--, 1);
+            for (var i = 0; i < animationElements.length; i++){
+                e = animationElements[i];
+                if (e.el.id === this.id && (!anim || e.anim === anim)) {
+                    if (eve("raphael.anim.stop." + this.id, this, e.anim) !== false) {
+                        animationElements.splice(i--, 1);
+                    }
                 }
             }
         }

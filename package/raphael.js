@@ -1,5 +1,5 @@
 /**!
- * RedRaphael 1.1.21 - JavaScript Vector Library
+ * RedRaphael 1.1.22 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0
@@ -520,6 +520,8 @@
         objectToStr = "[object Object]",
         arraySlice = Array.prototype.slice,
         arraySplice = Array.prototype.splice,
+        arrayShift = Array.prototype.shift,
+        arrayPop = Array.prototype.pop,
         hasPrototypeBug = (function () {
             var a = function () {};
             return a.hasOwnProperty("prototype");
@@ -2522,9 +2524,6 @@
     \*/
     var pathDimensions = R.pathBBox = function(path) {
         var pth = paths(path);
-        if (pth.bbox) {
-            return pth.bbox;
-        }
         if (!path) {
             return {
                 x: 0,
@@ -4714,21 +4713,15 @@
     function paperAnimator(paper, duration, start, end, rule, effect, callback) {
         var iterations = (duration / UNIT_INTERVAL),
             diff = (end - start),
-            effects = {
-                linear: function (diff, iterations) {
-                    var
-                        returnArr = [],
-                        increment = (diff / iterations),
-                        i = 0;
-
-                    for (;i < iterations; i += 1) {
-                        returnArr[i] = increment * (i + 1);
-                    }
-
-                    return returnArr;
+            ef = R.easing_formulas,
+            incrementArr = (function () {
+                var i = 0,
+                    arr = [];
+                for (; i < duration; i += UNIT_INTERVAL) {
+                    arr.push(((ef[effect || 'linear'](i / duration)) * diff));
                 }
-            },
-            incrementArr = effects[effect || 'linear'](diff, iterations),
+                return arr;
+            })(),
             counter = 0,
             startTime,
             progress,
@@ -4745,6 +4738,7 @@
                     setValue,
                     val,
                     value,
+                    weightedProgress,
                     attr = {},
                     reduce = false;
 
@@ -4754,13 +4748,14 @@
                     }
                     progress = timestamp - startTime;
 
+                    weightedProgress = ef[effect || 'linear'](progress / duration);
                     diff = Math.abs(start - end);
 
                     reduce = (start - end) < 0 ? false : true;
 
                     setValue = reduce ?
-                        (Math.max(start - (progress * (diff / duration)), end)) :
-                        (Math.min(start + (progress * (diff / duration)), end));
+                        (Math.max(start - (weightedProgress * diff), end)) :
+                        (Math.min(start + (weightedProgress * diff), end));
 
                     attr[rule] = setValue;
                     paper.setDimension(attr);
@@ -4857,8 +4852,6 @@
             rule,
             attr = {};
 
-        // For now it supports only 'linear' animation style
-        effect = 'linear';
 
         if (duration < UNIT_INTERVAL) {
             // If the duration of animation is less than the
@@ -7948,6 +7941,25 @@
         (o.type === 'text') && tuneText(o, params);
         s.visibility = vis;
     },
+    /*
+     * Keeps the follower element in sync with the leaders.
+     * First and second arguments represents the context(element) and the 
+     name of the callBack function respectively.
+     * The callBack is invoked for indivual follower Element with the rest of
+     arguments.
+    */
+    updateFollowers = R._updateFollowers = function () {
+        var i,
+            ii,
+            followerElem,
+            args = arguments,
+            o = arrayShift.call(args),
+            fnName = arrayShift.call(args);
+        for (i = 0, ii = o.followers.length; i < ii; i++) {
+            followerElem = o.followers[i].el;
+            followerElem[fnName].apply(followerElem, args);
+        }
+    },
     leading = 1.2,
     tuneText = function(el, params) {
         if (el.type != "text" || !(params[has]("text") || params[has]("font") ||
@@ -8137,6 +8149,7 @@
         if (o.removed) {
             return o;
         }
+        updateFollowers(o, 'rotate', deg, cx, cy);
         deg = Str(deg).split(separator);
         if (deg.length - 1) {
             cx = toFloat(deg[1]);
@@ -8159,6 +8172,7 @@
         if (o.removed) {
             return o;
         }
+        updateFollowers(o, 'scale', sx, sy, cx, cy);
         sx = Str(sx).split(separator);
         if (sx.length - 1) {
             sy = toFloat(sx[1]);
@@ -8182,6 +8196,7 @@
         if (o.removed) {
             return o;
         }
+        updateFollowers(o, 'translate', dx, dy);
         dx = Str(dx).split(separator);
         if (dx.length - 1) {
             dy = toFloat(dx[1]);
@@ -8222,12 +8237,14 @@
 
     elproto.hide = function() {
         var o = this;
+        updateFollowers(o, 'hide');
         !o.removed && o.paper.safari(o.node.style.display = "none");
         return o;
     };
 
     elproto.show = function() {
         var o = this;
+        updateFollowers(o, 'show');
         !o.removed && o.paper.safari(o.node.style.display = E);
         return o;
     };
@@ -9201,6 +9218,25 @@
         }
     // res.paper.canvas.style.display = E;
     },
+    /*
+     * Keeps the follower element in sync with the leaders.
+     * First and second arguments represents the context(element) and the 
+     name of the callBack function respectively.
+     * The callBack is invoked for indivual follower Element with the rest of
+     arguments.
+    */
+    updateFollowers = R._updateFollowers = function () {
+        var i,
+            ii,
+            followerElem,
+            args = arguments,
+            o = arrayShift.call(args),
+            fnName = arrayShift.call(args);
+        for (i = 0, ii = o.followers.length; i < ii; i++) {
+            followerElem = o.followers[i].el;
+            followerElem[fnName].apply(followerElem, args);
+        }
+    },
     addGradientFill = function(o, gradient, fill) {
         o.attrs = o.attrs || {};
         var attrs = o.attrs,
@@ -9376,9 +9412,11 @@
         return this;
     };
     elproto.rotate = function(deg, cx, cy) {
-        if (this.removed) {
-            return this;
+        var o = this;
+        if (o.removed) {
+            return o;
         }
+        updateFollowers(o, 'rotate', deg, cx, cy);
         if (deg == null) {
             return;
         }
@@ -9390,35 +9428,39 @@
         deg = toFloat(deg[0]);
         (cy == null) && (cx = cy);
         if (cx == null || cy == null) {
-            var bbox = this.getBBox(1);
+            var bbox = o.getBBox(1);
             cx = bbox.x + bbox.width / 2;
             cy = bbox.y + bbox.height / 2;
         }
-        this._.dirtyT = 1;
-        this.transform(this._.transform.concat([["r", deg, cx, cy]]));
-        return this;
+        o._.dirtyT = 1;
+        o.transform(o._.transform.concat([["r", deg, cx, cy]]));
+        return o;
     };
     elproto.translate = function(dx, dy) {
-        if (this.removed) {
-            return this;
+        var o = this;
+        if (o.removed) {
+            return o;
         }
+        updateFollowers(o, 'translate', dx, dy);
         dx = Str(dx).split(separator);
         if (dx.length - 1) {
             dy = toFloat(dx[1]);
         }
         dx = toFloat(dx[0]) || 0;
         dy = +dy || 0;
-        if (this._.bbox) {
-            this._.bbox.x += dx;
-            this._.bbox.y += dy;
+        if (o._.bbox) {
+            o._.bbox.x += dx;
+            o._.bbox.y += dy;
         }
-        this.transform(this._.transform.concat([["t", dx, dy]]));
-        return this;
+        o.transform(o._.transform.concat([["t", dx, dy]]));
+        return o;
     };
     elproto.scale = function(sx, sy, cx, cy) {
-        if (this.removed) {
-            return this;
+        var o = this;
+        if (o.removed) {
+            return o;
         }
+        updateFollowers(o, 'scale', sx, sy, cx, cy);
         sx = Str(sx).split(separator);
         if (sx.length - 1) {
             sy = toFloat(sx[1]);
@@ -9431,35 +9473,38 @@
         (sy == null) && (sy = sx);
         (cy == null) && (cx = cy);
         if (cx == null || cy == null) {
-            var bbox = this.getBBox(1);
+            var bbox = o.getBBox(1);
         }
         cx = cx == null ? bbox.x + bbox.width / 2 : cx;
         cy = cy == null ? bbox.y + bbox.height / 2 : cy;
 
-        this.transform(this._.transform.concat([["s", sx, sy, cx, cy]]));
-        this._.dirtyT = 1;
-        return this;
+        o.transform(o._.transform.concat([["s", sx, sy, cx, cy]]));
+        o._.dirtyT = 1;
+        return o;
     };
     elproto.hide = function(soft) {
         var o = this;
+        updateFollowers(o, 'hide', soft);
         !o.removed && (o.node.style.display = "none");
         return o;
     };
 
     elproto.show = function(soft) {
         var o = this;
+        updateFollowers(o, 'show', soft);
         !o.removed && (o.node.style.display = E);
         return o;
     };
     elproto._getBBox = function() {
-        if (this.removed) {
+        var o = this;
+        if (o.removed) {
             return {};
         }
         return {
-            x: this.X + (this.bbx || 0) - this.W / 2,
-            y: this.Y + (this.bby || 0) - this.H / 2,
-            width: this.W,
-            height: this.H
+            x: o.X + (o.bbx || 0) - o.W / 2,
+            y: o.Y + (o.bby || 0) - o.H / 2,
+            width: o.W,
+            height: o.H
         };
     };
     elproto.remove = function() {

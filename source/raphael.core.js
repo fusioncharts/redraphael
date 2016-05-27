@@ -5053,11 +5053,13 @@
             set = {},
             now,
             init = {},
+            stopEvent = R.stopEvent !== false,
             key;
             if (e.initstatus) {
                 time = (e.initstatus * e.anim.top - e.prev) / (e.percent - e.prev) * ms;
                 e.status = e.initstatus;
                 delete e.initstatus;
+                delete e.el;
                 e.stop && animationElements.splice(l--, 1);
             } else {
                 e.status = (e.prev + (e.percent - e.prev) * (time / ms)) / e.anim.top;
@@ -5131,18 +5133,19 @@
                 that.attr(set);
                 (function(id, that, anim) {
                     setTimeout(function() {
-                        R.stopEvent !== false && eve("raphael.anim.frame." + id, that, anim);
+                        stopEvent && eve("raphael.anim.frame." + id, that, anim);
                     });
                 })(that.id, that, e.anim);
             } else {
                 (function(f, el, a) {
                     setTimeout(function() {
-                        R.stopEvent !== false && eve("raphael.anim.frame." + el.id, el, a);
-                        R.stopEvent !== false && eve("raphael.anim.finish." + el.id, el, a);
+                        stopEvent && eve("raphael.anim.frame." + el.id, el, a);
+                        stopEvent && eve("raphael.anim.finish." + el.id, el, a);
                         R.is(f, "function") && f.call(el);
                     });
                 })(e.callback, that, e.anim);
                 that.attr(to);
+                delete e.el;
                 animationElements.splice(l--, 1);
                 if (e.repeat > 1 && !e.next) {
                     for (key in to)
@@ -5337,9 +5340,6 @@
         prev,
         timestamp,
         tempDiff,
-        tempDiff1,
-        tempDiff2,
-        tempDiff3,
         change,
         ms = anim.ms,
         from = {},
@@ -5350,6 +5350,7 @@
                 var e = animationElements[i];
                 if (e.el.id == element.id && e.anim == anim) {
                     if (e.percent != percent) {
+                        delete e.el;
                         animationElements.splice(i, 1);
                         isInAnimSet = 1;
                     } else {
@@ -5394,14 +5395,15 @@
                             case "colour":
                                 from[attr] = R.getRGB(from[attr]);
                                 var toColour = R.getRGB(to[attr]);
-                                tempDiff1 = (toColour.r - from[attr].r),
-                                tempDiff2 = (toColour.g - from[attr].g),
-                                tempDiff3 = (toColour.b - from[attr].b);
-                                (tempDiff1 || tempDiff2 || tempDiff3) && (change = true);
+                                tempDiff = {};
+                                tempDiff.r = (toColour.r - from[attr].r),
+                                tempDiff.g = (toColour.g - from[attr].g),
+                                tempDiff.b = (toColour.b - from[attr].b);
+                                (tempDiff.r || tempDiff.g || tempDiff.b) && (change = true);
                                 diff[attr] = {
-                                    r: tempDiff1 / ms,
-                                    g: tempDiff2 / ms,
-                                    b: tempDiff3 / ms
+                                    r: tempDiff.r / ms,
+                                    g: tempDiff.g / ms,
+                                    b: tempDiff.b / ms
                                 };
                                 break;
                             case "path":
@@ -5728,6 +5730,7 @@
     elproto.pause = function(anim, pauseChildAnimation) {
         for (var i = 0; i < animationElements.length; i++) {
             var e = animationElements[i];
+            // @todo - need a scope to implement the logic for nested animations.
             if ((e.el.id === this.id || (pauseChildAnimation && e.parentEl && e.parentEl.e.el.id === this.id)) &&
                 (!anim || e.anim == anim)) {
                 if (eve("raphael.anim.pause." + this.id, this, e.anim) !== false) {
@@ -5755,6 +5758,7 @@
     elproto.resume = function(anim, resumeChildAnimation) {
         for (var i = 0; i < animationElements.length; i++) {
             var e = animationElements[i];
+            // @todo - need a scope to implement the logic for nested animations.
             if ((e.el.id === this.id || (resumeChildAnimation && e.parentEl && e.parentEl.e.el.id === this.id)) &&
                 (!anim || e.anim == anim)) {
                 if (eve("raphael.anim.resume." + this.id, this, e.anim) !== false) {
@@ -5788,11 +5792,13 @@
         if (stopChildAnimation) {
             for (i = animationElements.length - 1; i >= 0; i--) {
                 e = animationElements[i];
+                // @todo - need a scope to implement the logic for nested animations.
                 if ((e.el.id === this.id || (e.parentEl && e.parentEl.id === this.id)) &&
                     (!anim || animationElements[i].anim == anim)) {
                     ele = e.el;
                     jumpToEnd && ele.attr(e.to);
                     e.callback && e.callback.call(ele);
+                    delete e.el;
                     animationElements.splice(i, 1);
                 }
             }
@@ -5801,6 +5807,7 @@
             for (var i = 0; i < animationElements.length; i++)
             if (animationElements[i].el.id === this.id && (!anim || animationElements[i].anim === anim)) {
                 if (eve("raphael.anim.stop." + this.id, this, animationElements[i].anim) !== false) {
+                    delete e.el;
                     animationElements.splice(i--, 1);
                 }
             }

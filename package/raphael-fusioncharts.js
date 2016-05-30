@@ -5683,7 +5683,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         }
         if (!isInAnim) {
             for (var attr in params)
-                if (params[has](attr)) {if (attr==='path'){debugger;}
+                if (params[has](attr)) {
                     if (availableAnimAttrs[has](attr) || element.ca[attr]) {
                         from[attr] = element.attr(attr);
                         (from[attr] == null) && (from[attr] = availableAttrs[attr]);
@@ -5852,7 +5852,14 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                 totalOrigin: totalOrigin,
                 parentEl : parentEl
             };
-            Object.keys(diff).length !== 0 && animationElements.push(e);
+
+            if (Object.keys(diff).length !== 0) {
+                animationElements.push(e);
+            }
+            else {
+                R.is(params.callback, "function") && params.callback.call(element);
+            }
+
             if (status && !isInAnim && !isInAnimSet) {
                 e.stop = true;
                 e.start = new Date - ms * status;

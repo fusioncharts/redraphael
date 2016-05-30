@@ -4695,98 +4695,6 @@
     };
 
     /*\
-     * paperAnimator
-     [ method ]
-     **
-     * Run the animation to animate paper by changing it's animatable properties step-wise in an interval
-     **
-     > Parameters
-     **
-     - paper (Object) paper object
-     - duration (number) time stretch in milliseconds to complete animation
-     - start (number) start value or initial value of the animatable property
-     - end (number) end value or final value of the animatable property
-     - rule (String) property name which will be animated
-     - effect (String) animation style
-     - callback (function reference) method which will execute at end of animation
-    \*/
-    function paperAnimator(paper, duration, start, end, rule, effect, callback) {
-        var iterations = (duration / UNIT_INTERVAL),
-            diff = (end - start),
-            ef = R.easing_formulas,
-            incrementArr = (function () {
-                var i = 0,
-                    arr = [];
-                for (; i < duration; i += UNIT_INTERVAL) {
-                    arr.push(((ef[effect || 'linear'](i / duration)) * diff));
-                }
-                return arr;
-            })(),
-            counter = 0,
-            startTime,
-            progress,
-            requestAnimFrame = win.requestAnimationFrame ||
-            win.webkitRequestAnimationFrame ||
-            win.mozRequestAnimationFrame ||
-            win.oRequestAnimationFrame ||
-            win.msRequestAnimationFrame ||
-            function(callback) {
-                setTimeout(callback, UNIT_INTERVAL);
-            },
-            stepFn = function (timestamp) {
-                var diff,
-                    setValue,
-                    val,
-                    value,
-                    weightedProgress,
-                    attr = {},
-                    reduce = false;
-
-                if (timestamp) {
-                    if (!startTime) {
-                        startTime = timestamp;
-                    }
-                    progress = timestamp - startTime;
-
-                    weightedProgress = ef[effect || 'linear'](progress / duration);
-                    diff = Math.abs(start - end);
-
-                    reduce = (start - end) < 0 ? false : true;
-
-                    setValue = reduce ?
-                        (Math.max(start - (weightedProgress * diff), end)) :
-                        (Math.min(start + (weightedProgress * diff), end));
-
-                    attr[rule] = setValue;
-                    paper.setDimension(attr);
-
-                    if (progress < duration) {
-                        requestAnimFrame(stepFn);
-                    }
-                    else {
-                        callback && callback();
-                    }
-                }
-                else {
-                    if (counter < iterations) {
-                        val = incrementArr[counter];
-
-                        attr[rule] = start + val;
-                        paper.setDimension(attr);
-
-                        counter += 1;
-                        setTimeout(stepFn, UNIT_INTERVAL);
-                    }
-                    else {
-                        callback && callback();
-                    }
-                }
-            };
-
-        requestAnimFrame(stepFn);
-    };
-
-    /*\
      * paper.setDimension
      [ method ]
      **
@@ -4820,6 +4728,31 @@
         }
     };
 
+    paperproto.attr = function (name) {
+        var element = this;
+        if (name == null) {
+            return {
+                width : element.width,
+                height : element.height
+            };
+        }
+        if (R.is(name, "string")) {
+            return element[name];
+        }
+
+        element.setDimension(name);
+        return element;
+    };
+
+    paperproto.status = function(anim, value) {
+        return elproto.status.call(this, anim, value);
+    };
+
+    // Works exactly as paper.animateWith()
+    paperproto.animateWith = function(el, anim, params, ms, easing, callback) {
+        return elproto.animateWith.call(this, el, anim, params, ms, easing, callback);
+    };
+
     /*\
      * Paper.animate
      [ method ]
@@ -4837,40 +4770,8 @@
      - effect (String) animation style
      - callback (function reference) method which will execute at end of animation
     \*/
-    paperproto.animate = function(paramsObj, duration, effect, callback) {
-        var paper = this,
-            finalStyle = {},
-            currentStyle = {},
-            iCB = function () {
-                finished += 1;
-                if (finished === total) {
-                    (typeof callback === 'function') && callback();
-                }
-            },
-            total = 0,
-            finished = 0,
-            rule,
-            attr = {};
-
-
-        if (duration < UNIT_INTERVAL) {
-            // If the duration of animation is less than the
-            // minimum frame length then apply the styles directly.
-            for (rule in paramsObj) {
-                attr[rule] = paramsObj[rule];
-                paper.setDimension(attr);
-            }
-
-            callback && callback();
-            return;
-        }
-
-        for (rule in paramsObj) {
-            total += 1;
-            finalStyle[rule] = paramsObj[rule];
-            currentStyle[rule] = paper[rule];
-            paperAnimator(paper, duration, currentStyle[rule], finalStyle[rule], rule, effect, iCB);
-        }
+    paperproto.animate = function(params, ms, easing, callback) {
+        return elproto.animate.call(this, params, ms, easing, callback);
     };
 
     /*\

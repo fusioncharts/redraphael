@@ -5099,7 +5099,7 @@
         }
         if (ms == 0) {
             setTimeout(function () {
-                R.is(callback, "function") && callback.call(callback);
+                R.is(callback, "function") && callback.call(element);
             }, 0);
             return element.attr (params);
         }

@@ -8233,7 +8233,8 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         }
 
         o.removed = true;
-    };/*
+    };
+    /*
      * Recursively shows the element and stores the visibilties of its parents
      * in a tree structure for future restoration.
      * @param el - Element which is to shown recursively

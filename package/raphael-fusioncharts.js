@@ -5683,7 +5683,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
         }
         if (!isInAnim) {
             for (var attr in params)
-                if (params[has](attr)) {
+                if (params[has](attr)) {if (attr==='path'){debugger;}
                     if (availableAnimAttrs[has](attr) || element.ca[attr]) {
                         from[attr] = element.attr(attr);
                         (from[attr] == null) && (from[attr] = availableAttrs[attr]);
@@ -5692,7 +5692,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                         switch (availableAnimAttrs[attr]) {
                             case nu:
                                 tempDiff = to[attr] - from[attr];
-                                tempDiff && (change = true);
+                                (tempDiff || isNaN(tempDiff)) && (change = true);
                                 diff[attr] = tempDiff / ms;
                                 break;
                             case "colour":
@@ -5702,6 +5702,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                                 tempDiff.r = (toColour.r - from[attr].r),
                                 tempDiff.g = (toColour.g - from[attr].g),
                                 tempDiff.b = (toColour.b - from[attr].b);
+                                // todo to be checked for NaN
                                 (tempDiff.r || tempDiff.g || tempDiff.b) && (change = true);
                                 diff[attr] = {
                                     r: tempDiff.r / ms,
@@ -5718,7 +5719,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                                     diff[attr][i] = [0];
                                     for (var j = 1, jj = from[attr][i].length; j < jj; j++) {
                                         tempDiff = toPath[i][j] - from[attr][i][j];
-                                        tempDiff && (change = true);
+                                        (tempDiff || isNaN(tempDiff)) && (change = true);
                                         diff[attr][i][j] =  tempDiff / ms;
                                     }
                                 }
@@ -5786,7 +5787,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                                     i = from2.length;
                                     while (i--) {
                                         tempDiff = values[i] - from[attr][i];
-                                        tempDiff && (change = true);
+                                        (tempDiff || isNaN(tempDiff)) && (change = true);
                                         diff[attr][i] = tempDiff / ms;
                                     }
                                 }
@@ -5799,7 +5800,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                                 i = element.ca[attr].length;
                                 while (i--) {
                                     tempDiff = (values[i] || 0) - (from2[i] || 0);
-                                    tempDiff && (change = true);
+                                    (tempDiff || isNaN(tempDiff)) && (change = true);
                                     diff[attr][i] = tempDiff / ms;
                                 }
                                 break;

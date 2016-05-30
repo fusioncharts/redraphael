@@ -1217,23 +1217,61 @@ window.Raphael && window.Raphael.svg && function(R) {
 
         o.removed = true;
     };
+    /*
+     * Recursively shows the element and stores the visibilties of its parents
+     * in a tree structure for future restoration.
+     * @param el - Element which is to shown recursively
+     * @return Function - Function to restore the old visibility state.
+    */
+    function showRecursively(el) {
+        var origAttrTree = {},
+            currentEl = el,
+            currentNode = origAttrTree,
+            fn = function () {
+                var localEl = el,
+                    localNode = origAttrTree;
+                while (localEl) {
+                    if (localNode._doHide) {
+                        localEl.hide();
+                    }
+                    localEl = localEl.parent;
+                    localNode = localNode.parent;
+                }
+            };
+        while (currentEl) {
+            if (currentEl.node && currentEl.node.style && currentEl.node.style.display === "none") {
+                currentEl.show();
+                currentNode._doHide = true;
+            }
+            currentEl = currentEl.parent;
+            currentNode.parent = {};
+            currentNode = currentNode.parent;
+        }
+        return fn;
+    }
     elproto._getBBox = function() {
-        var o = this,
+        var fn,
+            o = this,
             node = o.node,
             bbox = {},
             a = o.attrs,
             align,
-            hide;
-
-        if (node.style.display === "none") {
-            o.show();
-            hide = true;
+            hide,
+            isText = (o.type === "text"),
+            isIE = /*@cc_on!@*/false || !!document.documentMode;
+        if (isIE && isText) {
+            fn = showRecursively(o);
+        }
+        else {
+            if (node.style.display === "none") {
+                o.show();
+                hide = true;
+            }
         }
 
         try {
             bbox = node.getBBox();
-
-            if (o.type == "text") {
+            if (isText) {
                 // If bbox does not have x / y, which is possible in certain
                 // environments, we mathematically calculate these values by
                 // using x, y (adjusted using the values of text-anchor, and
@@ -1259,7 +1297,7 @@ window.Raphael && window.Raphael.svg && function(R) {
         } finally {
             bbox = bbox || {};
         }
-        hide && o.hide();
+        isIE && isText ? fn && fn() : hide && o.hide();
         return bbox;
     };
 

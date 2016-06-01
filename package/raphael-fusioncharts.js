@@ -5811,7 +5811,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                             delete diff[attr];
                         }
                     }
-                    else {
+                    else if (R._availableAttrs[has](attr)) {
                         element.attr(attr, params[attr]);
                         delete params[attr];
                     }

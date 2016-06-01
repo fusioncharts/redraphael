@@ -5793,7 +5793,7 @@
                             delete diff[attr];
                         }
                     }
-                    else {
+                    else if (R._availableAttrs[has](attr)) {
                         element.attr(attr, params[attr]);
                         delete params[attr];
                     }

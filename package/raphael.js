@@ -5793,7 +5793,7 @@
                             delete diff[attr];
                         }
                     }
-                    else if (R._availableAttrs[has](attr)) {
+                    else if (R._availableAttrs[has](attr) || attr === 'text' || element.ca[attr]) {
                         element.attr(attr, params[attr]);
                         delete params[attr];
                     }

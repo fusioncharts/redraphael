@@ -5412,10 +5412,10 @@
                             delete diff[attr];
                         }
                     }
-                }
-                else {
-                    element.attr(attr, params[attr]);
-                    delete params[attr];
+                    else {
+                        element.attr(attr, params[attr]);
+                        delete params[attr];
+                    }
                 }
             var easing = params.easing,
             easyeasy = R.easing_formulas[easing];

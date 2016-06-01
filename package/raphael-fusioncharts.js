@@ -5811,10 +5811,10 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                             delete diff[attr];
                         }
                     }
-                }
-                else {
-                    element.attr(attr, params[attr]);
-                    delete params[attr];
+                    else {
+                        element.attr(attr, params[attr]);
+                        delete params[attr];
+                    }
                 }
             var easing = params.easing,
             easyeasy = R.easing_formulas[easing];
@@ -7498,7 +7498,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                 round: width,
                 square: width,
                 butt: 0
-            }[o.attrs["stroke-linecap"] || params["stroke-linecap"]] || 0;
+            }[params["stroke-linecap"] || o.attrs["stroke-linecap"]] || 0;
             l = i = value.length;
             widthFactor = predefValue ? width : 1;
 
@@ -7890,7 +7890,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
     },
     /*
      * Keeps the follower element in sync with the leaders.
-     * First and second arguments represents the context(element) and the 
+     * First and second arguments represents the context(element) and the
      name of the callBack function respectively.
      * The callBack is invoked for indivual follower Element with the rest of
      arguments.

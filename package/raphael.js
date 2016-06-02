@@ -6024,8 +6024,8 @@
         for (var i = 0; i < animationElements.length; i++) {
             var e = animationElements[i];
             // @todo - need a scope to implement the logic for nested animations.
-            if ((e.el.id === this.id || (pauseChildAnimation && e.parentEl && e.parentEl.e.el.id === this.id)) &&
-                (!anim || e.anim == anim)) {
+            if ((e.el.id === this.id || (pauseChildAnimation && e.parentEl && e.parentEl.e.el &&
+                e.parentEl.e.el.id === this.id)) && (!anim || e.anim == anim)) {
                 if (eve("raphael.anim.pause." + this.id, this, e.anim) !== false) {
                     e.paused = true;
                     e.pauseStart = +new Date;
@@ -6052,8 +6052,8 @@
         for (var i = 0; i < animationElements.length; i++) {
             var e = animationElements[i];
             // @todo - need a scope to implement the logic for nested animations.
-            if ((e.el.id === this.id || (resumeChildAnimation && e.parentEl && e.parentEl.e.el.id === this.id)) &&
-                (!anim || e.anim == anim)) {
+            if ((e.el.id === this.id || (resumeChildAnimation && e.parentEl && e.parentEl.e.el &&
+                e.parentEl.e.el.id === this.id)) && (!anim || e.anim == anim)) {
                 if (eve("raphael.anim.resume." + this.id, this, e.anim) !== false) {
                     delete e.paused;
                     e.el.status(e.anim, e.status);
@@ -6065,6 +6065,7 @@
         }
         return this;
     };
+
 
     /*\
      * Element.stop

@@ -6034,14 +6034,17 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
      = (object) original element
     \*/
     elproto.pause = function(anim, pauseChildAnimation) {
-        for (var i = 0; i < animationElements.length; i++) {
-            var e = animationElements[i];
+        var now = +new Date,
+            e,
+            i;
+        for (i = 0; i < animationElements.length; i++) {
+            e = animationElements[i];
             // @todo - need a scope to implement the logic for nested animations.
             if ((e.el.id === this.id || (pauseChildAnimation && e.parentEl && e.parentEl.e.el &&
                 e.parentEl.e.el.id === this.id)) && (!anim || e.anim == anim)) {
                 if (eve("raphael.anim.pause." + this.id, this, e.anim) !== false) {
                     e.paused = true;
-                    e.pauseStart = +new Date;
+                    e.pauseStart = now;
                 }
             }
         }
@@ -6062,15 +6065,18 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
      = (object) original element
     \*/
     elproto.resume = function(anim, resumeChildAnimation) {
-        for (var i = 0; i < animationElements.length; i++) {
-            var e = animationElements[i];
+        var now = +new Date,
+            e,
+            i;
+        for (i = 0; i < animationElements.length; i++) {
+            e = animationElements[i];
             // @todo - need a scope to implement the logic for nested animations.
             if ((e.el.id === this.id || (resumeChildAnimation && e.parentEl && e.parentEl.e.el &&
                 e.parentEl.e.el.id === this.id)) && (!anim || e.anim == anim)) {
                 if (eve("raphael.anim.resume." + this.id, this, e.anim) !== false) {
                     delete e.paused;
                     e.el.status(e.anim, e.status);
-                    e.pauseEnd = +new Date;
+                    e.pauseEnd = now;
                     e.start += (((e.parentEl && e.parentEl.e.pauseEnd || e.pauseEnd) -
                         (e.parentEl && e.parentEl.e.pauseStart || e.pauseStart)) || 0);
                 }

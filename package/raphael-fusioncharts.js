@@ -5807,6 +5807,7 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                         }
                         if (!change && attr !== 'transform') {
                             delete from[attr];
+                            delete to[attr];
                             delete params[attr];
                             delete diff[attr];
                         }

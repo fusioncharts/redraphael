@@ -5834,13 +5834,7 @@
                 totalOrigin: totalOrigin,
                 parentEl : parentEl
             };
-
-            if (Object.keys(diff).length !== 0) {
-                animationElements.push(e);
-            }
-            else {
-                R.is(params.callback, "function") && params.callback.call(element);
-            }
+            animationElements.push(e);
 
             if (status && !isInAnim && !isInAnimSet) {
                 e.stop = true;

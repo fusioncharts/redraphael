@@ -1353,8 +1353,10 @@ window.Raphael && window.Raphael.svg && function(R) {
         } else if (name != null && R.is(name, "object")) {
             params = name;
         }
-        for (var key in params) {
-            eve("raphael.attr." + key + "." + this.id, this, params[key], key);
+        if (R.stopEvent !== false) {
+            for (var key in params) {
+                eve("raphael.attr." + key + "." + this.id, this, params[key], key);
+            }
         }
         var todel = {};
         for (key in this.ca) {

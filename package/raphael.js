@@ -5335,7 +5335,7 @@
             set = {},
             now,
             init = {},
-            stopEvent = R.stopEvent !== false,
+            executeEvent = R.stopEvent !== false,
             key;
             if (e.initstatus) {
                 time = (e.initstatus * e.anim.top - e.prev) / (e.percent - e.prev) * ms;
@@ -5415,19 +5415,22 @@
                         set[attr] = now;
                     }
                 that.attr(set);
-                (function(id, that, anim) {
-                    setTimeout(function() {
-                        stopEvent && eve("raphael.anim.frame." + id, that, anim);
-                    });
-                })(that.id, that, e.anim);
+                if (executeEvent) {
+                    (function(id, that, anim) {
+                        setTimeout(function() {
+                            eve("raphael.anim.frame." + id, that, anim);
+                        });
+                    })(that.id, that, e.anim);
+                }
             } else {
                 (function(f, el, a) {
                     setTimeout(function() {
-                        stopEvent && eve("raphael.anim.frame." + el.id, el, a);
-                        stopEvent && eve("raphael.anim.finish." + el.id, el, a);
+                        executeEvent && eve("raphael.anim.frame." + el.id, el, a);
+                        executeEvent && eve("raphael.anim.finish." + el.id, el, a);
                         R.is(f, "function") && f.call(el);
                     });
                 })(e.callback, that, e.anim);
+
                 that.attr(to);
                 delete e.el;
                 animationElements.splice(l--, 1);
@@ -5695,13 +5698,13 @@
                             case "path":
                                 var pathes = path2curve(from[attr], to[attr]),
                                 toPath = pathes[1];
+                                change = true;
                                 from[attr] = pathes[0];
                                 diff[attr] = [];
                                 for (i = 0, ii = from[attr].length; i < ii; i++) {
                                     diff[attr][i] = [0];
                                     for (var j = 1, jj = from[attr][i].length; j < jj; j++) {
                                         tempDiff = toPath[i][j] - from[attr][i][j];
-                                        (tempDiff || isNaN(tempDiff)) && (change = true);
                                         diff[attr][i][j] =  tempDiff / ms;
                                     }
                                 }
@@ -5709,6 +5712,7 @@
                             case "transform":
                                 var _ = element._,
                                 eq = equaliseTransform(_[attr], to[attr]);
+                                change = true;
                                 if (eq) {
                                     from[attr] = eq.from;
                                     to[attr] = eq.to;
@@ -5787,7 +5791,7 @@
                                 }
                                 break;
                         }
-                        if (!change && attr !== 'transform') {
+                        if (!change) {
                             delete from[attr];
                             delete to[attr];
                             delete params[attr];

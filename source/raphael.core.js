@@ -5095,20 +5095,17 @@
      = (object) original element
     \*/
     elproto.animateWith = function(el, anim, params, ms, easing, callback) {
-        var element = this;
+        var element = this,
+            applyAttr;
         if (element.removed) {
             callback && callback.call(element);
             return element;
         }
-        if (ms == 0) {
-            setTimeout(function () {
-                R.is(callback, "function") && callback.call(element);
-            }, 0);
-            return element.attr (params);
-        }
+        ms === 0 && (applyAttr = true);
+
         var a = params instanceof Animation ? params : R.animation(params, ms, easing, callback),
         x, y;
-        runAnimation(a, element, a.percents[0], null, element.attr(),undefined, el);
+        runAnimation(a, element, a.percents[0], null, element.attr(),undefined, el, applyAttr);
         for (var i = 0, ii = animationElements.length; i < ii; i++) {
             if (animationElements[i].anim == anim && animationElements[i].el == el) {
                 animationElements[ii - 1].start = animationElements[i].start;
@@ -5236,12 +5233,13 @@
         a.times = math.floor(mmax(times, 0)) || 1;
         return a;
     };
-    function runAnimation(anim, element, percent, status, totalOrigin, times, parentEl) {
+    function runAnimation(anim, element, percent, status, totalOrigin, times, parentEl, applyAttr) {
         percent = toFloat(percent);
         var params,
         isInAnim,
         isInAnimSet,
         percents = [],
+        attrParams = {},
         next,
         prev,
         timestamp,
@@ -5250,7 +5248,135 @@
         ms = anim.ms,
         from = {},
         to = {},
-        diff = {};
+        diff = {},
+        setParameters = function (attr, isAnimation) {
+            from[attr] = element.attr(attr);
+            (from[attr] == null) && (from[attr] = availableAttrs[attr]);
+            to[attr] = params[attr];
+            change = false;
+            switch (availableAnimAttrs[attr]) {
+                case nu:
+                    tempDiff = to[attr] - from[attr];
+                    (tempDiff || isNaN(tempDiff)) && (change = true);
+                    diff[attr] = tempDiff / ms;
+                    break;
+                case "colour":
+                    from[attr] = R.getRGB(from[attr]);
+                    var toColour = R.getRGB(to[attr]);
+                    tempDiff = {};
+                    tempDiff.r = (toColour.r - from[attr].r),
+                    tempDiff.g = (toColour.g - from[attr].g),
+                    tempDiff.b = (toColour.b - from[attr].b);
+                    // todo to be checked for NaN
+                    (tempDiff.r || tempDiff.g || tempDiff.b) && (change = true);
+                    diff[attr] = {
+                        r: tempDiff.r / ms,
+                        g: tempDiff.g / ms,
+                        b: tempDiff.b / ms
+                    };
+                    break;
+                case "path":
+                    var pathes = path2curve(from[attr], to[attr]),
+                    toPath = pathes[1];
+                    change = true;
+                    from[attr] = pathes[0];
+                    diff[attr] = [];
+                    for (i = 0, ii = from[attr].length; i < ii; i++) {
+                        diff[attr][i] = [0];
+                        for (var j = 1, jj = from[attr][i].length; j < jj; j++) {
+                            tempDiff = toPath[i][j] - from[attr][i][j];
+                            diff[attr][i][j] =  tempDiff / ms;
+                        }
+                    }
+                    break;
+                case "transform":
+                    var _ = element._,
+                    eq = equaliseTransform(_[attr], to[attr]);
+                    change = true;
+                    if (eq) {
+                        from[attr] = eq.from;
+                        to[attr] = eq.to;
+                        diff[attr] = [];
+                        diff[attr].real = true;
+                        for (i = 0, ii = from[attr].length; i < ii; i++) {
+                            diff[attr][i] = [from[attr][i][0]];
+                            for (j = 1, jj = from[attr][i].length; j < jj; j++) {
+                                diff[attr][i][j] = (to[attr][i][j] - from[attr][i][j]) / ms;
+                            }
+                        }
+                    } else {
+                        var m = (element.matrix || new Matrix),
+                        to2 = {
+                            _: {
+                                transform: _.transform
+                            },
+                            getBBox: function() {
+                                return element.getBBox(1);
+                            }
+                        };
+                        from[attr] = [
+                        m.a,
+                        m.b,
+                        m.c,
+                        m.d,
+                        m.e,
+                        m.f
+                        ];
+                        extractTransform(to2, to[attr]);
+                        to[attr] = to2._.transform;
+                        diff[attr] = [
+                        (to2.matrix.a - m.a) / ms,
+                        (to2.matrix.b - m.b) / ms,
+                        (to2.matrix.c - m.c) / ms,
+                        (to2.matrix.d - m.d) / ms,
+                        (to2.matrix.e - m.e) / ms,
+                        (to2.matrix.f - m.f) / ms
+                        ];
+                    // from[attr] = [_.sx, _.sy, _.deg, _.dx, _.dy];
+                    // var to2 = {_:{}, getBBox: function () { return element.getBBox(); }};
+                    // extractTransform(to2, to[attr]);
+                    // diff[attr] = [
+                    //     (to2._.sx - _.sx) / ms,
+                    //     (to2._.sy - _.sy) / ms,
+                    //     (to2._.deg - _.deg) / ms,
+                    //     (to2._.dx - _.dx) / ms,
+                    //     (to2._.dy - _.dy) / ms
+                    // ];
+                    }
+                    break;
+                case "csv":
+                    var values = Str(params[attr])[split](separator),
+                    from2 = Str(from[attr])[split](separator);
+                    if (attr == "clip-rect") {
+                        from[attr] = from2;
+                        diff[attr] = [];
+                        i = from2.length;
+                        while (i--) {
+                            tempDiff = values[i] - from[attr][i];
+                            (tempDiff || isNaN(tempDiff)) && (change = true);
+                            diff[attr][i] = tempDiff / ms;
+                        }
+                    }
+                    to[attr] = values;
+                    break;
+                default:
+                    if (!isAnimation) {
+                        break;
+                    }
+                    values = [][concat](params[attr]);
+                    from2 = [][concat](from[attr]);
+                    diff[attr] = [];
+                    i = element.ca[attr].length;
+                    while (i--) {
+                        tempDiff = (values[i] || 0) - (from2[i] || 0);
+                        (tempDiff || isNaN(tempDiff)) && (change = true);
+                        diff[attr][i] = tempDiff / ms;
+                    }
+                    break;
+            }
+
+            return change;
+        };
         if (status) {
             for (i = 0, ii = animationElements.length; i < ii; i++) {
                 var e = animationElements[i];
@@ -5288,129 +5414,8 @@
         if (!isInAnim) {
             for (var attr in params)
                 if (params[has](attr)) {
-                    if (availableAnimAttrs[has](attr) || element.ca[attr]) {
-                        from[attr] = element.attr(attr);
-                        (from[attr] == null) && (from[attr] = availableAttrs[attr]);
-                        to[attr] = params[attr];
-                        change = false;
-                        switch (availableAnimAttrs[attr]) {
-                            case nu:
-                                tempDiff = to[attr] - from[attr];
-                                (tempDiff || isNaN(tempDiff)) && (change = true);
-                                diff[attr] = tempDiff / ms;
-                                break;
-                            case "colour":
-                                from[attr] = R.getRGB(from[attr]);
-                                var toColour = R.getRGB(to[attr]);
-                                tempDiff = {};
-                                tempDiff.r = (toColour.r - from[attr].r),
-                                tempDiff.g = (toColour.g - from[attr].g),
-                                tempDiff.b = (toColour.b - from[attr].b);
-                                // todo to be checked for NaN
-                                (tempDiff.r || tempDiff.g || tempDiff.b) && (change = true);
-                                diff[attr] = {
-                                    r: tempDiff.r / ms,
-                                    g: tempDiff.g / ms,
-                                    b: tempDiff.b / ms
-                                };
-                                break;
-                            case "path":
-                                var pathes = path2curve(from[attr], to[attr]),
-                                toPath = pathes[1];
-                                change = true;
-                                from[attr] = pathes[0];
-                                diff[attr] = [];
-                                for (i = 0, ii = from[attr].length; i < ii; i++) {
-                                    diff[attr][i] = [0];
-                                    for (var j = 1, jj = from[attr][i].length; j < jj; j++) {
-                                        tempDiff = toPath[i][j] - from[attr][i][j];
-                                        diff[attr][i][j] =  tempDiff / ms;
-                                    }
-                                }
-                                break;
-                            case "transform":
-                                var _ = element._,
-                                eq = equaliseTransform(_[attr], to[attr]);
-                                change = true;
-                                if (eq) {
-                                    from[attr] = eq.from;
-                                    to[attr] = eq.to;
-                                    diff[attr] = [];
-                                    diff[attr].real = true;
-                                    for (i = 0, ii = from[attr].length; i < ii; i++) {
-                                        diff[attr][i] = [from[attr][i][0]];
-                                        for (j = 1, jj = from[attr][i].length; j < jj; j++) {
-                                            diff[attr][i][j] = (to[attr][i][j] - from[attr][i][j]) / ms;
-                                        }
-                                    }
-                                } else {
-                                    var m = (element.matrix || new Matrix),
-                                    to2 = {
-                                        _: {
-                                            transform: _.transform
-                                        },
-                                        getBBox: function() {
-                                            return element.getBBox(1);
-                                        }
-                                    };
-                                    from[attr] = [
-                                    m.a,
-                                    m.b,
-                                    m.c,
-                                    m.d,
-                                    m.e,
-                                    m.f
-                                    ];
-                                    extractTransform(to2, to[attr]);
-                                    to[attr] = to2._.transform;
-                                    diff[attr] = [
-                                    (to2.matrix.a - m.a) / ms,
-                                    (to2.matrix.b - m.b) / ms,
-                                    (to2.matrix.c - m.c) / ms,
-                                    (to2.matrix.d - m.d) / ms,
-                                    (to2.matrix.e - m.e) / ms,
-                                    (to2.matrix.f - m.f) / ms
-                                    ];
-                                // from[attr] = [_.sx, _.sy, _.deg, _.dx, _.dy];
-                                // var to2 = {_:{}, getBBox: function () { return element.getBBox(); }};
-                                // extractTransform(to2, to[attr]);
-                                // diff[attr] = [
-                                //     (to2._.sx - _.sx) / ms,
-                                //     (to2._.sy - _.sy) / ms,
-                                //     (to2._.deg - _.deg) / ms,
-                                //     (to2._.dx - _.dx) / ms,
-                                //     (to2._.dy - _.dy) / ms
-                                // ];
-                                }
-                                break;
-                            case "csv":
-                                var values = Str(params[attr])[split](separator),
-                                from2 = Str(from[attr])[split](separator);
-                                if (attr == "clip-rect") {
-                                    from[attr] = from2;
-                                    diff[attr] = [];
-                                    i = from2.length;
-                                    while (i--) {
-                                        tempDiff = values[i] - from[attr][i];
-                                        (tempDiff || isNaN(tempDiff)) && (change = true);
-                                        diff[attr][i] = tempDiff / ms;
-                                    }
-                                }
-                                to[attr] = values;
-                                break;
-                            default:
-                                values = [][concat](params[attr]);
-                                from2 = [][concat](from[attr]);
-                                diff[attr] = [];
-                                i = element.ca[attr].length;
-                                while (i--) {
-                                    tempDiff = (values[i] || 0) - (from2[i] || 0);
-                                    (tempDiff || isNaN(tempDiff)) && (change = true);
-                                    diff[attr][i] = tempDiff / ms;
-                                }
-                                break;
-                        }
-                        if (!change) {
+                    if (!applyAttr && (availableAnimAttrs[has](attr) || element.ca[attr])) {
+                        if (!setParameters(attr, true)) {
                             delete from[attr];
                             delete to[attr];
                             delete params[attr];
@@ -5418,7 +5423,7 @@
                         }
                     }
                     else if (R._availableAttrs[has](attr) || attr === 'text' || element.ca[attr]) {
-                        element.attr(attr, params[attr]);
+                        setParameters(attr) && (attrParams.attr = params[attr]);
                         delete params[attr];
                     }
                 }
@@ -5459,6 +5464,14 @@
                 parentEl : parentEl
             };
             animationElements.push(e);
+
+            Object.keys(attrParams).length > 0 && element.attr(attrParams);
+
+            if (applyAttr) {
+                setTimeout(function () {
+                    R.is(params.callback, "function") && params.callback.call(element);
+                }, 0);
+            }
 
             if (status && !isInAnim && !isInAnimSet) {
                 e.stop = true;

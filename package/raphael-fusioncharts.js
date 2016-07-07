@@ -9029,8 +9029,9 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                 }
             }
         }
-        if (o.textpath) {
-            var textpathStyle = o.textpath.style;
+        // Css styles will be applied in element or group.
+        if (o.textpath || isGroup) {
+          var textpathStyle = isGroup ? node.style : o.textpath.style;
             params.font && (textpathStyle.font = params.font);
             params["font-family"] && (textpathStyle.fontFamily = '"' + params["font-family"].split(",")[0].replace(/^['"]+|['"]+$/g, E) + '"');
             params["font-size"] && (textpathStyle.fontSize = params["font-size"]);

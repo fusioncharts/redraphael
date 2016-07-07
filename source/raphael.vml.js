@@ -485,7 +485,7 @@ window.Raphael && window.Raphael.vml && function(R) {
     },
     /*
      * Keeps the follower element in sync with the leaders.
-     * First and second arguments represents the context(element) and the 
+     * First and second arguments represents the context(element) and the
      name of the callBack function respectively.
      * The callBack is invoked for indivual follower Element with the rest of
      arguments.
@@ -1088,7 +1088,7 @@ window.Raphael && window.Raphael.vml && function(R) {
         setCoords(res, 1, 1, 0, 0, 0);
         return res;
     };
-    R._engine.text = function(vml, attrs, group) {
+    R._engine.text = function(vml, attrs, group, css) {
         var el = createNode("shape"),
 			path = createNode("path"),
 			o = createNode("textpath");

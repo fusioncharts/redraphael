@@ -4216,7 +4216,7 @@
                 "text-anchor", "middle",
                 "vertical-align", "middle"),
 
-            out = R._engine.text(paper, attrs, group);
+            out = R._engine.text(paper, attrs, group, args[1]);
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 

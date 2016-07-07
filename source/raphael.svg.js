@@ -860,8 +860,7 @@ window.Raphael && window.Raphael.svg && function(R) {
                 }
             }
         }
-
-        (o.type === 'text') && tuneText(o, params);
+        (o.type === 'text' && !params["_do-not-tune"]) && tuneText(o, params);
         s.visibility = vis;
     },
     /*
@@ -1500,12 +1499,19 @@ window.Raphael && window.Raphael.svg && function(R) {
         applyCustomAttributes(res, attrs);
         return res;
     };
-    R._engine.text = function(svg, attrs, group) {
+    R._engine.text = function(svg, attrs, group, css) {
         var el = $("text"),
             res = new Element(el, svg, group);
         res.type = "text";
         res._textdirty = true;
-        setFillAndStroke(res, attrs);
+        // Ideally this code should not be here as .css() is not a function of rapheal.
+        if (css) {
+            res.css && res.css(css, undefined, true);
+            setFillAndStroke(res, attrs);
+        }
+        else {
+            setFillAndStroke(res, attrs);
+        }
         applyCustomAttributes(res, attrs);
         return res;
     };

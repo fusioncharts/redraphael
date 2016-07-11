@@ -5714,7 +5714,15 @@ window.FusionCharts && window.FusionCharts.register('module', ['private', 'vendo
                                 };
                                 break;
                             case "path":
-                                var pathes = path2curve(from[attr], to[attr]),
+                                var pathes,
+                                toPath;
+                                // path2curve is taking longer time to execute, to optimize breaking if both
+                                // start and end path are same.
+                                if (from[attr].join() === to[attr].join()) {
+                                    change = false;
+                                    break;
+                                }
+                                pathes = path2curve(from[attr], to[attr]);
                                 toPath = pathes[1];
                                 change = true;
                                 from[attr] = pathes[0];

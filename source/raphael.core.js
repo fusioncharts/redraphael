@@ -4212,7 +4212,8 @@
                 "y", 0,
                 "text", E,
                 "stroke", none,
-                "fill", black,
+                // not applying any default fill for texts.
+                //"fill", black,
                 "text-anchor", "middle",
                 "vertical-align", "middle"),
 

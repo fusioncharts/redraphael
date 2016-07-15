@@ -5701,7 +5701,8 @@
                                 toPath;
                                 // path2curve is taking longer time to execute, to optimize breaking if both
                                 // start and end path are same.
-                                if (from[attr].join() === to[attr].join()) {
+                                if ((from[attr].join ? from[attr].join() : from[attr]) ===
+                                        (to[attr].join ?to[attr].join() : to[attr])) {
                                     change = false;
                                     break;
                                 }

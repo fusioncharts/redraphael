@@ -18,7 +18,9 @@
     } else {
         // Browser globals (glob is window)
         // Raphael adds itself to window
-        factory(glob, glob.eve);
+        // factory(glob, glob.eve);
+        factory(glob, (typeof module === 'object' && typeof module.exports !== 'undefined') ?
+           module.exports : glob.eve);
     }
 }(this, function (_window, eve) {
     /*\

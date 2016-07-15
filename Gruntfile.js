@@ -69,8 +69,8 @@ module.exports = function(grunt) {
                 compiled = options.banner,
                 compiledFc = options.banner,
                 svgorvmlRegex = /\.(svg|vml|canvas)\.js/,
-                closureRegex = /window\.Raphael.*\(R\)\s*\{/,
-                closureEndRegex = /\}\(window\.Raphael\);\s*$/,
+                closureRegex = /_window\.Raphael.*\(R\)\s*\{/,
+                closureEndRegex = /\}\(_window\.Raphael\);\s*$/,
                 exposeRegex = /(\r?\n\s*\/\/\s*EXPOSE(?:\r|\n|.)*\)\);)/;
 
             // Concatenate src

@@ -7,7 +7,8 @@
 FusionCharts && FusionCharts.register('module', ['private', 'vendor.redraphael', function () {
     var global = this,
         lib = global.hcLib,
-        someRaphael = _window.Raphael,
+        win = global.window,
+        someRaphael = win.Raphael,
         eve,
         RedRaphael,
         optOutModulePattern = true;

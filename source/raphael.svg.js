@@ -8,7 +8,7 @@
 *
 * Licensed under the MIT license.
 */
-window.Raphael && window.Raphael.svg && function(R) {
+_window.Raphael && _window.Raphael.svg && function(R) {
     var has = "hasOwnProperty",
         Str = String,
         toFloat = parseFloat,
@@ -1687,4 +1687,4 @@ window.Raphael && window.Raphael.svg && function(R) {
                 };
             })(method);
         }
-}(window.Raphael);
+}(_window.Raphael);

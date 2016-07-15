@@ -20,7 +20,7 @@
         // Raphael adds itself to window
         factory(glob, glob.eve);
     }
-}(this, function (window, eve) {
+}(this, function (_window, eve) {
     /*\
      * Raphael
      [ method ]
@@ -78,7 +78,7 @@
         // Code commented as resources will now be referenced using relative URLs.
         // @todo Remove once we have ascertained that there are no issues in any environment.
         // if (R._url) { // Reinitialize URLs to be safe from pop state event
-        //     R._url = (R._g && R._g.win || window).location.href.replace(/#.*?$/, "");
+        //     R._url = (R._g && R._g.win || _window).location.href.replace(/#.*?$/, "");
         // }
         // If the URL is undefined only then initialize the URL with blank in order to support
         // both relative as well as absolute URLs
@@ -147,7 +147,7 @@
         }()),
         g = {
             doc: document,
-            win: window
+            win: _window
         },
         oldRaphael = {
             was: Object.prototype[has].call(g.win, "Raphael"),
@@ -5026,11 +5026,11 @@
     ef["back-out"] = ef.backOut;
 
     var animationElements = [],
-    requestAnimFrame = window.requestAnimationFrame ||
-    window.webkitRequestAnimationFrame ||
-    window.mozRequestAnimationFrame ||
-    window.oRequestAnimationFrame ||
-    window.msRequestAnimationFrame ||
+    requestAnimFrame = _window.requestAnimationFrame ||
+    _window.webkitRequestAnimationFrame ||
+    _window.mozRequestAnimationFrame ||
+    _window.oRequestAnimationFrame ||
+    _window.msRequestAnimationFrame ||
     function(callback) {
         setTimeout(callback, 16);
     },

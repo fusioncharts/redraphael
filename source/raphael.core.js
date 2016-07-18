@@ -4929,6 +4929,7 @@
 
     var animationElements = [],
     requestAnimFrame,
+    // This a temporary fix so that animation can be handled from the scheduler module.
     getAnimFrameFn = function () {
         return requestAnimFrame = R.requestAnimFrame ||
         window.webkitRequestAnimationFrame ||

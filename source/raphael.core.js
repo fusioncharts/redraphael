@@ -4928,13 +4928,16 @@
     ef["back-out"] = ef.backOut;
 
     var animationElements = [],
-    requestAnimFrame = window.requestAnimationFrame ||
-    window.webkitRequestAnimationFrame ||
-    window.mozRequestAnimationFrame ||
-    window.oRequestAnimationFrame ||
-    window.msRequestAnimationFrame ||
-    function(callback) {
-        setTimeout(callback, 16);
+    requestAnimFrame,
+    getAnimFrameFn = function () {
+        return requestAnimFrame = R.requestAnimFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+            setTimeout(callback, 16);
+        };
     },
     animation = function() {
         var Now = +new Date,
@@ -5068,7 +5071,7 @@
             }
         }
         R.svg && that && that.paper && that.paper.safari();
-        animationElements.length && requestAnimFrame(animation);
+        animationElements.length && (requestAnimFrame || getAnimFrameFn())(animation);
     },
     upto255 = function(color) {
         return color > 255 ? 255 : color < 0 ? 0 : color;
@@ -5480,7 +5483,7 @@
             if (isInAnimSet) {
                 e.start = new Date - e.ms * status;
             }
-            animationElements.length == 1 && requestAnimFrame(animation);
+            animationElements.length == 1 && (requestAnimFrame || getAnimFrameFn())(animation);
         } else {
             isInAnim.initstatus = status;
             isInAnim.start = new Date - isInAnim.ms * status;

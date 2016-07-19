@@ -8,7 +8,11 @@
 *
 * Licensed under the MIT license.
 */
-window.Raphael && window.Raphael.svg && function(R) {
+// Define _window as window object in case of indivual file inclusion.
+if (typeof _window === 'undefined' && typeof window === 'object') {
+   _window = window;
+}
+_window.Raphael && _window.Raphael.svg && function(R) {
     var has = "hasOwnProperty",
         Str = String,
         toFloat = parseFloat,
@@ -518,7 +522,7 @@ window.Raphael && window.Raphael.svg && function(R) {
             vis = s.visibility;
         // Convert all the &lt; and &gt; to < and > and if there is any <br/> tag in between &lt; and &gt;
         // then converting them into <<br/> and ><br/> respectively.
-        if (params && params.text) {
+        if (params && params.text && params.text.replace) {
             params.text = params.text.replace(/&lt;/g, "<").replace(/&gt;/g, ">")
                 .replace(/&<br\/>lt;|&l<br\/>t;|&lt<br\/>;/g, "<<br/>")
                 .replace(/&<br\/>gt;|&g<br\/>t;|&gt<br\/>;/g, "><br/>");
@@ -1687,4 +1691,4 @@ window.Raphael && window.Raphael.svg && function(R) {
                 };
             })(method);
         }
-}(window.Raphael);
+}(_window.Raphael);

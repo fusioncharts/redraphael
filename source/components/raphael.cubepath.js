@@ -2,7 +2,7 @@
  * RedRaphael PolyPath shape definition
  */
 /* global window */
-window.Raphael && (window.Raphael.define && function (R) {
+_window.Raphael && (_window.Raphael.define && function (R) {
     var win = R._g.win,
         math = win.Math,
         mathAtan2 = math.atan2,
@@ -168,4 +168,4 @@ window.Raphael && (window.Raphael.define && function (R) {
             }
         }
     });
-})(window.Raphael);
+})(_window.Raphael);

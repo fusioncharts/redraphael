@@ -7,7 +7,7 @@
  * Raphael Canvas Extension
  */
 
-window.Raphael && window.Raphael.canvas && function (R) {
+_window.Raphael && _window.Raphael.canvas && function (R) {
     var win = R._g.win,
         doc = R._g.doc,
         g = R._g,
@@ -2727,4 +2727,4 @@ window.Raphael && window.Raphael.canvas && function (R) {
     }
     };
 
-}(window.Raphael);
+}(_window.Raphael);

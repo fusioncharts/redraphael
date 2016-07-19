@@ -1,4 +1,4 @@
-window.Raphael && (window.Raphael.define && function (R) {
+_window.Raphael && (_window.Raphael.define && function (R) {
     var TEXTBOUND = 'text-bound',
         NONE = 'none',
         BLANK = '',
@@ -84,4 +84,4 @@ window.Raphael && (window.Raphael.define && function (R) {
 
         o.attr(updates);
     };
-})(window.Raphael);
+})(_window.Raphael);

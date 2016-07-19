@@ -389,6 +389,9 @@
  *
  * Licensed under the MIT license.
  */
+if (typeof _window === 'undefined' && typeof window === 'object') {
+   _window = window;
+}
 (function (glob, factory, optOutModulePattern) {
     // AMD support
     if (!optOutModulePattern && typeof define === "function" && define.amd) {
@@ -399,9 +402,11 @@
     } else {
         // Browser globals (glob is window)
         // Raphael adds itself to window
-        factory(glob, glob.eve);
+        // factory(glob, glob.eve);
+        factory(glob, (typeof module === 'object' && typeof module.exports !== 'undefined') ?
+           module.exports : glob.eve);
     }
-}(this, function (window, eve) {
+}(_window, function (_win, eve) {
     /*\
      * Raphael
      [ method ]
@@ -459,7 +464,7 @@
         // Code commented as resources will now be referenced using relative URLs.
         // @todo Remove once we have ascertained that there are no issues in any environment.
         // if (R._url) { // Reinitialize URLs to be safe from pop state event
-        //     R._url = (R._g && R._g.win || window).location.href.replace(/#.*?$/, "");
+        //     R._url = (R._g && R._g.win || _window).location.href.replace(/#.*?$/, "");
         // }
         // If the URL is undefined only then initialize the URL with blank in order to support
         // both relative as well as absolute URLs
@@ -527,8 +532,8 @@
             return a.hasOwnProperty("prototype");
         }()),
         g = {
-            doc: document,
-            win: window
+            doc: _win.document,
+            win: _win
         },
         oldRaphael = {
             was: Object.prototype[has].call(g.win, "Raphael"),
@@ -672,10 +677,10 @@
             dragend: "mouseup"
         },
 
-        Str = win.String,
+        Str = String,
         toFloat = win.parseFloat,
         toInt = win.parseInt,
-        math = win.Math,
+        math = Math,
         mmax = math.max,
         mmin = math.min,
         abs = math.abs,
@@ -690,7 +695,7 @@
 
         lowerCase = Str.prototype.toLowerCase,
         upperCase = Str.prototype.toUpperCase,
-        objectToString = win.Object.prototype.toString,
+        objectToString = Object.prototype.toString,
         paper = {},
 
         separator = /[, ]+/,
@@ -3654,7 +3659,9 @@
     })(Matrix.prototype);
 
     // WebKit rendering bug workaround method
-    var version = navigator.userAgent.match(/Version\/(.*?)\s/) || navigator.userAgent.match(/Chrome\/(\d+)/);
+    var navigator = win.navigator,
+        version = navigator.userAgent.match(/Version\/(.*?)\s/) || navigator.userAgent.match(/Chrome\/(\d+)/);
+
     if ((navigator.vendor == "Apple Computer, Inc.") && (version && version[1] < 4 || navigator.platform.slice(0, 2) == "iP") ||
         (navigator.vendor == "Google Inc." && version && version[1] < 8)) {
 
@@ -5064,9 +5071,9 @@
     \*/
     elproto.isPointInside = function(x, y) {
         var rp = this.realPath = this.realPath || getPath[this.type](this),
-	      	tr;
-		return R.isPointInsidePath(((tr = this.attr('transform')) &&
-		        tr.length && R.transformPath(rp, tr)) || rp, x, y);
+            tr;
+        return R.isPointInsidePath(((tr = this.attr('transform')) &&
+                tr.length && R.transformPath(rp, tr)) || rp, x, y);
     };
 
     /*\
@@ -5407,11 +5414,11 @@
     ef["back-out"] = ef.backOut;
 
     var animationElements = [],
-    requestAnimFrame = window.requestAnimationFrame ||
-    window.webkitRequestAnimationFrame ||
-    window.mozRequestAnimationFrame ||
-    window.oRequestAnimationFrame ||
-    window.msRequestAnimationFrame ||
+    requestAnimFrame = _win.requestAnimationFrame ||
+    _win.webkitRequestAnimationFrame ||
+    _win.mozRequestAnimationFrame ||
+    _win.oRequestAnimationFrame ||
+    _win.msRequestAnimationFrame ||
     function(callback) {
         setTimeout(callback, 16);
     },
@@ -7014,7 +7021,7 @@
             (/in/).test(doc.readyState) ? setTimeout(isLoaded, 9) : R.eve("raphael.DOMload");
         }
         isLoaded();
-    })(document, "DOMContentLoaded");
+    })(doc, "DOMContentLoaded");
 
     eve.on("raphael.DOMload", function() {
         loaded = true;
@@ -7030,6 +7037,10 @@
 *
 * Licensed under the MIT license.
 */
+// Define _window as window object in case of indivual file inclusion.
+if (typeof _window === 'undefined' && typeof window === 'object') {
+   _window = window;
+}
 (function(){
     if (!R.svg) {
         return;
@@ -7499,7 +7510,7 @@
                 round: width,
                 square: width,
                 butt: 0
-            }[o.attrs["stroke-linecap"] || params["stroke-linecap"]] || 0;
+            }[params["stroke-linecap"] || o.attrs["stroke-linecap"]] || 0;
             l = i = value.length;
             widthFactor = predefValue ? width : 1;
 
@@ -7543,7 +7554,7 @@
             vis = s.visibility;
         // Convert all the &lt; and &gt; to < and > and if there is any <br/> tag in between &lt; and &gt;
         // then converting them into <<br/> and ><br/> respectively.
-        if (params && params.text) {
+        if (params && params.text && params.text.replace) {
             params.text = params.text.replace(/&lt;/g, "<").replace(/&gt;/g, ">")
                 .replace(/&<br\/>lt;|&l<br\/>t;|&lt<br\/>;/g, "<<br/>")
                 .replace(/&<br\/>gt;|&g<br\/>t;|&gt<br\/>;/g, "><br/>");
@@ -7891,7 +7902,7 @@
     },
     /*
      * Keeps the follower element in sync with the leaders.
-     * First and second arguments represents the context(element) and the 
+     * First and second arguments represents the context(element) and the
      name of the callBack function respectively.
      * The callBack is invoked for indivual follower Element with the rest of
      arguments.
@@ -8242,23 +8253,61 @@
 
         o.removed = true;
     };
+    /*
+     * Recursively shows the element and stores the visibilties of its parents
+     * in a tree structure for future restoration.
+     * @param el - Element which is to shown recursively
+     * @return Function - Function to restore the old visibility state.
+    */
+    function showRecursively(el) {
+        var origAttrTree = {},
+            currentEl = el,
+            currentNode = origAttrTree,
+            fn = function () {
+                var localEl = el,
+                    localNode = origAttrTree;
+                while (localEl) {
+                    if (localNode._doHide) {
+                        localEl.hide();
+                    }
+                    localEl = localEl.parent;
+                    localNode = localNode.parent;
+                }
+            };
+        while (currentEl) {
+            if (currentEl.node && currentEl.node.style && currentEl.node.style.display === "none") {
+                currentEl.show();
+                currentNode._doHide = true;
+            }
+            currentEl = currentEl.parent;
+            currentNode.parent = {};
+            currentNode = currentNode.parent;
+        }
+        return fn;
+    }
     elproto._getBBox = function() {
-        var o = this,
+        var fn,
+            o = this,
             node = o.node,
             bbox = {},
             a = o.attrs,
             align,
-            hide;
-
-        if (node.style.display === "none") {
-            o.show();
-            hide = true;
+            hide,
+            isText = (o.type === "text"),
+            isIE = /*@cc_on!@*/false || !!document.documentMode;
+        if (isIE && isText) {
+            fn = showRecursively(o);
+        }
+        else {
+            if (node.style.display === "none") {
+                o.show();
+                hide = true;
+            }
         }
 
         try {
             bbox = node.getBBox();
-
-            if (o.type == "text") {
+            if (isText) {
                 // If bbox does not have x / y, which is possible in certain
                 // environments, we mathematically calculate these values by
                 // using x, y (adjusted using the values of text-anchor, and
@@ -8284,7 +8333,7 @@
         } finally {
             bbox = bbox || {};
         }
-        hide && o.hide();
+        isIE && isText ? fn && fn() : hide && o.hide();
         return bbox;
     };
 
@@ -8686,7 +8735,10 @@
 *
 * Licensed under the MIT license.
 */
-
+// Define _window as window object in case of indivual file inclusion.
+if (typeof _window === 'undefined' && typeof window === 'object') {
+   _window = window;
+}
 (function(){
     if (!R.vml) {
         return;
@@ -9166,7 +9218,7 @@
     },
     /*
      * Keeps the follower element in sync with the leaders.
-     * First and second arguments represents the context(element) and the 
+     * First and second arguments represents the context(element) and the
      name of the callBack function respectively.
      * The callBack is invoked for indivual follower Element with the rest of
      arguments.

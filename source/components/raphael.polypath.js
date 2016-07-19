@@ -4,7 +4,7 @@
 /**!
  * RedRaphael PolyPath shape definition
  */
-window.Raphael && window.Raphael.define && function (R) {
+_window.Raphael && _window.Raphael.define && function (R) {
     var win = R._g.win,
         math = win.Math,
         mathPI = math.PI,
@@ -151,4 +151,4 @@ window.Raphael && window.Raphael.define && function (R) {
             }
         }
     });
-}(window.Raphael);
+}(_window.Raphael);

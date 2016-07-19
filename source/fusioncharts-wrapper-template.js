@@ -15,13 +15,13 @@ FusionCharts && FusionCharts.register('module', ['private', 'vendor.redraphael',
 
     (function (_window) {
 
-    (function () {
+    // (function () {
 
 
 @REDRAPHAEL_CODE
 
 
-    })();
+    // })();
 
 
     // Restore old Raphael or remove it from global scope
@@ -35,5 +35,5 @@ FusionCharts && FusionCharts.register('module', ['private', 'vendor.redraphael',
     }
 
 
-    })(this.window || window);
+    })(win || window);
 }]);

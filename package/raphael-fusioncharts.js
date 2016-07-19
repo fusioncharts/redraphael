@@ -15,7 +15,7 @@ FusionCharts && FusionCharts.register('module', ['private', 'vendor.redraphael',
 
     (function (_window) {
 
-    (function () {
+    // (function () {
 
 
 /**!
@@ -409,6 +409,9 @@ FusionCharts && FusionCharts.register('module', ['private', 'vendor.redraphael',
  *
  * Licensed under the MIT license.
  */
+if (typeof _window === 'undefined' && typeof window === 'object') {
+   _window = window;
+}
 (function (glob, factory, optOutModulePattern) {
     // AMD support
     if (!optOutModulePattern && typeof define === "function" && define.amd) {
@@ -423,7 +426,7 @@ FusionCharts && FusionCharts.register('module', ['private', 'vendor.redraphael',
         factory(glob, (typeof module === 'object' && typeof module.exports !== 'undefined') ?
            module.exports : glob.eve);
     }
-}(this, function (_window, eve) {
+}(_window, function (_win, eve) {
     /*\
      * Raphael
      [ method ]
@@ -549,8 +552,8 @@ FusionCharts && FusionCharts.register('module', ['private', 'vendor.redraphael',
             return a.hasOwnProperty("prototype");
         }()),
         g = {
-            doc: document,
-            win: _window
+            doc: _win.document,
+            win: _win
         },
         oldRaphael = {
             was: Object.prototype[has].call(g.win, "Raphael"),
@@ -694,10 +697,10 @@ FusionCharts && FusionCharts.register('module', ['private', 'vendor.redraphael',
             dragend: "mouseup"
         },
 
-        Str = win.String,
+        Str = String,
         toFloat = win.parseFloat,
         toInt = win.parseInt,
-        math = win.Math,
+        math = Math,
         mmax = math.max,
         mmin = math.min,
         abs = math.abs,
@@ -712,7 +715,7 @@ FusionCharts && FusionCharts.register('module', ['private', 'vendor.redraphael',
 
         lowerCase = Str.prototype.toLowerCase,
         upperCase = Str.prototype.toUpperCase,
-        objectToString = win.Object.prototype.toString,
+        objectToString = Object.prototype.toString,
         paper = {},
 
         separator = /[, ]+/,
@@ -3676,7 +3679,9 @@ FusionCharts && FusionCharts.register('module', ['private', 'vendor.redraphael',
     })(Matrix.prototype);
 
     // WebKit rendering bug workaround method
-    var version = navigator.userAgent.match(/Version\/(.*?)\s/) || navigator.userAgent.match(/Chrome\/(\d+)/);
+    var navigator = win.navigator,
+        version = navigator.userAgent.match(/Version\/(.*?)\s/) || navigator.userAgent.match(/Chrome\/(\d+)/);
+
     if ((navigator.vendor == "Apple Computer, Inc.") && (version && version[1] < 4 || navigator.platform.slice(0, 2) == "iP") ||
         (navigator.vendor == "Google Inc." && version && version[1] < 8)) {
 
@@ -5086,9 +5091,9 @@ FusionCharts && FusionCharts.register('module', ['private', 'vendor.redraphael',
     \*/
     elproto.isPointInside = function(x, y) {
         var rp = this.realPath = this.realPath || getPath[this.type](this),
-	      	tr;
-		return R.isPointInsidePath(((tr = this.attr('transform')) &&
-		        tr.length && R.transformPath(rp, tr)) || rp, x, y);
+            tr;
+        return R.isPointInsidePath(((tr = this.attr('transform')) &&
+                tr.length && R.transformPath(rp, tr)) || rp, x, y);
     };
 
     /*\
@@ -5429,11 +5434,11 @@ FusionCharts && FusionCharts.register('module', ['private', 'vendor.redraphael',
     ef["back-out"] = ef.backOut;
 
     var animationElements = [],
-    requestAnimFrame = _window.requestAnimationFrame ||
-    _window.webkitRequestAnimationFrame ||
-    _window.mozRequestAnimationFrame ||
-    _window.oRequestAnimationFrame ||
-    _window.msRequestAnimationFrame ||
+    requestAnimFrame = _win.requestAnimationFrame ||
+    _win.webkitRequestAnimationFrame ||
+    _win.mozRequestAnimationFrame ||
+    _win.oRequestAnimationFrame ||
+    _win.msRequestAnimationFrame ||
     function(callback) {
         setTimeout(callback, 16);
     },
@@ -7036,7 +7041,7 @@ FusionCharts && FusionCharts.register('module', ['private', 'vendor.redraphael',
             (/in/).test(doc.readyState) ? setTimeout(isLoaded, 9) : R.eve("raphael.DOMload");
         }
         isLoaded();
-    })(document, "DOMContentLoaded");
+    })(doc, "DOMContentLoaded");
 
     eve.on("raphael.DOMload", function() {
         loaded = true;
@@ -10031,7 +10036,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
 
 
 
-    })();
+    // })();
 
 
     // Restore old Raphael or remove it from global scope
@@ -10045,5 +10050,5 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     }
 
 
-    })(this.window || window);
+    })(win || window);
 }]);

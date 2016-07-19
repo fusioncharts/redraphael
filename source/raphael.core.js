@@ -8,6 +8,9 @@
  *
  * Licensed under the MIT license.
  */
+if (typeof _window === 'undefined' && typeof window === 'object') {
+   _window = window;
+}
 (function (glob, factory, optOutModulePattern) {
     // AMD support
     if (!optOutModulePattern && typeof define === "function" && define.amd) {
@@ -18,9 +21,11 @@
     } else {
         // Browser globals (glob is window)
         // Raphael adds itself to window
-        factory(glob, glob.eve);
+        // factory(glob, glob.eve);
+        factory(glob, (typeof module === 'object' && typeof module.exports !== 'undefined') ?
+           module.exports : glob.eve);
     }
-}(this, function (window, eve) {
+}(_window, function (_win, eve) {
     /*\
      * Raphael
      [ method ]
@@ -78,7 +83,7 @@
         // Code commented as resources will now be referenced using relative URLs.
         // @todo Remove once we have ascertained that there are no issues in any environment.
         // if (R._url) { // Reinitialize URLs to be safe from pop state event
-        //     R._url = (R._g && R._g.win || window).location.href.replace(/#.*?$/, "");
+        //     R._url = (R._g && R._g.win || _window).location.href.replace(/#.*?$/, "");
         // }
         // If the URL is undefined only then initialize the URL with blank in order to support
         // both relative as well as absolute URLs
@@ -146,8 +151,8 @@
             return a.hasOwnProperty("prototype");
         }()),
         g = {
-            doc: document,
-            win: window
+            doc: _win.document,
+            win: _win
         },
         oldRaphael = {
             was: Object.prototype[has].call(g.win, "Raphael"),
@@ -291,10 +296,10 @@
             dragend: "mouseup"
         },
 
-        Str = win.String,
+        Str = String,
         toFloat = win.parseFloat,
         toInt = win.parseInt,
-        math = win.Math,
+        math = Math,
         mmax = math.max,
         mmin = math.min,
         abs = math.abs,
@@ -309,7 +314,7 @@
 
         lowerCase = Str.prototype.toLowerCase,
         upperCase = Str.prototype.toUpperCase,
-        objectToString = win.Object.prototype.toString,
+        objectToString = Object.prototype.toString,
         paper = {},
 
         separator = /[, ]+/,
@@ -3273,7 +3278,9 @@
     })(Matrix.prototype);
 
     // WebKit rendering bug workaround method
-    var version = navigator.userAgent.match(/Version\/(.*?)\s/) || navigator.userAgent.match(/Chrome\/(\d+)/);
+    var navigator = win.navigator,
+        version = navigator.userAgent.match(/Version\/(.*?)\s/) || navigator.userAgent.match(/Chrome\/(\d+)/);
+
     if ((navigator.vendor == "Apple Computer, Inc.") && (version && version[1] < 4 || navigator.platform.slice(0, 2) == "iP") ||
         (navigator.vendor == "Google Inc." && version && version[1] < 8)) {
 
@@ -4932,10 +4939,10 @@
     // This a temporary fix so that animation can be handled from the scheduler module.
     getAnimFrameFn = function () {
         return requestAnimFrame = R.requestAnimFrame ||
-        window.webkitRequestAnimationFrame ||
-        window.mozRequestAnimationFrame ||
-        window.oRequestAnimationFrame ||
-        window.msRequestAnimationFrame ||
+        _win.webkitRequestAnimationFrame ||
+        _win.mozRequestAnimationFrame ||
+        _win.oRequestAnimationFrame ||
+        _win.msRequestAnimationFrame ||
         function(callback) {
             setTimeout(callback, 16);
         };
@@ -6634,7 +6641,7 @@
             (/in/).test(doc.readyState) ? setTimeout(isLoaded, 9) : R.eve("raphael.DOMload");
         }
         isLoaded();
-    })(document, "DOMContentLoaded");
+    })(doc, "DOMContentLoaded");
 
     eve.on("raphael.DOMload", function() {
         loaded = true;

@@ -8,8 +8,11 @@
 *
 * Licensed under the MIT license.
 */
-
-window.Raphael && window.Raphael.vml && function(R) {
+// Define _window as window object in case of indivual file inclusion.
+if (typeof _window === 'undefined' && typeof window === 'object') {
+   _window = window;
+}
+_window.Raphael && _window.Raphael.vml && function(R) {
     var has = "hasOwnProperty",
     Str = String,
     toFloat = parseFloat,
@@ -1272,4 +1275,4 @@ window.Raphael && window.Raphael.vml && function(R) {
                 };
             })(method);
         }
-}(window.Raphael);
+}(_window.Raphael);

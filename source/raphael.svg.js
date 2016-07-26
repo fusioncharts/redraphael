@@ -1509,13 +1509,9 @@ _window.Raphael && _window.Raphael.svg && function(R) {
         res.type = "text";
         res._textdirty = true;
         // Ideally this code should not be here as .css() is not a function of rapheal.
-        if (css) {
-            res.css && res.css(css, undefined, true);
-            setFillAndStroke(res, attrs);
-        }
-        else {
-            setFillAndStroke(res, attrs);
-        }
+        css && res.css && res.css(css, undefined, true);
+        
+        setFillAndStroke(res, attrs);
         applyCustomAttributes(res, attrs);
         return res;
     };

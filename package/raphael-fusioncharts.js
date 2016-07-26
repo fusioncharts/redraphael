@@ -8562,13 +8562,9 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         res.type = "text";
         res._textdirty = true;
         // Ideally this code should not be here as .css() is not a function of rapheal.
-        if (css) {
-            res.css && res.css(css, undefined, true);
-            setFillAndStroke(res, attrs);
-        }
-        else {
-            setFillAndStroke(res, attrs);
-        }
+        css && res.css && res.css(css, undefined, true);
+        
+        setFillAndStroke(res, attrs);
         applyCustomAttributes(res, attrs);
         return res;
     };
@@ -9876,6 +9872,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         p.attrs.y = attrs.y;
         p.attrs.w = 1;
         p.attrs.h = 1;
+        css && p.css && p.css(css, undefined, true);
         setFillAndStroke(p, attrs);
         applyCustomAttributes(p, attrs);
 

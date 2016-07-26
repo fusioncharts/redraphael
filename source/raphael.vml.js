@@ -1117,6 +1117,7 @@ _window.Raphael && _window.Raphael.vml && function(R) {
         p.attrs.y = attrs.y;
         p.attrs.w = 1;
         p.attrs.h = 1;
+        css && p.css && p.css(css, undefined, true);
         setFillAndStroke(p, attrs);
         applyCustomAttributes(p, attrs);
 

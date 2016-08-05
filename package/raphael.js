@@ -8542,7 +8542,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         res._textdirty = true;
         // Ideally this code should not be here as .css() is not a function of rapheal.
         css && res.css && res.css(css, undefined, true);
-        
+
         setFillAndStroke(res, attrs);
         applyCustomAttributes(res, attrs);
         return res;
@@ -8572,6 +8572,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         css = "overflow:hidden;-webkit-tap-highlight-color:rgba(0,0,0,0);"+
             "-webkit-user-select:none;-moz-user-select:-moz-none;-khtml-user-select:none;"+
             "-ms-user-select:none;user-select:none;-o-user-select:none;cursor:default;",
+        css = css + "vertical-align:middle;",
         isFloating;
         x = x || 0;
         y = y || 0;

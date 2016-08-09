@@ -425,7 +425,7 @@ _window.Raphael && _window.Raphael.vml && function(R) {
             newstroke && node.appendChild(stroke);
         }
         if (res.type == "text") {
-            res.paper.canvas.style.display = E;
+            /*res.paper.canvas.style.display = E;
             var span = res.paper.span,
             m = 100,
             fontSize = a.font && a.font.match(/\d+(?:\.\d*)?(?=px)/),
@@ -483,7 +483,7 @@ _window.Raphael && _window.Raphael.vml && function(R) {
                     res.bbx = 0;
                     break;
             }
-            res.textpath.style["v-text-kern"] = true;
+            res.textpath.style["v-text-kern"] = true;*/
         }
     // res.paper.canvas.style.display = E;
     },
@@ -1092,37 +1092,30 @@ _window.Raphael && _window.Raphael.vml && function(R) {
         setCoords(res, 1, 1, 0, 0, 0);
         return res;
     };
-    R._engine.text = function(vml, attrs, group, css) {
-        var el = createNode("shape"),
-			path = createNode("path"),
-			o = createNode("textpath");
-        x = attrs.x || 0;
-        y = attrs.y || 0;
-        text = attrs.text;
-        path.v = R.format("m{0},{1}l{2},{1}", round(attrs.x * zoom), round(attrs.y * zoom), round(attrs.x * zoom) + 1);
-        path.textpathok = true;
-        o.string = Str(attrs.text).replace(/<br\s*?\/?>/ig, '\n');
-        o.on = true;
-        el.style.cssText = cssDot;
-        el.coordsize = zoom + S + zoom;
-        el.coordorigin = "0 0";
-        var p = new Element(el, vml, group);
+     R._engine.text = function(vml, attrs, group, css) {
+        var el = createNode("span"),
+            p,
+            x = attrs.x || 0,
+            y = attrs.y || 0,
+            text = Str(attrs.text).replace(/<br\s*?\/?>/ig, '\n'),
+            style = el.style;
 
-        p.shape = el;
-        p.path = path;
-        p.textpath = o;
-        p.type = "text";
-        p.attrs.text = Str(attrs.text || E);
-        p.attrs.x = attrs.x;
-        p.attrs.y = attrs.y;
-        p.attrs.w = 1;
-        p.attrs.h = 1;
-        css && p.css && p.css(css, undefined, true);
-        setFillAndStroke(p, attrs);
-        applyCustomAttributes(p, attrs);
-
-        el.appendChild(o);
-        el.appendChild(path);
+        el.innerHTML = text;
+        p = new Element(el, vml, group);
+        style.top = y;
+        style.left = x - el.offsetWidth / 2;
+        style.marginLeft = 0;
+        style.marginTop = 0;
+        style.textAlign = attrs.align || 'center';
+        style.position = 'absolute';
+        style['*display'] = 'inline';
+        style['*zoom'] = 1;
+        if (attrs.fill) {
+            (style.color = 'ff00ff');
+        }
+        if (group.node.style.filter) {
+            el.style.filter = group.node.style.filter;
+        }
 
         return p;
     };

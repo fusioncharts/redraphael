@@ -4219,7 +4219,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 "y", 0,
                 "text", E,
                 "stroke", none,
-                "fill", black,
+                //"fill", black,
                 "text-anchor", "middle",
                 "vertical-align", "middle"),
 

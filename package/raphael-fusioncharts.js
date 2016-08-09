@@ -9847,13 +9847,14 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         setCoords(res, 1, 1, 0, 0, 0);
         return res;
     };
-     R._engine.text = function(vml, attrs, group, css) {
+    R._engine.text = function(vml, attrs, group, css) {
         var el = createNode("span"),
             p,
             x = attrs.x || 0,
             y = attrs.y || 0,
             text = Str(attrs.text).replace(/<br\s*?\/?>/ig, '\n'),
-            style = el.style;
+            style = el.style,
+            color;
 
         el.innerHTML = text;
         p = new Element(el, vml, group);
@@ -9865,10 +9866,17 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         style.position = 'absolute';
         style['*display'] = 'inline';
         style['*zoom'] = 1;
-        if (attrs.fill) {
-            (style.color = 'ff00ff');
+        if ((fill = attrs.fill)) {
+            fill = fill.match(/\d{1,3}\,?/g);
+            if (fill[3]) {
+                style.color = 'rgb('+ fill[0] + fill[1] + fill[2].slice(0, -1)+')'
+                
+            }
         }
-        if (group.node.style.filter) {
+        if (fill && fill[4]) {
+            el.style.filter = 'alpha(opacity=' + fill[4] * 100 + ')'; 
+        }
+        else if (group.node.style.filter) {
             el.style.filter = group.node.style.filter;
         }
 

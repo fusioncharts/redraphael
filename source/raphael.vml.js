@@ -896,10 +896,10 @@ _window.Raphael && _window.Raphael.vml && function(R) {
             }
 
             // this.paper.canvas.style.display = "none";
-            if ('text' in params && this.type == "text") {
-                R.is(params.text, 'array') && (params.text = params.text.join('\n'));
-                this.textpath.string = params.text.replace(/<br\s*?\/?>/ig, '\n');
-            }
+            // if ('text' in params && this.type == "text") {
+            //     R.is(params.text, 'array') && (params.text = params.text.join('\n'));
+            //     this.textpath.string = params.text.replace(/<br\s*?\/?>/ig, '\n');
+            // }
             setFillAndStroke(this, params);
             var follower;
             for (i = 0, ii = this.followers.length; i < ii; i++) {
@@ -1092,39 +1092,92 @@ _window.Raphael && _window.Raphael.vml && function(R) {
         setCoords(res, 1, 1, 0, 0, 0);
         return res;
     };
-    R._engine.text = function(vml, attrs, group, css) {
-        var el = createNode("span"),
+    // Function to convert rgba to rgb.
+    getColorAlpha = function (rgba) {
+        var color,
+            alpha,
+            rgbaSplit;
+        rgbaSplit = rgba.match(/\d{1,3}\,?/g);
+        color =  rgbaSplit[3] ? 'rgb('+ rgbaSplit[0] + rgbaSplit[1] + rgbaSplit[2].slice(0, -1)+')' : rgba;
+        alpha = rgbaSplit[4];
+        return [color, alpha];
+    };
+
+    R._engine.text = function(vml, attrs, group, css, update) {
+        var el,
             p,
-            x = attrs.x || 0,
-            y = attrs.y || 0,
+            x = attrs.x,
+            y = attrs.y,
             text = Str(attrs.text).replace(/<br\s*?\/?>/ig, '\n'),
-            style = el.style,
+            style,
+            fill,
+            backgroundColor,
+            colorAlpha,
+            textBound,
+            backgroundColorAlpha,
             color;
 
-        el.innerHTML = text;
-        p = new Element(el, vml, group);
-        style.top = y;
-        style.left = x - el.offsetWidth / 2;
+        if (update) {
+            el = this.el;
+        }
+        else {
+            el = createNode("span");
+            p = new Element(el, vml, group);
+            p.el = el;
+            p.type = 'text';
+        }
+
+        style = el.style;
+
         style.marginLeft = 0;
         style.marginTop = 0;
-        style.textAlign = attrs.align || 'center';
         style.position = 'absolute';
         style['*display'] = 'inline';
         style['*zoom'] = 1;
-        if ((fill = attrs.fill)) {
-            fill = fill.match(/\d{1,3}\,?/g);
-            if (fill[3]) {
-                style.color = 'rgb('+ fill[0] + fill[1] + fill[2].slice(0, -1)+')'
-                
-            }
-        }
-        if (fill && fill[4]) {
-            el.style.filter = 'alpha(opacity=' + fill[4] * 100 + ')'; 
-        }
-        else if (group.node.style.filter) {
-            el.style.filter = group.node.style.filter;
+
+        attrs.align && (style.textAlign = attrs.align);
+        (text !== 'undefined') && (el.innerHTML = text);
+
+        // Code for applying text color
+        if (fill = (attrs.fill)) {
+            colorAlpha = getColorAlpha(fill);
+            style.color = colorAlpha[0];
         }
 
+        // Code for applying alpha
+        if (fill && colorAlpha[1]) {
+            style.filter = 'alpha(opacity=' + colorAlpha[1] * 100 + ')'; 
+        }
+        else if (group && group.node.style.filter) {
+            style.filter = group.node.style.filter;
+        }
+
+        //Code to apply text bound
+        if (textBound = (attrs['text-bound'] || attrs.textBound)) {
+            //Applying background color and alpha.
+            if (textBound[0]) {
+                backgroundColorAlpha = getColorAlpha(textBound[0]);
+                style.backgroundColor = backgroundColorAlpha[0];
+                style.filter = 'alpha(opacity=' + backgroundColorAlpha[1] * 100 + ')';
+            }
+            
+            //Applying border color.
+            if (textBound[1]) {
+                borderColorAlpha = getColorAlpha(textBound[1]);
+                style.borderColor = borderColorAlpha[0];
+                style.filter = 'alpha(opacity=' + borderColorAlpha[1] * 100 + ')';
+            
+                //Applying border properties
+                textBound[2] && (style.borderWidth = textBound[2]);
+                textBound[5] && (style.borderStyle =  textBound[5] === 'none' ? 'solid' : 'dashed');
+                
+                //style.borderRadius = textBound[4];
+            }
+            textBound[3] && (style.padding = textBound[3]);
+        }
+        y && (style.top = y - el.offsetHeight / 2 - (textBound && textBound[3] || 0));
+        x && (style.left = x - el.offsetWidth / 2);
+        css && p.css && p.css(css);
         return p;
     };
 

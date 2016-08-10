@@ -9239,6 +9239,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                     break;
             }
             res.textpath.style["v-text-kern"] = true;*/
+            R._engine.text.call(o, undefined, params, undefined, undefined, true)
         }
     // res.paper.canvas.style.display = E;
     },
@@ -9858,6 +9859,39 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         return [color, alpha];
     };
 
+    applyFilter = function (ele, filter, params) {
+        var filterObj,
+            PROGID = 'progid:',
+            DX_TRANS_STR = 'DXImageTransform.Microsoft.';
+
+        filterObj = ele.filters[DX_TRANS_STR + filter] || ele.filters[filter];
+
+        // filter is set - change existing one
+        if (filterObj) {
+            filterObj.Enabled = true; // if exists, it might be disabled
+            if (params) {
+                for (var i in params) {
+                    filterObj[i] = params[i];
+                }
+            }
+        } else { // filter is not set - apply new one
+            filterObj = "";
+            if (params) {
+                for (var i in params) {
+                    filterObj += i.toLowerCase() + "=" + params[i] + ",";
+                }
+                filterObj = "(" + filterObj.replace(/\,$/, '') + ")";
+            }
+            console.log(PROGID + DX_TRANS_STR + filter + filterObj + " ");
+            ele.style.filter += PROGID + DX_TRANS_STR + filter + filterObj + " ";
+        }
+
+        // hasLayout property hack
+        if (!ele.style.zoom) {
+            ele.style.zoom = 1;
+        }
+    };
+
     R._engine.text = function(vml, attrs, group, css, update) {
         var el,
             p,
@@ -9870,6 +9904,12 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             colorAlpha,
             textBound,
             backgroundColorAlpha,
+            transform,
+            degree,
+            deg2radians,
+            rad,
+            costheta,
+            sintheta,
             color;
 
         if (update) {
@@ -9889,22 +9929,40 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         style.position = 'absolute';
         style['*display'] = 'inline';
         style['*zoom'] = 1;
+        // style.filter += "progid:DXImageTransform.Microsoft.Matrix(sizingmethod=auto expand) ";
 
         attrs.align && (style.textAlign = attrs.align);
         (text !== 'undefined') && (el.innerHTML = text);
 
         // Code for applying text color
-        if (fill = (attrs.fill)) {
+        if (fill = attrs.fill) {
             colorAlpha = getColorAlpha(fill);
             style.color = colorAlpha[0];
         }
 
+        // Code for text rotation.
+        if (transform = attrs.transform) {
+            degree = transform.match(/\d{1,3}/)[0];
+            deg2radians = Math.PI * 2 / 360;
+            rad = degree * deg2radians,
+            costheta = Math.cos(rad),console.log(rad)
+            sintheta = Math.sin(rad);
+
+            applyFilter(el, "Matrix", {M11: costheta});
+            applyFilter(el, "Matrix", {M12: -sintheta});
+            applyFilter(el, "Matrix", {M21: sintheta});
+            applyFilter(el, "Matrix", {M22: costheta});
+            !update && applyFilter(el, "Matrix", {sizingMethod: 'auto expand'});
+        }
+
         // Code for applying alpha
         if (fill && colorAlpha[1]) {
-            style.filter = 'alpha(opacity=' + colorAlpha[1] * 100 + ')'; 
+            //style.filter = 'alpha(opacity=' + colorAlpha[1] * 100 + ')';
+            applyFilter(el, "Alpha", {Opacity: colorAlpha[1]})
         }
         else if (group && group.node.style.filter) {
-            style.filter = group.node.style.filter;
+            //style.filter = group.node.style.filter;
+            applyFilter(el, "Alpha", {Opacity: 50})
         }
 
         //Code to apply text bound
@@ -9915,17 +9973,17 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 style.backgroundColor = backgroundColorAlpha[0];
                 style.filter = 'alpha(opacity=' + backgroundColorAlpha[1] * 100 + ')';
             }
-            
+
             //Applying border color.
             if (textBound[1]) {
                 borderColorAlpha = getColorAlpha(textBound[1]);
                 style.borderColor = borderColorAlpha[0];
                 style.filter = 'alpha(opacity=' + borderColorAlpha[1] * 100 + ')';
-            
+
                 //Applying border properties
                 textBound[2] && (style.borderWidth = textBound[2]);
                 textBound[5] && (style.borderStyle =  textBound[5] === 'none' ? 'solid' : 'dashed');
-                
+
                 //style.borderRadius = textBound[4];
             }
             textBound[3] && (style.padding = textBound[3]);

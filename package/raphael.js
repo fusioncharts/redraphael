@@ -9862,7 +9862,6 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 }
                 filterObj = "(" + filterObj.replace(/\,$/, '') + ")";
             }
-            console.log(PROGID + DX_TRANS_STR + filter + filterObj + " ");
             ele.style.filter += PROGID + DX_TRANS_STR + filter + filterObj + " ";
         }
 
@@ -9870,6 +9869,17 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         if (!ele.style.zoom) {
             ele.style.zoom = 1;
         }
+    };
+
+    map = {
+        'top' : 0,
+        'bottom' : 1,
+        'right' : 1,
+        'left' : 0,
+        'middle' : 0.5,
+        'center' : 0.5,
+        'start' : 0,
+        'end' : 1
     };
 
     R._engine.text = function(vml, attrs, group, css, update) {
@@ -9890,6 +9900,9 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             rad,
             costheta,
             sintheta,
+            params,
+            textAnchor,
+            verticalAlign,
             color;
 
         if (update) {
@@ -9907,69 +9920,91 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         style.marginLeft = 0;
         style.marginTop = 0;
         style.position = 'absolute';
+        style.whiteSpace = 'nowrap'
         style['*display'] = 'inline';
         style['*zoom'] = 1;
         // style.filter += "progid:DXImageTransform.Microsoft.Matrix(sizingmethod=auto expand) ";
 
-        attrs.align && (style.textAlign = attrs.align);
-        (text !== 'undefined') && (el.innerHTML = text);
+        for (params in attrs) {
+            if (attrs[has](params)) {
+                value = attrs[params];
+                switch (params) {
+                    case 'align' :
+                        style.textAlign = value;
+                        break;
+                    case 'text' :
+                        el.innerHTML = value;
+                        break;
+                    case 'fill' :
+                        colorAlpha = getColorAlpha(value);
+                        style.color = colorAlpha[0];
+                        if (colorAlpha[1]) {
+                            applyFilter(el, "Alpha", {Opacity: colorAlpha[1]})
+                        }
+                        else if (group && group.node.style.filter) {
+                            applyFilter(el, "Alpha", {Opacity: 50})
+                        }
+                        break;
+                    case 'textBound' :
+                    case 'text-bound' :
+                        textBound = value;
+                        //Applying background color and alpha.
+                        if (value[0]) {
+                            backgroundColorAlpha = getColorAlpha(value[0]);
+                            style.backgroundColor = backgroundColorAlpha[0];
+                            style.filter = 'alpha(opacity=' + backgroundColorAlpha[1] * 100 + ')';
+                        }
 
-        // Code for applying text color
-        if (fill = attrs.fill) {
-            colorAlpha = getColorAlpha(fill);
-            style.color = colorAlpha[0];
-        }
+                        //Applying border color.
+                        if (value[1]) {
+                            borderColorAlpha = getColorAlpha(value[1]);
+                            style.borderColor = borderColorAlpha[0];
+                            style.filter = 'alpha(opacity=' + borderColorAlpha[1] * 100 + ')';
 
-        // Code for text rotation.
-        if (transform = attrs.transform) {
-            degree = transform.match(/\d{1,3}/)[0];
-            deg2radians = Math.PI * 2 / 360;
-            rad = degree * deg2radians,
-            costheta = Math.cos(rad),console.log(rad)
-            sintheta = Math.sin(rad);
+                            //Applying border properties
+                            value[2] && (style.borderWidth = value[2]);
+                            value[5] && (style.borderStyle =  value[5] === 'none' ? 'solid' : 'dashed');
 
-            applyFilter(el, "Matrix", {M11: costheta});
-            applyFilter(el, "Matrix", {M12: -sintheta});
-            applyFilter(el, "Matrix", {M21: sintheta});
-            applyFilter(el, "Matrix", {M22: costheta});
-            !update && applyFilter(el, "Matrix", {sizingMethod: 'auto expand'});
-        }
+                            //style.borderRadius = value[4];
+                        }
+                        value[3] && (style.padding = value[3]);
+                        break;
+                    case 'transform' :
+                        degree = Number(value.match(/\d{1,3}/)[0]);
+                        if (degree) {
+                            deg2radians = Math.PI * 2 / 360;
+                            rad = degree * deg2radians,
+                            costheta = Math.cos(rad),
+                            sintheta = Math.sin(rad);
 
-        // Code for applying alpha
-        if (fill && colorAlpha[1]) {
-            //style.filter = 'alpha(opacity=' + colorAlpha[1] * 100 + ')';
-            applyFilter(el, "Alpha", {Opacity: colorAlpha[1]})
-        }
-        else if (group && group.node.style.filter) {
-            //style.filter = group.node.style.filter;
-            applyFilter(el, "Alpha", {Opacity: 50})
-        }
-
-        //Code to apply text bound
-        if (textBound = (attrs['text-bound'] || attrs.textBound)) {
-            //Applying background color and alpha.
-            if (textBound[0]) {
-                backgroundColorAlpha = getColorAlpha(textBound[0]);
-                style.backgroundColor = backgroundColorAlpha[0];
-                style.filter = 'alpha(opacity=' + backgroundColorAlpha[1] * 100 + ')';
+                            applyFilter(el, "Matrix", {M11: costheta});
+                            applyFilter(el, "Matrix", {M12: -sintheta});
+                            applyFilter(el, "Matrix", {M21: sintheta});
+                            applyFilter(el, "Matrix", {M22: costheta});
+                            !update && applyFilter(el, "Matrix", {sizingMethod: 'auto expand'});
+                        }
+                        break;
+                    case x :
+                    case y :
+                    case 'text-anchor':
+                    case 'textAnchor' :
+                    case 'verticalAlign':
+                    case 'vertical-align':
+                    case 'lineHeight':
+                    case 'line-height':
+                        break;
+                    default :
+                        params = params.replace(/(\-)(\D)/i, function() {return arguments[2].toUpperCase()});
+                        style[params] = value;
+                }
             }
-
-            //Applying border color.
-            if (textBound[1]) {
-                borderColorAlpha = getColorAlpha(textBound[1]);
-                style.borderColor = borderColorAlpha[0];
-                style.filter = 'alpha(opacity=' + borderColorAlpha[1] * 100 + ')';
-
-                //Applying border properties
-                textBound[2] && (style.borderWidth = textBound[2]);
-                textBound[5] && (style.borderStyle =  textBound[5] === 'none' ? 'solid' : 'dashed');
-
-                //style.borderRadius = textBound[4];
-            }
-            textBound[3] && (style.padding = textBound[3]);
         }
-        y && (style.top = y - el.offsetHeight / 2 - (textBound && textBound[3] || 0));
-        x && (style.left = x - el.offsetWidth / 2);
+
+        textAnchor = attrs.textAnchor || attrs['text-anchor'] || 'middle';
+        verticalAlign = attrs.verticalAlign || attrs['vertical-align'] || 'middle';
+
+        y && (style.top = y - el.offsetHeight * map[verticalAlign] - (textBound && textBound[3] || 0));
+        x && (style.left = x - el.offsetWidth * map[textAnchor]);
         css && p.css && p.css(css);
         return p;
     };

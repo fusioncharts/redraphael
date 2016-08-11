@@ -9849,7 +9849,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         return res;
     };
     // Function to convert rgba to rgb.
-    getColorAlpha = function (rgba) {
+    var getColorAlpha = function (rgba) {
         var color,
             alpha,
             rgbaSplit;
@@ -9857,10 +9857,22 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         color =  rgbaSplit[3] ? 'rgb('+ rgbaSplit[0] + rgbaSplit[1] + rgbaSplit[2].slice(0, -1)+')' : rgba;
         alpha = rgbaSplit[4];
         return [color, alpha];
+    },
+
+    map = {
+        'top' : 0,
+        'bottom' : 1,
+        'right' : 1,
+        'left' : 0,
+        'middle' : 0.5,
+        'center' : 0.5,
+        'start' : 0,
+        'end' : 1
     };
 
-    applyFilter = function (ele, filter, params) {
-        var filterObj,
+    elproto.applyFilter = function (filter, params) {
+        var ele = this.node,
+            filterObj,
             PROGID = 'progid:',
             DX_TRANS_STR = 'DXImageTransform.Microsoft.';
 
@@ -9891,19 +9903,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         }
     };
 
-    map = {
-        'top' : 0,
-        'bottom' : 1,
-        'right' : 1,
-        'left' : 0,
-        'middle' : 0.5,
-        'center' : 0.5,
-        'start' : 0,
-        'end' : 1
-    };
-
     R._engine.text = function(vml, attrs, group, css, update) {
-        var el,
+        var node,
             p,
             x = attrs.x,
             y = attrs.y,
@@ -9923,19 +9924,22 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             params,
             textAnchor,
             verticalAlign,
+            groupFilter,
+            tempObj,
             color;
 
         if (update) {
-            el = this.el;
+            p = this;
+            node = p.node;
         }
         else {
-            el = createNode("span");
-            p = new Element(el, vml, group);
-            p.el = el;
+            node = createNode("span");
+            p = new Element(node, vml, group);
+            p.node = node;
             p.type = 'text';
         }
 
-        style = el.style;
+        style = node.style;
 
         style.marginLeft = 0;
         style.marginTop = 0;
@@ -9953,16 +9957,13 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                         style.textAlign = value;
                         break;
                     case 'text' :
-                        el.innerHTML = value;
+                        node.innerHTML = value;
                         break;
                     case 'fill' :
                         colorAlpha = getColorAlpha(value);
                         style.color = colorAlpha[0];
                         if (colorAlpha[1]) {
-                            applyFilter(el, "Alpha", {Opacity: colorAlpha[1]})
-                        }
-                        else if (group && group.node.style.filter) {
-                            applyFilter(el, "Alpha", {Opacity: 50})
+                            p.applyFilter("Alpha", {Opacity: colorAlpha[1]})
                         }
                         break;
                     case 'textBound' :
@@ -9972,38 +9973,22 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                         if (value[0]) {
                             backgroundColorAlpha = getColorAlpha(value[0]);
                             style.backgroundColor = backgroundColorAlpha[0];
-                            style.filter = 'alpha(opacity=' + backgroundColorAlpha[1] * 100 + ')';
+                            applyFilter(eleObj, "Alpha", {Opacity: backgroundColorAlpha[1]})
                         }
 
                         //Applying border color.
                         if (value[1]) {
                             borderColorAlpha = getColorAlpha(value[1]);
                             style.borderColor = borderColorAlpha[0];
-                            style.filter = 'alpha(opacity=' + borderColorAlpha[1] * 100 + ')';
+                            applyFilter(eleObj, "Alpha", {Opacity: borderColorAlpha[1]})
 
                             //Applying border properties
                             value[2] && (style.borderWidth = value[2]);
                             value[5] && (style.borderStyle =  value[5] === 'none' ? 'solid' : 'dashed');
-
-                            //style.borderRadius = value[4];
                         }
                         value[3] && (style.padding = value[3]);
                         break;
                     case 'transform' :
-                        degree = Number(value.match(/\d{1,3}/)[0]);
-                        if (degree) {
-                            deg2radians = Math.PI * 2 / 360;
-                            rad = degree * deg2radians,
-                            costheta = Math.cos(rad),
-                            sintheta = Math.sin(rad);
-
-                            applyFilter(el, "Matrix", {M11: costheta});
-                            applyFilter(el, "Matrix", {M12: -sintheta});
-                            applyFilter(el, "Matrix", {M21: sintheta});
-                            applyFilter(el, "Matrix", {M22: costheta});
-                            !update && applyFilter(el, "Matrix", {sizingMethod: 'auto expand'});
-                        }
-                        break;
                     case x :
                     case y :
                     case 'text-anchor':
@@ -10020,11 +10005,34 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
         }
 
+        if (group && (groupFilter = group.node.style.filter)) {
+            groupFilter = groupFilter.match(/Microsoft.(\D*)\((\D*)\=(\d*)\)/);
+            tempObj = {};
+            tempObj[groupFilter[2]] = groupFilter[3];
+            p.applyFilter(groupFilter[1], tempObj);
+        }
+
+        if (value = attrs.transform) {
+            degree = Number(value.match(/\d{1,3}/)[0]);
+            if (degree) {
+                deg2radians = Math.PI * 2 / 360;
+                rad = degree * deg2radians,
+                costheta = Math.cos(rad),
+                sintheta = Math.sin(rad);
+
+                p.applyFilter("Matrix", {M11: costheta});
+                p.applyFilter("Matrix", {M12: -sintheta});
+                p.applyFilter("Matrix", {M21: sintheta});
+                p.applyFilter("Matrix", {M22: costheta});
+                p.applyFilter("Matrix", {sizingMethod: 'auto expand'});
+            }
+        }
+
         textAnchor = attrs.textAnchor || attrs['text-anchor'] || 'middle';
         verticalAlign = attrs.verticalAlign || attrs['vertical-align'] || 'middle';
 
-        y && (style.top = y - el.offsetHeight * map[verticalAlign] - (textBound && textBound[3] || 0));
-        x && (style.left = x - el.offsetWidth * map[textAnchor]);
+        y && (style.top = y - node.offsetHeight * map[verticalAlign] - (textBound && textBound[3] || 0));
+        x && (style.left = x - node.offsetWidth * map[textAnchor]);
         css && p.css && p.css(css);
         return p;
     };

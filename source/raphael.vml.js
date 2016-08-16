@@ -1151,9 +1151,9 @@ _window.Raphael && _window.Raphael.vml && function(R) {
     R._engine.text = function(vml, attrs, group, css, update) {
         var node,
             p,
-            x = attrs.x,
-            y = attrs.y,
-            text = Str(attrs.text).replace(/<br\s*?\/?>/ig, '\n'),
+            x,
+            y,
+            text,
             style,
             fill,
             backgroundColor,
@@ -1173,6 +1173,11 @@ _window.Raphael && _window.Raphael.vml && function(R) {
             tempObj,
             color;
 
+        css && (attrs = extend(css, attrs));
+        x = attrs.x;
+        y = attrs.y;
+        text = Str(attrs.text).replace(/<br\s*?\/?>/ig, '\n');
+
         if (update) {
             p = this;
             node = p.node;
@@ -1190,6 +1195,7 @@ _window.Raphael && _window.Raphael.vml && function(R) {
         style.marginTop = 0;
         style.position = 'absolute';
         style.whiteSpace = 'nowrap'
+        style.display = 'inline-block';
         style['*display'] = 'inline';
         style['*zoom'] = 1;
         // style.filter += "progid:DXImageTransform.Microsoft.Matrix(sizingmethod=auto expand) ";
@@ -1205,6 +1211,7 @@ _window.Raphael && _window.Raphael.vml && function(R) {
                         node.innerHTML = value;
                         break;
                     case 'fill' :
+                    case 'color' :
                         colorAlpha = getColorAlpha(value);
                         style.color = colorAlpha[0];
                         if (colorAlpha[1]) {
@@ -1233,11 +1240,13 @@ _window.Raphael && _window.Raphael.vml && function(R) {
                         }
                         value[3] && (style.padding = value[3]);
                         break;
-                    case 'transform' :
-                    case x :
-                    case y :
                     case 'text-anchor':
                     case 'textAnchor' :
+                        style.textAlign = 'middle' ? 'center' : value;
+                        break;
+                    case 'transform' :
+                    case 'x' :
+                    case 'y' :
                     case 'verticalAlign':
                     case 'vertical-align':
                     case 'lineHeight':
@@ -1275,10 +1284,8 @@ _window.Raphael && _window.Raphael.vml && function(R) {
 
         textAnchor = attrs.textAnchor || attrs['text-anchor'] || 'middle';
         verticalAlign = attrs.verticalAlign || attrs['vertical-align'] || 'middle';
-
         y && (style.top = y - node.offsetHeight * map[verticalAlign] - (textBound && textBound[3] || 0));
         x && (style.left = x - node.offsetWidth * map[textAnchor]);
-        css && p.css && p.css(css);
         return p;
     };
 

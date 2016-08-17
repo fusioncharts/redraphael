@@ -9630,27 +9630,30 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 eve("raphael.attr." + key + "." + this.id, this, params[key], key);
             }
         }
+
         if (params) {
             var todel = {};
-            for (key in this.ca) {
-                if (this.ca[key] && params[has](key) && R.is(this.ca[key], "function") && !this.ca['_invoked' + key]) {
-                    this.ca['_invoked' + key] = true; // prevent recursion
-                    var par = this.ca[key].apply(this, [].concat(params[key]));
-                    delete this.ca['_invoked' + key];
+            // As text is rendered in pure HTML , vml custom attributes logic is not required.
+            if (this.type !== "text") {
+                for (key in this.ca) {
+                    if (this.ca[key] && params[has](key) && R.is(this.ca[key], "function") && !this.ca['_invoked' + key]) {
+                        this.ca['_invoked' + key] = true; // prevent recursion
+                        var par = this.ca[key].apply(this, [].concat(params[key]));
+                        delete this.ca['_invoked' + key];
 
-                    for (var subkey in par) {
-                        if (par[has](subkey)) {
-                            params[subkey] = par[subkey];
+                        for (var subkey in par) {
+                            if (par[has](subkey)) {
+                                params[subkey] = par[subkey];
+                            }
                         }
-                    }
-                    this.attrs[key] = params[key];
-                    if (par === false) {
-                        todel[key] = params[key];
-                        delete params[key];
+                        this.attrs[key] = params[key];
+                        if (par === false) {
+                            todel[key] = params[key];
+                            delete params[key];
+                        }
                     }
                 }
             }
-
             // this.paper.canvas.style.display = "none";
             // if ('text' in params && this.type == "text") {
             //     R.is(params.text, 'array') && (params.text = params.text.join('\n'));
@@ -9853,13 +9856,16 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         var color,
             alpha,
             rgbaSplit;
+        if (!rgba) {
+            return undefined;
+        }
         rgbaSplit = rgba.match(/\d{1,3}\,?/g);
         color =  rgbaSplit[3] ? 'rgb('+ rgbaSplit[0] + rgbaSplit[1] + rgbaSplit[2].slice(0, -1)+')' : rgba;
         alpha = rgbaSplit[4];
         return [color, alpha];
     },
 
-    map = {
+    textMap = {
         'top' : 0,
         'bottom' : 1,
         'right' : 1,
@@ -9915,6 +9921,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             colorAlpha,
             textBound,
             backgroundColorAlpha,
+            borderColorAlpha,
             transform,
             degree,
             deg2radians,
@@ -9926,6 +9933,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             verticalAlign,
             groupFilter,
             tempObj,
+            alpha,
             color;
 
         css && (attrs = extend(css, attrs));
@@ -9976,24 +9984,27 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                     case 'textBound' :
                     case 'text-bound' :
                         textBound = value;
-                        //Applying background color and alpha.
+                        //Applying background color.
                         if (value[0]) {
                             backgroundColorAlpha = getColorAlpha(value[0]);
                             style.backgroundColor = backgroundColorAlpha[0];
-                            applyFilter(eleObj, "Alpha", {Opacity: backgroundColorAlpha[1]})
                         }
 
                         //Applying border color.
                         if (value[1]) {
                             borderColorAlpha = getColorAlpha(value[1]);
                             style.borderColor = borderColorAlpha[0];
-                            applyFilter(eleObj, "Alpha", {Opacity: borderColorAlpha[1]})
 
                             //Applying border properties
                             value[2] && (style.borderWidth = value[2]);
                             value[5] && (style.borderStyle =  value[5] === 'none' ? 'solid' : 'dashed');
                         }
                         value[3] && (style.padding = value[3]);
+
+                        //Applying border alpha
+                        alpha = (backgroundColorAlpha && backgroundColorAlpha[1]) ||
+                            (borderColorAlpha && borderColorAlpha[1]);
+                        alpha && applyFilter(eleObj, "Alpha", {Opacity: alpha});
                         break;
                     case 'text-anchor':
                     case 'textAnchor' :
@@ -10039,8 +10050,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
 
         textAnchor = attrs.textAnchor || attrs['text-anchor'] || 'middle';
         verticalAlign = attrs.verticalAlign || attrs['vertical-align'] || 'middle';
-        y && (style.top = y - node.offsetHeight * map[verticalAlign] - (textBound && textBound[3] || 0));
-        x && (style.left = x - node.offsetWidth * map[textAnchor]);
+        y && (style.top = y - node.offsetHeight * textMap[verticalAlign] - (textBound && textBound[3] || 0));
+        x && (style.left = x - node.offsetWidth * textMap[textAnchor]);
         return p;
     };
 

@@ -9967,7 +9967,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                             style.backgroundColor = backgroundColorAlpha[0];
                         }
                         else {
-                            p.removeCSS('backgroundColor');
+                            style.backgroundColor  = '';
                         }
 
                         //Applying border color.
@@ -9980,14 +9980,15 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                             value[5] && (style.borderStyle =  value[5] === 'none' ? 'solid' : 'dashed');
                         }
                         else {
-                            p.removeCSS('borderColor');
+                            style.borderColor = '';
+                            style.borderWidth = 0;
                         }
                         value[3] && (style.padding = value[3]);
 
                         //Applying border alpha
                         alpha = (backgroundColorAlpha && backgroundColorAlpha[1]) ||
                             (borderColorAlpha && borderColorAlpha[1]);
-                        p.applyFilter("Alpha", {Opacity: alpha});
+                        (alpha || alpha === 0) && p.applyFilter("Alpha", {Opacity: alpha});
                         break;
                     case 'text-anchor':
                     case 'textAnchor' :
@@ -10032,7 +10033,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
 
         textAnchor = attrs.textAnchor || attrs['text-anchor'] || 'middle';
         verticalAlign = attrs.verticalAlign || attrs['vertical-align'] || 'middle';
-        y && (style.top = y - node.offsetHeight * textMap[verticalAlign] - (textBound && textBound[3] || 0));
+        y && (style.top = y - node.offsetHeight * textMap[verticalAlign]);
         x && (style.left = x - node.offsetWidth * textMap[textAnchor]);
         return p;
     };

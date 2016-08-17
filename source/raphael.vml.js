@@ -1106,7 +1106,7 @@ _window.Raphael && _window.Raphael.vml && function(R) {
         }
         rgbaSplit = rgba.match(/\d{1,3}\,?/g);
         color =  rgbaSplit[3] ? 'rgb('+ rgbaSplit[0] + rgbaSplit[1] + rgbaSplit[2].slice(0, -1)+')' : rgba;
-        alpha = rgbaSplit[4];
+        alpha = rgbaSplit[4] && rgbaSplit[4] * 10;
         return [color, alpha];
     },
 
@@ -1176,10 +1176,9 @@ _window.Raphael && _window.Raphael.vml && function(R) {
             params,
             textAnchor,
             verticalAlign,
-            groupFilter,
-            tempObj,
             alpha,
-            color;
+            color,
+            DXString = 'DXImageTransform.Microsoft.Alpha';
 
         css && (attrs = extend(css, attrs));
         x = attrs.x;
@@ -1189,6 +1188,7 @@ _window.Raphael && _window.Raphael.vml && function(R) {
         if (update) {
             p = this;
             node = p.node;
+            group = p.parent;
         }
         else {
             node = createNode("span");
@@ -1222,9 +1222,6 @@ _window.Raphael && _window.Raphael.vml && function(R) {
                     case 'color' :
                         colorAlpha = getColorAlpha(value);
                         style.color = colorAlpha[0];
-                        if (colorAlpha[1]) {
-                            p.applyFilter("Alpha", {Opacity: colorAlpha[1]})
-                        }
                         break;
                     case 'textBound' :
                     case 'text-bound' :
@@ -1233,6 +1230,9 @@ _window.Raphael && _window.Raphael.vml && function(R) {
                         if (value[0]) {
                             backgroundColorAlpha = getColorAlpha(value[0]);
                             style.backgroundColor = backgroundColorAlpha[0];
+                        }
+                        else {
+                            p.removeCSS('backgroundColor');
                         }
 
                         //Applying border color.
@@ -1244,12 +1244,15 @@ _window.Raphael && _window.Raphael.vml && function(R) {
                             value[2] && (style.borderWidth = value[2]);
                             value[5] && (style.borderStyle =  value[5] === 'none' ? 'solid' : 'dashed');
                         }
+                        else {
+                            p.removeCSS('borderColor');
+                        }
                         value[3] && (style.padding = value[3]);
 
                         //Applying border alpha
                         alpha = (backgroundColorAlpha && backgroundColorAlpha[1]) ||
                             (borderColorAlpha && borderColorAlpha[1]);
-                        alpha && applyFilter(eleObj, "Alpha", {Opacity: alpha});
+                        p.applyFilter("Alpha", {Opacity: alpha});
                         break;
                     case 'text-anchor':
                     case 'textAnchor' :
@@ -1270,11 +1273,10 @@ _window.Raphael && _window.Raphael.vml && function(R) {
             }
         }
 
-        if (group && (groupFilter = group.node.style.filter)) {
-            groupFilter = groupFilter.match(/Microsoft.(\D*)\((\D*)\=(\d*)\)/);
-            tempObj = {};
-            tempObj[groupFilter[2]] = groupFilter[3];
-            p.applyFilter(groupFilter[1], tempObj);
+        // Applying alpha to individual elements if it is applied to group. Can be generalised later.
+        if (group && !alpha && (alpha = group.node.filters &&
+                group.node.filters[DXString] && group.node.filters[DXString].opacity)) {
+            p.applyFilter('Alpha', {Opacity : alpha});
         }
 
         if (value = attrs.transform) {

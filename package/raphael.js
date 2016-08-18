@@ -10040,7 +10040,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         if (value = attrs.transform) {
             degree = Number(value.match(/\d{1,3}/)[0]);
             if (degree) {
-                p.rotate = true;
+                p.rotatedText = true;
                 deg2radians = Math.PI * 2 / 360;
                 rad = degree * deg2radians,
                 costheta = Math.cos(rad),
@@ -10053,7 +10053,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 p.applyFilter("Matrix", {sizingMethod: 'auto expand'});
             }
             else {
-                p.rotate = false;
+                p.rotatedText = false;
             }
         }
 
@@ -10063,7 +10063,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         p.verticalAlign = attrs.verticalAlign || attrs['vertical-align'] || p.verticalAlign;
         verticalAlign = p.verticalAlign || 'middle';
 
-        textMap = getTextMap(p.rotate, textAnchor);
+        textMap = getTextMap(p.rotatedText, textAnchor);
         y && (style.top = y - node.offsetHeight * textMap[verticalAlign]);
         x && (style.left = x - node.offsetWidth * textMap[textAnchor]);
         return p;

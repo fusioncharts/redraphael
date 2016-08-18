@@ -1305,7 +1305,7 @@ _window.Raphael && _window.Raphael.vml && function(R) {
         if (value = attrs.transform) {
             degree = Number(value.match(/\d{1,3}/)[0]);
             if (degree) {
-                p.rotate = true;
+                p.rotatedText = true;
                 deg2radians = Math.PI * 2 / 360;
                 rad = degree * deg2radians,
                 costheta = Math.cos(rad),
@@ -1318,7 +1318,7 @@ _window.Raphael && _window.Raphael.vml && function(R) {
                 p.applyFilter("Matrix", {sizingMethod: 'auto expand'});
             }
             else {
-                p.rotate = false;
+                p.rotatedText = false;
             }
         }
 
@@ -1328,7 +1328,7 @@ _window.Raphael && _window.Raphael.vml && function(R) {
         p.verticalAlign = attrs.verticalAlign || attrs['vertical-align'] || p.verticalAlign;
         verticalAlign = p.verticalAlign || 'middle';
 
-        textMap = getTextMap(p.rotate, textAnchor);
+        textMap = getTextMap(p.rotatedText, textAnchor);
         y && (style.top = y - node.offsetHeight * textMap[verticalAlign]);
         x && (style.left = x - node.offsetWidth * textMap[textAnchor]);
         return p;

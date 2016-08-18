@@ -1110,15 +1110,31 @@ _window.Raphael && _window.Raphael.vml && function(R) {
         return [color, alpha];
     },
 
-    textMap = {
-        'top' : 0,
-        'bottom' : 1,
-        'right' : 1,
-        'left' : 0,
-        'middle' : 0.5,
-        'center' : 0.5,
-        'start' : 0,
-        'end' : 1
+    getTextMap = function (rotation, textAnchor) {console.log(rotation,textAnchor)
+        if (rotation && textAnchor === 'end') {
+            return {
+                'top' : -0.5,
+                'bottom' : 0.5,
+                'right' : 0.5,
+                'left' : -0.5,
+                'middle' : 0,
+                'center' : 0,
+                'start' : -0.5,
+                'end' : 0.5
+            };
+        }
+        else {
+            return {
+                'top' : 0,
+                'bottom' : 1,
+                'right' : 1,
+                'left' : 0,
+                'middle' : 0.5,
+                'center' : 0.5,
+                'start' : 0,
+                'end' : 1
+            };
+        }
     };
 
     elproto.applyFilter = function (filter, params) {
@@ -1178,6 +1194,7 @@ _window.Raphael && _window.Raphael.vml && function(R) {
             verticalAlign,
             alpha,
             color,
+            textMap,
             DXString = 'DXImageTransform.Microsoft.Alpha';
 
         if (update) {
@@ -1282,6 +1299,7 @@ _window.Raphael && _window.Raphael.vml && function(R) {
         if (value = attrs.transform) {
             degree = Number(value.match(/\d{1,3}/)[0]);
             if (degree) {
+                p.rotate = true;
                 deg2radians = Math.PI * 2 / 360;
                 rad = degree * deg2radians,
                 costheta = Math.cos(rad),
@@ -1293,12 +1311,16 @@ _window.Raphael && _window.Raphael.vml && function(R) {
                 p.applyFilter("Matrix", {M22: costheta});
                 p.applyFilter("Matrix", {sizingMethod: 'auto expand'});
             }
+            else {
+                p.rotate = false;
+            }
         }
 
         p.textAnchor  = attrs.textAnchor || attrs['text-anchor'] || p.textAnchor;
         textAnchor = p.textAnchor || 'middle';
         p.verticalAlign = attrs.verticalAlign || attrs['vertical-align'] || p.verticalAlign;
         verticalAlign = p.verticalAlign || 'middle';
+        textMap = getTextMap(p.rotate, textAnchor);
         y && (style.top = y - node.offsetHeight * textMap[verticalAlign]);
         x && (style.left = x - node.offsetWidth * textMap[textAnchor]);
         return p;

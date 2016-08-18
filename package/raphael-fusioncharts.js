@@ -9852,7 +9852,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         setCoords(res, 1, 1, 0, 0, 0);
         return res;
     };
-    // Function to convert rgba to rgb.
+    // Function to convert rgba to rgb and alpha.
     var getColorAlpha = function (rgba) {
         var color,
             alpha,
@@ -9865,9 +9865,10 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         alpha = rgbaSplit[4] && rgbaSplit[4] * 10;
         return [color, alpha];
     },
-
-    getTextMap = function (rotation, textAnchor) {console.log(rotation,textAnchor)
+    // Function to get the values for vertival and horizontal alignment f the text.
+    getTextMap = function (rotation, textAnchor) {
         if (rotation && textAnchor === 'end') {
+            // It is a special case. Here the values are custom values made to match the output result of svg browser.
             return {
                 'top' : -0.5,
                 'bottom' : 0.5,
@@ -9893,6 +9894,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         }
     };
 
+    // Function to apply filters over text like rotation, alpha, etc
     elproto.applyFilter = function (filter, params) {
         var ele = this.node,
             filterObj,
@@ -9925,7 +9927,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             ele.style.zoom = 1;
         }
     };
-
+    // Function to create text and also update text. During update the update flag is set to true.
     R._engine.text = function(vml, attrs, group, css, update) {
         var node,
             p,
@@ -9965,6 +9967,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             p.type = 'text';
         }
 
+        // If css is given then it is combined with the attr object
         css && (attrs = extend(css, attrs));
         p.x = x = attrs.x || p.x;
         p.y = y = attrs.y || p.y;
@@ -9975,6 +9978,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         style.marginLeft = 0;
         style.marginTop = 0;
         style.position = 'absolute';
+        // Various style attrbutes applied as a fallback for IE 8 browser.
         style.whiteSpace = 'nowrap'
         style.display = 'inline-block';
         style['*display'] = 'inline';
@@ -10020,6 +10024,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                             style.borderColor = '';
                             style.borderWidth = 0;
                         }
+                        // Setting the padding
                         value[3] && (style.padding = value[3]);
 
                         //Applying border alpha
@@ -10052,6 +10057,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             p.applyFilter('Alpha', {Opacity : alpha});
         }
 
+        // Applying text rotation
         if (value = attrs.transform) {
             degree = Number(value.match(/\d{1,3}/)[0]);
             if (degree) {
@@ -10072,10 +10078,12 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
         }
 
+        // Getting the values for text alignment.
         p.textAnchor  = attrs.textAnchor || attrs['text-anchor'] || p.textAnchor;
         textAnchor = p.textAnchor || 'middle';
         p.verticalAlign = attrs.verticalAlign || attrs['vertical-align'] || p.verticalAlign;
         verticalAlign = p.verticalAlign || 'middle';
+
         textMap = getTextMap(p.rotate, textAnchor);
         y && (style.top = y - node.offsetHeight * textMap[verticalAlign]);
         x && (style.left = x - node.offsetWidth * textMap[textAnchor]);

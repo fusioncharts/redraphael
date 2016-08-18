@@ -1180,11 +1180,6 @@ _window.Raphael && _window.Raphael.vml && function(R) {
             color,
             DXString = 'DXImageTransform.Microsoft.Alpha';
 
-        css && (attrs = extend(css, attrs));
-        x = attrs.x;
-        y = attrs.y;
-        text = Str(attrs.text).replace(/<br\s*?\/?>/ig, '\n');
-
         if (update) {
             p = this;
             node = p.node;
@@ -1197,6 +1192,11 @@ _window.Raphael && _window.Raphael.vml && function(R) {
             p.type = 'text';
         }
 
+        css && (attrs = extend(css, attrs));
+        p.x = x = attrs.x || p.x;
+        p.y = y = attrs.y || p.y;
+        text = Str(attrs.text).replace(/<br\s*?\/?>/ig, '\n');
+
         style = node.style;
 
         style.marginLeft = 0;
@@ -1206,7 +1206,6 @@ _window.Raphael && _window.Raphael.vml && function(R) {
         style.display = 'inline-block';
         style['*display'] = 'inline';
         style['*zoom'] = 1;
-        // style.filter += "progid:DXImageTransform.Microsoft.Matrix(sizingmethod=auto expand) ";
 
         for (params in attrs) {
             if (attrs[has](params)) {
@@ -1296,8 +1295,10 @@ _window.Raphael && _window.Raphael.vml && function(R) {
             }
         }
 
-        textAnchor = attrs.textAnchor || attrs['text-anchor'] || 'middle';
-        verticalAlign = attrs.verticalAlign || attrs['vertical-align'] || 'middle';
+        p.textAnchor  = attrs.textAnchor || attrs['text-anchor'] || p.textAnchor;
+        textAnchor = p.textAnchor || 'middle';
+        p.verticalAlign = attrs.verticalAlign || attrs['vertical-align'] || p.verticalAlign;
+        verticalAlign = p.verticalAlign || 'middle';
         y && (style.top = y - node.offsetHeight * textMap[verticalAlign]);
         x && (style.left = x - node.offsetWidth * textMap[textAnchor]);
         return p;

@@ -9,6 +9,7 @@ FusionCharts && FusionCharts.register('module', ['private', 'vendor.redraphael',
         lib = global.hcLib,
         win = global.window,
         someRaphael = win.Raphael,
+        checkCyclicRef = lib.checkCyclicRef,
         eve,
         RedRaphael,
         optOutModulePattern = true;

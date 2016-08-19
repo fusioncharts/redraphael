@@ -5319,6 +5319,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     // This a temporary fix so that animation can be handled from the scheduler module.
     getAnimFrameFn = function () {
         return requestAnimFrame = R.requestAnimFrame ||
+        _win.requestAnimationFrame ||
         _win.webkitRequestAnimationFrame ||
         _win.mozRequestAnimationFrame ||
         _win.oRequestAnimationFrame ||

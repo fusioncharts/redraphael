@@ -959,12 +959,18 @@ _window.Raphael && _window.Raphael.vml && function(R) {
 
     R._engine.group = function(vml, id, group) {
         var el = R._g.doc.createElement("div"),
-            p = new Element(el, vml, group);
+            p = new Element(el, vml, group),
+            parent;
 
         el.style.cssText = cssDot;
         p._id = id || E;
         id && (el.className = 'raphael-group-' + p.id + '-' + id);
-        (group || vml).canvas.appendChild(el);
+
+        if (parent = (group || vml)) {
+            parent.canvas.appendChild(el);
+            // Inheriting alpha for text filter
+            p.parent = parent;
+        }
 
         p.type = 'group';
         p.canvas = p.node;
@@ -1097,7 +1103,7 @@ _window.Raphael && _window.Raphael.vml && function(R) {
         return res;
     };
     // Function to convert rgba to rgb and alpha.
-    var getColorAlpha = function (rgba) {
+    var getColorAlpha = elproto.getColorAlpha = function (rgba) {
         var color,
             alpha,
             rgbaSplit;
@@ -1231,6 +1237,9 @@ _window.Raphael && _window.Raphael.vml && function(R) {
         for (params in attrs) {
             if (attrs[has](params)) {
                 value = attrs[params];
+                if (value === undefined) {
+                    continue;
+                }
                 switch (params) {
                     case 'align' :
                         style.textAlign = value;
@@ -1242,6 +1251,10 @@ _window.Raphael && _window.Raphael.vml && function(R) {
                     case 'color' :
                         colorAlpha = getColorAlpha(value);
                         style.color = colorAlpha[0];
+                        //Applying alpha
+                        alpha = colorAlpha[1];
+                        // Not applying alpha when it is having the default value.
+                        ((alpha || alpha === 0) && alpha !== 100) && p.applyFilter("Alpha", {Opacity: alpha});
                         break;
                     case 'textBound' :
                     case 'text-bound' :
@@ -1270,11 +1283,6 @@ _window.Raphael && _window.Raphael.vml && function(R) {
                         }
                         // Setting the padding
                         value[3] && (style.padding = value[3]);
-
-                        //Applying border alpha
-                        alpha = (backgroundColorAlpha && backgroundColorAlpha[1]) ||
-                            (borderColorAlpha && borderColorAlpha[1]);
-                        (alpha || alpha === 0) && p.applyFilter("Alpha", {Opacity: alpha});
                         break;
                     case 'text-anchor':
                     case 'textAnchor' :
@@ -1295,9 +1303,8 @@ _window.Raphael && _window.Raphael.vml && function(R) {
             }
         }
 
-        // Applying alpha to individual elements if it is applied to group. Can be generalised later.
-        if (group && !alpha && (alpha = group.node.filters &&
-                group.node.filters[DXString] && group.node.filters[DXString].opacity)) {
+        // Applying alpha to individual elements if it is applied to group or its parent. Can be generalised later.
+        if (group && !alpha && (alpha = group.alpha || (group.parent && group.parent.alpha)) && alpha !== 100) {
             p.applyFilter('Alpha', {Opacity : alpha});
         }
 

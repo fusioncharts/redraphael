@@ -1102,18 +1102,31 @@ _window.Raphael && _window.Raphael.vml && function(R) {
         setCoords(res, 1, 1, 0, 0, 0);
         return res;
     };
-    // Function to convert rgba to rgb and alpha.
-    var getColorAlpha = elproto.getColorAlpha = function (rgba) {
-        var color,
-            alpha,
-            rgbaSplit;
-        if (!rgba) {
-            return undefined;
+    /*
+     * Module that exctracts alpha and converts any color to hex color
+     *
+     * @param color {String} - Color can be any valid html color. Like rgba(255, 0, 250, .21),
+     *                  rgb(255, 0, 250), #ffffff
+     *
+     * @return {Array} - [Hex color, alpha]
+     */
+    var getColorAlpha = elproto.getColorAlpha = function (color) {
+        var regExp = /\(([^)]+)\)/,
+            matches = regExp.exec(color),
+            colorSplit,
+            extractedColor,
+            alpha;
+
+        if (matches && matches.length) {
+            colorSplit = matches[1].split(',');
+            alpha = (colorSplit.splice(3, 1))[0];
+            alpha = (alpha !== undefined) && (alpha * 100);
+            extractedColor = rgbToHex(colorSplit);
+        } else {
+            extractedColor = dehashify(color);
         }
-        rgbaSplit = rgba.match(/\d{1,3}\,?/g);
-        color =  rgbaSplit[3] ? 'rgb('+ rgbaSplit[0] + rgbaSplit[1] + rgbaSplit[2].slice(0, -1)+')' : rgba;
-        alpha = rgbaSplit[4] && rgbaSplit[4] * 10;
-        return [color, alpha];
+
+        return [hashify(extractedColor), alpha];
     },
     // Function to get the values for vertival and horizontal alignment f the text.
     getTextMap = function (rotation, textAnchor) {

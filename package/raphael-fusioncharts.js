@@ -5352,7 +5352,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         l = 0;
         for (; l < animationElements.length; l++) {
             var e = animationElements[l];
-            if (e.el.removed || e.paused || e.parentEl && e.parentEl.e.paused) {
+            if (e.el.removed || e.paused || e.parentEl && e.parentEl.e && e.parentEl.e.paused) {
                 continue;
             }
             var time = Now - e.start,

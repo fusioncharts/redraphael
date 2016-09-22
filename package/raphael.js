@@ -7646,6 +7646,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                                 $(node, {
                                     "clip-path": E
                                 });
+                                document.documentMode === 11 && node.removeAttribute('clip-path');
                                 delete o.clip;
                             }
                         }

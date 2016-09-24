@@ -614,6 +614,7 @@ _window.Raphael && _window.Raphael.svg && function(R) {
                                 $(node, {
                                     "clip-path": E
                                 });
+                                document.documentMode === 11 && node.removeAttribute('clip-path');
                                 delete o.clip;
                             }
                         }

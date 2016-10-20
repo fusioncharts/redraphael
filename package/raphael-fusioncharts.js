@@ -4413,6 +4413,28 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 
+    function getSerializedAttrsArr (args, defArgs, conditionalArgs) {
+        var lastArg,
+            addDefaultCosmetic = true,
+            serArgs = defArgs.slice(0);
+
+        lastArg = args[args.length - 1];
+
+        if (typeof lastArg === 'boolean') {
+            args.splice(args.length - 1, 1);
+            if (lastArg) {
+                addDefaultCosmetic = false;
+            }
+        }
+
+        if (addDefaultCosmetic) {
+            [].push.apply(serArgs, conditionalArgs);
+        }
+
+        return serArgs;
+    }
+
+
     /*\
      * Paper.circle
      [ method ]
@@ -4431,16 +4453,22 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     \*/
     paperproto.circle = function () { // x, y, r
         var paper = this,
-            args = arguments,
-            group = lastArgIfGroup(args, true),
-            attrs = serializeArgs(args,
+            args = [].slice.call(arguments, 0),
+            group,
+            defArgs = [
                 "cx", 0,
                 "cy", 0,
-                "r", 0,
-                "fill", none,
-                "stroke", black),
-            out = R._engine.circle(paper, attrs, group);
+                "r", 0],
+            out,
+            serArgs;
 
+        serArgs = getSerializedAttrsArr(args, defArgs, ['fill', none, 'stroke', black]);
+        group = lastArgIfGroup(args, true);
+
+        serArgs.unshift(args);
+        attrs = serializeArgs.apply(undefined, serArgs);
+
+        out = R._engine.circle(paper, attrs, group);
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 
@@ -4468,17 +4496,23 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     \*/
     paperproto.rect = function () {
         var paper = this,
-            args = arguments,
-            group = lastArgIfGroup(args, true),
-            attrs = serializeArgs(args,
+            args = [].slice.call(arguments, 0),
+            defArgs = [
                 "x", 0,
                 "y", 0,
                 "width", 0,
                 "height", 0,
-                "r", 0,
-                "fill", none,
-                "stroke", black),
-            out = R._engine.rect(paper, attrs, group);
+                "r", 0],
+            attrs,
+            out,
+            serArgs;
+
+        serArgs = getSerializedAttrsArr(args, defArgs, ['fill', none, 'stroke', black]);
+        group = lastArgIfGroup(args, true);
+
+        serArgs.unshift(args);
+        attrs = serializeArgs.apply(undefined, serArgs);
+        out = R._engine.rect(paper, attrs, group);
 
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
@@ -4502,16 +4536,24 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     \*/
     paperproto.ellipse = function () {
         var paper = this,
-            args = arguments,
-            group = lastArgIfGroup(args, true),
-            attrs = serializeArgs(args,
+            args = [].slice.call(arguments, 0),
+            group,
+            attrs,
+            defArgs = [
                 "x", 0,
                 "y", 0,
                 "rx", 0,
-                "ry", 0,
-                "fill", none,
-                "stroke", black),
-            out = R._engine.ellipse(this, attrs, group);
+                "ry", 0],
+            out,
+            serArgs;
+
+
+        serArgs = getSerializedAttrsArr(args, defArgs, ['fill', none, 'stroke', black]);
+        group = lastArgIfGroup(args, true);
+
+        serArgs.unshift(args);
+        attrs = serializeArgs.apply(undefined, serArgs);
+        out = R._engine.ellipse(this, attrs, group);
 
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
@@ -4550,16 +4592,24 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     \*/
     paperproto.path = function () {
         var paper = this,
-            args = arguments,
-            group = lastArgIfGroup(args, true),
+            args = [].slice.call(arguments, 0),
+            group,
             paperConfig = paper.config,
             capStyle = (paperConfig && paperConfig["stroke-linecap"]) || "butt",
-            attrs = serializeArgs(args,
-                "path", E,
-                "fill", none,
+            attrs,
+            defArgs = [
+                "path", E],
+            out;
+
+        serArgs = getSerializedAttrsArr(args, defArgs, ["fill", none,
                 "stroke", black,
-                "stroke-linecap", capStyle),
-            out = R._engine.path(paper, attrs, group);
+                "stroke-linecap", capStyle]);
+        group = lastArgIfGroup(args, true);
+
+        serArgs.unshift(args);
+        attrs = serializeArgs.apply(undefined, serArgs);
+        out = R._engine.path(paper, attrs, group);
+
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 
@@ -4613,17 +4663,24 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     \*/
     paperproto.text = function() {
         var paper = this,
-            args = arguments,
-            group = lastArgIfGroup(args, true),
-            attrs = serializeArgs(args,
+            args = [].slice.call(arguments, 0),
+            group,
+            attrs,
+            defArgs = [
                 "x", 0,
                 "y", 0,
                 "text", E,
-                "stroke", none,
-                "fill", black,
                 "text-anchor", "middle",
-                "vertical-align", "middle"),
+                "vertical-align", "middle"],
+            out,
+            serArgs;
 
+            serArgs = getSerializedAttrsArr(args, defArgs, ["stroke", none,
+                "fill", black]);
+            group = lastArgIfGroup(args, true);
+
+            serArgs.unshift(args);
+            attrs = serializeArgs.apply(undefined, serArgs);
             out = R._engine.text(paper, attrs, group, args[1]);
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };

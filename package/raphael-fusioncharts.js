@@ -5756,7 +5756,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             str += item[0] + item[1] + " " + item[2];
             for (i = 1; i < ii; ++i) {
                 item = arr[i];
-                str += item[0]; + ' ' + item[1] + ' ' + item[2] + ',' + ' ' + item[3] + ' ' + item[4] + ',' + ' ' + item[5] + ' ' + item[6] + ',';
+                str += item[0] + ' ' + item[1] + ' ' + item[2] + ',' + ' ' + item[3] + ' ' + item[4] + ',' + ' ' + item[5] + ' ' + item[6] + ',';
             }
             return str;
         }

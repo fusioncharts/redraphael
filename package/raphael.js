@@ -5787,7 +5787,6 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 item.y
             ]);
         }
-        console.log(pathLen1, pathLen2);
         return path2curve(fPath1, fPath2);
     }
 

@@ -5081,24 +5081,49 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                                 now = +from[attr] + pos * ms * diff[attr];
                                 break;
                             case "colour":
-                                now = "rgb(" + [
-                                upto255(round(from[attr].r + pos * ms * diff[attr].r)),
-                                upto255(round(from[attr].g + pos * ms * diff[attr].g)),
-                                upto255(round(from[attr].b + pos * ms * diff[attr].b))
-                                ].join(",") + ")";
-                                break;
-                            case "path":
-                                now = [];
-                                for (var i = 0, ii = from[attr].length; i < ii; i++) {
-                                    now[i] = [from[attr][i][0]];
-                                    for (var j = 1, jj = from[attr][i].length; j < jj; j++) {
-                                        now[i][j] = (+from[attr][i][j] + pos * ms * diff[attr][i][j]).toFixed(4);
+                                    if (!diff[attr].length) {
+                                        tmpOpacity = (from[attr].opacity + pos * ms * diff[attr].opacity);
+                                        if(isNaN(tmpOpacity)){
+                                            tmpOpacity = 1;
+                                        }
+                                        now = "rgba(" + [
+                                            upto255(round(from[attr].r + pos * ms * diff[attr].r)),
+                                            upto255(round(from[attr].g + pos * ms * diff[attr].g)),
+                                            upto255(round(from[attr].b + pos * ms * diff[attr].b)),
+                                            tmpOpacity
+                                        ].join(",") + ")";
+                                    } else {
+                                        now = [];
+                                        for (i = 0, ii = from[attr].length; i < ii; ++i) {
+                                            if (i === 0) {
+                                                now.push((from[attr][i] * (1 - pos)) + (pos * diff[attr][i]));
+                                                if (now[0] <= 0) {
+                                                    now[0] += 360;
+                                                }
+                                            } else {
+                                                now.push("rgba(" + [
+                                                    upto255(round(from[attr][i].r + pos * ms * diff[attr][i].r)),
+                                                    upto255(round(from[attr][i].g + pos * ms * diff[attr][i].g)),
+                                                    upto255(round(from[attr][i].b + pos * ms * diff[attr][i].b)),
+                                                    (from[attr][i].opacity + pos * ms * diff[attr][i].opacity)
+                                                ].join(",") + "):" + from[attr][i].position);
+                                            }
+                                        }
+                                        now = now.join("-");
                                     }
-                                    now[i] = now[i].join(S);
-                                }
-                                now = now.join(S);
-                                break;
-                            case "transform":
+                                    break;
+                                case "path":
+                                    now = [];
+                                    for (var i = 0, ii = from[attr].length; i < ii; i++) {
+                                        now[i] = [from[attr][i][0]];
+                                        for (var j = 1, jj = from[attr][i].length; j < jj; j++) {
+                                            now[i][j] = (+from[attr][i][j] + pos * ms * diff[attr][i][j]).toFixed(4);
+                                        }
+                                        now[i] = now[i].join(S);
+                                    }
+                                    now = now.join(S);
+                                    break;
+                                case "transform":
                                 if (diff[attr].real) {
                                     now = [];
                                     for (i = 0, ii = from[attr].length; i < ii; i++) {
@@ -5330,6 +5355,313 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     };
 
 
+    // Function for trasition between colors
+    function colorNormalizer(c1, c2, getRGB) {
+        "use strict";
+        var colorAr1 = c1.split('-'),
+            colorAr2 = c2.split('-'),
+            i = 0,
+            ii = 0,
+            j = 0,
+            newColArr = [],
+            newColArr2 = [],
+            temp = {},
+            pos = 0,
+            uniqArr = [];
+        window.lin = allToLinear;
+        if (colorAr1.length === 1 && colorAr2.length === 1) {
+            return [c1, c2];
+        }
+        colorAr1 = allToLinear(colorAr1);
+        colorAr2 = allToLinear(colorAr2);
+        /*if (colorAr1.length > colorAr2.length) {
+            newColArr = [colorAr2[0]];
+            for (i = 1, ii = colorAr1.length; i < ii; ++i) {
+                temp = colorAr2.getColorAtPosition(colorAr1[i].position);
+                newColArr.push(temp);
+            }
+            return [colorAr1, newColArr];
+        } else {
+            newColArr = [colorAr1[0]];
+            for (i = 1, ii = colorAr2.length; i < ii; ++i) {
+                temp = colorAr1.getColorAtPosition(colorAr2[i].position);
+                newColArr.push(temp);
+            }
+            return [newColArr, colorAr2];
+        }*/
+        for(i = 1, ii = colorAr1.length; i < ii; ++i){
+            pos = colorAr1[i].position;
+            if(uniqArr.indexOf(pos) === -1){
+                uniqArr.push(pos);
+            }
+        }
+        for(i = 1, ii = colorAr2.length; i < ii; ++i){
+            pos = colorAr2[i].position;
+            if(uniqArr.indexOf(pos) === -1){
+                uniqArr.push(pos);
+            }
+        }
+        uniqArr.push(0);
+        uniqArr.sort(function(a,b){return a - b});
+        newColArr = [colorAr1[0]];
+        for (i = 1, ii = uniqArr.length; i < ii; ++i) {
+            pos = uniqArr[i];
+            temp = colorAr1.getColorAtPosition(pos);
+            newColArr.push(temp);
+        }
+        newColArr2 = [colorAr2[0]];
+        for (i = 1, ii = uniqArr.length; i < ii; ++i) {
+            pos = uniqArr[i];
+            temp = colorAr2.getColorAtPosition(pos);
+            newColArr2.push(temp);
+        }
+        return [newColArr, newColArr2];
+        // Getting all unique points
+
+        function allToLinear(arr) {
+            var i = 0,
+                ii = 0,
+                j = 0,
+                item = {},
+                temp = [],
+                temp2 = {},
+                key,
+                prevVal = 0,
+                lastVal = 0,
+                counter = 0;
+
+            // Solid color operation
+            if (arr.length === 1) {
+                if(arr[0] === "none"){
+                    arr[0] = "rgba(0,0,0,0)";
+                }
+                // Push angle zero to start
+                arr.unshift(0);
+            }
+
+            // Convert angle to number
+            if (isNaN(arr[0])) {
+                arr[0] = 0;
+            } else {
+                arr[0] = +arr[0];
+            }
+
+            for (i = 1, ii = arr.length; i < ii; ++i) {
+                temp = arr[i].split(":");
+                // conver first element to rgb object and store
+                temp2 = getRGB(temp[0]);
+                arr[i] = {};
+                arr[i].r = temp2.r;
+                arr[i].g = temp2.g;
+                arr[i].b = temp2.b;
+                arr[i].opacity = temp2.opacity;
+                // if opacity not present set  to 1
+                arr[i].opacity = +arr[i].opacity;
+                if (isNaN(arr[i].opacity)) {
+                    arr[i].opacity = 1;
+                }
+                // set the position
+                arr[i].position = +temp[1]; 
+            }
+
+            // Sorting array according to position
+            arr.sort(function(a, b) {
+                if (typeof a === "number") {
+                    return -1;
+                }
+                if (typeof b === "number") {
+                    return 1;
+                }
+                if (isNaN(a.position) && isNaN(b.position)) {
+                    return 0;
+                }
+                if (isNaN(a.position)) {
+                    return -1;
+                }
+                if (isNaN(b.position)) {
+                    return 1;
+                }
+                return a.position - b.position;
+            });
+
+            // If first position is not zero
+            // add new color with position zero
+            if (+arr[1].position !== 0) {
+                if (isNaN(arr[1].position)) {
+                    arr[1].position = 0;
+                } else {
+                    temp2 = {};
+                    for (key in arr[1]) {
+                        temp2[key] = arr[1][key];
+                    }
+                    temp2.position = 0;
+                    // Shifting array to add current object 
+                    // in position 1
+                    arr.push({});
+                    for (i == arr.length - 1; i !== 1; --i) {
+                        arr[i] = arr[i - 1];
+                    }
+                    arr[1] = temp2;
+                }
+            }
+            // index to last position
+            ii = arr.length - 1;
+            // If last position is not 100
+            // add new color with position 100
+            if (arr[ii].position !== 100) {
+                if (isNaN(arr[ii].position)) {
+                    arr[ii].position = 100;
+                } else {
+                    temp2 = {};
+                    for (key in arr[ii]) {
+                        temp2[key] = arr[ii][key];
+                    }
+                    temp2.position = 100;
+                    // Shifting array to add current object 
+                    // in position 1
+                    arr.push(temp2);
+                }
+            }
+
+            // Filling correct position value whereever NaN found
+            for (i = 2, ii = arr.length; i < ii; ++i) {
+                if (!(arr[i].position)) {
+                    prevVal = arr[i - 1].position;
+                    counter = 1;
+                    for (j = i + 1; j < ii; ++j) {
+                        ++counter;
+                        if (!isNaN(arr[j].position)) {
+                            lastVal = +arr[j].position;
+                            break;
+                        }
+                    }
+                    arr[i].position = prevVal + ((lastVal - prevVal) / counter);
+                }
+            }
+
+            arr.getColorAtPosition = function(pos) {
+                var prevPos = -1,
+                    nextPos = this.length,
+                    i = 1,
+                    ii = this.length,
+                    item = {},
+                    colPrev,
+                    colNext,
+                    ratio = 0,
+                    key = "",
+                    col = { r: 0, g: 0, b: 0 };
+
+                // Critical section; check again
+                for (; i < ii - 1; ++i) {
+                    if (this[i].position <= pos) {
+                        prevPos = i;
+                        nextPos = i + 1;
+                    }
+                    if (!(this[i].position < pos) && this[i].position >= pos) {
+                        nextPos = i;
+                        break;
+                    }
+                }
+                ratio = (pos - this[prevPos].position) / (this[nextPos].position - this[prevPos].position);
+                if (isNaN(ratio)) {
+                    ratio = 0;
+                }
+                for (key in col) {
+                    col[key] = upto255((1 - ratio) * this[prevPos][key] + ratio * this[nextPos][key]);
+                }
+                col.position = pos;
+                col.opacity = (1 - ratio) * this[prevPos]["opacity"] + ratio * this[nextPos]["opacity"];
+                return col;
+            }
+            return arr;
+        }
+
+    }
+
+    // function to get equal points for two different path
+    function pathNormalizer(p1, p2) {
+        var i = 0,
+            j = 0,
+            item = {},
+            dPath1,
+            dPath2,
+            pathLen1 = 0,
+            pathLen2 = 0,
+            fPath1 = [],
+            fPath2 = [],
+            divisions = 0,
+            // getTotalLength is buggy in firefox;
+            isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+
+        // Function to convert array to svg path (?) only for curves
+        function toSvgPath(arr) {
+            var str = "",
+                i = 0,
+                ii = arr.length,
+                item = [];
+
+            item = arr[0];
+            str += item[0] + item[1] + " " + item[2];
+            for (i = 1; i < ii; ++i) {
+                item = arr[i];
+                str += item[0] + ' '; 
+                str += item[1] + ' ' + item[2];
+                if(item[0] === 'C' || item[0] === 'c'){
+                    str += ',' + ' ' + item[3] + ' ' + item[4] + ',' + ' ' + item[5] + ' ' + item[6] + ',';
+                }
+            }
+            return str;
+        }
+
+        // If any of the parameters is 
+        // absent return to normal flow
+        if (!p1 || !p2 || isFirefox) {
+            return [p1, p2];
+        }
+        // If svg not available return to normal flow
+        if (!document.createElementNS) {
+            return [p1, p2];
+        }
+
+
+        // Creating path elements to use functions 'getTotalLength'
+        // and 'getPointAtLength'
+        dPath1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        dPath1.setAttribute("d", toSvgPath(p1));
+
+        dPath2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        dPath2.setAttribute("d", toSvgPath(p2));
+
+        // If svg functions not available return to normal flow
+        if (!dPath1.getTotalLength || !dPath1.getPointAtLength) {
+            return [p1, p2];
+        }
+
+        // Getting length of the paths
+        pathLen1 = dPath1.getTotalLength();
+        pathLen2 = dPath2.getTotalLength();
+
+        // Number of divisions will depend on larger path
+        divisions = 0.15 * Math.max(dPath1.getTotalLength(), dPath2.getTotalLength());
+
+        fPath1.push(p1[0]);
+        fPath2.push(p2[0]);
+
+        for (i = 1; i <= divisions; ++i) {
+            item = dPath1.getPointAtLength((i / divisions) * pathLen1);
+            fPath1.push(["L",
+                item.x,
+                item.y
+            ]);
+            item = dPath2.getPointAtLength((i / divisions) * pathLen2);
+            fPath2.push(["L",
+                item.x,
+                item.y
+            ]);
+        }
+        return path2curve(fPath1, fPath2);
+    }
+
     // function to get equal points for two different path
     function pathNormalizer(p1, p2) {
         var i = 0,
@@ -5467,17 +5799,62 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                                 diff[attr] = (to[attr] - from[attr]) / ms;
                                 break;
                             case "colour":
-                                from[attr] = R.getRGB(from[attr]);
-                                var toColour = R.getRGB(to[attr]);
-                                diff[attr] = {
-                                    r: (toColour.r - from[attr].r) / ms,
-                                    g: (toColour.g - from[attr].g) / ms,
-                                    b: (toColour.b - from[attr].b) / ms
-                                };
+                                var colorsNormalized = colorNormalizer(from[attr], to[attr], R.getRGB);
+                                from[attr] = colorsNormalized[0];
+                                var toColour = colorsNormalized[1];
+
+                                  if (typeof toColour === "string") {
+                                    if(from[attr].toLowerCase() !== "none"){
+                                        from[attr] = R.getRGB(from[attr]);
+                                        if(!from[attr].opacity){
+                                            from[attr].opacity = 1;
+                                        }
+                                    } else {
+                                        from[attr] = {
+                                            r : 0,
+                                            g : 0,
+                                            b : 0,
+                                            opacity : 0
+                                        }
+                                    }
+                                    if(to[attr].toLowerCase() !== "none"){
+                                        toColour = R.getRGB(to[attr]);
+                                        if(!toColour.opacity){
+                                            toColour.opacity = 1;
+                                        }
+                                    } else {
+                                        toColour = {
+                                            r : 0,
+                                            g : 0,
+                                            b : 0,
+                                            opacity : 0
+                                        }
+                                    }
+                                    diff[attr] = {
+                                        r: (toColour.r - from[attr].r) / ms,
+                                        g: (toColour.g - from[attr].g) / ms,
+                                        b: (toColour.b - from[attr].b) / ms,
+                                        opacity: ((toColour.opacity - from[attr].opacity) / ms)
+                                    };
+                                } else {
+                                    diff[attr] = [];
+                                    for (i = 0, ii = from[attr].length; i < ii; ++i) {
+                                        if (i === 0) {
+                                            diff[attr].push(toColour[0]);
+                                        } else {
+                                            diff[attr].push({
+                                                r: (toColour[i].r - from[attr][i].r) / ms,
+                                                g: (toColour[i].g - from[attr][i].g) / ms,
+                                                b: (toColour[i].b - from[attr][i].b) / ms,
+                                                opacity: (toColour[i].opacity - from[attr][i].opacity) / ms
+                                            });
+                                        }
+                                    }
+                                }
                                 break;
                             case "path":
                                 var pathes = pathNormalizer.apply(null, path2curve(from[attr], to[attr])),
-                                toPath = pathes[1];
+                                    toPath = pathes[1];
                                 from[attr] = pathes[0];
                                 diff[attr] = [];
                                 for (i = 0, ii = from[attr].length; i < ii; i++) {

@@ -5388,6 +5388,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         }
         colorAr1 = allToLinear(colorAr1);
         colorAr2 = allToLinear(colorAr2);
+        // If one radial convert both to radial
+        converToRadialIfOneRadial(colorAr1, colorAr2);
 
         for(i = 1, ii = colorAr1.length; i < ii; ++i){
             pos = colorAr1[i].position;
@@ -5421,6 +5423,23 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         newColArr2.isRadial = colorAr2.isRadial;
         return [newColArr, newColArr2];
         // Getting all unique points
+
+        function converToRadialIfOneRadial(a, b, end){
+            var angle = 0;
+            if(a.isRadial && !b.isRadial){
+                angle += +b[0];
+                b[0] = {
+                    f1 : 0.5 + Math.cos(angle * Math.PI / 180) * 0.5,
+                    f2 : 0.5 + Math.sin(angle * Math.PI / 180) * 0.5
+                }
+                console.log(b[0])
+                b.isRadial = true;
+            }
+
+            if(!end){
+                converToRadialIfOneRadial(b, a, true);
+            }
+        }
 
         function allToLinear(arr) {
             var i = 0,
@@ -5463,7 +5482,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                         rPos = arr[0].indexOf(')');
                         openBrPos = arr[0].indexOf('(') + 1;
                         closedBrPos = rPos;
-                        temp = arr[0].substr(openBrPos, closedBrPos - openBrPos).split('-');
+                        temp = arr[0].substr(openBrPos, closedBrPos - openBrPos).split(',');
                         radial.f1 = +temp[0];
                         radial.f2 = +temp[1];
                     }

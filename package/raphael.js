@@ -5441,7 +5441,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             set = {},
             now,
             init = {},
-            key;
+            key,
+            radial = "";
             if (e.initstatus) {
                 time = (e.initstatus * e.anim.top - e.prev) / (e.percent - e.prev) * ms;
                 e.status = e.initstatus;
@@ -5477,9 +5478,18 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                                         now = [];
                                         for (i = 0, ii = from[attr].length; i < ii; ++i) {
                                             if (i === 0) {
-                                                now.push((from[attr][i] * (1 - pos)) + (pos * diff[attr][i]));
-                                                if (now[0] <= 0) {
-                                                    now[0] += 360;
+                                                if(from[attr].isRadial || diff[attr].isRadial){
+                                                    radial = "r(";
+                                                    radial += from[attr][0].f1 * (1 - pos) + diff[attr][0].f1 * pos;
+                                                    radial += ',';
+                                                    radial += from[attr][0].f2 * (1 - pos) + diff[attr][0].f2 * pos;
+                                                    radial += ')';
+                                                    now.push(radial)
+                                                } else {
+                                                    now.push((from[attr][i] * (1 - pos)) + (pos * diff[attr][i]));
+                                                    if (now[0] <= 0) {
+                                                        now[0] += 360;
+                                                    }
                                                 }
                                             } else {
                                                 now.push("rgba(" + [
@@ -5491,6 +5501,11 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                                             }
                                         }
                                         now = now.join("-");
+                                        // If radial focus doesnt have a separator
+                                        if(from[attr].isRadial || diff[attr].isRadial){
+                                            now = now.replace('-', '');
+                                        }
+                                        console.log(now, from[attr].isRadial, diff[attr].isRadial)
                                     }
                                     break;
                                 case "path":
@@ -5749,27 +5764,12 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             temp = {},
             pos = 0,
             uniqArr = [];
-        window.lin = allToLinear;
         if (colorAr1.length === 1 && colorAr2.length === 1) {
             return [c1, c2];
         }
         colorAr1 = allToLinear(colorAr1);
         colorAr2 = allToLinear(colorAr2);
-        /*if (colorAr1.length > colorAr2.length) {
-            newColArr = [colorAr2[0]];
-            for (i = 1, ii = colorAr1.length; i < ii; ++i) {
-                temp = colorAr2.getColorAtPosition(colorAr1[i].position);
-                newColArr.push(temp);
-            }
-            return [colorAr1, newColArr];
-        } else {
-            newColArr = [colorAr1[0]];
-            for (i = 1, ii = colorAr2.length; i < ii; ++i) {
-                temp = colorAr1.getColorAtPosition(colorAr2[i].position);
-                newColArr.push(temp);
-            }
-            return [newColArr, colorAr2];
-        }*/
+
         for(i = 1, ii = colorAr1.length; i < ii; ++i){
             pos = colorAr1[i].position;
             if(uniqArr.indexOf(pos) === -1){
@@ -5796,6 +5796,10 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             temp = colorAr2.getColorAtPosition(pos);
             newColArr2.push(temp);
         }
+
+        // copying isRadial property
+        newColArr.isRadial = colorAr1.isRadial;
+        newColArr2.isRadial = colorAr2.isRadial;
         return [newColArr, newColArr2];
         // Getting all unique points
 
@@ -5809,7 +5813,14 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 key,
                 prevVal = 0,
                 lastVal = 0,
-                counter = 0;
+                counter = 0,
+                rPos = 0,
+                openBrPos = 0,
+                closedBrPos = 0,
+                radial = {
+                    f1 : 0.5,
+                    f2 : 0.5
+                };
 
             // Solid color operation
             if (arr.length === 1) {
@@ -5822,7 +5833,27 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
 
             // Convert angle to number
             if (isNaN(arr[0])) {
-                arr[0] = 0;
+                // Check if is radial
+                if(arr[0].charAt(0) === 'r'){
+                    arr.isRadial = true;
+
+                    rPos = 1;
+                    // check if focus if provided
+                    // otherwise use default focus
+                    if(arr[0].indexOf(')') !== -1){
+                        rPos = arr[0].indexOf(')');
+                        openBrPos = arr[0].indexOf('(') + 1;
+                        closedBrPos = rPos;
+                        temp = arr[0].substr(openBrPos, closedBrPos - openBrPos).split('-');
+                        radial.f1 = +temp[0];
+                        radial.f2 = +temp[1];
+                    }
+                    arr[0] = arr[0].substr(closedBrPos + 1);
+                    arr.unshift(radial);
+
+                } else {
+                    arr[0] = 0;
+                }
             } else {
                 arr[0] = +arr[0];
             }
@@ -5846,11 +5877,12 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
 
             // Sorting array according to position
+            // angle and radial focus should be elemnt 0
             arr.sort(function(a, b) {
-                if (typeof a === "number") {
+                if (typeof a === "number" || a.f1) {
                     return -1;
                 }
-                if (typeof b === "number") {
+                if (typeof b === "number" || a.f2) {
                     return 1;
                 }
                 if (isNaN(a.position) && isNaN(b.position)) {

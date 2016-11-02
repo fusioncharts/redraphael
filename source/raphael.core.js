@@ -4223,7 +4223,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 "text-anchor", "middle",
                 "vertical-align", "middle"),
 
-            out = R._engine.text(paper, attrs, group, args[1]);
+            out = R._engine.text(paper, attrs, group);
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 
@@ -4321,6 +4321,98 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     };
 
     /*\
+     * paperAnimator
+     [ method ]
+     **
+     * Run the animation to animate paper by changing it's animatable properties step-wise in an interval
+     **
+     > Parameters
+     **
+     - paper (Object) paper object
+     - duration (number) time stretch in milliseconds to complete animation
+     - start (number) start value or initial value of the animatable property
+     - end (number) end value or final value of the animatable property
+     - rule (String) property name which will be animated
+     - effect (String) animation style
+     - callback (function reference) method which will execute at end of animation
+    \*/
+    function paperAnimator(paper, duration, start, end, rule, effect, callback) {
+        var iterations = (duration / UNIT_INTERVAL),
+            diff = (end - start),
+            ef = R.easing_formulas,
+            incrementArr = (function () {
+                var i = 0,
+                    arr = [];
+                for (; i < duration; i += UNIT_INTERVAL) {
+                    arr.push(((ef[effect || 'linear'](i / duration)) * diff));
+                }
+                return arr;
+            })(),
+            counter = 0,
+            startTime,
+            progress,
+            requestAnimFrame = win.requestAnimationFrame ||
+            win.webkitRequestAnimationFrame ||
+            win.mozRequestAnimationFrame ||
+            win.oRequestAnimationFrame ||
+            win.msRequestAnimationFrame ||
+            function(callback) {
+                setTimeout(callback, UNIT_INTERVAL);
+            },
+            stepFn = function (timestamp) {
+                var diff,
+                    setValue,
+                    val,
+                    value,
+                    weightedProgress,
+                    attr = {},
+                    reduce = false;
+
+                if (timestamp) {
+                    if (!startTime) {
+                        startTime = timestamp;
+                    }
+                    progress = timestamp - startTime;
+
+                    weightedProgress = ef[effect || 'linear'](progress / duration);
+                    diff = Math.abs(start - end);
+
+                    reduce = (start - end) < 0 ? false : true;
+
+                    setValue = reduce ?
+                        (Math.max(start - (weightedProgress * diff), end)) :
+                        (Math.min(start + (weightedProgress * diff), end));
+
+                    attr[rule] = setValue;
+                    paper.setDimension(attr);
+
+                    if (progress < duration) {
+                        requestAnimFrame(stepFn);
+                    }
+                    else {
+                        callback && callback();
+                    }
+                }
+                else {
+                    if (counter < iterations) {
+                        val = incrementArr[counter];
+
+                        attr[rule] = start + val;
+                        paper.setDimension(attr);
+
+                        counter += 1;
+                        setTimeout(stepFn, UNIT_INTERVAL);
+                    }
+                    else {
+                        callback && callback();
+                    }
+                }
+            };
+
+        requestAnimFrame(stepFn);
+    };
+
+    /*\
      * paper.setDimension
      [ method ]
      **
@@ -4354,31 +4446,6 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         }
     };
 
-    paperproto.attr = function (name) {
-        var element = this;
-        if (name == null) {
-            return {
-                width : element.width,
-                height : element.height
-            };
-        }
-        if (R.is(name, "string")) {
-            return element[name];
-        }
-
-        element.setDimension(name);
-        return element;
-    };
-
-    paperproto.status = function(anim, value) {
-        return elproto.status.call(this, anim, value);
-    };
-
-    // Works exactly as paper.animateWith()
-    paperproto.animateWith = function(el, anim, params, ms, easing, callback) {
-        return elproto.animateWith.call(this, el, anim, params, ms, easing, callback);
-    };
-
     /*\
      * Paper.animate
      [ method ]
@@ -4396,8 +4463,40 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      - effect (String) animation style
      - callback (function reference) method which will execute at end of animation
     \*/
-    paperproto.animate = function(params, ms, easing, callback) {
-        return elproto.animate.call(this, params, ms, easing, callback);
+    paperproto.animate = function(paramsObj, duration, effect, callback) {
+        var paper = this,
+            finalStyle = {},
+            currentStyle = {},
+            iCB = function () {
+                finished += 1;
+                if (finished === total) {
+                    (typeof callback === 'function') && callback();
+                }
+            },
+            total = 0,
+            finished = 0,
+            rule,
+            attr = {};
+
+
+        if (duration < UNIT_INTERVAL) {
+            // If the duration of animation is less than the
+            // minimum frame length then apply the styles directly.
+            for (rule in paramsObj) {
+                attr[rule] = paramsObj[rule];
+                paper.setDimension(attr);
+            }
+
+            callback && callback();
+            return;
+        }
+
+        for (rule in paramsObj) {
+            total += 1;
+            finalStyle[rule] = paramsObj[rule];
+            currentStyle[rule] = paper[rule];
+            paperAnimator(paper, duration, currentStyle[rule], finalStyle[rule], rule, effect, iCB);
+        }
     };
 
     /*\
@@ -4593,7 +4692,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         var rp = this.realPath = this.realPath || getPath[this.type](this),
             tr;
         return R.isPointInsidePath(((tr = this.attr('transform')) &&
-            tr.length && R.transformPath(rp, tr)) || rp, x, y);
+                tr.length && R.transformPath(rp, tr)) || rp, x, y);
     };
 
     /*\
@@ -4934,24 +5033,20 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     ef["back-out"] = ef.backOut;
 
     var animationElements = [],
-    requestAnimFrame,
-    // This a temporary fix so that animation can be handled from the scheduler module.
-    getAnimFrameFn = function () {
-        return requestAnimFrame = R.requestAnimFrame ||
-        _win.webkitRequestAnimationFrame ||
-        _win.mozRequestAnimationFrame ||
-        _win.oRequestAnimationFrame ||
-        _win.msRequestAnimationFrame ||
-        function(callback) {
-            setTimeout(callback, 16);
-        };
+    requestAnimFrame = _win.requestAnimationFrame ||
+    _win.webkitRequestAnimationFrame ||
+    _win.mozRequestAnimationFrame ||
+    _win.oRequestAnimationFrame ||
+    _win.msRequestAnimationFrame ||
+    function(callback) {
+        setTimeout(callback, 16);
     },
     animation = function() {
         var Now = +new Date,
         l = 0;
         for (; l < animationElements.length; l++) {
             var e = animationElements[l];
-            if (e.el.removed || e.paused || e.parentEl && e.parentEl.e && e.parentEl.e.paused) {
+            if (e.el.removed || e.paused) {
                 continue;
             }
             var time = Now - e.start,
@@ -4965,16 +5060,13 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             set = {},
             now,
             init = {},
-            executeEvent = R.stopEvent !== false,
-            key;
+            key,
+            radial = "";
             if (e.initstatus) {
                 time = (e.initstatus * e.anim.top - e.prev) / (e.percent - e.prev) * ms;
                 e.status = e.initstatus;
                 delete e.initstatus;
-                if (e.stop) {
-                    delete e.el;
-                    animationElements.splice(l--, 1);
-                }
+                e.stop && animationElements.splice(l--, 1);
             } else {
                 e.status = (e.prev + (e.percent - e.prev) * (time / ms)) / e.anim.top;
             }
@@ -4990,24 +5082,62 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                                 now = +from[attr] + pos * ms * diff[attr];
                                 break;
                             case "colour":
-                                now = "rgb(" + [
-                                upto255(round(from[attr].r + pos * ms * diff[attr].r)),
-                                upto255(round(from[attr].g + pos * ms * diff[attr].g)),
-                                upto255(round(from[attr].b + pos * ms * diff[attr].b))
-                                ].join(",") + ")";
-                                break;
-                            case "path":
-                                now = [];
-                                for (var i = 0, ii = from[attr].length; i < ii; i++) {
-                                    now[i] = [from[attr][i][0]];
-                                    for (var j = 1, jj = from[attr][i].length; j < jj; j++) {
-                                        now[i][j] = (+from[attr][i][j] + pos * ms * diff[attr][i][j]).toFixed(4);
+                                    if (!diff[attr].length) {
+                                        tmpOpacity = (from[attr].opacity + pos * ms * diff[attr].opacity);
+                                        if(isNaN(tmpOpacity)){
+                                            tmpOpacity = 1;
+                                        }
+                                        now = "rgba(" + [
+                                            upto255(round(from[attr].r + pos * ms * diff[attr].r)),
+                                            upto255(round(from[attr].g + pos * ms * diff[attr].g)),
+                                            upto255(round(from[attr].b + pos * ms * diff[attr].b)),
+                                            tmpOpacity
+                                        ].join(",") + ")";
+                                    } else {
+                                        now = [];
+                                        for (i = 0, ii = from[attr].length; i < ii; ++i) {
+                                            if (i === 0) {
+                                                if(from[attr].isRadial || diff[attr].isRadial){
+                                                    radial = "r(";
+                                                    radial += from[attr][0].f1 * (1 - pos) + diff[attr][0].f1 * pos;
+                                                    radial += ',';
+                                                    radial += from[attr][0].f2 * (1 - pos) + diff[attr][0].f2 * pos;
+                                                    radial += ')';
+                                                    now.push(radial)
+                                                } else {
+                                                    now.push((from[attr][i] * (1 - pos)) + (pos * diff[attr][i]));
+                                                    if (now[0] <= 0) {
+                                                        now[0] += 360;
+                                                    }
+                                                }
+                                            } else {
+                                                now.push("rgba(" + [
+                                                    upto255(round(from[attr][i].r + pos * ms * diff[attr][i].r)),
+                                                    upto255(round(from[attr][i].g + pos * ms * diff[attr][i].g)),
+                                                    upto255(round(from[attr][i].b + pos * ms * diff[attr][i].b)),
+                                                    (from[attr][i].opacity + pos * ms * diff[attr][i].opacity)
+                                                ].join(",") + "):" + from[attr][i].position);
+                                            }
+                                        }
+                                        now = now.join("-");
+                                        // If radial focus doesnt have a separator
+                                        if(from[attr].isRadial || diff[attr].isRadial){
+                                            now = now.replace('-', '');
+                                        }
                                     }
-                                    now[i] = now[i].join(S);
-                                }
-                                now = now.join(S);
-                                break;
-                            case "transform":
+                                    break;
+                                case "path":
+                                    now = [];
+                                    for (var i = 0, ii = from[attr].length; i < ii; i++) {
+                                        now[i] = [from[attr][i][0]];
+                                        for (var j = 1, jj = from[attr][i].length; j < jj; j++) {
+                                            now[i][j] = (+from[attr][i][j] + pos * ms * diff[attr][i][j]).toFixed(4);
+                                        }
+                                        now[i] = now[i].join(S);
+                                    }
+                                    now = now.join(S);
+                                    break;
+                                case "transform":
                                 if (diff[attr].real) {
                                     now = [];
                                     for (i = 0, ii = from[attr].length; i < ii; i++) {
@@ -5045,24 +5175,20 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                         set[attr] = now;
                     }
                 that.attr(set);
-                if (executeEvent) {
-                    (function(id, that, anim) {
-                        setTimeout(function() {
-                            eve("raphael.anim.frame." + id, that, anim);
-                        });
-                    })(that.id, that, e.anim);
-                }
+                (function(id, that, anim) {
+                    setTimeout(function() {
+                        eve("raphael.anim.frame." + id, that, anim);
+                    });
+                })(that.id, that, e.anim);
             } else {
                 (function(f, el, a) {
                     setTimeout(function() {
-                        executeEvent && eve("raphael.anim.frame." + el.id, el, a);
-                        executeEvent && eve("raphael.anim.finish." + el.id, el, a);
+                        eve("raphael.anim.frame." + el.id, el, a);
+                        eve("raphael.anim.finish." + el.id, el, a);
                         R.is(f, "function") && f.call(el);
                     });
                 })(e.callback, that, e.anim);
-
                 that.attr(to);
-                delete e.el;
                 animationElements.splice(l--, 1);
                 if (e.repeat > 1 && !e.next) {
                     for (key in to)
@@ -5078,7 +5204,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
         }
         R.svg && that && that.paper && that.paper.safari();
-        animationElements.length && (requestAnimFrame || getAnimFrameFn())(animation);
+        animationElements.length && requestAnimFrame(animation);
     },
     upto255 = function(color) {
         return color > 255 ? 255 : color < 0 ? 0 : color;
@@ -5111,15 +5237,9 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             callback && callback.call(element);
             return element;
         }
-        if (ms == 0) {
-            setTimeout(function () {
-                R.is(callback, "function") && callback.call(element);
-            }, 0);
-            return element.attr (params);
-        }
         var a = params instanceof Animation ? params : R.animation(params, ms, easing, callback),
         x, y;
-        runAnimation(a, element, a.percents[0], null, element.attr(),undefined, el);
+        runAnimation(a, element, a.percents[0], null, element.attr());
         for (var i = 0, ii = animationElements.length; i < ii; i++) {
             if (animationElements[i].anim == anim && animationElements[i].el == el) {
                 animationElements[ii - 1].start = animationElements[i].start;
@@ -5247,7 +5367,431 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         a.times = math.floor(mmax(times, 0)) || 1;
         return a;
     };
-    function runAnimation(anim, element, percent, status, totalOrigin, times, parentEl) {
+
+
+    // Function for trasition between colors
+    function colorNormalizer(c1, c2, getRGB) {
+        "use strict";
+        var colorAr1 = c1.split('-'),
+            colorAr2 = c2.split('-'),
+            i = 0,
+            ii = 0,
+            j = 0,
+            newColArr = [],
+            newColArr2 = [],
+            temp = {},
+            pos = 0,
+            uniqArr = [];
+        if (colorAr1.length === 1 && colorAr2.length === 1) {
+            return [c1, c2];
+        }
+        colorAr1 = allToLinear(colorAr1);
+        colorAr2 = allToLinear(colorAr2);
+        // If one radial convert both to radial
+        converToRadialIfOneRadial(colorAr1, colorAr2);
+
+        for(i = 1, ii = colorAr1.length; i < ii; ++i){
+            pos = colorAr1[i].position;
+            if(uniqArr.indexOf(pos) === -1){
+                uniqArr.push(pos);
+            }
+        }
+        for(i = 1, ii = colorAr2.length; i < ii; ++i){
+            pos = colorAr2[i].position;
+            if(uniqArr.indexOf(pos) === -1){
+                uniqArr.push(pos);
+            }
+        }
+        uniqArr.push(0);
+        uniqArr.sort(function(a,b){return a - b});
+        newColArr = [colorAr1[0]];
+        for (i = 1, ii = uniqArr.length; i < ii; ++i) {
+            pos = uniqArr[i];
+            temp = colorAr1.getColorAtPosition(pos);
+            newColArr.push(temp);
+        }
+        newColArr2 = [colorAr2[0]];
+        for (i = 1, ii = uniqArr.length; i < ii; ++i) {
+            pos = uniqArr[i];
+            temp = colorAr2.getColorAtPosition(pos);
+            newColArr2.push(temp);
+        }
+
+        // copying isRadial property
+        newColArr.isRadial = colorAr1.isRadial;
+        newColArr2.isRadial = colorAr2.isRadial;
+        return [newColArr, newColArr2];
+        // Getting all unique points
+
+        function converToRadialIfOneRadial(a, b, end){
+            var angle = 0;
+            if(a.isRadial && !b.isRadial){
+                angle += +b[0];
+                b[0] = {
+                    f1 : 0.5 + Math.cos(angle * Math.PI / 180) * 0.5,
+                    f2 : 0.5 + Math.sin(angle * Math.PI / 180) * 0.5
+                }
+                b.isRadial = true;
+            }
+
+            if(!end){
+                converToRadialIfOneRadial(b, a, true);
+            }
+        }
+
+        function allToLinear(arr) {
+            var i = 0,
+                ii = 0,
+                j = 0,
+                item = {},
+                temp = [],
+                temp2 = {},
+                key,
+                prevVal = 0,
+                lastVal = 0,
+                counter = 0,
+                rPos = 0,
+                openBrPos = 0,
+                closedBrPos = 0,
+                radial = {
+                    f1 : 0.5,
+                    f2 : 0.5
+                };
+
+            // Solid color operation
+            if (arr.length === 1) {
+                if(arr[0] === "none"){
+                    arr[0] = "rgba(0,0,0,0)";
+                }
+                // Push angle zero to start
+                arr.unshift(0);
+            }
+
+            // Convert angle to number
+            if (isNaN(arr[0])) {
+                // Check if is radial
+                if(arr[0].charAt(0) === 'r'){
+                    arr.isRadial = true;
+
+                    rPos = 1;
+                    // check if focus if provided
+                    // otherwise use default focus
+                    if(arr[0].indexOf(')') !== -1){
+                        rPos = arr[0].indexOf(')');
+                        openBrPos = arr[0].indexOf('(') + 1;
+                        closedBrPos = rPos;
+                        temp = arr[0].substr(openBrPos, closedBrPos - openBrPos).split(',');
+                        radial.f1 = +temp[0];
+                        radial.f2 = +temp[1];
+                    }
+                    arr[0] = arr[0].substr(closedBrPos + 1);
+                    arr.unshift(radial);
+
+                } else {
+                    arr[0] = 0;
+                }
+            } else {
+                arr[0] = +arr[0];
+            }
+
+            for (i = 1, ii = arr.length; i < ii; ++i) {
+                temp = arr[i].split(":");
+                // conver first element to rgb object and store
+                temp2 = getRGB(temp[0]);
+                arr[i] = {};
+                arr[i].r = temp2.r;
+                arr[i].g = temp2.g;
+                arr[i].b = temp2.b;
+                arr[i].opacity = temp2.opacity;
+                // if opacity not present set  to 1
+                arr[i].opacity = +arr[i].opacity;
+                if (isNaN(arr[i].opacity)) {
+                    arr[i].opacity = 1;
+                }
+                // set the position
+                arr[i].position = +temp[1]; 
+            }
+
+            // Sorting array according to position
+            // angle and radial focus should be elemnt 0
+            arr.sort(function(a, b) {
+                if (typeof a === "number" || a.f1) {
+                    return -1;
+                }
+                if (typeof b === "number" || a.f2) {
+                    return 1;
+                }
+                if (isNaN(a.position) && isNaN(b.position)) {
+                    return 0;
+                }
+                if (isNaN(a.position)) {
+                    return -1;
+                }
+                if (isNaN(b.position)) {
+                    return 1;
+                }
+                return a.position - b.position;
+            });
+
+            // If first position is not zero
+            // add new color with position zero
+            if (+arr[1].position !== 0) {
+                if (isNaN(arr[1].position)) {
+                    arr[1].position = 0;
+                } else {
+                    temp2 = {};
+                    for (key in arr[1]) {
+                        temp2[key] = arr[1][key];
+                    }
+                    temp2.position = 0;
+                    // Shifting array to add current object 
+                    // in position 1
+                    arr.push({});
+                    for (i == arr.length - 1; i !== 1; --i) {
+                        arr[i] = arr[i - 1];
+                    }
+                    arr[1] = temp2;
+                }
+            }
+            // index to last position
+            ii = arr.length - 1;
+            // If last position is not 100
+            // add new color with position 100
+            if (arr[ii].position !== 100) {
+                if (isNaN(arr[ii].position)) {
+                    arr[ii].position = 100;
+                } else {
+                    temp2 = {};
+                    for (key in arr[ii]) {
+                        temp2[key] = arr[ii][key];
+                    }
+                    temp2.position = 100;
+                    // Shifting array to add current object 
+                    // in position 1
+                    arr.push(temp2);
+                }
+            }
+
+            // Filling correct position value whereever NaN found
+            for (i = 2, ii = arr.length; i < ii; ++i) {
+                if (!(arr[i].position)) {
+                    prevVal = arr[i - 1].position;
+                    counter = 1;
+                    for (j = i + 1; j < ii; ++j) {
+                        ++counter;
+                        if (!isNaN(arr[j].position)) {
+                            lastVal = +arr[j].position;
+                            break;
+                        }
+                    }
+                    arr[i].position = prevVal + ((lastVal - prevVal) / counter);
+                }
+            }
+
+            arr.getColorAtPosition = function(pos) {
+                var prevPos = -1,
+                    nextPos = this.length,
+                    i = 1,
+                    ii = this.length,
+                    item = {},
+                    colPrev,
+                    colNext,
+                    ratio = 0,
+                    key = "",
+                    col = { r: 0, g: 0, b: 0 };
+
+                // Critical section; check again
+                for (; i < ii - 1; ++i) {
+                    if (this[i].position <= pos) {
+                        prevPos = i;
+                        nextPos = i + 1;
+                    }
+                    if (!(this[i].position < pos) && this[i].position >= pos) {
+                        nextPos = i;
+                        break;
+                    }
+                }
+                ratio = (pos - this[prevPos].position) / (this[nextPos].position - this[prevPos].position);
+                if (isNaN(ratio)) {
+                    ratio = 0;
+                }
+                for (key in col) {
+                    col[key] = upto255((1 - ratio) * this[prevPos][key] + ratio * this[nextPos][key]);
+                }
+                col.position = pos;
+                col.opacity = (1 - ratio) * this[prevPos]["opacity"] + ratio * this[nextPos]["opacity"];
+                return col;
+            }
+            return arr;
+        }
+
+    }
+
+    // function to get equal points for two different path
+    function pathNormalizer(p1, p2) {
+        var i = 0,
+            j = 0,
+            item = {},
+            dPath1,
+            dPath2,
+            pathLen1 = 0,
+            pathLen2 = 0,
+            fPath1 = [],
+            fPath2 = [],
+            divisions = 0,
+            // getTotalLength is buggy in firefox;
+            isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+
+        // Function to convert array to svg path (?) only for curves
+        function toSvgPath(arr) {
+            var str = "",
+                i = 0,
+                ii = arr.length,
+                item = [];
+
+            item = arr[0];
+            str += item[0] + item[1] + " " + item[2];
+            for (i = 1; i < ii; ++i) {
+                item = arr[i];
+                str += item[0] + ' '; 
+                str += item[1] + ' ' + item[2];
+                if(item[0] === 'C' || item[0] === 'c'){
+                    str += ',' + ' ' + item[3] + ' ' + item[4] + ',' + ' ' + item[5] + ' ' + item[6] + ',';
+                }
+            }
+            return str;
+        }
+
+        // If any of the parameters is 
+        // absent return to normal flow
+        if (!p1 || !p2 || isFirefox) {
+            return [p1, p2];
+        }
+        // If svg not available return to normal flow
+        if (!document.createElementNS) {
+            return [p1, p2];
+        }
+
+
+        // Creating path elements to use functions 'getTotalLength'
+        // and 'getPointAtLength'
+        dPath1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        dPath1.setAttribute("d", toSvgPath(p1));
+
+        dPath2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        dPath2.setAttribute("d", toSvgPath(p2));
+
+        // If svg functions not available return to normal flow
+        if (!dPath1.getTotalLength || !dPath1.getPointAtLength) {
+            return [p1, p2];
+        }
+
+        // Getting length of the paths
+        pathLen1 = dPath1.getTotalLength();
+        pathLen2 = dPath2.getTotalLength();
+
+        // Number of divisions will depend on larger path
+        divisions = 0.15 * Math.max(dPath1.getTotalLength(), dPath2.getTotalLength());
+
+        fPath1.push(p1[0]);
+        fPath2.push(p2[0]);
+
+        for (i = 1; i <= divisions; ++i) {
+            item = dPath1.getPointAtLength((i / divisions) * pathLen1);
+            fPath1.push(["L",
+                item.x,
+                item.y
+            ]);
+            item = dPath2.getPointAtLength((i / divisions) * pathLen2);
+            fPath2.push(["L",
+                item.x,
+                item.y
+            ]);
+        }
+        return path2curve(fPath1, fPath2);
+    }
+
+    // function to get equal points for two different path
+    function pathNormalizer(p1, p2) {
+        var i = 0,
+            item = {},
+            dPath1,
+            dPath2,
+            pathLen1 = 0,
+            pathLen2 = 0,
+            fPath1 = [],
+            fPath2 = [],
+            divisions = 0,
+            // getTotalLength is buggy in firefox;
+            isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+
+        // Function to convert array to svg path (?) only for curves
+        function toSvgPath(arr) {
+            var str = "",
+                i = 0,
+                ii = arr.length,
+                item = [];
+
+            item = arr[0];
+            str += item[0] + item[1] + " " + item[2];
+            for (i = 1; i < ii; ++i) {
+                item = arr[i];
+                str += item[0] + ' ' + item[1] + ' ' + item[2] + ',' + ' ' + item[3] + ' ' + item[4] + ',' + ' ' + item[5] + ' ' + item[6] + ',';
+            }
+            return str;
+        }
+
+        // If any of the parameters is 
+        // absent return to normal flow
+        if (!p1 || !p2 || isFirefox) {
+            return [p1, p2];
+        }
+        // If svg not available return to normal flow
+        if (!document.createElementNS) {
+            return [p1, p2];
+        }
+
+
+        // Creating path elements to use functions 'getTotalLength'
+        // and 'getPointAtLength'
+        dPath1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        dPath1.setAttribute("d", toSvgPath(p1));
+
+        dPath2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        dPath2.setAttribute("d", toSvgPath(p2));
+
+        // If svg functions not available return to normal flow
+        if (!dPath1.getTotalLength || !dPath1.getPointAtLength) {
+            return [p1, p2];
+        }
+
+        // Getting length of the paths
+        pathLen1 = dPath1.getTotalLength();
+        pathLen2 = dPath2.getTotalLength();
+
+        // Number of divisions will depend on larger path
+        divisions = 0.15 * Math.max(dPath1.getTotalLength(), dPath2.getTotalLength());
+
+        fPath1.push(p1[0]);
+        fPath2.push(p2[0]);
+
+        for (i = 1; i <= divisions; ++i) {
+            item = dPath1.getPointAtLength((i / divisions) * pathLen1);
+            fPath1.push(["L",
+                item.x,
+                item.y
+            ]);
+            item = dPath2.getPointAtLength((i / divisions) * pathLen2);
+            fPath2.push(["L",
+                item.x,
+                item.y
+            ]);
+        }
+        return path2curve(fPath1, fPath2);
+    }
+
+
+    function runAnimation(anim, element, percent, status, totalOrigin, times) {
         percent = toFloat(percent);
         var params,
         isInAnim,
@@ -5256,8 +5800,6 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         next,
         prev,
         timestamp,
-        tempDiff,
-        change,
         ms = anim.ms,
         from = {},
         to = {},
@@ -5267,8 +5809,6 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 var e = animationElements[i];
                 if (e.el.id == element.id && e.anim == anim) {
                     if (e.percent != percent) {
-                        delete e.el.e;
-                        delete e.el;
                         animationElements.splice(i, 1);
                         isInAnimSet = 1;
                     } else {
@@ -5303,55 +5843,79 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                         from[attr] = element.attr(attr);
                         (from[attr] == null) && (from[attr] = availableAttrs[attr]);
                         to[attr] = params[attr];
-                        change = false;
                         switch (availableAnimAttrs[attr]) {
                             case nu:
-                                tempDiff = to[attr] - from[attr];
-                                (tempDiff || isNaN(tempDiff)) && (change = true);
-                                diff[attr] = tempDiff / ms;
+                                diff[attr] = (to[attr] - from[attr]) / ms;
                                 break;
                             case "colour":
-                                from[attr] = R.getRGB(from[attr]);
-                                var toColour = R.getRGB(to[attr]);
-                                tempDiff = {};
-                                tempDiff.r = (toColour.r - from[attr].r),
-                                tempDiff.g = (toColour.g - from[attr].g),
-                                tempDiff.b = (toColour.b - from[attr].b);
-                                // todo to be checked for NaN
-                                (tempDiff.r || tempDiff.g || tempDiff.b) && (change = true);
-                                diff[attr] = {
-                                    r: tempDiff.r / ms,
-                                    g: tempDiff.g / ms,
-                                    b: tempDiff.b / ms
-                                };
+                                var colorsNormalized = colorNormalizer(from[attr], to[attr], R.getRGB);
+                                from[attr] = colorsNormalized[0];
+                                var toColour = colorsNormalized[1];
+
+                                  if (typeof toColour === "string") {
+                                    if(from[attr].toLowerCase() !== "none"){
+                                        from[attr] = R.getRGB(from[attr]);
+                                        if(!from[attr].opacity){
+                                            from[attr].opacity = 1;
+                                        }
+                                    } else {
+                                        from[attr] = {
+                                            r : 0,
+                                            g : 0,
+                                            b : 0,
+                                            opacity : 0
+                                        }
+                                    }
+                                    if(to[attr].toLowerCase() !== "none"){
+                                        toColour = R.getRGB(to[attr]);
+                                        if(!toColour.opacity){
+                                            toColour.opacity = 1;
+                                        }
+                                    } else {
+                                        toColour = {
+                                            r : 0,
+                                            g : 0,
+                                            b : 0,
+                                            opacity : 0
+                                        }
+                                    }
+                                    diff[attr] = {
+                                        r: (toColour.r - from[attr].r) / ms,
+                                        g: (toColour.g - from[attr].g) / ms,
+                                        b: (toColour.b - from[attr].b) / ms,
+                                        opacity: ((toColour.opacity - from[attr].opacity) / ms)
+                                    };
+                                } else {
+                                    diff[attr] = [];
+                                    for (i = 0, ii = from[attr].length; i < ii; ++i) {
+                                        if (i === 0) {
+                                            diff[attr].push(toColour[0]);
+                                        } else {
+                                            diff[attr].push({
+                                                r: (toColour[i].r - from[attr][i].r) / ms,
+                                                g: (toColour[i].g - from[attr][i].g) / ms,
+                                                b: (toColour[i].b - from[attr][i].b) / ms,
+                                                opacity: (toColour[i].opacity - from[attr][i].opacity) / ms
+                                            });
+                                        }
+                                    }
+                                }
                                 break;
                             case "path":
-                                var pathes,
-                                toPath;
-                                // path2curve is taking longer time to execute, to optimize breaking if both
-                                // start and end path are same.
-                                if ((from[attr].join ? from[attr].join() : from[attr]) ===
-                                        (to[attr].join ?to[attr].join() : to[attr])) {
-                                    change = false;
-                                    break;
-                                }
-                                pathes = path2curve(from[attr], to[attr]);
-                                toPath = pathes[1];
-                                change = true;
+                                var pathes = pathNormalizer.apply(null, path2curve(from[attr], to[attr])),
+                                    toPath = pathes[1];
                                 from[attr] = pathes[0];
                                 diff[attr] = [];
                                 for (i = 0, ii = from[attr].length; i < ii; i++) {
                                     diff[attr][i] = [0];
                                     for (var j = 1, jj = from[attr][i].length; j < jj; j++) {
-                                        tempDiff = toPath[i][j] - from[attr][i][j];
-                                        diff[attr][i][j] =  tempDiff / ms;
+                                        diff[attr][i][j] = (toPath[i][j] - from[attr][i][j]) / ms;
                                     }
                                 }
                                 break;
                             case "transform":
                                 var _ = element._,
                                 eq = equaliseTransform(_[attr], to[attr]);
-                                change = true;
                                 if (eq) {
                                     from[attr] = eq.from;
                                     to[attr] = eq.to;
@@ -5411,9 +5975,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                                     diff[attr] = [];
                                     i = from2.length;
                                     while (i--) {
-                                        tempDiff = values[i] - from[attr][i];
-                                        (tempDiff || isNaN(tempDiff)) && (change = true);
-                                        diff[attr][i] = tempDiff / ms;
+                                        diff[attr][i] = (values[i] - from[attr][i]) / ms;
                                     }
                                 }
                                 to[attr] = values;
@@ -5424,22 +5986,13 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                                 diff[attr] = [];
                                 i = element.ca[attr].length;
                                 while (i--) {
-                                    tempDiff = (values[i] || 0) - (from2[i] || 0);
-                                    (tempDiff || isNaN(tempDiff)) && (change = true);
-                                    diff[attr][i] = tempDiff / ms;
+                                    diff[attr][i] = ((values[i] || 0) - (from2[i] || 0)) / ms;
                                 }
                                 break;
                         }
-                        if (!change) {
-                            delete from[attr];
-                            delete to[attr];
-                            delete params[attr];
-                            delete diff[attr];
-                        }
                     }
-                    else if (R._availableAttrs[has](attr) || attr === 'text' || element.ca[attr]) {
+                    else {
                         element.attr(attr, params[attr]);
-                        delete params[attr];
                     }
                 }
             var easing = params.easing,
@@ -5456,7 +6009,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 }
             }
             timestamp = params.start || anim.start || +new Date;
-            element.e =  e = {
+            e = {
                 anim: anim,
                 percent: percent,
                 timestamp: timestamp,
@@ -5475,11 +6028,9 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 next: next,
                 repeat: times || anim.times,
                 origin: element.attr(),
-                totalOrigin: totalOrigin,
-                parentEl : parentEl
+                totalOrigin: totalOrigin
             };
             animationElements.push(e);
-
             if (status && !isInAnim && !isInAnimSet) {
                 e.stop = true;
                 e.start = new Date - ms * status;
@@ -5490,12 +6041,12 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             if (isInAnimSet) {
                 e.start = new Date - e.ms * status;
             }
-            animationElements.length == 1 && (requestAnimFrame || getAnimFrameFn())(animation);
+            animationElements.length == 1 && requestAnimFrame(animation);
         } else {
             isInAnim.initstatus = status;
             isInAnim.start = new Date - isInAnim.ms * status;
         }
-        R.stopEvent !== false && eve("raphael.anim.start." + element.id, element, anim);
+        eve("raphael.anim.start." + element.id, element, anim);
     }
 
     /*\
@@ -5514,7 +6065,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      **
      = (object) @Animation
     \*/
-    R.animation = function(params, ms, easing, callback, event) {
+    R.animation = function(params, ms, easing, callback) {
         if (params instanceof Animation) {
             return params;
         }
@@ -5522,7 +6073,6 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             callback = callback || easing || null;
             easing = null;
         }
-        R.stopEvent === undefined &&  (R.stopEvent = event);
         params = Object(params);
         ms = +ms || 0;
         var p = {},
@@ -5654,25 +6204,16 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      > Parameters
      **
      - anim (object) #optional animation object
-     - resumeChildAnimation (boolean) #pauses the animation of the elements which are in sync with the current element
      **
      = (object) original element
     \*/
-    elproto.pause = function(anim, pauseChildAnimation) {
-        var now = +new Date,
-            e,
-            i;
-        for (i = 0; i < animationElements.length; i++) {
-            e = animationElements[i];
-            // @todo - need a scope to implement the logic for nested animations.
-            if ((e.el.id === this.id || (pauseChildAnimation && e.parentEl && e.parentEl.e.el &&
-                e.parentEl.e.el.id === this.id)) && (!anim || e.anim == anim)) {
-                if (eve("raphael.anim.pause." + this.id, this, e.anim) !== false) {
-                    e.paused = true;
-                    e.pauseStart = now;
+    elproto.pause = function(anim) {
+        for (var i = 0; i < animationElements.length; i++)
+            if (animationElements[i].el.id == this.id && (!anim || animationElements[i].anim == anim)) {
+                if (eve("raphael.anim.pause." + this.id, this, animationElements[i].anim) !== false) {
+                    animationElements[i].paused = true;
                 }
             }
-        }
         return this;
     };
 
@@ -5685,31 +6226,20 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      > Parameters
      **
      - anim (object) #optional animation object
-     - resumeChildAnimation (boolean) #resumes the animation of the elements which are in sync with the current element
      **
      = (object) original element
     \*/
-    elproto.resume = function(anim, resumeChildAnimation) {
-        var now = +new Date,
-            e,
-            i;
-        for (i = 0; i < animationElements.length; i++) {
-            e = animationElements[i];
-            // @todo - need a scope to implement the logic for nested animations.
-            if ((e.el.id === this.id || (resumeChildAnimation && e.parentEl && e.parentEl.e.el &&
-                e.parentEl.e.el.id === this.id)) && (!anim || e.anim == anim)) {
+    elproto.resume = function(anim) {
+        for (var i = 0; i < animationElements.length; i++)
+            if (animationElements[i].el.id == this.id && (!anim || animationElements[i].anim == anim)) {
+                var e = animationElements[i];
                 if (eve("raphael.anim.resume." + this.id, this, e.anim) !== false) {
                     delete e.paused;
-                    e.el.status(e.anim, e.status);
-                    e.pauseEnd = now;
-                    e.start += (((e.parentEl && e.parentEl.e.pauseEnd || e.pauseEnd) -
-                        (e.parentEl && e.parentEl.e.pauseStart || e.pauseStart)) || 0);
+                    this.status(e.anim, e.status);
                 }
             }
-        }
         return this;
     };
-
 
     /*\
      * Element.stop
@@ -5720,38 +6250,16 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      > Parameters
      **
      - anim (object) #optional animation object
-     - stopChildAnimation (boolean) #optional stops the animation of all the element which are in sync with the current element
-     - jumpToEnd (boolean) #optional takes the current animation to its end value
      **
      = (object) original element
     \*/
-    elproto.stop = function(anim, stopChildAnimation, jumpToEnd) {
-        var e, i;
-        if (stopChildAnimation) {
-            for (i = animationElements.length - 1; i >= 0; i--) {
-                e = animationElements[i];
-                // @todo - need a scope to implement the logic for nested animations.
-                if ((e.el.id === this.id || (e.parentEl && e.parentEl.id === this.id)) &&
-                    (!anim || animationElements[i].anim == anim)) {
-                    ele = e.el;
-                    jumpToEnd && ele.attr(e.to);
-                    e.callback && e.callback.call(ele);
-                    delete ele.e;
-                    delete e.el;
-                    animationElements.splice(i, 1);
+    elproto.stop = function(anim) {
+        for (var i = 0; i < animationElements.length; i++)
+            if (animationElements[i].el.id == this.id && (!anim || animationElements[i].anim == anim)) {
+                if (eve("raphael.anim.stop." + this.id, this, animationElements[i].anim) !== false) {
+                    animationElements.splice(i--, 1);
                 }
             }
-        }
-        else {
-            for (var i = 0; i < animationElements.length; i++){
-                e = animationElements[i];
-                if (e.el.id === this.id && (!anim || e.anim === anim)) {
-                    if (eve("raphael.anim.stop." + this.id, this, e.anim) !== false) {
-                        animationElements.splice(i--, 1);
-                    }
-                }
-            }
-        }
         return this;
     };
     function stopAnimation(paper) {

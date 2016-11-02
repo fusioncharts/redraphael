@@ -5124,7 +5124,6 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                                         if(from[attr].isRadial || diff[attr].isRadial){
                                             now = now.replace('-', '');
                                         }
-                                        console.log(now, from[attr].isRadial, diff[attr].isRadial)
                                     }
                                     break;
                                 case "path":
@@ -5432,7 +5431,6 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                     f1 : 0.5 + Math.cos(angle * Math.PI / 180) * 0.5,
                     f2 : 0.5 + Math.sin(angle * Math.PI / 180) * 0.5
                 }
-                console.log(b[0])
                 b.isRadial = true;
             }
 

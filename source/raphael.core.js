@@ -5686,6 +5686,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                         from[attr] = element.attr(attr);
                         (from[attr] == null) && (from[attr] = availableAttrs[attr]);
                         to[attr] = params[attr];
+                        change = false;
                         switch (availableAnimAttrs[attr]) {
                             case nu:
                                 tempDiff = to[attr] - from[attr];

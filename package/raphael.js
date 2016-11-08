@@ -6067,7 +6067,6 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                         from[attr] = element.attr(attr);
                         (from[attr] == null) && (from[attr] = availableAttrs[attr]);
                         to[attr] = params[attr];
-                        change = true;
                         switch (availableAnimAttrs[attr]) {
                             case nu:
                                 tempDiff = to[attr] - from[attr];
@@ -6075,11 +6074,15 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                                 diff[attr] = tempDiff / ms;
                                 break;
                             case "colour":
+                                if(from[attr] === to[attr]){
+                                    break;
+                                } else {
+                                    change = true;
+                                }
                                 var colorsNormalized = colorNormalizer(from[attr], to[attr], R.getRGB);
                                 from[attr] = colorsNormalized[0];
                                 var toColour = colorsNormalized[1];
-
-                                  if (typeof toColour === "string") {
+                                if (typeof toColour === "string") {
                                     if(from[attr].toLowerCase() !== "none"){
                                         from[attr] = R.getRGB(from[attr]);
                                         if(!from[attr].opacity){
@@ -6137,6 +6140,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                                     diff[attr][i] = [0];
                                     for (var j = 1, jj = from[attr][i].length; j < jj; j++) {
                                         diff[attr][i][j] = (toPath[i][j] - from[attr][i][j]) / ms;
+                                        (!change) && diff[attr][i][j] && (change = true);
                                     }
                                 }
                                 break;

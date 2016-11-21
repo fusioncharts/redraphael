@@ -72,9 +72,9 @@ function testPath(saveStart) {
     if (saveStart !== 'animateSaved')
     clearBoard();
     // Make current paper instance
-    paper = Raphael(50, 50, 600, 400);
+    paper = Raphael(0, 0, 700, 700);
 
-	selectValue = selectValue.split(keySeparator);
+    selectValue = selectValue.split(keySeparator);
     // return if cannot split
     if (!selectValue.length) {
         return;
@@ -101,12 +101,7 @@ function addEventListener (el, fn) {
     }
 }
 
-addEventListener(jsonupdate, updateJson);
 addEventListener(testBtn, testPath);
-addEventListener(setStart, testPath.bind(null, "save"));
-addEventListener(animateSaved, testPath.bind(null, "animateSaved"));
-addEventListener(pauseBtn, pauseAnim);
-addEventListener(resumeBtn, resumeAnim);
 
 addEventListener(getAttr, function () {
     attrDisplay.innerHTML += '</br><hr>' + stringifyPath(path.attrs.path);
@@ -124,6 +119,7 @@ function resumeAnim () {
 }
 
 function stringifyPath (arr) {
+    return "";
     var i = 0,
         ii = arr.length,
         str = '';

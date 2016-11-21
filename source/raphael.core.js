@@ -5038,7 +5038,9 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                                     now = [];
                                     for (var i = 0, ii = from[attr].length; i < ii; i++) {
                                         now[i] = [from[attr][i][0]];
-                                        for (var j = 1, jj = from[attr][i].length; j < jj; j++) {
+                                        var jj;
+                                        jj = from[attr][i] ? from[attr][i].length : 0;
+                                        for (var j = 1  ; j < jj; j++) {
                                             now[i][j] = (+from[attr][i][j] + pos * ms * diff[attr][i][j]).toFixed(4);
                                         }
                                         now[i] = now[i].join(S);
@@ -5304,6 +5306,17 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         }
         colorAr1 = allToLinear(colorAr1);
         colorAr2 = allToLinear(colorAr2);
+
+        // Handling if default color was added to one
+        // and not other
+        if (!colorAr1.defaultAngleSet && colorAr2.defaultAngleSet) {
+            colorAr2[0] = colorAr1[0];
+        }
+
+        if (!colorAr2.defaultAngleSet && colorAr1.defaultAngleSet) {
+            colorAr1[0] = colorAr2[0];
+        }
+
         // If one radial convert both to radial
         converToRadialIfOneRadial(colorAr1, colorAr2);
 
@@ -5382,6 +5395,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 }
                 // Push angle zero to start
                 arr.unshift(0);
+                // Mentioning that a default angle was added
+                arr.defaultAngleSet = true;
             }
 
             // Convert angle to number
@@ -5544,8 +5559,196 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
 
     }
 
-    // function to get equal points for two different path
     function pathNormalizer(p1, p2) {
+        // Function to convert array to svg path (?) only for curves
+        var finalp1 = [],
+            finalp2 = [],
+            pathArr1 = toSvgPath(p1),
+            pathArr2 = toSvgPath(p2),
+            i = 0,
+            ii = 0,
+            temp,
+            dPath = document.createElementNS("http://www.w3.org/2000/svg", "path"),
+            // getTotalLength is buggy in firefox;
+            isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+        // If path invalid return
+        if (!pathArr1 || !pathArr2) {
+            return [p1, p2];
+        }
+        // If any of the parameters is 
+        // absent return to normal flow
+        if (!p1 || !p2 || isFirefox) {
+            return [p1, p2];
+        }
+        // If svg not available return to normal flow
+        if (!document.createElementNS) {
+            return [p1, p2];
+        }
+        if(pathArr1.join().indexOf('undefined') !== -1) {
+            return [p1, p2];
+        }
+        if(pathArr2.join().indexOf('undefined') !== -1) {
+            return [p1, p2];
+        }
+        // If svg functions not available return to normal flow
+        if (!dPath.getTotalLength || !dPath.getPointAtLength) {
+            return [p1, p2];
+        }
+        function toSvgPath(arr) {
+            var str = [],
+                i = 0,
+                ii = arr.length,
+                item = [];
+            if (typeof arr === 'string') {
+                return arr;
+            }
+            for (i = 0; i < ii; ++i) {
+                if (!arr[i].join){
+                    return;
+                } else {
+                    str.push(arr[i].join(' '));
+                }
+            }
+            str = str.join('');
+            str = str.split('M').slice(1);
+            for (i = 0, ii = str.length; i < ii; ++i) {
+                str[i] = 'M' + str[i];
+            }
+            return str;
+        }
+
+        ii = Math.max(pathArr1.length, pathArr2.length);
+        for (i = 0; i < ii; ++i) {
+            temp = _pathNormalizer(pathArr1[i], pathArr2[i]);
+            pathArr1[i] = temp[0];
+            pathArr2[i] = temp[1];
+        }
+
+        function linetopath (arr) {
+            var i = 0,
+                ii = 0,
+                str = [];
+            arr = arr || [];
+            ii = arr.length;
+            for (i = 0; i < ii; ++i) {
+                if (arr[i].length - 1) {
+                    str.push(arr[i].join(' '));
+                }
+            }
+            return str.join('');
+        }
+
+        function removeBlanks (arr) {
+            var i = arr.length,
+                j = 0,
+                path;
+            while (i--) {
+                path = linetopath(arr[i]);
+                dPath.setAttribute('d', path);
+                // Pop if length is zero
+                if (dPath.getTotalLength() < 1) {
+                    arr.pop();
+                }
+            }
+        }
+
+        function _divide(arr, times) {
+            var resArr = [],
+                locArr = [],
+                arrLen = arr.length, 
+                i = 0,
+                ii = 0,
+                x = 0,
+                prevPos = 0,
+                y = 0,
+                diffTimes = times - arrLen; // If array size is smaller than
+                                            // divisions needed
+            while (diffTimes >= 0) {
+                i = arr.length - 1;
+                arr.push(arr.slice(i));
+                --diffTimes;
+            }
+            arrLen = arr.length;
+            for (i = 0; i <= times; ++i) {
+                locArr.push(Math.round((i / times) * arrLen));
+            }
+            for (i = 0, ii = locArr.length - 1; i < ii; ++i) {
+                resArr.push(arr.slice(locArr[i], locArr[i + 1]));
+                if (resArr[i][0][0] !== 'M' && resArr[i][0][0] !== 'm') {
+                    prevPos = resArr[i - 1].length - 1;
+                    x = resArr[i - 1][prevPos][1];
+                    y = resArr[i - 1][prevPos][2];
+                    resArr[i].unshift(['M', x, y]);
+                }
+            }
+            return resArr;
+        }
+
+        function divideArray (diff) {
+            var arrToDivide = [],
+                countArr = [],
+                transArr = [],
+                i = 0,
+                ii = 0,
+                isArr1 = true;
+            if (diff === 0) {
+                return;
+            } else if (diff > 0) {
+                arrToDivide = pathArr2;
+                isArr1 = false;
+            } else {
+                diff = -diff;
+                arrToDivide = pathArr1;
+            }
+            for (i = 0, ii = arrToDivide.length; i < ii; ++i) {
+                countArr.push(1);
+            }
+            while (diff--) {
+                --i;
+                if (i < 0) {
+                    i = ii - 1;
+                }
+                countArr[i]++;
+            }
+
+            for (i = 0; i < ii; ++i){
+                if (countArr[i] === 1) {
+                    transArr.push(arrToDivide[i]);
+                } else {
+                    transArr.push.apply(transArr, _divide(arrToDivide[i], countArr[i]));
+                }
+            }
+            if (isArr1) {
+                pathArr1 = transArr;
+            } else {
+                pathArr2 = transArr;
+            }
+        }
+        /*
+        
+        */
+        removeBlanks(pathArr1);
+        removeBlanks(pathArr2);
+        divideArray(pathArr1.length - pathArr2.length);
+
+        ii = Math.max(pathArr1.length, pathArr2.length);
+        for (i = 0; i < ii; ++i) {
+            temp = _pathNormalizer(linetopath(pathArr1[i]), linetopath(pathArr2[i]));
+            pathArr1[i] = temp[0];
+            pathArr2[i] = temp[1];
+        }
+
+        for (i = 0, ii = pathArr1.length; i < ii; ++i) {
+            finalp1 = finalp1.concat(pathArr1[i]);
+        }
+        for (i = 0, ii = pathArr2.length; i < ii; ++i) {
+            finalp2 = finalp2.concat(pathArr2[i]);
+        }
+        return [finalp1, finalp2];
+    }
+
+    // function to get equal points for two different path
+    function _pathNormalizer(p1, p2) {
         var i = 0,
             j = 0,
             item = {},
@@ -5556,47 +5759,20 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             fPath1 = [],
             fPath2 = [],
             divisions = 0,
-            // getTotalLength is buggy in firefox;
-            isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-
-        // Function to convert array to svg path (?) only for curves
-        function toSvgPath(arr) {
-            var str = "",
-                i = 0,
-                ii = arr.length,
-                item = [];
-
-            item = arr[0];
-            str += item[0] + item[1] + " " + item[2];
-            for (i = 1; i < ii; ++i) {
-                item = arr[i];
-                str += item[0] + ' '; 
-                str += item[1] + ' ' + item[2];
-                if(item[0] === 'C' || item[0] === 'c'){
-                    str += ',' + ' ' + item[3] + ' ' + item[4] + ',' + ' ' + item[5] + ' ' + item[6] + ',';
-                }
-            }
-            return str;
+            round = Math.round;
+        if (!p1 || p1 === 'M  ') {
+            p1 = p2.split(' ').slice(0, 3).join(' ').replace('L', '');
         }
-
-        // If any of the parameters is 
-        // absent return to normal flow
-        if (!p1 || !p2 || isFirefox) {
-            return [p1, p2];
+        if (!p2 || p2 === 'M  ') {
+            p2 = p1.split(' ').slice(0, 3).join(' ').replace('L', '');
         }
-        // If svg not available return to normal flow
-        if (!document.createElementNS) {
-            return [p1, p2];
-        }
-
-
         // Creating path elements to use functions 'getTotalLength'
         // and 'getPointAtLength'
         dPath1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        dPath1.setAttribute("d", toSvgPath(p1));
+        dPath1.setAttribute("d", p1);
 
         dPath2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        dPath2.setAttribute("d", toSvgPath(p2));
+        dPath2.setAttribute("d", p2);
 
         // If svg functions not available return to normal flow
         if (!dPath1.getTotalLength || !dPath1.getPointAtLength) {
@@ -5608,24 +5784,25 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         pathLen2 = dPath2.getTotalLength();
 
         // Number of divisions will depend on larger path
-        divisions = 0.15 * Math.max(dPath1.getTotalLength(), dPath2.getTotalLength());
+        divisions = 0.1 * Math.max(dPath1.getTotalLength(), dPath2.getTotalLength());
+        divisions = Math.ceil(divisions);
+        if (!divisions || !Number.isFinite(divisions)) {
+            divisions = 1;
+        }
 
-        fPath1.push(p1[0]);
-        fPath2.push(p2[0]);
-
-        for (i = 1; i <= divisions; ++i) {
+        for (i = 0; i <= divisions; ++i) {
             item = dPath1.getPointAtLength((i / divisions) * pathLen1);
-            fPath1.push(["L",
-                item.x,
-                item.y
+            fPath1.push([i ? "L" : "M",
+                round(item.x * 1000) / 1000,
+                round(item.y * 1000) / 1000
             ]);
             item = dPath2.getPointAtLength((i / divisions) * pathLen2);
-            fPath2.push(["L",
-                item.x,
-                item.y
+            fPath2.push([i ? "L" : "M",
+                round(item.x * 1000) / 1000,
+                round(item.y * 1000) / 1000
             ]);
         }
-        return path2curve(fPath1, fPath2);
+        return [fPath1, fPath2];
     }
 
 
@@ -5758,7 +5935,9 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                                 diff[attr] = [];
                                 for (i = 0, ii = from[attr].length; i < ii; i++) {
                                     diff[attr][i] = [0];
-                                    for (var j = 1, jj = from[attr][i].length; j < jj; j++) {
+                                    var jj;
+                                    jj = from[attr][i] ? from[attr][i].length : 0;
+                                    for (var j = 1; j < jj; j++) {
                                         diff[attr][i][j] = (toPath[i][j] - from[attr][i][j]) / ms;
                                         (!change) && diff[attr][i][j] && (change = true);
                                     }

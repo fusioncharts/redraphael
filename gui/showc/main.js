@@ -124,6 +124,7 @@ function resumeAnim () {
 }
 
 function stringifyPath (arr) {
+    return '';
     var i = 0,
         ii = arr.length,
         str = '';

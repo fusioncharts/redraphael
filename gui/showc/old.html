@@ -8,12 +8,18 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
 <body>
-    <script src="../package/raphael.js"></script>
+    <script src="raphael_old.js"></script>
     <style type="text/css">
 
     svg {
-        margin-top: 8%;
+        margin-top: 15%;
         margin-left: 1%;
+    }
+    .btn{
+        float: right;
+    }
+    .hidden{
+        visibility: gone;
     }
     </style>
     <div class="container">
@@ -29,16 +35,16 @@
             </fieldset>
         </form>
         <button id="test-btn" class="btn btn-default">Run Test</button>
-        <button id="pause-anim" class="btn btn-default">pause</button>
-        <button id="resume-anim" class="btn btn-default">resume</button>
+        <button id="pause-anim" class="hidden btn btn-default">pause</button>
+        <button id="resume-anim" class="hidden btn btn-default">resume</button>
         </br>
-        <button id="get-attr" class="btn btn-default">attr</button>
-        <button id="set-start" class="btn btn-default">setStart</button>
-        <button id="anim-saved" class="btn btn-default">Animate saved</button>
-        <div id="source" style="width: 40vw;position:absolute;top:400px"></div>
-        <div class="pull-right" style="width: 40vw; height: 80vh; float:right; right:0">
-        	<textarea style="width: 100%; height: 100%" id="jsontext"></textarea>
-        	<button class="btn btn-default" id="jsonupdate">Update</button>
+        <button id="get-attr" class="hidden btn btn-default">attr</button>
+        <button id="set-start" class="hidden btn btn-default">setStart</button>
+        <button id="anim-saved" class="hidden btn btn-default">Animate saved</button>
+        <div id="source" class="hidden" style="width: 40vw;position:absolute;top:400px"></div>
+        <div class="pull-right hidden" style="width: 40vw; height: 80vh; float:right; right:0">
+            <textarea style="width: 100%; height: 100%" id="jsontext"></textarea>
+            <button class="btn btn-default" id="jsonupdate">Update</button>
         </div>
     </div>
     <script src="raphaeltests.js"></script>

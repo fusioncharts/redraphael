@@ -5571,7 +5571,6 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             dPath = document.createElementNS("http://www.w3.org/2000/svg", "path"),
             // getTotalLength is buggy in firefox;
             isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-            debugger;
         // If path invalid return
         if (!pathArr1 || !pathArr2) {
             return [p1, p2];

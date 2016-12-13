@@ -5759,8 +5759,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             if(a.isRadial && !b.isRadial){
                 angle += +b[0];
                 b[0] = {
-                    f1 : 0.5 + Math.cos(angle * Math.PI / 180) * 0.5,
-                    f2 : 0.5 + Math.sin(angle * Math.PI / 180) * 0.5
+                    f1 : a[0].f1,
+                    f2 : a[0].f2
                 }
                 b.isRadial = true;
             }
@@ -5972,8 +5972,12 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             dPath = document.createElementNS("http://www.w3.org/2000/svg", "path"),
             // getTotalLength is buggy in firefox;
             isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+            debugger;
         // If path invalid return
         if (!pathArr1 || !pathArr2) {
+            return [p1, p2];
+        }
+        if (canFallback(p1, p2)) {
             return [p1, p2];
         }
         // If any of the parameters is 
@@ -5995,6 +5999,43 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         if (!dPath.getTotalLength || !dPath.getPointAtLength) {
             return [p1, p2];
         }
+
+        function canFallback (path1, path2) {
+            var str1 = '',
+                str2 = '';
+            // path1 and path2 are in array
+            function trimPathArray (arr) {
+                var i = arr.length;
+                while (i--) {
+                    if (arr[i].join('') === arr[i - 1].join('')) {
+                        arr.pop();
+                    } else {
+                        break;
+                    }
+                }
+            }
+            function getPathFromArray(arr) {
+                var str = '',
+                    i = 0,
+                    ii = arr.length;
+                for (; i < ii; ++i) {
+                    str += arr[i].join(' ');
+                }
+                return str;
+            }
+            trimPathArray(path1);
+            trimPathArray(path2);
+            str1 = getPathFromArray(path1);
+            str2 = getPathFromArray(path2);
+            if (str1.split(/[M,m]/).length > 2 || str2.split(/[M,m]/).length > 2) {
+                return false;
+            }
+            if (path1.length === path2.length) {
+                return true;
+            }
+            return false;
+        }
+
         function toSvgPath(arr) {
             var str = [],
                 i = 0,
@@ -6175,20 +6216,16 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         dPath2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
         dPath2.setAttribute("d", p2);
 
-        // If svg functions not available return to normal flow
-        if (!dPath1.getTotalLength || !dPath1.getPointAtLength) {
-            return [p1, p2];
-        }
-
         // Getting length of the paths
         pathLen1 = dPath1.getTotalLength();
         pathLen2 = dPath2.getTotalLength();
 
         // Number of divisions will depend on larger path
-        divisions = 0.1 * Math.max(dPath1.getTotalLength(), dPath2.getTotalLength());
+        divisions = 0.2 * Math.max(pathLen1, pathLen2);
         divisions = Math.ceil(divisions);
-        if (!divisions || !Number.isFinite(divisions)) {
-            divisions = 1;
+
+        if (!divisions || !Number.isFinite(divisions) || divisions < 20) {
+            divisions = 20;
         }
 
         for (i = 0; i <= divisions; ++i) {

@@ -5969,11 +5969,12 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             i = 0,
             ii = 0,
             temp,
-            dPath = document.createElementNS("http://www.w3.org/2000/svg", "path"),
+            createElementNS = document.createElementNS && document.createElementNS.bind(document),
+            dPath = createElementNS && createElementNS("http://www.w3.org/2000/svg", "path"),
             // getTotalLength is buggy in firefox;
             isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-        // If path invalid return
-        if (!pathArr1 || !pathArr2) {
+        // If path invalid or svg not supported return
+        if (!pathArr1 || !pathArr2 || !dPath) {
             return [p1, p2];
         }
         if (canFallback(p1, p2)) {

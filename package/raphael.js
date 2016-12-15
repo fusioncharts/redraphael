@@ -5950,9 +5950,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             ii = 0,
             temp,
             createElementNS = document.createElementNS && document.createElementNS.bind(document),
-            dPath = createElementNS && createElementNS("http://www.w3.org/2000/svg", "path"),
-            // getTotalLength is buggy in firefox;
-            isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+            dPath = createElementNS && createElementNS("http://www.w3.org/2000/svg", "path");
+
         // If path invalid or svg not supported return
         if (!pathArr1 || !pathArr2 || !dPath) {
             return [p1, p2];
@@ -5962,7 +5961,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         }
         // If any of the parameters is 
         // absent return to normal flow
-        if (!p1 || !p2 || isFirefox) {
+        if (!p1 || !p2) {
             return [p1, p2];
         }
         // If svg not available return to normal flow
@@ -5982,7 +5981,22 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
 
         function canFallback (path1, path2) {
             var str1 = '',
-                str2 = '';
+                str2 = '',
+                testLen,
+                testPoint;
+            // Checking path totoalLength is accurate or not
+            // testing with a known path
+            // this check is for Firefox
+            dPath.setAttribute('d', 'M300 10 L300 300 C50 310,50 640,350 650' + 
+                'C600 640,600 310,400 300 L400 10 L295 10');
+            testLen = dPath.getTotalLength();
+            testPoint = dPath.getPointAtLength(10);
+            if (testLen < 1829.1 || testLen > 1829.2) {
+                return true;
+            }
+            if (Math.round(testPoint.x) !== 300 || Math.round(testPoint.y) !== 20) {
+                return true;
+            }
             // path1 and path2 are in array
             function trimPathArray (arr) {
                 var i = arr.length;
@@ -6024,15 +6038,19 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             if (typeof arr === 'string') {
                 return arr;
             }
+            // Looping to one less item
+            // If last is move command ignore
             for (i = 0; i < ii; ++i) {
                 if (!arr[i].join){
                     return;
                 } else {
-                    str.push(arr[i].join(' '));
+                    if ( !i || !arr[i + 1] || arr[i + 1][0] !== 'M' || arr[i][0] !== 'M'){
+                        str.push(arr[i].join(' '));
+                    }
                 }
             }
             str = str.join('');
-            str = str.split('M').slice(1);
+            str = str.split(/[M,m]/).slice(1);
             for (i = 0, ii = str.length; i < ii; ++i) {
                 str[i] = 'M' + str[i];
             }
@@ -6204,7 +6222,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         divisions = 0.2 * Math.max(pathLen1, pathLen2);
         divisions = Math.ceil(divisions);
 
-        if (!divisions || !Number.isFinite(divisions) || divisions < 20) {
+        if (!divisions || !isFinite(divisions) || divisions < 20) {
             divisions = 20;
         }
 

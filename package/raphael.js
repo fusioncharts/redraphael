@@ -6086,11 +6086,9 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             var i = arr.length,
                 j = 0,
                 path;
-            while (i--) {
-                path = linetopath(arr[i]);
-                dPath.setAttribute('d', path);
+            while (i-- - 1) {
                 // Pop if length is zero
-                if (dPath.getTotalLength() < 1) {
+                if (arr[i].toString() === arr[i - 1].toString()) {
                     arr.pop();
                 }
             }

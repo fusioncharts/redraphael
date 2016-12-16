@@ -5643,7 +5643,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             trimPathArray(path2);
             str1 = getPathFromArray(path1);
             str2 = getPathFromArray(path2);
-            if (str1.split(/[M,m]/).length > 2 || str2.split(/[M,m]/).length > 2) {
+            if (str1.split(/[Mm]/).length > 2 || str2.split(/[Mm]/).length > 2) {
                 return false;
             }
             if (path1.length === path2.length) {
@@ -5673,7 +5673,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 }
             }
             str = str.join('');
-            str = str.split(/[M,m]/).slice(1);
+            str = str.split(/[Mm]/).slice(1);
             for (i = 0, ii = str.length; i < ii; ++i) {
                 str[i] = 'M' + str[i];
             }
@@ -5837,7 +5837,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         function splitter (path) {
             var i = 0,
                 ii = 0;
-            path = path.split(/[M,C,L,m,c,l]/).slice(1);
+            path = path.split(/[MCLmcl]/).slice(1);
             for (i = 0, ii = path.length; i < ii; ++i) {
                 path[i] = path[i].split(' ').slice(1);
                 i || path[i].unshift('M');
@@ -6032,8 +6032,13 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
 
         for (i = 0, ii = commonPath[0].length; i < ii; ++i) {
             tmp = normalizeUncommonPaths(commonPath[0][i], commonPath[1][i]);
-            fPath1 = fPath1.concat(tmp[0]);
-            fPath2 = fPath2.concat(tmp[1]);
+            if (i) {
+                fPath1 = fPath1.concat(tmp[0].slice(1));
+                fPath2 = fPath2.concat(tmp[1].slice(1));
+            } else {
+                fPath1 = fPath1.concat(tmp[0]);
+                fPath2 = fPath2.concat(tmp[1]);
+            }
         }
         return [fPath1, fPath2];
     }

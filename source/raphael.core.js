@@ -4274,6 +4274,91 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     };
 
     /*\
+     * Paper.addDefs
+     [ method ]
+     **
+     * Add definitions in paper
+     **
+     > Parameters
+     **
+     - elemObj (object) nested input object to create elements
+     **
+     > Usage
+     | var ob = paper.addDefs({
+     |       gradient0: { // key
+     |           tagName: 'linearGradient',
+     |           id: 'gradient-0',
+     |           x1: 0,
+     |           y1: 0,
+     |           x2: 0,
+     |           y2: 1,
+     |           children: [{
+     |               tagName: 'stop',
+     |               offset: 0
+     |           }, {
+     |               tagName: 'stop',
+     |               offset: 1
+     |           }]
+     |       }
+     |   });
+     | // Creates a 'linearGradient' tag element of id, 'gradient-0', with x1, y1, x2, y2 as it's attributes
+     | // Creates two 'stop' tag elements with offset as it's attribute under the 'linearGradient' tag element
+    \*/
+    paperproto.addDefs = function (elemObj) {
+        var paper = this,
+            key,
+            createNode = R._createNode,
+            defs = paper.defs,
+            createDefNodes = function(parentElem, elementObj) {
+                var ele,
+                    i,
+                    len,
+                    attr = {},
+                    attrKey,
+                    children = elementObj.children || [];
+
+                for (attrKey in elementObj) {
+                    if (attrKey !== 'tagName' && attrKey !== 'children') {
+                        attr[attrKey] = elementObj[attrKey];
+                    }
+                }
+
+                !attr.id && (attr.id = R.getElementID(R.createUUID()));
+
+                if (!R._g.doc.getElementById(attr.id)) {
+                    ele = parentElem.appendChild(createNode(elementObj.tagName, attr));
+                    elementObj.element = ele;
+                    for (i = 0, len = children.length; i < len; i++) {
+                        createDefNodes(ele, children[i]);
+                    }
+                }
+            };
+
+        for (key in elemObj) {
+            createDefNodes(defs, elemObj[key]);
+        }
+        return elemObj;
+    };
+
+    /*\
+     * Paper.removeDefs
+     [ method ]
+     **
+     * Remove a particular definition of given id from paper
+     **
+     > Parameters
+     **
+     - id (string) id of the element to remove
+     **
+     > Usage
+     | paper.removeDefs(id);
+    \*/
+    paperproto.removeDefs = function (id) {
+        var element = R._g.doc.getElementById(id);
+        element && element.remove();
+    }
+
+    /*\
      * Paper.setStart
      [ method ]
      **

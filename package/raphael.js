@@ -4655,6 +4655,91 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     };
 
     /*\
+     * Paper.addDefs
+     [ method ]
+     **
+     * Add definitions in paper
+     **
+     > Parameters
+     **
+     - elemObj (object) nested input object to create elements
+     **
+     > Usage
+     | var ob = paper.addDefs({
+     |       gradient0: { // key
+     |           tagName: 'linearGradient',
+     |           id: 'gradient-0',
+     |           x1: 0,
+     |           y1: 0,
+     |           x2: 0,
+     |           y2: 1,
+     |           children: [{
+     |               tagName: 'stop',
+     |               offset: 0
+     |           }, {
+     |               tagName: 'stop',
+     |               offset: 1
+     |           }]
+     |       }
+     |   });
+     | // Creates a 'linearGradient' tag element of id, 'gradient-0', with x1, y1, x2, y2 as it's attributes
+     | // Creates two 'stop' tag elements with offset as it's attribute under the 'linearGradient' tag element
+    \*/
+    paperproto.addDefs = function (elemObj) {
+        var paper = this,
+            key,
+            createNode = R._createNode,
+            defs = paper.defs,
+            createDefNodes = function(parentElem, elementObj) {
+                var ele,
+                    i,
+                    len,
+                    attr = {},
+                    attrKey,
+                    children = elementObj.children || [];
+
+                for (attrKey in elementObj) {
+                    if (attrKey !== 'tagName' && attrKey !== 'children') {
+                        attr[attrKey] = elementObj[attrKey];
+                    }
+                }
+
+                !attr.id && (attr.id = R.getElementID(R.createUUID()));
+
+                if (!R._g.doc.getElementById(attr.id)) {
+                    ele = parentElem.appendChild(createNode(elementObj.tagName, attr));
+                    elementObj.element = ele;
+                    for (i = 0, len = children.length; i < len; i++) {
+                        createDefNodes(ele, children[i]);
+                    }
+                }
+            };
+
+        for (key in elemObj) {
+            createDefNodes(defs, elemObj[key]);
+        }
+        return elemObj;
+    };
+
+    /*\
+     * Paper.removeDefs
+     [ method ]
+     **
+     * Remove a particular definition of given id from paper
+     **
+     > Parameters
+     **
+     - id (string) id of the element to remove
+     **
+     > Usage
+     | paper.removeDefs(id);
+    \*/
+    paperproto.removeDefs = function (id) {
+        var element = R._g.doc.getElementById(id);
+        element && element.remove();
+    }
+
+    /*\
      * Paper.setStart
      [ method ]
      **
@@ -7614,29 +7699,41 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                     case "clip-path":
                         var pathClip = true;
                     case "clip-rect":
-                        var rect = !pathClip && Str(value).split(separator);
+                        var rect = !pathClip && Str(value).split(separator),
+                            id = R.getElementID((paper.id + '-' + value).replace(/[\(\)\s%:,\xb0#]/g, "_")),
+                            el = R._g.doc.getElementById(id);
+
                         o._.clipispath = !!pathClip;
                         if (pathClip || rect.length == 4) {
-                            o.clip && o.clip.parentNode.parentNode.removeChild(o.clip.parentNode);
-                            var el = $("clipPath"),
-                            rc = $(pathClip ? "path" : "rect");
-                            el.id = R.getElementID(R.createUUID());
-                            $(rc, pathClip ? {
-                                d: value ? attrs['clip-path'] = R._pathToAbsolute(value) : R._availableAttrs.path,
-                                fill: 'none'
-                            } : {
-                                x: rect[0],
-                                y: rect[1],
-                                width: rect[2],
-                                height: rect[3],
-                                transform: o.matrix.invert()
-                            });
-                            el.appendChild(rc);
-                            paper.defs.appendChild(el);
-                            $(node, {
-                                "clip-path": "url('" + R._url +"#" + el.id + "')"
-                            });
-                            o.clip = rc;
+
+                            if (!el) {
+                                o.clip && o.clip.parentNode.parentNode.removeChild(o.clip.parentNode);
+                                var rc = $(pathClip ? "path" : "rect");
+                                el = $("clipPath");
+                                el.id = id;
+                                $(rc, pathClip ? {
+                                    d: value ? attrs['clip-path'] = R._pathToAbsolute(value) : R._availableAttrs.path,
+                                    fill: 'none'
+                                } : {
+                                    x: rect[0],
+                                    y: rect[1],
+                                    width: rect[2],
+                                    height: rect[3],
+                                    transform: o.matrix.invert()
+                                });
+                                el.appendChild(rc);
+                                paper.defs.appendChild(el);
+                                $(node, {
+                                    "clip-path": "url('" + R._url +"#" + id + "')"
+                                });
+                                o.clip = rc;
+                            }
+                            else {
+                                $(node, {
+                                    "clip-path": "url('" + R._url +"#" + id + "')"
+                                });
+                                o.clip = el.childNodes[0];
+                            }
                         }
                         if (!value) {
                             var path = node.getAttribute("clip-path");
@@ -8609,6 +8706,10 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         isFloating && (container.renderfix = function() {
             });
         container.renderfix();
+        R.filterShadow && R.filterShadow({
+            paper: container,
+            id: R.getElementID('shadow-filter')
+        });
         return container;
     };
     R._engine.setViewBox = function(x, y, w, h, fit) {

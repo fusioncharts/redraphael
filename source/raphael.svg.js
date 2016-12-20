@@ -582,29 +582,41 @@ _window.Raphael && _window.Raphael.svg && function(R) {
                     case "clip-path":
                         var pathClip = true;
                     case "clip-rect":
-                        var rect = !pathClip && Str(value).split(separator);
+                        var rect = !pathClip && Str(value).split(separator),
+                            id = R.getElementID((paper.id + '-' + value).replace(/[\(\)\s%:,\xb0#]/g, "_")),
+                            el = R._g.doc.getElementById(id);
+
                         o._.clipispath = !!pathClip;
                         if (pathClip || rect.length == 4) {
-                            o.clip && o.clip.parentNode.parentNode.removeChild(o.clip.parentNode);
-                            var el = $("clipPath"),
-                            rc = $(pathClip ? "path" : "rect");
-                            el.id = R.getElementID(R.createUUID());
-                            $(rc, pathClip ? {
-                                d: value ? attrs['clip-path'] = R._pathToAbsolute(value) : R._availableAttrs.path,
-                                fill: 'none'
-                            } : {
-                                x: rect[0],
-                                y: rect[1],
-                                width: rect[2],
-                                height: rect[3],
-                                transform: o.matrix.invert()
-                            });
-                            el.appendChild(rc);
-                            paper.defs.appendChild(el);
-                            $(node, {
-                                "clip-path": "url('" + R._url +"#" + el.id + "')"
-                            });
-                            o.clip = rc;
+
+                            if (!el) {
+                                o.clip && o.clip.parentNode.parentNode.removeChild(o.clip.parentNode);
+                                var rc = $(pathClip ? "path" : "rect");
+                                el = $("clipPath");
+                                el.id = id;
+                                $(rc, pathClip ? {
+                                    d: value ? attrs['clip-path'] = R._pathToAbsolute(value) : R._availableAttrs.path,
+                                    fill: 'none'
+                                } : {
+                                    x: rect[0],
+                                    y: rect[1],
+                                    width: rect[2],
+                                    height: rect[3],
+                                    transform: o.matrix.invert()
+                                });
+                                el.appendChild(rc);
+                                paper.defs.appendChild(el);
+                                $(node, {
+                                    "clip-path": "url('" + R._url +"#" + id + "')"
+                                });
+                                o.clip = rc;
+                            }
+                            else {
+                                $(node, {
+                                    "clip-path": "url('" + R._url +"#" + id + "')"
+                                });
+                                o.clip = el.childNodes[0];
+                            }
                         }
                         if (!value) {
                             var path = node.getAttribute("clip-path");
@@ -1577,6 +1589,10 @@ _window.Raphael && _window.Raphael.svg && function(R) {
         isFloating && (container.renderfix = function() {
             });
         container.renderfix();
+        R.filterShadow && R.filterShadow({
+            paper: container,
+            id: R.getElementID('shadow-filter')
+        });
         return container;
     };
     R._engine.setViewBox = function(x, y, w, h, fit) {

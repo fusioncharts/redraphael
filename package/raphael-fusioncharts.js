@@ -4726,7 +4726,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
 
                 !attr.id && (attr.id = R.getElementID(R.createUUID()));
 
-                if (!R._g.doc.getElementById(attr.id)) {
+                if (!R._g.doc.getElementById(attr.id) && elementObj.tagName) {
                     ele = parentElem.appendChild(createNode(elementObj.tagName, attr));
                     elementObj.element = ele;
                     for (i = 0, len = children.length; i < len; i++) {

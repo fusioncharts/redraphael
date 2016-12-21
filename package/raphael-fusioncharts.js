@@ -4675,6 +4675,62 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     };
 
     /*\
+     * Paper._createDOMNodes
+     [ method ]
+     **
+     * Create DOM nodes with nested children
+     **
+     > Parameters
+     **
+     - parentElem (object) parent element node
+     - elemObj (object) nested input object to create elements
+     **
+     > Usage
+     | paper._createDOMNodes(parentElementNode, {
+     |      tagName: 'linearGradient',
+     |      id: 'gradient-0',
+     |      x1: 0,
+     |      y1: 0,
+     |      x2: 0,
+     |      y2: 1,
+     |      children: [{
+     |          tagName: 'stop',
+     |          offset: 0
+     |      }, {
+     |          tagName: 'stop',
+     |          offset: 1
+     |      }]
+     |   });
+    \*/
+    paperproto._createDOMNodes = function(parentElem, elementObj) {
+        var paper = this,
+            ele,
+            i,
+            len,
+            attr = {},
+            attrKey,
+            createNode = R._createNode,
+            tagName = elementObj.tagName,
+            children = elementObj.children || [];
+
+        for (attrKey in elementObj) {
+            if (attrKey !== 'tagName' && attrKey !== 'children') {
+                attr[attrKey] = elementObj[attrKey];
+            }
+        }
+
+        !attr.id && (attr.id = R.getElementID(R.createUUID()));
+
+        if (!R._g.doc.getElementById(attr.id) && tagName) {
+            ele = parentElem.appendChild(createNode(tagName, attr));
+            elementObj.element = ele;
+            for (i = 0, len = children.length; i < len; i++) {
+                paper._createDOMNodes(ele, children[i]);
+            }
+        }
+    };
+
+    /*\
      * Paper.addDefs
      [ method ]
      **
@@ -4708,35 +4764,10 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     paperproto.addDefs = function (elemObj) {
         var paper = this,
             key,
-            createNode = R._createNode,
-            defs = paper.defs,
-            createDefNodes = function(parentElem, elementObj) {
-                var ele,
-                    i,
-                    len,
-                    attr = {},
-                    attrKey,
-                    children = elementObj.children || [];
-
-                for (attrKey in elementObj) {
-                    if (attrKey !== 'tagName' && attrKey !== 'children') {
-                        attr[attrKey] = elementObj[attrKey];
-                    }
-                }
-
-                !attr.id && (attr.id = R.getElementID(R.createUUID()));
-
-                if (!R._g.doc.getElementById(attr.id) && elementObj.tagName) {
-                    ele = parentElem.appendChild(createNode(elementObj.tagName, attr));
-                    elementObj.element = ele;
-                    for (i = 0, len = children.length; i < len; i++) {
-                        createDefNodes(ele, children[i]);
-                    }
-                }
-            };
+            defs = paper.defs;
 
         for (key in elemObj) {
-            createDefNodes(defs, elemObj[key]);
+            paper._createDOMNodes(defs, elemObj[key]);
         }
         return elemObj;
     };
@@ -4757,7 +4788,57 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     paperproto.removeDefs = function (id) {
         var element = R._g.doc.getElementById(id);
         element && element.remove();
-    }
+    };
+
+    /*\
+     * Paper.updateDefs
+     [ method ]
+     **
+     * Update definitions in paper
+     **
+     > Parameters
+     **
+     - id (string or object) id of the element or the element node itself
+     - attrObj (object) attribute of the element object with it's children attributes nested
+     **
+     > Usage
+     | paper.updateDefs(id, {
+     |      x1: 0,
+     |      y1: 0,
+     |      x2: 0,
+     |      y2: 1,
+     |      children: [{
+     |          offset: 0
+     |      }, {
+     |          offset: 1
+     |      }]
+     |   });
+     | // Updates 'linearGradient' element of given id
+     | // Updates the child element if present and create new child if not present
+    \*/
+    paperproto.updateDefs = function (id, attrObj) {
+        var paper = this,
+            element = !(id instanceof Node) ? R._g.doc.getElementById(id) : id,
+            attrKey,
+            i,
+            len,
+            children = attrObj.children || [],
+            childId,
+            attr = {};
+
+        if (element) {
+            for (attrKey in attrObj) {
+                if (attrKey !== 'tagName' && attrKey !== 'children') {
+                    element.setAttribute(attrKey, attrObj[attrKey]);
+                }
+            }
+            for (i = 0, len = children.length; i < len; i++) {
+                childId = children[i].id;
+                element.children[i] ? paper.updateDefs(childId || element.children[i], children[i]) :
+                    paper._createDOMNodes(element, children[i]);
+            }
+        }
+    };
 
     /*\
      * Paper.setStart

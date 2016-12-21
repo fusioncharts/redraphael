@@ -124,7 +124,7 @@ window.testJson = {
         },
         'test-7': {
             'start': {
-                'path': 'M100 350L 400 350L 600 20L 680 20L 680 20',
+                'path': 'M100 350L 400 350L 600 20L 680 20L 680 20L681 20',
                 'stroke-width': '3',
                 'fill': 'none',
                 'stroke': '#000'

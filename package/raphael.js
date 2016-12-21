@@ -5387,10 +5387,20 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                                         for (i = 0, ii = from[attr].length; i < ii; ++i) {
                                             if (i === 0) {
                                                 if(from[attr].isRadial || diff[attr].isRadial){
-                                                    radial = "r(";
-                                                    radial += from[attr][0].f1 * (1 - pos) + diff[attr][0].f1 * pos;
+                                                    var hasExtra = from[attr][0].f6 && diff[attr][0].f6;
+                                                    
+                                                    radial = "xr(";
+                                                    radial += from[attr][0].f1 * (1 - pos) + diff[attr][0].f1 * pos || '';
                                                     radial += ',';
-                                                    radial += from[attr][0].f2 * (1 - pos) + diff[attr][0].f2 * pos;
+                                                    radial += from[attr][0].f2 * (1 - pos) + diff[attr][0].f2 * pos || '';
+                                                    radial += ',';
+                                                    radial += from[attr][0].f3 * (1 - pos) + diff[attr][0].f3 * pos || '';
+                                                    radial += ',';
+                                                    radial += from[attr][0].f4 * (1 - pos) + diff[attr][0].f4 * pos || '';
+                                                    radial += ',';
+                                                    radial += from[attr][0].f5 * (1 - pos) + diff[attr][0].f5 * pos || '';
+                                                    radial += ',';
+                                                    radial += 'userSpaceOnUse';
                                                     radial += ')';
                                                     now.push(radial)
                                                 } else {
@@ -5783,7 +5793,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             // Convert angle to number
             if (isNaN(arr[0])) {
                 // Check if is radial
-                if(arr[0].charAt(0) === 'r'){
+                if(~"rx".indexOf(arr[0].charAt(0))){
                     arr.isRadial = true;
 
                     rPos = 1;
@@ -5796,6 +5806,10 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                         temp = arr[0].substr(openBrPos, closedBrPos - openBrPos).split(',');
                         radial.f1 = +temp[0];
                         radial.f2 = +temp[1];
+                        radial.f3 = +temp[2];
+                        radial.f4 = +temp[3];
+                        radial.f5 = +temp[4];
+                        radial.f6 = +temp[5];
                     }
                     arr[0] = arr[0].substr(closedBrPos + 1);
                     arr.unshift(radial);

@@ -4428,6 +4428,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      **
      - id (string or object) id of the element or the element node itself
      - attrObj (object) attribute of the element object with it's children attributes nested
+     - hardUpdateChildren (boolean) determines whether to create new children if child elements are less than
+       the children in attrObj or remove children in same manner
      **
      > Usage
      | paper.updateDefs(id, {
@@ -4436,17 +4438,20 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      |      children: [{
      |          dx: '2'
      |      }]
-     |   });
+     |   }, true);
      | // Updates element of given id
-     | // Updates the child element if present and create new child if not present
+     | // Updates the child element if present and create new child if found less than the children in attrObj
+     | // and delete a child in same manner according to value of 'hardUpdateChildren'
     \*/
-    paperproto.updateDefs = function (id, attrObj) {
+    paperproto.updateDefs = function (id, attrObj, hardUpdateChildren) {
         var paper = this,
             element = !(id instanceof Node) ? R._g.doc.getElementById(id) : id,
             attrKey,
             i,
+            diff,
             len,
             children = attrObj.children || [],
+            elemChildren,
             childId,
             attr = {};
 
@@ -4456,10 +4461,18 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                     element.setAttribute(attrKey, attrObj[attrKey]);
                 }
             }
+            elemChildren = element.children;
             for (i = 0, len = children.length; i < len; i++) {
                 childId = children[i].id;
-                element.children[i] ? paper.updateDefs(childId || element.children[i], children[i]) :
-                    paper._createDOMNodes(element, children[i]);
+                elemChildren[i] ? paper.updateDefs(childId || elemChildren[i], children[i]) :
+                    hardUpdateChildren && paper._createDOMNodes(element, children[i]);
+            }
+            if (hardUpdateChildren) {
+                diff = elemChildren.length - i;
+                while (diff > 0) {
+                    elemChildren[elemChildren.length - 1].remove();
+                    diff--;
+                }
             }
         }
     };

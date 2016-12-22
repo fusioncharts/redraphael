@@ -4286,19 +4286,33 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      **
      > Usage
      | paper._createDOMNodes(parentElementNode, {
-     |      tagName: 'linearGradient',
-     |      id: 'gradient-0',
-     |      x1: 0,
-     |      y1: 0,
-     |      x2: 0,
-     |      y2: 1,
-     |      children: [{
-     |          tagName: 'stop',
-     |          offset: 0
-     |      }, {
-     |          tagName: 'stop',
-     |          offset: 1
-     |      }]
+     |       tagName: 'filter',
+     |       id: 'filter-0',
+     |       width: '200%',
+     |       height: '200%',
+     |       children: [{
+     |           tagName: 'feOffset',
+     |           result: 'offOut',
+     |           in: 'SourceGraphic',
+     |           dx: '1',
+     |           dy: '1'
+     |       }, {
+     |           tagName: 'feColorMatrix',
+     |           result: 'matrixOut',
+     |           in: 'offOut',
+     |           type: 'matrix',
+     |           values: '0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.3 0'
+     |       }, {
+     |           tagName: 'feGaussianBlur',
+     |           result: 'blurOut',
+     |           in: 'matrixOut',
+     |           stdDeviation: '1'
+     |       }, {
+     |           tagName: 'feComposite',
+     |           in: 'SourceGraphic',
+     |           in2: 'blurOut',
+     |           operator: 'over'
+     |       }]
      |   });
     \*/
     paperproto._createDOMNodes = function(parentElem, elementObj) {
@@ -4341,24 +4355,39 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      **
      > Usage
      | var ob = paper.addDefs({
-     |       gradient0: { // key
-     |           tagName: 'linearGradient',
-     |           id: 'gradient-0',
-     |           x1: 0,
-     |           y1: 0,
-     |           x2: 0,
-     |           y2: 1,
-     |           children: [{
-     |               tagName: 'stop',
-     |               offset: 0
-     |           }, {
-     |               tagName: 'stop',
-     |               offset: 1
-     |           }]
-     |       }
-     |   });
-     | // Creates a 'linearGradient' tag element of id, 'gradient-0', with x1, y1, x2, y2 as it's attributes
-     | // Creates two 'stop' tag elements with offset as it's attribute under the 'linearGradient' tag element
+     |   filter0: { // key
+     |       tagName: 'filter',
+     |       id: 'filter-0',
+     |       width: '200%',
+     |       height: '200%',
+     |       children: [{
+     |           tagName: 'feOffset',
+     |           result: 'offOut',
+     |           in: 'SourceGraphic',
+     |           dx: '1',
+     |           dy: '1'
+     |       }, {
+     |           tagName: 'feColorMatrix',
+     |           result: 'matrixOut',
+     |           in: 'offOut',
+     |           type: 'matrix',
+     |           values: '0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.3 0'
+     |       }, {
+     |           tagName: 'feGaussianBlur',
+     |           result: 'blurOut',
+     |           in: 'matrixOut',
+     |           stdDeviation: '1'
+     |       }, {
+     |           tagName: 'feComposite',
+     |           in: 'SourceGraphic',
+     |           in2: 'blurOut',
+     |           operator: 'over'
+     |       }]
+     |   }
+     | });
+     | // Creates a 'filter' definition element of id, 'filter-0', with width, height as it's attributes
+     | // Creates feOffset, feColorMatrix, feGaussianBlur, feComposite as children elements
+     | // under the 'filter' definition element
     \*/
     paperproto.addDefs = function (elemObj) {
         var paper = this,
@@ -4402,17 +4431,13 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      **
      > Usage
      | paper.updateDefs(id, {
-     |      x1: 0,
-     |      y1: 0,
-     |      x2: 0,
-     |      y2: 1,
+     |      width: '100%',
+     |      height: '100%',
      |      children: [{
-     |          offset: 0
-     |      }, {
-     |          offset: 1
+     |          dx: '2'
      |      }]
      |   });
-     | // Updates 'linearGradient' element of given id
+     | // Updates element of given id
      | // Updates the child element if present and create new child if not present
     \*/
     paperproto.updateDefs = function (id, attrObj) {

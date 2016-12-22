@@ -5874,7 +5874,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                     // Shifting array to add current object 
                     // in position 1
                     arr.push({});
-                    for (i == arr.length - 1; i !== 1; --i) {
+                    for (i = arr.length - 1; i !== 1; --i) {
                         arr[i] = arr[i - 1];
                     }
                     arr[1] = temp2;

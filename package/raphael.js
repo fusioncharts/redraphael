@@ -4664,6 +4664,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      **
      - parentElem (object) parent element node
      - elemObj (object) nested input object to create elements
+     - returnObj (object) object reference which will be returned
      **
      > Usage
      | paper._createDOMNodes(parentElementNode, {
@@ -4696,7 +4697,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      |       }]
      |   });
     \*/
-    paperproto._createDOMNodes = function(parentElem, elementObj) {
+    paperproto._createDOMNodes = function(parentElem, elementObj, returnObj) {
         var paper = this,
             ele,
             i,
@@ -4706,7 +4707,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             createNode = R._createNode,
             tagName = elementObj.tagName,
             children = elementObj.children || [];
-
+        !returnObj && (returnObj = {});
         for (attrKey in elementObj) {
             if (attrKey !== 'tagName' && attrKey !== 'children') {
                 attr[attrKey] = elementObj[attrKey];
@@ -4717,11 +4718,16 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
 
         if (!R._g.doc.getElementById(attr.id) && tagName) {
             ele = parentElem.appendChild(createNode(tagName, attr));
-            elementObj.element = ele;
-            for (i = 0, len = children.length; i < len; i++) {
-                paper._createDOMNodes(ele, children[i]);
+            returnObj.element = ele;
+            returnObj.id = attr.id;
+            len = children.length;
+            (len > 0) && (returnObj.children = []);
+            for (i = 0; i < len; i++) {
+                returnObj.children[i] = {};
+                paper._createDOMNodes(ele, children[i], returnObj.children[i]);
             }
         }
+        return returnObj;
     };
 
     /*\
@@ -4773,12 +4779,14 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     paperproto.addDefs = function (elemObj) {
         var paper = this,
             key,
+            returnObj = {},
             defs = paper.defs;
 
         for (key in elemObj) {
-            paper._createDOMNodes(defs, elemObj[key]);
+            returnObj[key] = {};
+            paper._createDOMNodes(defs, elemObj[key], returnObj[key]);
         }
-        return elemObj;
+        return returnObj;
     };
 
     /*\

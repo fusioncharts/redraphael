@@ -5230,15 +5230,27 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      * Element.clone
      [ method ]
      **
+      > Parameters
+     **
+     - attrObj (object) set of attributes
+     - group (object) parent node
      = (object) clone of a given element
      **
     \*/
-    elproto.clone = function() {
+    elproto.clone = function(attrObj, group) {
         if (this.removed) {
             return null;
         }
         var o = this,
-            out = o.paper[o.type]().attr(o.attr());
+            attr = o.attr(),
+            key,
+            out;
+
+        for (key in attrObj) {
+            attr[key] = attrObj[key];
+        }
+
+        out = o.paper[o.type](attr, group);
         o.__set__ && o.__set__.push(out);
         return out;
     };

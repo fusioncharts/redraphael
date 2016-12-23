@@ -4396,6 +4396,9 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      | // under the 'filter' definition element
     \*/
     paperproto.addDefs = function (elemObj) {
+        if (!R.svg) {
+            return;
+        }
         var paper = this,
             key,
             returnObj = {},
@@ -4422,6 +4425,9 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      | paper.removeDefs(id);
     \*/
     paperproto.removeDefs = function (id) {
+        if (!R.svg) {
+            return;
+        }
         var element = R._g.doc.getElementById(id);
         element && element.remove();
     };
@@ -4452,6 +4458,9 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      | // and delete a child in same manner according to value of 'hardUpdateChildren'
     \*/
     paperproto.updateDefs = function (id, attrObj, hardUpdateChildren) {
+        if (!R.svg) {
+            return;
+        }
         var paper = this,
             element = !(id instanceof Node) ? R._g.doc.getElementById(id) : id,
             attrKey,
@@ -4462,6 +4471,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             elemChildren,
             childId,
             attr = {};
+
+        (hardUpdateChildren === undefined) && (hardUpdateChildren = true);
 
         if (element) {
             for (attrKey in attrObj) {

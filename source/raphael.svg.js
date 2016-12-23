@@ -1589,10 +1589,6 @@ _window.Raphael && _window.Raphael.svg && function(R) {
         isFloating && (container.renderfix = function() {
             });
         container.renderfix();
-        R.filterShadow && R.filterShadow({
-            paper: container,
-            id: R.getElementID('shadow-filter')
-        });
         return container;
     };
     R._engine.setViewBox = function(x, y, w, h, fit) {

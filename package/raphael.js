@@ -4756,8 +4756,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     };
 
     // Works exactly as paper.animateWith()
-    paperproto.animateWith = function(el, anim, params, ms, easing, callback) {
-        return elproto.animateWith.call(this, el, anim, params, ms, easing, callback);
+    paperproto.animateWith = function(el, anim, params, ms, easing, callback, delayTime) {
+        return elproto.animateWith.call(this, el, anim, params, ms, easing, callback, delayTime);
     };
 
     /*\
@@ -5306,7 +5306,31 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 }
             }
             return l;
-        }
+        },
+        // accelerating from zero velocity
+        easeInQuad: function (t) { return t*t },
+        // decelerating to zero velocity
+        easeOutQuad: function (t) { return t*(2-t) },
+        // acceleration until halfway, then deceleration
+        easeInOutQuad: function (t) { return t<.5 ? 2*t*t : -1+(4-2*t)*t },
+        // accelerating from zero velocity
+        easeInCubic: function (t) { return t*t*t },
+        // decelerating to zero velocity
+        easeOutCubic: function (t) { return (--t)*t*t+1 },
+        // acceleration until halfway, then deceleration
+        easeInOutCubic: function (t) { return t<.5 ? 4*t*t*t : (t-1)*(2*t-2)*(2*t-2)+1 },
+        // accelerating from zero velocity
+        easeInQuart: function (t) { return t*t*t*t },
+        // decelerating to zero velocity
+        easeOutQuart: function (t) { return 1-(--t)*t*t*t },
+        // acceleration until halfway, then deceleration
+        easeInOutQuart: function (t) { return t<.5 ? 8*t*t*t*t : 1-8*(--t)*t*t*t },
+        // accelerating from zero velocity
+        easeInQuint: function (t) { return t*t*t*t*t },
+        // decelerating to zero velocity
+        easeOutQuint: function (t) { return 1+(--t)*t*t*t*t },
+        // acceleration until halfway, then deceleration
+        easeInOutQuint: function (t) { return t<.5 ? 16*t*t*t*t*t : 1+16*(--t)*t*t*t*t }
     };
     ef.easeIn = ef["ease-in"] = ef["<"];
     ef.easeOut = ef["ease-out"] = ef[">"];
@@ -5388,7 +5412,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                                             if (i === 0) {
                                                 if(from[attr].isRadial || diff[attr].isRadial){
                                                     var hasExtra = from[attr][0].f6 && diff[attr][0].f6;
-                                                    
+
                                                     radial = "xr(";
                                                     radial += from[attr][0].f1 * (1 - pos) + diff[attr][0].f1 * pos || '';
                                                     radial += ',';
@@ -5536,7 +5560,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      **
      = (object) original element
     \*/
-    elproto.animateWith = function(el, anim, params, ms, easing, callback) {
+    elproto.animateWith = function(el, anim, params, ms, easing, callback, delayTime) {
         var element = this;
         if (element.removed) {
             callback && callback.call(element);
@@ -5550,6 +5574,9 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         }
         var a = params instanceof Animation ? params : R.animation(params, ms, easing, callback),
         x, y;
+        +delayTime && setTimeout(function () {
+            runAnimation(a, element, a.percents[0], null, element.attr(),undefined, el);
+        }, +delayTime) ||
         runAnimation(a, element, a.percents[0], null, element.attr(),undefined, el);
         for (var i = 0, ii = animationElements.length; i < ii; i++) {
             if (animationElements[i].anim == anim && animationElements[i].el == el) {
@@ -5836,7 +5863,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                     arr[i].opacity = 1;
                 }
                 // set the position
-                arr[i].position = +temp[1]; 
+                arr[i].position = +temp[1];
             }
 
             // Sorting array according to position
@@ -5871,7 +5898,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                         temp2[key] = arr[1][key];
                     }
                     temp2.position = 0;
-                    // Shifting array to add current object 
+                    // Shifting array to add current object
                     // in position 1
                     arr.push({});
                     for (i = arr.length - 1; i !== 1; --i) {
@@ -5893,7 +5920,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                         temp2[key] = arr[ii][key];
                     }
                     temp2.position = 100;
-                    // Shifting array to add current object 
+                    // Shifting array to add current object
                     // in position 1
                     arr.push(temp2);
                 }
@@ -5973,7 +6000,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         if (canFallback(p1, p2)) {
             return [p1, p2];
         }
-        // If any of the parameters is 
+        // If any of the parameters is
         // absent return to normal flow
         if (!p1 || !p2) {
             return [p1, p2];
@@ -6004,7 +6031,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             // Checking path totoalLength is accurate or not
             // testing with a known path
             // this check is for Firefox
-            dPath.setAttribute('d', 'M300 10 L300 300 C50 310,50 640,350 650' + 
+            dPath.setAttribute('d', 'M300 10 L300 300 C50 310,50 640,350 650' +
                 'C600 640,600 310,400 300 L400 10 L295 10');
             testLen = dPath.getTotalLength();
             testPoint = dPath.getPointAtLength(10);
@@ -6111,7 +6138,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         function _divide(arr, times) {
             var resArr = [],
                 locArr = [],
-                arrLen = arr.length, 
+                arrLen = arr.length,
                 i = 0,
                 ii = 0,
                 x = 0,
@@ -6181,7 +6208,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
         }
         /*
-        
+
         */
         removeBlanks(pathArr1);
         removeBlanks(pathArr2);
@@ -6252,7 +6279,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 item = arr[i];
                 if (item[0] === 'C' && item[3] === item[5] && item[4] === item[6]) {
                     arr[i].stringValue = ['L', item[3], item[4]].join(' ');
-                } else 
+                } else
                 item.stringValue = val;
                 // Creating an array if undefined
                 // pushing otherwise
@@ -6260,7 +6287,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 ob[item.stringValue] || (ob[item.stringValue] = [i]);
             }
         }
-        // Function to get nearest point that exist 
+        // Function to get nearest point that exist
         // in the other array
         function getNearestExistingPoint (arr, map, start, ii, lim) {
             var i = start,
@@ -6291,7 +6318,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         // function to conver path array to string
         function pathToString (arr) {
             return arr.join('');
-        } 
+        }
         // commonPathCalculator flow here
         p1 = splitter(p1);
         p2 = splitter(p2);
@@ -6437,7 +6464,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     }
 
 
-    
+
     function runAnimation(anim, element, percent, status, totalOrigin, times, parentEl) {
         percent = toFloat(percent);
         var params,

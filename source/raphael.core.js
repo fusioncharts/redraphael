@@ -117,7 +117,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     RedRaphael = R;
 
     var loaded,
-
+        Raphael,
         undef,
         E = "",
         S = " ",
@@ -6479,7 +6479,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      | })(Raphael.ninja());
     \*/
     R.ninja = function() {
-        oldRaphael.was ? (g.win.Raphael = oldRaphael.is) : delete Raphael;
+        oldRaphael.was ? (g.win.Raphael = oldRaphael.is) : delete g.win.Raphael;
         return R;
     };
 

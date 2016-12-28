@@ -7,6 +7,7 @@
  * Copyright © 2008-2012 Sencha Labs <http://sencha.com>
  *
  * Licensed under the MIT license.
+ *
  */
 if (typeof _window === 'undefined' && typeof window === 'object') {
    _window = window;

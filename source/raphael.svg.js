@@ -614,6 +614,7 @@ _window.Raphael && _window.Raphael.svg && function(R) {
                                 $(node, {
                                     "clip-path": E
                                 });
+                                document.documentMode === 11 && node.removeAttribute('clip-path');
                                 delete o.clip;
                             }
                         }
@@ -864,8 +865,7 @@ _window.Raphael && _window.Raphael.svg && function(R) {
                 }
             }
         }
-
-        (o.type === 'text') && tuneText(o, params);
+        (o.type === 'text' && !params["_do-not-tune"]) && tuneText(o, params);
         s.visibility = vis;
     },
     /*
@@ -1357,8 +1357,10 @@ _window.Raphael && _window.Raphael.svg && function(R) {
         } else if (name != null && R.is(name, "object")) {
             params = name;
         }
-        for (var key in params) {
-            eve("raphael.attr." + key + "." + this.id, this, params[key], key);
+        if (R.stopEvent !== false) {
+            for (var key in params) {
+                eve("raphael.attr." + key + "." + this.id, this, params[key], key);
+            }
         }
         var todel = {};
         for (key in this.ca) {
@@ -1502,11 +1504,14 @@ _window.Raphael && _window.Raphael.svg && function(R) {
         applyCustomAttributes(res, attrs);
         return res;
     };
-    R._engine.text = function(svg, attrs, group) {
+    R._engine.text = function(svg, attrs, group, css) {
         var el = $("text"),
             res = new Element(el, svg, group);
         res.type = "text";
         res._textdirty = true;
+        // Ideally this code should not be here as .css() is not a function of rapheal.
+        css && res.css && res.css(css, undefined, true);
+
         setFillAndStroke(res, attrs);
         applyCustomAttributes(res, attrs);
         return res;
@@ -1536,6 +1541,7 @@ _window.Raphael && _window.Raphael.svg && function(R) {
         css = "overflow:hidden;-webkit-tap-highlight-color:rgba(0,0,0,0);"+
             "-webkit-user-select:none;-moz-user-select:-moz-none;-khtml-user-select:none;"+
             "-ms-user-select:none;user-select:none;-o-user-select:none;cursor:default;",
+        css = css + "vertical-align:middle;",
         isFloating;
         x = x || 0;
         y = y || 0;

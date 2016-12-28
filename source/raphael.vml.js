@@ -300,8 +300,9 @@ _window.Raphael && _window.Raphael.vml && function(R) {
                 }
             }
         }
-        if (o.textpath) {
-            var textpathStyle = o.textpath.style;
+        // Css styles will be applied in element or group.
+        if (o.textpath || isGroup) {
+          var textpathStyle = isGroup ? node.style : o.textpath.style;
             params.font && (textpathStyle.font = params.font);
             params["font-family"] && (textpathStyle.fontFamily = '"' + params["font-family"].split(",")[0].replace(/^['"]+|['"]+$/g, E) + '"');
             params["font-size"] && (textpathStyle.fontSize = params["font-size"]);
@@ -868,8 +869,10 @@ _window.Raphael && _window.Raphael.vml && function(R) {
             params[name] = value;
         }
         value == null && R.is(name, "object") && (params = name);
-        for (var key in params) {
-            eve("raphael.attr." + key + "." + this.id, this, params[key], key);
+        if (R.stopEvent !== false) {
+            for (var key in params) {
+                eve("raphael.attr." + key + "." + this.id, this, params[key], key);
+            }
         }
         if (params) {
             var todel = {};
@@ -1089,7 +1092,7 @@ _window.Raphael && _window.Raphael.vml && function(R) {
         setCoords(res, 1, 1, 0, 0, 0);
         return res;
     };
-    R._engine.text = function(vml, attrs, group) {
+    R._engine.text = function(vml, attrs, group, css) {
         var el = createNode("shape"),
 			path = createNode("path"),
 			o = createNode("textpath");
@@ -1114,6 +1117,7 @@ _window.Raphael && _window.Raphael.vml && function(R) {
         p.attrs.y = attrs.y;
         p.attrs.w = 1;
         p.attrs.h = 1;
+        css && p.css && p.css(css, undefined, true);
         setFillAndStroke(p, attrs);
         applyCustomAttributes(p, attrs);
 

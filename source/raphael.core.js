@@ -4223,7 +4223,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 "text-anchor", "middle",
                 "vertical-align", "middle"),
 
-            out = R._engine.text(paper, attrs, group);
+            out = R._engine.text(paper, attrs, group, args[1]);
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 
@@ -4321,98 +4321,6 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     };
 
     /*\
-     * paperAnimator
-     [ method ]
-     **
-     * Run the animation to animate paper by changing it's animatable properties step-wise in an interval
-     **
-     > Parameters
-     **
-     - paper (Object) paper object
-     - duration (number) time stretch in milliseconds to complete animation
-     - start (number) start value or initial value of the animatable property
-     - end (number) end value or final value of the animatable property
-     - rule (String) property name which will be animated
-     - effect (String) animation style
-     - callback (function reference) method which will execute at end of animation
-    \*/
-    function paperAnimator(paper, duration, start, end, rule, effect, callback) {
-        var iterations = (duration / UNIT_INTERVAL),
-            diff = (end - start),
-            ef = R.easing_formulas,
-            incrementArr = (function () {
-                var i = 0,
-                    arr = [];
-                for (; i < duration; i += UNIT_INTERVAL) {
-                    arr.push(((ef[effect || 'linear'](i / duration)) * diff));
-                }
-                return arr;
-            })(),
-            counter = 0,
-            startTime,
-            progress,
-            requestAnimFrame = win.requestAnimationFrame ||
-            win.webkitRequestAnimationFrame ||
-            win.mozRequestAnimationFrame ||
-            win.oRequestAnimationFrame ||
-            win.msRequestAnimationFrame ||
-            function(callback) {
-                setTimeout(callback, UNIT_INTERVAL);
-            },
-            stepFn = function (timestamp) {
-                var diff,
-                    setValue,
-                    val,
-                    value,
-                    weightedProgress,
-                    attr = {},
-                    reduce = false;
-
-                if (timestamp) {
-                    if (!startTime) {
-                        startTime = timestamp;
-                    }
-                    progress = timestamp - startTime;
-
-                    weightedProgress = ef[effect || 'linear'](progress / duration);
-                    diff = Math.abs(start - end);
-
-                    reduce = (start - end) < 0 ? false : true;
-
-                    setValue = reduce ?
-                        (Math.max(start - (weightedProgress * diff), end)) :
-                        (Math.min(start + (weightedProgress * diff), end));
-
-                    attr[rule] = setValue;
-                    paper.setDimension(attr);
-
-                    if (progress < duration) {
-                        requestAnimFrame(stepFn);
-                    }
-                    else {
-                        callback && callback();
-                    }
-                }
-                else {
-                    if (counter < iterations) {
-                        val = incrementArr[counter];
-
-                        attr[rule] = start + val;
-                        paper.setDimension(attr);
-
-                        counter += 1;
-                        setTimeout(stepFn, UNIT_INTERVAL);
-                    }
-                    else {
-                        callback && callback();
-                    }
-                }
-            };
-
-        requestAnimFrame(stepFn);
-    };
-
-    /*\
      * paper.setDimension
      [ method ]
      **
@@ -4446,6 +4354,31 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         }
     };
 
+    paperproto.attr = function (name) {
+        var element = this;
+        if (name == null) {
+            return {
+                width : element.width,
+                height : element.height
+            };
+        }
+        if (R.is(name, "string")) {
+            return element[name];
+        }
+
+        element.setDimension(name);
+        return element;
+    };
+
+    paperproto.status = function(anim, value) {
+        return elproto.status.call(this, anim, value);
+    };
+
+    // Works exactly as paper.animateWith()
+    paperproto.animateWith = function(el, anim, params, ms, easing, callback) {
+        return elproto.animateWith.call(this, el, anim, params, ms, easing, callback);
+    };
+
     /*\
      * Paper.animate
      [ method ]
@@ -4463,40 +4396,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      - effect (String) animation style
      - callback (function reference) method which will execute at end of animation
     \*/
-    paperproto.animate = function(paramsObj, duration, effect, callback) {
-        var paper = this,
-            finalStyle = {},
-            currentStyle = {},
-            iCB = function () {
-                finished += 1;
-                if (finished === total) {
-                    (typeof callback === 'function') && callback();
-                }
-            },
-            total = 0,
-            finished = 0,
-            rule,
-            attr = {};
-
-
-        if (duration < UNIT_INTERVAL) {
-            // If the duration of animation is less than the
-            // minimum frame length then apply the styles directly.
-            for (rule in paramsObj) {
-                attr[rule] = paramsObj[rule];
-                paper.setDimension(attr);
-            }
-
-            callback && callback();
-            return;
-        }
-
-        for (rule in paramsObj) {
-            total += 1;
-            finalStyle[rule] = paramsObj[rule];
-            currentStyle[rule] = paper[rule];
-            paperAnimator(paper, duration, currentStyle[rule], finalStyle[rule], rule, effect, iCB);
-        }
+    paperproto.animate = function(params, ms, easing, callback) {
+        return elproto.animate.call(this, params, ms, easing, callback);
     };
 
     /*\
@@ -4692,7 +4593,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         var rp = this.realPath = this.realPath || getPath[this.type](this),
             tr;
         return R.isPointInsidePath(((tr = this.attr('transform')) &&
-                tr.length && R.transformPath(rp, tr)) || rp, x, y);
+            tr.length && R.transformPath(rp, tr)) || rp, x, y);
     };
 
     /*\
@@ -5033,20 +4934,24 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     ef["back-out"] = ef.backOut;
 
     var animationElements = [],
-    requestAnimFrame = _win.requestAnimationFrame ||
-    _win.webkitRequestAnimationFrame ||
-    _win.mozRequestAnimationFrame ||
-    _win.oRequestAnimationFrame ||
-    _win.msRequestAnimationFrame ||
-    function(callback) {
-        setTimeout(callback, 16);
+    requestAnimFrame,
+    // This a temporary fix so that animation can be handled from the scheduler module.
+    getAnimFrameFn = function () {
+        return requestAnimFrame = R.requestAnimFrame ||
+        _win.webkitRequestAnimationFrame ||
+        _win.mozRequestAnimationFrame ||
+        _win.oRequestAnimationFrame ||
+        _win.msRequestAnimationFrame ||
+        function(callback) {
+            setTimeout(callback, 16);
+        };
     },
     animation = function() {
         var Now = +new Date,
         l = 0;
         for (; l < animationElements.length; l++) {
             var e = animationElements[l];
-            if (e.el.removed || e.paused) {
+            if (e.el.removed || e.paused || e.parentEl && e.parentEl.e && e.parentEl.e.paused) {
                 continue;
             }
             var time = Now - e.start,
@@ -5060,12 +4965,16 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             set = {},
             now,
             init = {},
+            executeEvent = R.stopEvent !== false,
             key;
             if (e.initstatus) {
                 time = (e.initstatus * e.anim.top - e.prev) / (e.percent - e.prev) * ms;
                 e.status = e.initstatus;
                 delete e.initstatus;
-                e.stop && animationElements.splice(l--, 1);
+                if (e.stop) {
+                    delete e.el;
+                    animationElements.splice(l--, 1);
+                }
             } else {
                 e.status = (e.prev + (e.percent - e.prev) * (time / ms)) / e.anim.top;
             }
@@ -5136,20 +5045,24 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                         set[attr] = now;
                     }
                 that.attr(set);
-                (function(id, that, anim) {
-                    setTimeout(function() {
-                        eve("raphael.anim.frame." + id, that, anim);
-                    });
-                })(that.id, that, e.anim);
+                if (executeEvent) {
+                    (function(id, that, anim) {
+                        setTimeout(function() {
+                            eve("raphael.anim.frame." + id, that, anim);
+                        });
+                    })(that.id, that, e.anim);
+                }
             } else {
                 (function(f, el, a) {
                     setTimeout(function() {
-                        eve("raphael.anim.frame." + el.id, el, a);
-                        eve("raphael.anim.finish." + el.id, el, a);
+                        executeEvent && eve("raphael.anim.frame." + el.id, el, a);
+                        executeEvent && eve("raphael.anim.finish." + el.id, el, a);
                         R.is(f, "function") && f.call(el);
                     });
                 })(e.callback, that, e.anim);
+
                 that.attr(to);
+                delete e.el;
                 animationElements.splice(l--, 1);
                 if (e.repeat > 1 && !e.next) {
                     for (key in to)
@@ -5165,7 +5078,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
         }
         R.svg && that && that.paper && that.paper.safari();
-        animationElements.length && requestAnimFrame(animation);
+        animationElements.length && (requestAnimFrame || getAnimFrameFn())(animation);
     },
     upto255 = function(color) {
         return color > 255 ? 255 : color < 0 ? 0 : color;
@@ -5198,9 +5111,15 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             callback && callback.call(element);
             return element;
         }
+        if (ms == 0) {
+            setTimeout(function () {
+                R.is(callback, "function") && callback.call(element);
+            }, 0);
+            return element.attr (params);
+        }
         var a = params instanceof Animation ? params : R.animation(params, ms, easing, callback),
         x, y;
-        runAnimation(a, element, a.percents[0], null, element.attr());
+        runAnimation(a, element, a.percents[0], null, element.attr(),undefined, el);
         for (var i = 0, ii = animationElements.length; i < ii; i++) {
             if (animationElements[i].anim == anim && animationElements[i].el == el) {
                 animationElements[ii - 1].start = animationElements[i].start;
@@ -5328,7 +5247,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         a.times = math.floor(mmax(times, 0)) || 1;
         return a;
     };
-    function runAnimation(anim, element, percent, status, totalOrigin, times) {
+    function runAnimation(anim, element, percent, status, totalOrigin, times, parentEl) {
         percent = toFloat(percent);
         var params,
         isInAnim,
@@ -5337,6 +5256,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         next,
         prev,
         timestamp,
+        tempDiff,
+        change,
         ms = anim.ms,
         from = {},
         to = {},
@@ -5346,6 +5267,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 var e = animationElements[i];
                 if (e.el.id == element.id && e.anim == anim) {
                     if (e.percent != percent) {
+                        delete e.el.e;
+                        delete e.el;
                         animationElements.splice(i, 1);
                         isInAnimSet = 1;
                     } else {
@@ -5380,34 +5303,55 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                         from[attr] = element.attr(attr);
                         (from[attr] == null) && (from[attr] = availableAttrs[attr]);
                         to[attr] = params[attr];
+                        change = false;
                         switch (availableAnimAttrs[attr]) {
                             case nu:
-                                diff[attr] = (to[attr] - from[attr]) / ms;
+                                tempDiff = to[attr] - from[attr];
+                                (tempDiff || isNaN(tempDiff)) && (change = true);
+                                diff[attr] = tempDiff / ms;
                                 break;
                             case "colour":
                                 from[attr] = R.getRGB(from[attr]);
                                 var toColour = R.getRGB(to[attr]);
+                                tempDiff = {};
+                                tempDiff.r = (toColour.r - from[attr].r),
+                                tempDiff.g = (toColour.g - from[attr].g),
+                                tempDiff.b = (toColour.b - from[attr].b);
+                                // todo to be checked for NaN
+                                (tempDiff.r || tempDiff.g || tempDiff.b) && (change = true);
                                 diff[attr] = {
-                                    r: (toColour.r - from[attr].r) / ms,
-                                    g: (toColour.g - from[attr].g) / ms,
-                                    b: (toColour.b - from[attr].b) / ms
+                                    r: tempDiff.r / ms,
+                                    g: tempDiff.g / ms,
+                                    b: tempDiff.b / ms
                                 };
                                 break;
                             case "path":
-                                var pathes = path2curve(from[attr], to[attr]),
+                                var pathes,
+                                toPath;
+                                // path2curve is taking longer time to execute, to optimize breaking if both
+                                // start and end path are same.
+                                if ((from[attr].join ? from[attr].join() : from[attr]) ===
+                                        (to[attr].join ?to[attr].join() : to[attr])) {
+                                    change = false;
+                                    break;
+                                }
+                                pathes = path2curve(from[attr], to[attr]);
                                 toPath = pathes[1];
+                                change = true;
                                 from[attr] = pathes[0];
                                 diff[attr] = [];
                                 for (i = 0, ii = from[attr].length; i < ii; i++) {
                                     diff[attr][i] = [0];
                                     for (var j = 1, jj = from[attr][i].length; j < jj; j++) {
-                                        diff[attr][i][j] = (toPath[i][j] - from[attr][i][j]) / ms;
+                                        tempDiff = toPath[i][j] - from[attr][i][j];
+                                        diff[attr][i][j] =  tempDiff / ms;
                                     }
                                 }
                                 break;
                             case "transform":
                                 var _ = element._,
                                 eq = equaliseTransform(_[attr], to[attr]);
+                                change = true;
                                 if (eq) {
                                     from[attr] = eq.from;
                                     to[attr] = eq.to;
@@ -5467,7 +5411,9 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                                     diff[attr] = [];
                                     i = from2.length;
                                     while (i--) {
-                                        diff[attr][i] = (values[i] - from[attr][i]) / ms;
+                                        tempDiff = values[i] - from[attr][i];
+                                        (tempDiff || isNaN(tempDiff)) && (change = true);
+                                        diff[attr][i] = tempDiff / ms;
                                     }
                                 }
                                 to[attr] = values;
@@ -5478,13 +5424,22 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                                 diff[attr] = [];
                                 i = element.ca[attr].length;
                                 while (i--) {
-                                    diff[attr][i] = ((values[i] || 0) - (from2[i] || 0)) / ms;
+                                    tempDiff = (values[i] || 0) - (from2[i] || 0);
+                                    (tempDiff || isNaN(tempDiff)) && (change = true);
+                                    diff[attr][i] = tempDiff / ms;
                                 }
                                 break;
                         }
+                        if (!change) {
+                            delete from[attr];
+                            delete to[attr];
+                            delete params[attr];
+                            delete diff[attr];
+                        }
                     }
-                    else {
+                    else if (R._availableAttrs[has](attr) || attr === 'text' || element.ca[attr]) {
                         element.attr(attr, params[attr]);
+                        delete params[attr];
                     }
                 }
             var easing = params.easing,
@@ -5501,7 +5456,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 }
             }
             timestamp = params.start || anim.start || +new Date;
-            e = {
+            element.e =  e = {
                 anim: anim,
                 percent: percent,
                 timestamp: timestamp,
@@ -5520,9 +5475,11 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 next: next,
                 repeat: times || anim.times,
                 origin: element.attr(),
-                totalOrigin: totalOrigin
+                totalOrigin: totalOrigin,
+                parentEl : parentEl
             };
             animationElements.push(e);
+
             if (status && !isInAnim && !isInAnimSet) {
                 e.stop = true;
                 e.start = new Date - ms * status;
@@ -5533,12 +5490,12 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             if (isInAnimSet) {
                 e.start = new Date - e.ms * status;
             }
-            animationElements.length == 1 && requestAnimFrame(animation);
+            animationElements.length == 1 && (requestAnimFrame || getAnimFrameFn())(animation);
         } else {
             isInAnim.initstatus = status;
             isInAnim.start = new Date - isInAnim.ms * status;
         }
-        eve("raphael.anim.start." + element.id, element, anim);
+        R.stopEvent !== false && eve("raphael.anim.start." + element.id, element, anim);
     }
 
     /*\
@@ -5557,7 +5514,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      **
      = (object) @Animation
     \*/
-    R.animation = function(params, ms, easing, callback) {
+    R.animation = function(params, ms, easing, callback, event) {
         if (params instanceof Animation) {
             return params;
         }
@@ -5565,6 +5522,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             callback = callback || easing || null;
             easing = null;
         }
+        R.stopEvent === undefined &&  (R.stopEvent = event);
         params = Object(params);
         ms = +ms || 0;
         var p = {},
@@ -5696,16 +5654,25 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      > Parameters
      **
      - anim (object) #optional animation object
+     - resumeChildAnimation (boolean) #pauses the animation of the elements which are in sync with the current element
      **
      = (object) original element
     \*/
-    elproto.pause = function(anim) {
-        for (var i = 0; i < animationElements.length; i++)
-            if (animationElements[i].el.id == this.id && (!anim || animationElements[i].anim == anim)) {
-                if (eve("raphael.anim.pause." + this.id, this, animationElements[i].anim) !== false) {
-                    animationElements[i].paused = true;
+    elproto.pause = function(anim, pauseChildAnimation) {
+        var now = +new Date,
+            e,
+            i;
+        for (i = 0; i < animationElements.length; i++) {
+            e = animationElements[i];
+            // @todo - need a scope to implement the logic for nested animations.
+            if ((e.el.id === this.id || (pauseChildAnimation && e.parentEl && e.parentEl.e.el &&
+                e.parentEl.e.el.id === this.id)) && (!anim || e.anim == anim)) {
+                if (eve("raphael.anim.pause." + this.id, this, e.anim) !== false) {
+                    e.paused = true;
+                    e.pauseStart = now;
                 }
             }
+        }
         return this;
     };
 
@@ -5718,20 +5685,31 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      > Parameters
      **
      - anim (object) #optional animation object
+     - resumeChildAnimation (boolean) #resumes the animation of the elements which are in sync with the current element
      **
      = (object) original element
     \*/
-    elproto.resume = function(anim) {
-        for (var i = 0; i < animationElements.length; i++)
-            if (animationElements[i].el.id == this.id && (!anim || animationElements[i].anim == anim)) {
-                var e = animationElements[i];
+    elproto.resume = function(anim, resumeChildAnimation) {
+        var now = +new Date,
+            e,
+            i;
+        for (i = 0; i < animationElements.length; i++) {
+            e = animationElements[i];
+            // @todo - need a scope to implement the logic for nested animations.
+            if ((e.el.id === this.id || (resumeChildAnimation && e.parentEl && e.parentEl.e.el &&
+                e.parentEl.e.el.id === this.id)) && (!anim || e.anim == anim)) {
                 if (eve("raphael.anim.resume." + this.id, this, e.anim) !== false) {
                     delete e.paused;
-                    this.status(e.anim, e.status);
+                    e.el.status(e.anim, e.status);
+                    e.pauseEnd = now;
+                    e.start += (((e.parentEl && e.parentEl.e.pauseEnd || e.pauseEnd) -
+                        (e.parentEl && e.parentEl.e.pauseStart || e.pauseStart)) || 0);
                 }
             }
+        }
         return this;
     };
+
 
     /*\
      * Element.stop
@@ -5742,16 +5720,38 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      > Parameters
      **
      - anim (object) #optional animation object
+     - stopChildAnimation (boolean) #optional stops the animation of all the element which are in sync with the current element
+     - jumpToEnd (boolean) #optional takes the current animation to its end value
      **
      = (object) original element
     \*/
-    elproto.stop = function(anim) {
-        for (var i = 0; i < animationElements.length; i++)
-            if (animationElements[i].el.id == this.id && (!anim || animationElements[i].anim == anim)) {
-                if (eve("raphael.anim.stop." + this.id, this, animationElements[i].anim) !== false) {
-                    animationElements.splice(i--, 1);
+    elproto.stop = function(anim, stopChildAnimation, jumpToEnd) {
+        var e, i;
+        if (stopChildAnimation) {
+            for (i = animationElements.length - 1; i >= 0; i--) {
+                e = animationElements[i];
+                // @todo - need a scope to implement the logic for nested animations.
+                if ((e.el.id === this.id || (e.parentEl && e.parentEl.id === this.id)) &&
+                    (!anim || animationElements[i].anim == anim)) {
+                    ele = e.el;
+                    jumpToEnd && ele.attr(e.to);
+                    e.callback && e.callback.call(ele);
+                    delete ele.e;
+                    delete e.el;
+                    animationElements.splice(i, 1);
                 }
             }
+        }
+        else {
+            for (var i = 0; i < animationElements.length; i++){
+                e = animationElements[i];
+                if (e.el.id === this.id && (!anim || e.anim === anim)) {
+                    if (eve("raphael.anim.stop." + this.id, this, e.anim) !== false) {
+                        animationElements.splice(i--, 1);
+                    }
+                }
+            }
+        }
         return this;
     };
     function stopAnimation(paper) {

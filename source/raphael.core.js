@@ -4990,24 +4990,74 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                                 now = +from[attr] + pos * ms * diff[attr];
                                 break;
                             case "colour":
-                                now = "rgb(" + [
-                                upto255(round(from[attr].r + pos * ms * diff[attr].r)),
-                                upto255(round(from[attr].g + pos * ms * diff[attr].g)),
-                                upto255(round(from[attr].b + pos * ms * diff[attr].b))
-                                ].join(",") + ")";
-                                break;
-                            case "path":
-                                now = [];
-                                for (var i = 0, ii = from[attr].length; i < ii; i++) {
-                                    now[i] = [from[attr][i][0]];
-                                    for (var j = 1, jj = from[attr][i].length; j < jj; j++) {
-                                        now[i][j] = (+from[attr][i][j] + pos * ms * diff[attr][i][j]).toFixed(4);
+                                    if (!diff[attr].length) {
+                                        tmpOpacity = (from[attr].opacity + pos * ms * diff[attr].opacity);
+                                        if(isNaN(tmpOpacity)){
+                                            tmpOpacity = 1;
+                                        }
+                                        now = "rgba(" + [
+                                            upto255(round(from[attr].r + pos * ms * diff[attr].r)),
+                                            upto255(round(from[attr].g + pos * ms * diff[attr].g)),
+                                            upto255(round(from[attr].b + pos * ms * diff[attr].b)),
+                                            tmpOpacity
+                                        ].join(",") + ")";
+                                    } else {
+                                        now = [];
+                                        for (i = 0, ii = from[attr].length; i < ii; ++i) {
+                                            if (i === 0) {
+                                                if(from[attr].isRadial || diff[attr].isRadial){
+                                                    var hasExtra = from[attr][0].f6 && diff[attr][0].f6;
+                                                    
+                                                    radial = "xr(";
+                                                    radial += from[attr][0].f1 * (1 - pos) + diff[attr][0].f1 * pos || '';
+                                                    radial += ',';
+                                                    radial += from[attr][0].f2 * (1 - pos) + diff[attr][0].f2 * pos || '';
+                                                    radial += ',';
+                                                    radial += from[attr][0].f3 * (1 - pos) + diff[attr][0].f3 * pos || '';
+                                                    radial += ',';
+                                                    radial += from[attr][0].f4 * (1 - pos) + diff[attr][0].f4 * pos || '';
+                                                    radial += ',';
+                                                    radial += from[attr][0].f5 * (1 - pos) + diff[attr][0].f5 * pos || '';
+                                                    radial += ',';
+                                                    radial += 'userSpaceOnUse';
+                                                    radial += ')';
+                                                    now.push(radial)
+                                                } else {
+                                                    now.push((from[attr][i] * (1 - pos)) + (pos * diff[attr][i]));
+                                                    if (now[0] <= 0) {
+                                                        now[0] += 360;
+                                                    }
+                                                }
+                                            } else {
+                                                now.push("rgba(" + [
+                                                    upto255(round(from[attr][i].r + pos * ms * diff[attr][i].r)),
+                                                    upto255(round(from[attr][i].g + pos * ms * diff[attr][i].g)),
+                                                    upto255(round(from[attr][i].b + pos * ms * diff[attr][i].b)),
+                                                    (from[attr][i].opacity + pos * ms * diff[attr][i].opacity)
+                                                ].join(",") + "):" + from[attr][i].position);
+                                            }
+                                        }
+                                        now = now.join("-");
+                                        // If radial focus doesnt have a separator
+                                        if(from[attr].isRadial || diff[attr].isRadial){
+                                            now = now.replace('-', '');
+                                        }
                                     }
-                                    now[i] = now[i].join(S);
-                                }
-                                now = now.join(S);
-                                break;
-                            case "transform":
+                                    break;
+                                case "path":
+                                    now = [];
+                                    for (var i = 0, ii = from[attr].length; i < ii; i++) {
+                                        now[i] = [from[attr][i][0]];
+                                        var jj;
+                                        jj = from[attr][i] ? from[attr][i].length : 0;
+                                        for (var j = 1  ; j < jj; j++) {
+                                            now[i][j] = (+from[attr][i][j] + pos * ms * diff[attr][i][j]).toFixed(4);
+                                        }
+                                        now[i] = now[i].join(S);
+                                    }
+                                    now = now.join(S);
+                                    break;
+                                case "transform":
                                 if (diff[attr].real) {
                                     now = [];
                                     for (i = 0, ii = from[attr].length; i < ii; i++) {
@@ -5247,6 +5297,766 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         a.times = math.floor(mmax(times, 0)) || 1;
         return a;
     };
+
+    // Function for trasition between colors
+    function colorNormalizer(c1, c2, getRGB) {
+        "use strict";
+        var colorAr1 = c1.split('-'),
+            colorAr2 = c2.split('-'),
+            i = 0,
+            ii = 0,
+            j = 0,
+            newColArr = [],
+            newColArr2 = [],
+            temp = {},
+            pos = 0,
+            uniqArr = [];
+        if (colorAr1.length === 1 && colorAr2.length === 1) {
+            return [c1, c2];
+        }
+        colorAr1 = allToLinear(colorAr1);
+        colorAr2 = allToLinear(colorAr2);
+
+        // Handling if default color was added to one
+        // and not other
+        if (!colorAr1.defaultAngleSet && colorAr2.defaultAngleSet) {
+            colorAr2[0] = colorAr1[0];
+        }
+
+        if (!colorAr2.defaultAngleSet && colorAr1.defaultAngleSet) {
+            colorAr1[0] = colorAr2[0];
+        }
+
+        // If one radial convert both to radial
+        converToRadialIfOneRadial(colorAr1, colorAr2);
+
+        for(i = 1, ii = colorAr1.length; i < ii; ++i){
+            pos = colorAr1[i].position;
+            if(uniqArr.indexOf(pos) === -1){
+                uniqArr.push(pos);
+            }
+        }
+        for(i = 1, ii = colorAr2.length; i < ii; ++i){
+            pos = colorAr2[i].position;
+            if(uniqArr.indexOf(pos) === -1){
+                uniqArr.push(pos);
+            }
+        }
+        uniqArr.push(0);
+        uniqArr.sort(function(a,b){return a - b});
+        newColArr = [colorAr1[0]];
+        for (i = 1, ii = uniqArr.length; i < ii; ++i) {
+            pos = uniqArr[i];
+            temp = colorAr1.getColorAtPosition(pos);
+            newColArr.push(temp);
+        }
+        newColArr2 = [colorAr2[0]];
+        for (i = 1, ii = uniqArr.length; i < ii; ++i) {
+            pos = uniqArr[i];
+            temp = colorAr2.getColorAtPosition(pos);
+            newColArr2.push(temp);
+        }
+
+        // copying isRadial property
+        newColArr.isRadial = colorAr1.isRadial;
+        newColArr2.isRadial = colorAr2.isRadial;
+        return [newColArr, newColArr2];
+        // Getting all unique points
+
+        function converToRadialIfOneRadial(a, b, end){
+            var angle = 0;
+            if(a.isRadial && !b.isRadial){
+                angle += +b[0];
+                b[0] = {
+                    f1 : a[0].f1,
+                    f2 : a[0].f2
+                }
+                b.isRadial = true;
+            }
+
+            if(!end){
+                converToRadialIfOneRadial(b, a, true);
+            }
+        }
+
+        function allToLinear(arr) {
+            var i = 0,
+                ii = 0,
+                j = 0,
+                item = {},
+                temp = [],
+                temp2 = {},
+                key,
+                prevVal = 0,
+                lastVal = 0,
+                counter = 0,
+                rPos = 0,
+                openBrPos = 0,
+                closedBrPos = 0,
+                radial = {
+                    f1 : 0.5,
+                    f2 : 0.5
+                };
+
+            // Solid color operation
+            if (arr.length === 1) {
+                if(arr[0] === "none"){
+                    arr[0] = "rgba(0,0,0,0)";
+                }
+                // Push angle zero to start
+                arr.unshift(0);
+                // Mentioning that a default angle was added
+                arr.defaultAngleSet = true;
+            }
+
+            // Convert angle to number
+            if (isNaN(arr[0])) {
+                // Check if is radial
+                if(~"rx".indexOf(arr[0].charAt(0))){
+                    arr.isRadial = true;
+
+                    rPos = 1;
+                    // check if focus if provided
+                    // otherwise use default focus
+                    if(arr[0].indexOf(')') !== -1){
+                        rPos = arr[0].indexOf(')');
+                        openBrPos = arr[0].indexOf('(') + 1;
+                        closedBrPos = rPos;
+                        temp = arr[0].substr(openBrPos, closedBrPos - openBrPos).split(',');
+                        radial.f1 = +temp[0];
+                        radial.f2 = +temp[1];
+                        radial.f3 = +temp[2];
+                        radial.f4 = +temp[3];
+                        radial.f5 = +temp[4];
+                        radial.f6 = +temp[5];
+                    }
+                    arr[0] = arr[0].substr(closedBrPos + 1);
+                    arr.unshift(radial);
+
+                } else {
+                    arr[0] = 0;
+                }
+            } else {
+                arr[0] = +arr[0];
+            }
+
+            for (i = 1, ii = arr.length; i < ii; ++i) {
+                temp = arr[i].split(":");
+                // conver first element to rgb object and store
+                temp2 = getRGB(temp[0]);
+                arr[i] = {};
+                arr[i].r = temp2.r;
+                arr[i].g = temp2.g;
+                arr[i].b = temp2.b;
+                arr[i].opacity = temp2.opacity;
+                // if opacity not present set  to 1
+                arr[i].opacity = +arr[i].opacity;
+                if (isNaN(arr[i].opacity)) {
+                    arr[i].opacity = 1;
+                }
+                // set the position
+                arr[i].position = +temp[1]; 
+            }
+
+            // Sorting array according to position
+            // angle and radial focus should be elemnt 0
+            arr.sort(function(a, b) {
+                if (typeof a === "number" || a.f1) {
+                    return -1;
+                }
+                if (typeof b === "number" || a.f2) {
+                    return 1;
+                }
+                if (isNaN(a.position) && isNaN(b.position)) {
+                    return 0;
+                }
+                if (isNaN(a.position)) {
+                    return -1;
+                }
+                if (isNaN(b.position)) {
+                    return 1;
+                }
+                return a.position - b.position;
+            });
+
+            // If first position is not zero
+            // add new color with position zero
+            if (+arr[1].position !== 0) {
+                if (isNaN(arr[1].position)) {
+                    arr[1].position = 0;
+                } else {
+                    temp2 = {};
+                    for (key in arr[1]) {
+                        temp2[key] = arr[1][key];
+                    }
+                    temp2.position = 0;
+                    // Shifting array to add current object 
+                    // in position 1
+                    arr.push({});
+                    for (i == arr.length - 1; i !== 1; --i) {
+                        arr[i] = arr[i - 1];
+                    }
+                    arr[1] = temp2;
+                }
+            }
+            // index to last position
+            ii = arr.length - 1;
+            // If last position is not 100
+            // add new color with position 100
+            if (arr[ii].position !== 100) {
+                if (isNaN(arr[ii].position)) {
+                    arr[ii].position = 100;
+                } else {
+                    temp2 = {};
+                    for (key in arr[ii]) {
+                        temp2[key] = arr[ii][key];
+                    }
+                    temp2.position = 100;
+                    // Shifting array to add current object 
+                    // in position 1
+                    arr.push(temp2);
+                }
+            }
+
+            // Filling correct position value whereever NaN found
+            for (i = 2, ii = arr.length; i < ii; ++i) {
+                if (!(arr[i].position)) {
+                    prevVal = arr[i - 1].position;
+                    counter = 1;
+                    for (j = i + 1; j < ii; ++j) {
+                        ++counter;
+                        if (!isNaN(arr[j].position)) {
+                            lastVal = +arr[j].position;
+                            break;
+                        }
+                    }
+                    arr[i].position = prevVal + ((lastVal - prevVal) / counter);
+                }
+            }
+
+            arr.getColorAtPosition = function(pos) {
+                var prevPos = -1,
+                    nextPos = this.length,
+                    i = 1,
+                    ii = this.length,
+                    item = {},
+                    colPrev,
+                    colNext,
+                    ratio = 0,
+                    key = "",
+                    col = { r: 0, g: 0, b: 0 };
+
+                // Critical section; check again
+                for (; i < ii - 1; ++i) {
+                    if (this[i].position <= pos) {
+                        prevPos = i;
+                        nextPos = i + 1;
+                    }
+                    if (!(this[i].position < pos) && this[i].position >= pos) {
+                        nextPos = i;
+                        break;
+                    }
+                }
+                ratio = (pos - this[prevPos].position) / (this[nextPos].position - this[prevPos].position);
+                if (isNaN(ratio)) {
+                    ratio = 0;
+                }
+                for (key in col) {
+                    col[key] = upto255((1 - ratio) * this[prevPos][key] + ratio * this[nextPos][key]);
+                }
+                col.position = pos;
+                col.opacity = (1 - ratio) * this[prevPos]["opacity"] + ratio * this[nextPos]["opacity"];
+                return col;
+            }
+            return arr;
+        }
+
+    }
+
+    function pathNormalizer(p1, p2) {
+        // Function to convert array to svg path (?) only for curves
+        var finalp1 = [],
+            finalp2 = [],
+            pathArr1 = toSvgPath(p1),
+            pathArr2 = toSvgPath(p2),
+            i = 0,
+            ii = 0,
+            temp,
+            createElementNS = document.createElementNS && document.createElementNS.bind(document),
+            dPath = createElementNS && createElementNS("http://www.w3.org/2000/svg", "path");
+
+        // If path invalid or svg not supported return
+        if (!pathArr1 || !pathArr2 || !dPath) {
+            return [p1, p2];
+        }
+        if (canFallback(p1, p2)) {
+            return [p1, p2];
+        }
+        // If any of the parameters is 
+        // absent return to normal flow
+        if (!p1 || !p2) {
+            return [p1, p2];
+        }
+        // If svg not available return to normal flow
+        if (!document.createElementNS) {
+            return [p1, p2];
+        }
+        // Setting path again
+        pathArr1 = toSvgPath(p1);
+        pathArr2 = toSvgPath(p2);
+        if(pathArr1.join().indexOf('undefined') !== -1) {
+            return [p1, p2];
+        }
+        if(pathArr2.join().indexOf('undefined') !== -1) {
+            return [p1, p2];
+        }
+        // If svg functions not available return to normal flow
+        if (!dPath.getTotalLength || !dPath.getPointAtLength) {
+            return [p1, p2];
+        }
+
+        function canFallback (path1, path2) {
+            var str1 = '',
+                str2 = '',
+                testLen,
+                testPoint;
+            // Checking path totoalLength is accurate or not
+            // testing with a known path
+            // this check is for Firefox
+            dPath.setAttribute('d', 'M300 10 L300 300 C50 310,50 640,350 650' + 
+                'C600 640,600 310,400 300 L400 10 L295 10');
+            testLen = dPath.getTotalLength();
+            testPoint = dPath.getPointAtLength(10);
+            if (testLen < 1829.1 || testLen > 1829.2) {
+                return true;
+            }
+            if (Math.round(testPoint.x) !== 300 || Math.round(testPoint.y) !== 20) {
+                return true;
+            }
+            // path1 and path2 are in array
+            function trimPathArray (arr) {
+                var i = arr.length;
+                while (i--) {
+                    if (arr[i].join('') === arr[i - 1].join('')) {
+                        arr.pop();
+                    } else {
+                        break;
+                    }
+                }
+            }
+            function getPathFromArray(arr) {
+                var str = '',
+                    i = 0,
+                    ii = arr.length;
+                for (; i < ii; ++i) {
+                    str += arr[i].join(' ');
+                }
+                return str;
+            }
+            trimPathArray(path1);
+            trimPathArray(path2);
+            str1 = getPathFromArray(path1);
+            str2 = getPathFromArray(path2);
+            if (str1.split(/[Mm]/).length > 2 || str2.split(/[Mm]/).length > 2) {
+                return false;
+            }
+            if (path1.length === path2.length) {
+                return true;
+            }
+            return false;
+        }
+
+        function toSvgPath(arr) {
+            var str = [],
+                i = 0,
+                ii = arr.length,
+                item = [];
+            if (typeof arr === 'string') {
+                return arr;
+            }
+            // Converting the array to string; path type
+            for (i = 0; i < ii; ++i) {
+                if (!arr[i].join){
+                    return;
+                } else {
+                    // Removing continuous Move commands
+                    // Picking up the last one
+                    if ( !i || !arr[i + 1] || arr[i + 1][0] !== 'M' || arr[i][0] !== 'M'){
+                        str.push(arr[i].join(' '));
+                    }
+                }
+            }
+            str = str.join('');
+            str = str.split(/[Mm]/).slice(1);
+            for (i = 0, ii = str.length; i < ii; ++i) {
+                str[i] = 'M' + str[i];
+            }
+            return str;
+        }
+
+        ii = Math.max(pathArr1.length, pathArr2.length);
+        for (i = 0; i < ii; ++i) {
+            temp = _pathNormalizer(pathArr1[i], pathArr2[i]);
+            pathArr1[i] = temp[0];
+            pathArr2[i] = temp[1];
+        }
+
+        function linetopath (arr) {
+            var i = 0,
+                ii = 0,
+                str = [];
+            arr = arr || [];
+            ii = arr.length;
+            for (i = 0; i < ii; ++i) {
+                if (arr[i].length - 1) {
+                    str.push(arr[i].join(' '));
+                }
+            }
+            return str.join('');
+        }
+
+        function removeBlanks (arr) {
+            var i = arr.length,
+                j = 0,
+                path;
+            while (i-- - 1) {
+                // Pop if length is zero
+                if (arr[i].toString() === arr[i - 1].toString()) {
+                    arr.pop();
+                }
+            }
+        }
+
+        function _divide(arr, times) {
+            var resArr = [],
+                locArr = [],
+                arrLen = arr.length, 
+                i = 0,
+                ii = 0,
+                x = 0,
+                prevPos = 0,
+                y = 0,
+                diffTimes = times - arrLen; // If array size is smaller than
+                                            // divisions needed
+            while (diffTimes >= 0) {
+                i = arr.length - 1;
+                arr.push(arr.slice(i));
+                --diffTimes;
+            }
+            arrLen = arr.length;
+            for (i = 0; i <= times; ++i) {
+                locArr.push(Math.round((i / times) * arrLen));
+            }
+            for (i = 0, ii = locArr.length - 1; i < ii; ++i) {
+                resArr.push(arr.slice(locArr[i], locArr[i + 1]));
+                if (resArr[i][0][0] !== 'M' && resArr[i][0][0] !== 'm') {
+                    prevPos = resArr[i - 1].length - 1;
+                    x = resArr[i - 1][prevPos][1];
+                    y = resArr[i - 1][prevPos][2];
+                    resArr[i].unshift(['M', x, y]);
+                }
+            }
+            return resArr;
+        }
+
+        function divideArray (diff) {
+            var arrToDivide = [],
+                countArr = [],
+                transArr = [],
+                i = 0,
+                ii = 0,
+                isArr1 = true;
+            if (diff === 0) {
+                return;
+            } else if (diff > 0) {
+                arrToDivide = pathArr2;
+                isArr1 = false;
+            } else {
+                diff = -diff;
+                arrToDivide = pathArr1;
+            }
+            for (i = 0, ii = arrToDivide.length; i < ii; ++i) {
+                countArr.push(1);
+            }
+            while (diff--) {
+                --i;
+                if (i < 0) {
+                    i = ii - 1;
+                }
+                countArr[i]++;
+            }
+
+            for (i = 0; i < ii; ++i){
+                if (countArr[i] === 1) {
+                    transArr.push(arrToDivide[i]);
+                } else {
+                    transArr.push.apply(transArr, _divide(arrToDivide[i], countArr[i]));
+                }
+            }
+            if (isArr1) {
+                pathArr1 = transArr;
+            } else {
+                pathArr2 = transArr;
+            }
+        }
+        /*
+        
+        */
+        removeBlanks(pathArr1);
+        removeBlanks(pathArr2);
+        divideArray(pathArr1.length - pathArr2.length);
+
+        ii = Math.max(pathArr1.length, pathArr2.length);
+        for (i = 0; i < ii; ++i) {
+            temp = _pathNormalizer(linetopath(pathArr1[i]), linetopath(pathArr2[i]));
+            pathArr1[i] = temp[0];
+            pathArr2[i] = temp[1];
+        }
+
+        for (i = 0, ii = pathArr1.length; i < ii; ++i) {
+            finalp1 = finalp1.concat(pathArr1[i]);
+        }
+        for (i = 0, ii = pathArr2.length; i < ii; ++i) {
+            finalp2 = finalp2.concat(pathArr2[i]);
+        }
+        return [finalp1, finalp2];
+    }
+
+    // A function to calculate common path
+    // in two given paths
+    function commonPathCalculator (p1, p2) {
+        var i = 0,
+            j = 0,
+            ii = 0,
+            jj = 0,
+            k = 0,
+            kk = 0,
+            uncommon1 = 0,
+            uncommon2 = 0,
+            lim1 = 0,
+            lim2 = 0,
+            map1 = {},
+            map2 = {},
+            groupedPath1 = [],
+            groupedPath2 = [],
+            gpIndex1 = -1
+            gpIndex2 = -1,
+            isSame = true;
+        // Splitting the string commands to get
+        // particular points later
+        // Will be required while breaking paths
+        // into common and uncommon parts
+        function splitter (path) {
+            var i = 0,
+                ii = 0;
+            path = path.split(/[MCLmcl]/).slice(1);
+            for (i = 0, ii = path.length; i < ii; ++i) {
+                path[i] = path[i].split(' ').slice(1);
+                i || path[i].unshift('M');
+                if (i) {
+                    path[i].length === 2 && path[i].unshift('L') || path[i].unshift('C');
+                }
+            }
+            return path;
+        }
+        // populate the arr to object in reverse manner
+        // i.e value to key mapping
+        function mapper (arr, ob) {
+            var i = 0,
+                ii = arr.length,
+                val,
+                item;
+            for (i = 0, ii = arr.length; i < ii; ++i) {
+                val = arr[i].join(' ');
+                item = arr[i];
+                if (item[0] === 'C' && item[3] === item[5] && item[4] === item[6]) {
+                    arr[i].stringValue = ['L', item[3], item[4]].join(' ');
+                } else 
+                item.stringValue = val;
+                // Creating an array if undefined
+                // pushing otherwise
+                ob[item.stringValue] && ob[item.stringValue].push(i);
+                ob[item.stringValue] || (ob[item.stringValue] = [i]);
+            }
+        }
+        // Function to get nearest point that exist 
+        // in the other array
+        function getNearestExistingPoint (arr, map, start, ii, lim) {
+            var i = start,
+                k = 0,
+                kk = 0,
+                item;
+            for (; i < ii; ++i) {
+                item = map[arr[i].stringValue];
+                if (item) {
+                    for (k = 0, kk = item.length; k < kk; ++k) {
+                        if (item[k] >= lim) {
+                            return {
+                                index : i,
+                                mapValue : item[k],
+                                diff : i - start
+                            };
+                        }
+                    }
+                }
+            }
+            return -1;
+        }
+        // function to get last coordinate for CurveTo command
+        function getCoordinateAsMove (arr) {
+            var last = arr.length - 1;
+            return ['M', arr[last - 1], arr[last]].join(' ');
+        }
+        // function to conver path array to string
+        function pathToString (arr) {
+            return arr.join('');
+        } 
+        // commonPathCalculator flow here
+        p1 = splitter(p1);
+        p2 = splitter(p2);
+        mapper(p1, map1);
+        mapper(p2, map2);
+        // Setting length
+        ii = p1.length;
+        jj = p2.length;
+        i = 0;
+        j = 0;
+        // Making partitions for common
+        // and uncommon parts
+        // Checking if first is common or uncommon
+        while (i < ii && j < jj) {
+            ++gpIndex1;
+            ++gpIndex2;
+            // initializing blank arrays
+            groupedPath1[gpIndex1] = [];
+            groupedPath2[gpIndex2] = [];
+            isSame = (p1[i].stringValue === p2[j].stringValue);
+            if (i) {
+                // Logic to push prev coordinate as move command
+                groupedPath1[gpIndex1].push(getCoordinateAsMove(p1[i - 1]));
+                groupedPath2[gpIndex2].push(getCoordinateAsMove(p2[j - 1]));
+            }
+            if (isSame) {
+                while (i < ii && j < jj && p1[i].stringValue === p2[j].stringValue) {
+                    groupedPath1[gpIndex1].push(p1[i].stringValue);
+                    groupedPath2[gpIndex2].push(p2[j].stringValue);
+                    ++i;
+                    ++j;
+                }
+            } else {
+                nearestPoint1 = getNearestExistingPoint(p1, map2, i, ii, j);
+                nearestPoint2 = getNearestExistingPoint(p2, map1, j, jj, i);
+                // Assuming nearestPoint1 is nearer than nearestPoint2
+                lim1 = nearestPoint1.index;
+                lim2 = nearestPoint1.mapValue;
+                // If nearestPoint2 is nearer
+                if (!~nearestPoint1 || nearestPoint1.diff > nearestPoint2.diff) {
+                    lim1 = nearestPoint2.mapValue;
+                    lim2 = nearestPoint2.index;
+                }
+                if (!~nearestPoint1 && !~nearestPoint2) {
+                   // If both not found include all as uncommon
+                    lim1 = ii - 1;
+                    lim2 = jj - 1;
+                }
+                // Pushing uncommon paths
+                while (i <= lim1) {
+                    groupedPath1[gpIndex1].push(p1[i].stringValue);
+                    ++i;
+                }
+                while (j <= lim2) {
+                    groupedPath2[gpIndex2].push(p2[j].stringValue);
+                    ++j;
+                }
+            }
+            groupedPath1[gpIndex1] = pathToString(groupedPath1[gpIndex1]);
+            groupedPath2[gpIndex2] = pathToString(groupedPath2[gpIndex2]);
+        }
+        return [groupedPath1, groupedPath2];
+    }
+
+    // function to get equal points for two different path
+    function _pathNormalizer(p1, p2) {
+        var i = 0,
+            j = 0,
+            ii = 0,
+            jj = 0,
+            item = {},
+            fPath1 = [],
+            fPath2 = [],
+            divisions = 0,
+            commonPath,
+            tmp;
+        // Uncommon path normalizer
+        function normalizeUncommonPaths (p1, p2) {
+            var dPath1,
+                dPath2,
+                i = 0,
+                j = 0,
+                item = {},
+                pathLen1 = 0,
+                pathLen2 = 0,
+                fPath1 = [],
+                fPath2 = [],
+                divisions = 0,
+                round = Math.round;
+            // Creating path elements to use functions 'getTotalLength'
+            // and 'getPointAtLength'
+            dPath1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            dPath1.setAttribute("d", p1);
+
+            dPath2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            dPath2.setAttribute("d", p2);
+
+            // Getting length of the paths
+            pathLen1 = dPath1.getTotalLength();
+            pathLen2 = dPath2.getTotalLength();
+
+            // Number of divisions will depend on larger path
+            divisions = 0.15 * Math.max(pathLen1, pathLen2);
+            divisions = Math.ceil(divisions);
+
+            if (!divisions || !isFinite(divisions) || divisions < 10) {
+                divisions = 10;
+            }
+
+            for (i = 0; i <= divisions; ++i) {
+                item = dPath1.getPointAtLength((i / divisions) * pathLen1);
+                fPath1.push([i ? "L" : "M",
+                    round(item.x),
+                    round(item.y)
+                ]);
+                item = dPath2.getPointAtLength((i / divisions) * pathLen2);
+                fPath2.push([i ? "L" : "M",
+                    round(item.x),
+                    round(item.y)
+                ]);
+            }
+            return [fPath1, fPath2];
+        }
+        if (!p1 || p1 === 'M  ') {
+            p1 = p2.split(' ').slice(0, 3).join(' ').replace('L', '');
+        }
+        if (!p2 || p2 === 'M  ') {
+            p2 = p1.split(' ').slice(0, 3).join(' ').replace('L', '');
+        }
+        commonPath = commonPathCalculator(p1, p2);
+
+        for (i = 0, ii = commonPath[0].length; i < ii; ++i) {
+            tmp = normalizeUncommonPaths(commonPath[0][i], commonPath[1][i]);
+            if (i) {
+                fPath1 = fPath1.concat(tmp[0].slice(1));
+                fPath2 = fPath2.concat(tmp[1].slice(1));
+            } else {
+                fPath1 = fPath1.concat(tmp[0]);
+                fPath2 = fPath2.concat(tmp[1]);
+            }
+        }
+        return [fPath1, fPath2];
+    }
+
+
+    
     function runAnimation(anim, element, percent, status, totalOrigin, times, parentEl) {
         percent = toFloat(percent);
         var params,
@@ -5311,40 +6121,75 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                                 diff[attr] = tempDiff / ms;
                                 break;
                             case "colour":
-                                from[attr] = R.getRGB(from[attr]);
-                                var toColour = R.getRGB(to[attr]);
-                                tempDiff = {};
-                                tempDiff.r = (toColour.r - from[attr].r),
-                                tempDiff.g = (toColour.g - from[attr].g),
-                                tempDiff.b = (toColour.b - from[attr].b);
-                                // todo to be checked for NaN
-                                (tempDiff.r || tempDiff.g || tempDiff.b) && (change = true);
-                                diff[attr] = {
-                                    r: tempDiff.r / ms,
-                                    g: tempDiff.g / ms,
-                                    b: tempDiff.b / ms
-                                };
+                                if(from[attr] === to[attr]){
+                                    break;
+                                } else {
+                                    change = true;
+                                }
+                                var colorsNormalized = colorNormalizer(from[attr], to[attr], R.getRGB);
+                                from[attr] = colorsNormalized[0];
+                                var toColour = colorsNormalized[1];
+                                if (typeof toColour === "string") {
+                                    if(from[attr].toLowerCase() !== "none"){
+                                        from[attr] = R.getRGB(from[attr]);
+                                        if(!from[attr].opacity){
+                                            from[attr].opacity = 1;
+                                        }
+                                    } else {
+                                        from[attr] = {
+                                            r : 0,
+                                            g : 0,
+                                            b : 0,
+                                            opacity : 0
+                                        }
+                                    }
+                                    if(to[attr].toLowerCase() !== "none"){
+                                        toColour = R.getRGB(to[attr]);
+                                        if(!toColour.opacity){
+                                            toColour.opacity = 1;
+                                        }
+                                    } else {
+                                        toColour = {
+                                            r : 0,
+                                            g : 0,
+                                            b : 0,
+                                            opacity : 0
+                                        }
+                                    }
+                                    diff[attr] = {
+                                        r: (toColour.r - from[attr].r) / ms,
+                                        g: (toColour.g - from[attr].g) / ms,
+                                        b: (toColour.b - from[attr].b) / ms,
+                                        opacity: ((toColour.opacity - from[attr].opacity) / ms)
+                                    };
+                                } else {
+                                    diff[attr] = [];
+                                    for (i = 0, ii = from[attr].length; i < ii; ++i) {
+                                        if (i === 0) {
+                                            diff[attr].push(toColour[0]);
+                                        } else {
+                                            diff[attr].push({
+                                                r: (toColour[i].r - from[attr][i].r) / ms,
+                                                g: (toColour[i].g - from[attr][i].g) / ms,
+                                                b: (toColour[i].b - from[attr][i].b) / ms,
+                                                opacity: (toColour[i].opacity - from[attr][i].opacity) / ms
+                                            });
+                                        }
+                                    }
+                                }
                                 break;
                             case "path":
-                                var pathes,
-                                toPath;
-                                // path2curve is taking longer time to execute, to optimize breaking if both
-                                // start and end path are same.
-                                if ((from[attr].join ? from[attr].join() : from[attr]) ===
-                                        (to[attr].join ?to[attr].join() : to[attr])) {
-                                    change = false;
-                                    break;
-                                }
-                                pathes = path2curve(from[attr], to[attr]);
-                                toPath = pathes[1];
-                                change = true;
+                                var pathes = pathNormalizer.apply(null, path2curve(from[attr], to[attr])),
+                                    toPath = pathes[1];
                                 from[attr] = pathes[0];
                                 diff[attr] = [];
                                 for (i = 0, ii = from[attr].length; i < ii; i++) {
                                     diff[attr][i] = [0];
-                                    for (var j = 1, jj = from[attr][i].length; j < jj; j++) {
-                                        tempDiff = toPath[i][j] - from[attr][i][j];
-                                        diff[attr][i][j] =  tempDiff / ms;
+                                    var jj;
+                                    jj = from[attr][i] ? from[attr][i].length : 0;
+                                    for (var j = 1; j < jj; j++) {
+                                        diff[attr][i][j] = (toPath[i][j] - from[attr][i][j]) / ms;
+                                        (!change) && diff[attr][i][j] && (change = true);
                                     }
                                 }
                                 break;

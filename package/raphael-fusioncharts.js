@@ -5412,9 +5412,9 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
             if (time < ms && !e.delayend || (e.delayend > (time / ms))) {
                 var pos = easing(time / ms);
-                if (e.delaystart) {
-                    pos = easing( ((time / ms) - e.delaystart) /
-                        ((e.delayend || 1) - e.delaystart));
+                if (e.delaystart || e.delayend) {
+                    pos = easing( ((time / ms) - e.delaystart || 0) /
+                        ((e.delayend || 1) - (e.delaystart || 0)));
                 }
                 for (var attr in from)
                     if (from[has](attr)) {

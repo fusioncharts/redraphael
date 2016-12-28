@@ -4756,8 +4756,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     };
 
     // Works exactly as paper.animateWith()
-    paperproto.animateWith = function(el, anim, params, ms, easing, callback, delayTime) {
-        return elproto.animateWith.call(this, el, anim, params, ms, easing, callback, delayTime);
+    paperproto.animateWith = function(el, anim, params, ms, easing, callback, delayPerc) {
+        return elproto.animateWith.call(this, el, anim, params, ms, easing, callback, delayPerc);
     };
 
     /*\
@@ -5372,6 +5372,10 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             init = {},
             executeEvent = R.stopEvent !== false,
             key;
+            // continue if desired position is not reached
+            if (e.delaypercent && e.delaypercent > time / ms) {
+                continue;
+            }
             if (e.initstatus) {
                 time = (e.initstatus * e.anim.top - e.prev) / (e.percent - e.prev) * ms;
                 e.status = e.initstatus;
@@ -5388,6 +5392,9 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
             if (time < ms) {
                 var pos = easing(time / ms);
+                if (e.delaypercent) {
+                    pos = easing( ((time / ms) - e.delaypercent) / (1 - e.delaypercent ) )
+                }
                 for (var attr in from)
                     if (from[has](attr)) {
                         switch (availableAnimAttrs[attr]) {
@@ -5560,7 +5567,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      **
      = (object) original element
     \*/
-    elproto.animateWith = function(el, anim, params, ms, easing, callback, delayTime) {
+    elproto.animateWith = function(el, anim, params, ms, easing, callback, delayPerc) {
         var element = this;
         if (element.removed) {
             callback && callback.call(element);
@@ -5574,10 +5581,12 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         }
         var a = params instanceof Animation ? params : R.animation(params, ms, easing, callback),
         x, y;
-        +delayTime && setTimeout(function () {
-            runAnimation(a, element, a.percents[0], null, element.attr(),undefined, el);
-        }, +delayTime) ||
-        runAnimation(a, element, a.percents[0], null, element.attr(),undefined, el);
+        if (delayPerc) {
+            delayPerc > 1 && (delayPerc /= 100);
+            delayPerc > 1 && (delayPerc = null);
+            delayPerc && (a.delayPerc = delayPerc);
+        }
+        runAnimation(a, element, a.percents[0], null, element.attr(),undefined, el, delayPerc);
         for (var i = 0, ii = animationElements.length; i < ii; i++) {
             if (animationElements[i].anim == anim && animationElements[i].el == el) {
                 animationElements[ii - 1].start = animationElements[i].start;
@@ -6465,7 +6474,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
 
 
 
-    function runAnimation(anim, element, percent, status, totalOrigin, times, parentEl) {
+    function runAnimation(anim, element, percent, status, totalOrigin, times, parentEl, delayPerc) {
         percent = toFloat(percent);
         var params,
         isInAnim,
@@ -6729,7 +6738,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 repeat: times || anim.times,
                 origin: element.attr(),
                 totalOrigin: totalOrigin,
-                parentEl : parentEl
+                parentEl : parentEl,
+                delaypercent: delayPerc
             };
             animationElements.push(e);
 

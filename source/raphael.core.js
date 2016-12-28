@@ -5194,7 +5194,6 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             return element;
         }
         function checkPercentage (num) {
-            num > 1 && (num /= 100);
             num > 1 && (num = null);
             num < 0 && (num = null);
             return num;

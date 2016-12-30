@@ -5597,7 +5597,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         function checkPercentage (num) {
             num > 1 && (num = null);
             num < 0 && (num = null);
-            return num;
+            return num * 0.98;
         }
         if (ms == 0) {
             setTimeout(function () {
@@ -5610,6 +5610,9 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         if (delayObject) {
             delayObject.start = checkPercentage(delayObject.start);
             delayObject.end = checkPercentage(delayObject.end);
+            if (delayObject.end && delayObject.start && delayObject.start >= delayObject.end - 0.01){
+                delayObject.start = delayObject.end * 0.98;
+            }
         }
         runAnimation(a, element, a.percents[0], null, element.attr(),undefined, el, delayObject);
         for (var i = 0, ii = animationElements.length; i < ii; i++) {

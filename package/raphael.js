@@ -5575,8 +5575,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             return element;
         }
         function checkPercentage (num) {
-            num > 1 && (num = null);
-            num < 0 && (num = null);
+            num > 1 && (num = 1);
+            num < 0 && (num = 0);
             return num * 0.98;
         }
         if (ms == 0) {

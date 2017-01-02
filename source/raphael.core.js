@@ -4926,6 +4926,13 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
             return l;
         },
+        oneBounceOut: function (n) {
+            var top = 120;
+            if (n <= 0.9) {
+                return ef.easeIn(n) * 1.33;
+            }
+            return 1.2 - n / 5;
+        },
         // accelerating from zero velocity
         easeInQuad: function (t) { return t*t },
         // decelerating to zero velocity

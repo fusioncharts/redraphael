@@ -1152,12 +1152,10 @@ _window.Raphael && _window.Raphael.svg && function(R) {
             transform: o.matrix
         });
 
-        if (_.sx != 1 || _.sy != 1) {
-            sw = o.attrs[has]("stroke-width") ? o.attrs["stroke-width"] : 1;
-            o.attr({
-                "stroke-width": sw
-            });
-        }
+        sw = o.attrs[has]("stroke-width") ? o.attrs["stroke-width"] : 1;
+        o.attr({
+            "stroke-width": sw
+        });
 
         return o;
     };

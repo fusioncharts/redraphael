@@ -1,5 +1,18 @@
 window.testJson = {
     'Path': {
+        'transform': {
+            'start': {
+                'path': 'M613,138A5,5,0,0,0,623,138A5,5,0,0,0,613,138Z',
+                'stroke-width': '10',
+                'fill': '#909fe2',
+                'stroke': '#000',
+                transform: 's 0.01 0.01'
+            },
+            'end': {
+                transform: 's 1 1'
+            },
+            'time': 3000
+        },
         'test-1': {
             'start': {
                 'path': 'M300 10 L300 300 C50 310,50 640,350 650 C600 640,600 310,400 300 L400 10 L295 10',

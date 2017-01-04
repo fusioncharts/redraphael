@@ -5327,12 +5327,21 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
             return l;
         },
+        // used in line chart anchor animation
         oneBounceOut: function (n) {
             var top = 120;
             if (n <= 0.9) {
                 return ef.easeIn(n) * 1.33;
             }
             return 1.2 - n / 5;
+        },
+        // Used in translating bubble plots
+        elasticOnce: function(n) {
+            var p = 0.9;
+            if (n == !!n) {
+                return n;
+            }
+            return Math.pow(2, -10 * n) * Math.sin((n - p / 4) * (2 * Math.PI) / p) + 1;
         },
         // accelerating from zero velocity
         easeInQuad: function (t) { return t*t },

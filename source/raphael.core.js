@@ -2287,7 +2287,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             pathArray = R.parsePathString(pathArray);
         }
         if (!pathArray || !pathArray.length) {
-            res = ["M", 0, 0];
+            res = [["M", 0, 0]];
             res.toString = R._path2string;
             return res;
         }

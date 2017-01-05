@@ -5065,7 +5065,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                                                     radial += ',';
                                                     radial += from[attr][0].f5 * (1 - pos) + diff[attr][0].f5 * pos || '';
                                                     radial += ',';
-                                                    radial += from[attr][0].f6 + 'userSpaceOnUse';
+                                                    radial += from[attr][0].f6 || 'userSpaceOnUse';
                                                     radial += ')';
                                                     now.push(radial)
                                                 } else {
@@ -5481,14 +5481,14 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                         openBrPos = arr[0].indexOf('(') + 1;
                         closedBrPos = rPos;
                         temp = arr[0].substr(openBrPos, closedBrPos - openBrPos).split(',');
-                        radial.f1 = parseInt(temp[0]);
-                        radial.f2 = parseInt(temp[1]);
+                        radial.f1 = parseInt(temp[0]) || 0;
+                        radial.f2 = parseInt(temp[1]) || 0;
                         if (~temp[2].indexOf('%')) {
                             temp[2] = parseInt(temp[2]) / 100;
                         }
-                        radial.f3 = parseInt(temp[2]);
-                        radial.f4 = parseInt(temp[3]);
-                        radial.f5 = parseInt(temp[4]);
+                        radial.f3 = parseInt(temp[2]) || 0;
+                        radial.f4 = parseInt(temp[3]) || 0;
+                        radial.f5 = parseInt(temp[4]) || 0;
                         radial.f6 = temp[5];
                     }
                     arr[0] = arr[0].substr(closedBrPos + 1);

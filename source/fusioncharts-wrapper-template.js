@@ -11,6 +11,8 @@ FusionCharts && FusionCharts.register('module', ['private', 'vendor.redraphael',
         someRaphael = win.Raphael,
         eve,
         RedRaphael,
+        // To fix the es6 compatibility issue
+        Raphael,
         optOutModulePattern = true;
 
     (function (_window) {

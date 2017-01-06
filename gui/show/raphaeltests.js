@@ -1,4 +1,27 @@
 window.testJson = {
+    'line': {
+        'test1': {
+            start: {
+                path: 'M456,89L519,61L582,100L646,88L709,72L773,128',
+                'stroke-width': 3,
+                'stroke': '#123',
+            },
+            end: {
+                path: 'M76,113L139,100L202,122L266,116L329,101L392,84L456,89L519,61L582,100L646,88L709,72L773,128'
+            },
+            time: '3000'
+        },
+        'test2': {
+            start: {
+                path: 'M202,196L266,182L329,204L392,211L456,200L519,156L582,145L646,144L709,138L773,150',
+                'stroke-width': 3,
+                'stroke': '#123',
+            },
+            end: {
+                path: 'M'
+            }
+        }
+    },
     'Path': {
         'transform': {
             'start': {

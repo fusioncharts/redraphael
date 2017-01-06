@@ -498,7 +498,6 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     RedRaphael = R;
 
     var loaded,
-        Raphael,
         undef,
         E = "",
         S = " ",

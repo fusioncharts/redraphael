@@ -6655,7 +6655,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                                 var toPath,
                                     pathes = path2curve(from[attr], to[attr]);
                                 if (configObject.smartMorph) {
-                                    pathes = pathNormalizer(temp[0], temp[1], configObject);
+                                    pathes = pathNormalizer(pathes[0], pathes[1], configObject);
                                 }
                                 toPath = pathes[1];
                                 from[attr] = pathes[0];

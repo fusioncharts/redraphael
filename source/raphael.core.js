@@ -6033,6 +6033,33 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             groupedPath1[gpIndex1] = pathToString(groupedPath1[gpIndex1]);
             groupedPath2[gpIndex2] = pathToString(groupedPath2[gpIndex2]);
         }
+        // If Any one is left add them all
+        if (i < ii) {
+            ++gpIndex1;
+            groupedPath1[gpIndex1] = [];
+            groupedPath1[gpIndex1].push(getCoordinateAsMove(p1[i - 1]));
+            ++gpIndex2;
+            groupedPath2[gpIndex2] = [];
+            groupedPath2[gpIndex2].push(getCoordinateAsMove(p2[j - 1]));
+            while(i < ii) {
+                groupedPath1[gpIndex1].push(p1[i].stringValue);
+                ++i;
+            }
+            groupedPath1[gpIndex1] = pathToString(groupedPath1[gpIndex1]);
+        }
+        if (j < jj) {
+            ++gpIndex1;
+            groupedPath1[gpIndex1] = [];
+            groupedPath1[gpIndex1].push(getCoordinateAsMove(p1[i - 1]));
+            ++gpIndex2;
+            groupedPath2[gpIndex2] = [];
+            groupedPath2[gpIndex2].push(getCoordinateAsMove(p2[j - 1]));
+            while(j < jj) {
+                groupedPath2[gpIndex2].push(p2[j].stringValue);
+                ++j;
+            }
+            groupedPath2[gpIndex2] = pathToString(groupedPath2[gpIndex2]);
+        }
         return [groupedPath1, groupedPath2];
     }
 

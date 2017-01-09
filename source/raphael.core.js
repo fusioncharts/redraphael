@@ -4375,8 +4375,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     };
 
     // Works exactly as paper.animateWith()
-    paperproto.animateWith = function(el, anim, params, ms, easing, callback, delayObject) {
-        return elproto.animateWith.call(this, el, anim, params, ms, easing, callback, delayObject);
+    paperproto.animateWith = function(el, anim, params, ms, easing, callback, configObject) {
+        return elproto.animateWith.call(this, el, anim, params, ms, easing, callback, configObject);
     };
 
     /*\
@@ -5201,7 +5201,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      **
      = (object) original element
     \*/
-    elproto.animateWith = function(el, anim, params, ms, easing, callback, delayObject) {
+    elproto.animateWith = function(el, anim, params, ms, easing, callback, configObject) {
         var element = this;
         if (element.removed) {
             callback && callback.call(element);
@@ -5220,14 +5220,16 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         }
         var a = params instanceof Animation ? params : R.animation(params, ms, easing, callback),
         x, y;
-        if (delayObject) {
-            delayObject.start = checkPercentage(delayObject.start);
-            delayObject.end = checkPercentage(delayObject.end);
-            if (delayObject.end && delayObject.start && delayObject.start >= delayObject.end - 0.01){
-                delayObject.start = delayObject.end * 0.98;
+        if (configObject) {
+            configObject.start = checkPercentage(configObject.start);
+            configObject.end = checkPercentage(configObject.end);
+            if (configObject.end && configObject.start && configObject.start >= configObject.end - 0.01){
+                configObject.start = configObject.end * 0.98;
             }
+        } else {
+            configObject = {};
         }
-        runAnimation(a, element, a.percents[0], null, element.attr(),undefined, el, delayObject);
+        runAnimation(a, element, a.percents[0], null, element.attr(),undefined, el, configObject);
         for (var i = 0, ii = animationElements.length; i < ii; i++) {
             if (animationElements[i].anim == anim && animationElements[i].el == el) {
                 animationElements[ii - 1].start = animationElements[i].start;
@@ -6145,7 +6147,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
 
 
 
-    function runAnimation(anim, element, percent, status, totalOrigin, times, parentEl, delayObject) {
+    function runAnimation(anim, element, percent, status, totalOrigin, times, parentEl, configObject) {
         percent = toFloat(percent);
         var params,
         isInAnim,
@@ -6153,6 +6155,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         percents = [],
         next,
         prev,
+        temp,
         timestamp,
         tempDiff,
         change,
@@ -6160,6 +6163,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         from = {},
         to = {},
         diff = {};
+        configObject = configObject || {};
         if (status) {
             for (i = 0, ii = animationElements.length; i < ii; i++) {
                 var e = animationElements[i];
@@ -6267,8 +6271,12 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                                 }
                                 break;
                             case "path":
-                                var pathes = pathNormalizer.apply(null, path2curve(from[attr], to[attr])),
-                                    toPath = pathes[1];
+                                var toPath,
+                                    pathes = path2curve(from[attr], to[attr]);
+                                if (configObject.smartMorph) {
+                                    pathes = pathNormalizer(temp[0], temp[1], configObject);
+                                }
+                                toPath = pathes[1];
                                 from[attr] = pathes[0];
                                 diff[attr] = [];
                                 for (i = 0, ii = from[attr].length; i < ii; i++) {
@@ -6410,8 +6418,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 origin: element.attr(),
                 totalOrigin: totalOrigin,
                 parentEl : parentEl,
-                delaystart: delayObject && delayObject.start,
-                delayend: delayObject && delayObject.end
+                delaystart: configObject && configObject.start,
+                delayend: configObject && configObject.end
             };
             animationElements.push(e);
 

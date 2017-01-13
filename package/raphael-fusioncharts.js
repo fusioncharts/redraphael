@@ -5627,6 +5627,10 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             if (configObject.end && configObject.start && configObject.start >= configObject.end - 0.01){
                 configObject.start = configObject.end * 0.98;
             }
+            // Adding this to remove certain non-uniformity
+            if (configObject.end && !configObject.start) {
+                configObject.start = 0.01;
+            }
         } else {
             configObject = {};
         }
@@ -5638,8 +5642,6 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
         }
         return element;
-    //
-    //
     // var a = params ? R.animation(params, ms, easing, callback) : anim,
     //     status = element.status(anim);
     // return this.animate(a).status(a, status * anim.ms / a.ms);
@@ -6565,6 +6567,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         to = {},
         diff = {};
         configObject = configObject || {};
+        configObject.from = configObject.from || {};
         if (status) {
             for (i = 0, ii = animationElements.length; i < ii; i++) {
                 var e = animationElements[i];
@@ -6603,7 +6606,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             for (var attr in params)
                 if (params[has](attr)) {
                     if (availableAnimAttrs[has](attr) || element.ca[attr]) {
-                        from[attr] = element.attr(attr);
+                        from[attr] = configObject.from[attr] || element.attr(attr);
                         (from[attr] == null) && (from[attr] = availableAttrs[attr]);
                         to[attr] = params[attr];
                         change = false;

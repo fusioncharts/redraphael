@@ -1164,6 +1164,84 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
 
     R._g = g;
 
+    // PriorityQueue Function Declaration
+    function PriorityQueue(comparator) {
+      this._comparator = comparator;
+      this._elements = [];
+    }
+
+    PriorityQueue.prototype.isEmpty = function() {
+      return this.size() === 0;
+    };
+
+    PriorityQueue.prototype.peek = function() {
+      if (this.isEmpty()) return null;
+
+      return this._elements[0];
+    };
+
+    PriorityQueue.prototype.deq = function() {
+      var first = this.peek();
+      var last = this._elements.pop();
+      var size = this.size();
+
+      if (size === 0) return first;
+
+      this._elements[0] = last;
+      var current = 0;
+
+      while (current < size) {
+        var largest = current;
+        var left = (2 * current) + 1;
+        var right = (2 * current) + 2;
+
+        if (left < size && this._compare(left, largest) >= 0) {
+          largest = left;
+        }
+
+        if (right < size && this._compare(right, largest) >= 0) {
+          largest = right;
+        }
+
+        if (largest === current) break;
+
+        this._swap(largest, current);
+        current = largest;
+      }
+
+      return first;
+    };
+
+    PriorityQueue.prototype.enq = function(element) {
+      var size = this._elements.push(element);
+      var current = size - 1;
+
+      while (current > 0) {
+        var parent = Math.floor((current - 1) / 2);
+
+        if (this._compare(current, parent) <= 0) break;
+
+        this._swap(parent, current);
+        current = parent;
+      }
+
+      return size;
+    };
+
+    PriorityQueue.prototype.size = function() {
+      return this._elements.length;
+    };
+
+    PriorityQueue.prototype._compare = function(a, b) {
+      return this._comparator(this._elements[a], this._elements[b]);
+    };
+
+    PriorityQueue.prototype._swap = function(a, b) {
+      var aux = this._elements[a];
+      this._elements[a] = this._elements[b];
+      this._elements[b] = aux;
+    };
+
     /*\
      * Raphael.type
      [ property (string) ]
@@ -5409,17 +5487,14 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             executeEvent = R.stopEvent !== false,
             key,
             i = 0,
-            item = {},
-            ii = e.el && e.el.animElements && e.el.animElements.length || 0;
+            peekVal = e.el && e.el.animElements &&
+                e.el.animElements.peek(),
+            deqValue;
             // Checking hooks
-            for (i = 0; i < ii; ++i) {
-                item = e.el.animElements[i];
-                if (time / ms >= item.pos) {
-                    item.removed = true;
-                    e.el.animElements.splice(i--, 1);
-                    --ii;
-                    runAnimation.apply(null, item.params);
-                }
+            while (peekVal && peekVal.pos <= time / ms) {
+                deqValue = e.el.animElements.deq().params;
+                runAnimation.apply(null, deqValue);
+                peekVal = e.el.animElements.peek();
             }
             if (e.initstatus) {
                 time = (e.initstatus * e.anim.top - e.prev) / (e.percent - e.prev) * ms;
@@ -5644,8 +5719,11 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             configObject = {};
         }
         if (!configObject.from && configObject.start > 0.01) {
-            el.animElements = el.animElements || [];
-            el.animElements.push({
+            // Initializing new Priority Queue if not present already
+            el.animElements = el.animElements || new PriorityQueue(function comparator (a, b) {
+                return b.pos - a.pos;
+            });
+            el.animElements.enq({
                 pos: configObject.start,
                 params: [a, element, a.percents[0], null, element.attr(),undefined, el, {
                     end: (configObject.end || 1) - configObject.start

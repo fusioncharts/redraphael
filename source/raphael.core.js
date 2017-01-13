@@ -5006,10 +5006,19 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             now,
             init = {},
             executeEvent = R.stopEvent !== false,
-            key;
-            // continue if desired position is not reached
-            if (e.delaystart && e.delaystart > time / ms) {
-                continue;
+            key,
+            i = 0,
+            item = {},
+            ii = e.el && e.el.animElements && e.el.animElements.length || 0;
+            // Checking hooks
+            for (i = 0; i < ii; ++i) {
+                item = e.el.animElements[i];
+                if (time / ms >= item.pos) {
+                    item.removed = true;
+                    e.el.animElements.splice(i--, 1);
+                    --ii;
+                    runAnimation.apply(null, item.params);
+                }
             }
             if (e.initstatus) {
                 time = (e.initstatus * e.anim.top - e.prev) / (e.percent - e.prev) * ms;
@@ -5027,9 +5036,9 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
             if (time < ms && !e.delayend || (e.delayend > (time / ms))) {
                 var pos = easing(time / ms);
-                if (e.delaystart || e.delayend) {
-                    pos = easing( ((time / ms) - e.delaystart || 0) /
-                        ((e.delayend || 1) - (e.delaystart || 0)));
+                if (e.delayend) {
+                    pos = easing( ((time / ms)) /
+                        ((e.delayend || 1)));
                 }
                 for (var attr in from)
                     if (from[has](attr)) {
@@ -5233,7 +5242,17 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         } else {
             configObject = {};
         }
-        runAnimation(a, element, a.percents[0], null, element.attr(),undefined, el, configObject);
+        if (!configObject.from && configObject.start > 0.01) {
+            el.animElements = el.animElements || [];
+            el.animElements.push({
+                pos: configObject.start,
+                params: [a, element, a.percents[0], null, element.attr(),undefined, el, {
+                    end: (configObject.end || 1) - configObject.start
+                }] 
+            });
+        } else {
+            runAnimation(a, element, a.percents[0], null, element.attr(),undefined, el, configObject);
+        }
         for (var i = 0, ii = animationElements.length; i < ii; i++) {
             if (animationElements[i].anim == anim && animationElements[i].el == el) {
                 animationElements[ii - 1].start = animationElements[i].start;
@@ -6421,7 +6440,6 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 origin: element.attr(),
                 totalOrigin: totalOrigin,
                 parentEl : parentEl,
-                delaystart: configObject && configObject.start,
                 delayend: configObject && configObject.end
             };
             animationElements.push(e);

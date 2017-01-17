@@ -5675,7 +5675,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         function checkPercentage (num) {
             num > 1 && (num = 1);
             num < 0 && (num = 0);
-            return num * 0.98;
+            return num * 0.99;
         }
         if (ms == 0) {
             setTimeout(function () {
@@ -5689,7 +5689,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             configObject.start = checkPercentage(configObject.start);
             configObject.end = checkPercentage(configObject.end);
             if (configObject.end && configObject.start && configObject.start >= configObject.end - 0.01){
-                configObject.start = configObject.end * 0.98;
+                configObject.start = configObject.end * 0.999;
             }
             // Adding this to remove certain non-uniformity
             if (configObject.end && !configObject.start) {

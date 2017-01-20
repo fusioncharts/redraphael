@@ -3105,7 +3105,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
         },
         fixM = function(path1, path2, a1, a2, i) {
-            if (path1 && path2 && path1[i][0] == "M" && path2[i][0] != "M") {
+            if (path1 && path2 && path1[i][0] == "M" && path2[i][0] != "M" && !i) {
                 path2.splice(i, 0, ["M", a2.x, a2.y]);
                 a1.bx = 0;
                 a1.by = 0;
@@ -6774,7 +6774,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                             case "path":
                                 var toPath,
                                     pathes = path2curve(from[attr], to[attr]);
-                                if (configObject.smartMorph) {
+                                if (configObject.smartMorph || true) {
                                     pathes = pathNormalizer(pathes[0], pathes[1], configObject);
                                 }
                                 toPath = pathes[1];

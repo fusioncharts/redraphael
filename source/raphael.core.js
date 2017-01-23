@@ -5325,7 +5325,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             el.animElements.enq({
                 pos: configObject.start,
                 params: [a, element, a.percents[0], null, element.attr(),undefined, el, {
-                    end: (configObject.end || 1) - configObject.start
+                    end: (configObject.end || 1) - configObject.start,
+                    smartMorph: configObject.smartMorph
                 }] 
             });
         } else {
@@ -6373,7 +6374,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                             case "path":
                                 var toPath,
                                     pathes = path2curve(from[attr], to[attr]);
-                                if (configObject.smartMorph || true) {
+                                if (configObject.smartMorph) {
                                     pathes = pathNormalizer(pathes[0], pathes[1], configObject);
                                 }
                                 toPath = pathes[1];

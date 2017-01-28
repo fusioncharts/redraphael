@@ -5878,7 +5878,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             return str.join('');
         }
 
-        function removeBlanks (arr) {
+        function removeBlanks (arr, pos) {
             var i = arr.length,
                 j = 0,
                 path;
@@ -5890,7 +5890,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                     break;
                 }
             }
-            if (arr.length === 1){
+            if (arr.length === 1 && pos){
                 arr.length = 0;
             }
         }
@@ -5971,11 +5971,11 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
 
         */
         for (i = pathArr1.length; i--;) {
-            removeBlanks(pathArr1[i]);
+            removeBlanks(pathArr1[i], i);
             pathArr1[i].length || pathArr1.pop();
         }
         for (i = pathArr2.length; i--;) {
-            removeBlanks(pathArr2[i]);
+            removeBlanks(pathArr2[i], i);
             pathArr2[i].length || pathArr2.pop();
         }
         // removeBlanks(pathArr1);
@@ -6238,10 +6238,10 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             return [fPath1, fPath2];
         }
         if (!p1 || p1 === 'M  ') {
-            p1 = p2.split(' ').slice(0, 3).join(' ').replace('L', '');
+            p1 = p2.split(' ').slice(0, 3).join(' ').replace(/[LC]/, '');
         }
         if (!p2 || p2 === 'M  ') {
-            p2 = p1.split(' ').slice(0, 3).join(' ').replace('L', '');
+            p2 = p1.split(' ').slice(0, 3).join(' ').replace(/[LC]/, '');
         }
         commonPath = commonPathCalculator(p1, p2);
 

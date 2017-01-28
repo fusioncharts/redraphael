@@ -6265,9 +6265,14 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 path;
             while (i-- - 1) {
                 // Pop if length is zero
-                if (arr[i].toString() === arr[i - 1].toString()) {
+                if (arr[i].slice(1).toString() === arr[i - 1].slice(1).toString()) {
                     arr.pop();
+                } else {
+                    break;
                 }
+            }
+            if (arr.length === 1){
+                arr.length = 0;
             }
         }
 
@@ -6346,8 +6351,16 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         /*
 
         */
-        removeBlanks(pathArr1);
-        removeBlanks(pathArr2);
+        for (i = pathArr1.length; i--;) {
+            removeBlanks(pathArr1[i]);
+            pathArr1[i].length || pathArr1.pop();
+        }
+        for (i = pathArr2.length; i--;) {
+            removeBlanks(pathArr2[i]);
+            pathArr2[i].length || pathArr2.pop();
+        }
+        // removeBlanks(pathArr1);
+        // removeBlanks(pathArr2);
         divideArray(pathArr1.length - pathArr2.length);
 
         ii = Math.max(pathArr1.length, pathArr2.length);

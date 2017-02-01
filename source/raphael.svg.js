@@ -519,7 +519,9 @@ _window.Raphael && _window.Raphael.svg && function(R) {
             attrs = o.attrs,
             paper = o.paper,
             s = node.style,
-            vis = s.visibility;
+            vis = s.visibility,
+            i,
+            l;
         // Convert all the &lt; and &gt; to < and > and if there is any <br/> tag in between &lt; and &gt;
         // then converting them into <<br/> and ><br/> respectively.
         if (params && params.text && params.text.replace) {
@@ -844,12 +846,15 @@ _window.Raphael && _window.Raphael.svg && function(R) {
                     // fall
                     case "fill-opacity":
                         if (attrs.gradient) {
-                            gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\(#|\)$/g, E));
+                            gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\([\'\"]#|[\'\"]\)$/g, E));
                             if (gradient) {
                                 stops = gradient.getElementsByTagName("stop");
-                                $(stops[stops.length - 1], {
-                                    "stop-opacity": value
-                                });
+                                l = stops.length;
+                                for (i = 0; i < l; i += 1) {
+                                  $(stops[i], {
+                                      "stop-opacity": value
+                                  });
+                                }
                             }
                             break;
                         }

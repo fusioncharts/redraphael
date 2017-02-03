@@ -278,11 +278,10 @@ _window.Raphael && _window.Raphael.svg && function(R) {
 
         $(o, {
             fill: "url('" + R._url + "#" + id + "')",
-            opacity: 1,
             "fill-opacity": 1
         });
+
         s.fill = E;
-        s.opacity = 1;
         s.fillOpacity = 1;
         return 1;
     },
@@ -764,11 +763,11 @@ _window.Raphael && _window.Raphael.svg && function(R) {
                         if (!clr.error) {
                             delete params.gradient;
                             delete attrs.gradient;
-                            !R.is(attrs.opacity, "undefined") &&
-                                R.is(params.opacity, "undefined") &&
-                                $(node, {
-                                    opacity: attrs.opacity
-                                });
+                            // !R.is(attrs.opacity, "undefined") &&
+                            //     R.is(params.opacity, "undefined") &&
+                            //     $(node, {
+                            //         opacity: attrs.opacity
+                            //     });
                             !R.is(attrs["fill-opacity"], "undefined") &&
                                 R.is(params["fill-opacity"], "undefined") &&
                                 $(node, {
@@ -838,26 +837,38 @@ _window.Raphael && _window.Raphael.svg && function(R) {
                         value === 'hidden' ? o.hide() : o.show();
                         break;
                     case "opacity":
-                        if (attrs.gradient && !attrs[has]("stroke-opacity")) {
-                            $(node, {
-                                "stroke-opacity": value > 1 ? value / 100 : value
-                            });
-                        }
+                        // if (attrs.gradient && !attrs[has]("stroke-opacity")) {
+                        //     $(node, {
+                        //         "stroke-opacity": value > 1 ? value / 100 : value
+                        //     });
+                        // }
+                        value = value > 1 ? value / 100 : value;
+                        $(node, {
+                            "opacity": value
+                        });
+                        s.opacity = value;
+                        break;
                     // fall
                     case "fill-opacity":
-                        if (attrs.gradient) {
-                            gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\([\'\"]#|[\'\"]\)$/g, E));
-                            if (gradient) {
-                                stops = gradient.getElementsByTagName("stop");
-                                l = stops.length;
-                                for (i = 0; i < l; i += 1) {
-                                  $(stops[i], {
-                                      "stop-opacity": value
-                                  });
-                                }
-                            }
-                            break;
-                        }
+                        // if (attrs.gradient) {
+                        //     gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\([\'\"]#|[\'\"]\)$/g, E));
+                        //     if (gradient) {
+                        //         stops = gradient.getElementsByTagName("stop");
+                        //         l = stops.length;
+                        //         for (i = 0; i < l; i += 1) {
+                        //           $(stops[i], {
+                        //               "stop-opacity": value
+                        //           });
+                        //         }
+                        //     }
+                        //     break;
+                        // }
+                        value = value > 1 ? value / 100 : value;
+                        $(node, {
+                            "fill-opacity": value
+                        });
+                        s.fillOpacity = value;
+                        break;
                     default:
                         att == "font-size" && (value = toInt(value, 10) + "px");
                         var cssrule = att.replace(/(\-.)/g, function(w) {

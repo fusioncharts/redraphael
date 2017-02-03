@@ -19,14 +19,16 @@ var testBtn = document.getElementById("test-btn"),
     defTime = 2000,
     autoTestOn = false,
     waitTime = 0,
-    saveStart;
+    saveStart,
+    Storage = window.localStorage;
 
 populateOptions(jsonData);
 
 function populateOptions(json) {
     var string = "",
         key = "",
-        key2 = "";
+        key2 = "",
+        lastTestKey = Storage.getItem('testId');
     for (key in json) {
         string += "<optgroup label=\"" + key + "\">";
         for (key2 in json[key]) {
@@ -38,6 +40,7 @@ function populateOptions(json) {
     // Storing the json
     jsonData = json;
     testSelect.innerHTML = string;
+    lastTestKey && (testSelect.value = lastTestKey);
 }
 
 function updateJson () {
@@ -68,6 +71,7 @@ function testPath(saveStart) {
         endData = {},
         time = 0,
         el;
+        selectValue && Storage.setItem('testId', selectValue);
     // Clear other svgs before test starts
     if (saveStart !== 'animateSaved')
     clearBoard();
@@ -175,7 +179,7 @@ function raphaelFnAnimateSaved(paper, start, end, time, el) {
         }
     };
     log();
-    setTimeout(function () { 
+    setTimeout(function () {
         savePath.animate(end, time);
         setTimeout (function () {
             attrDisplay.innerHTML += '<hr>End</br>' + stringifyPath(savePath.attrs.path);

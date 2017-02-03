@@ -629,6 +629,20 @@ window.testJson = {
             'end': {
                 'opacity': 0
             }
+        },
+        'linear_to_fill_opacity': {
+            'element': 'ellipse',
+            'time': '1000',
+            'start': {
+                'rx': '270',
+                'ry': '270',
+                'cx': '350',
+                'cy': '350',
+                'fill': '90-#f00:5-#00f:95'
+            },
+            'end': {
+                'fill-opacity': 0
+            }
         }
     },
 };

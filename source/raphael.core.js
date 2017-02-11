@@ -5091,8 +5091,14 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             deqValue;
             // Checking hooks
             while (peekVal && peekVal.pos <= time / ms) {
-                deqValue = e.el.animElements.deq().params;
-                runAnimation.apply(null, deqValue);
+                deqValue = e.el.animElements.deq();
+                if (deqValue.attr) {
+                    setTimeout(function (p) {
+                    p[1].attr(p[8]);
+                    }.bind(null, deqValue.params), 0);
+                } else {
+                    runAnimation.apply(null, deqValue.params);   
+                }
                 peekVal = e.el.animElements.peek();
             }
             if (e.initstatus) {
@@ -5308,7 +5314,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             configObject.start = checkPercentage(configObject.start);
             configObject.end = checkPercentage(configObject.end);
             if (configObject.end && configObject.start && configObject.start >= configObject.end - 0.01){
-                configObject.start = configObject.end * 0.999;
+                configObject.start = configObject.end;
             }
             // Adding this to remove certain non-uniformity
             if (configObject.end && !configObject.start) {
@@ -5324,10 +5330,11 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             });
             el.animElements.enq({
                 pos: configObject.start,
+                attr: configObject.start === configObject.end,
                 params: [a, element, a.percents[0], null, element.attr(),undefined, el, {
                     end: (configObject.end || 1) - configObject.start,
                     smartMorph: configObject.smartMorph
-                }] 
+                }, params]
             });
         } else {
             runAnimation(a, element, a.percents[0], null, element.attr(),undefined, el, configObject);

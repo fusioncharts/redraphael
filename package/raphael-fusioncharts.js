@@ -6144,7 +6144,269 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         }
 
     }
+function pathNormalizer(p1, p2, configObject) {
+        // Function to convert array to svg path (?) only for curves
+        var finalp1 = [],
+            finalp2 = [],
+            pathArr1 = toSvgPath(p1),
+            pathArr2 = toSvgPath(p2),
+            i = 0,
+            ii = 0,
+            temp,
+            createElementNS = document.createElementNS && document.createElementNS.bind(document),
+            dPath = createElementNS && createElementNS("http://www.w3.org/2000/svg", "path");
+        configObject = configObject || {};
+        // If path invalid or svg not supported return
+        if (!pathArr1 || !pathArr2 || !dPath) {
+            return [p1, p2];
+        }
+        if (canFallback(p1, p2)) {
+            return [p1, p2];
+        }
+        // If any of the parameters is
+        // absent return to normal flow
+        if (!p1 || !p2) {
+            return [p1, p2];
+        }
+        // If svg not available return to normal flow
+        if (!document.createElementNS) {
+            return [p1, p2];
+        }
+        // Setting path again
+        pathArr1 = toSvgPath(p1);
+        pathArr2 = toSvgPath(p2);
+        if(pathArr1.join().indexOf('undefined') !== -1) {
+            return [p1, p2];
+        }
+        if(pathArr2.join().indexOf('undefined') !== -1) {
+            return [p1, p2];
+        }
+        // If svg functions not available return to normal flow
+        if (!dPath.getTotalLength || !dPath.getPointAtLength) {
+            return [p1, p2];
+        }
 
+        function canFallback (path1, path2) {
+            var str1 = '',
+                str2 = '',
+                testLen,
+                testPoint;
+            // Checking path totoalLength is accurate or not
+            // testing with a known path
+            // this check is for Firefox
+            dPath.setAttribute('d', 'M300 10 L300 300 C50 310,50 640,350 650' +
+                'C600 640,600 310,400 300 L400 10 L295 10');
+            testLen = dPath.getTotalLength();
+            testPoint = dPath.getPointAtLength(10);
+            if (testLen < 1829.1 || testLen > 1829.2) {
+                return true;
+            }
+            if (Math.round(testPoint.x) !== 300 || Math.round(testPoint.y) !== 20) {
+                return true;
+            }
+            // path1 and path2 are in array
+            function trimPathArray (arr) {
+                var i = arr.length;
+                while (i--) {
+                    if (arr[i].join('') === arr[i - 1].join('')) {
+                        arr.pop();
+                    } else {
+                        break;
+                    }
+                }
+            }
+            function getPathFromArray(arr) {
+                var str = '',
+                    i = 0,
+                    ii = arr.length;
+                for (; i < ii; ++i) {
+                    str += arr[i].join(' ');
+                }
+                return str;
+            }
+            trimPathArray(path1);
+            trimPathArray(path2);
+            str1 = getPathFromArray(path1);
+            str2 = getPathFromArray(path2);
+            if (str1.split(/[Mm]/).length > 2 || str2.split(/[Mm]/).length > 2) {
+                return false;
+            }
+            if (path1.length === path2.length) {
+                return true;
+            }
+            return false;
+        }
+
+        function toSvgPath(arr) {
+            var str = [],
+                i = 0,
+                ii = arr.length,
+                item = [];
+            if (typeof arr === 'string') {
+                return arr;
+            }
+            // Converting the array to string; path type
+            for (i = 0; i < ii; ++i) {
+                if (!arr[i].join){
+                    return;
+                } else {
+                    // Removing continuous Move commands
+                    // Picking up the last one
+                    if ( !i || !arr[i + 1] || arr[i + 1][0] !== 'M' || arr[i][0] !== 'M'){
+                        str.push(arr[i].join(' '));
+                    }
+                }
+            }
+            str = str.join('');
+            str = str.split(/[Mm]/).slice(1);
+            for (i = 0, ii = str.length; i < ii; ++i) {
+                str[i] = 'M' + str[i];
+            }
+            return str;
+        }
+
+        ii = Math.max(pathArr1.length, pathArr2.length);
+        for (i = 0; i < ii; ++i) {
+            temp = _pathNormalizer(pathArr1[i], pathArr2[i]);
+            pathArr1[i] = temp[0];
+            pathArr2[i] = temp[1];
+        }
+
+        function linetopath (arr) {
+            var i = 0,
+                ii = 0,
+                str = [];
+            arr = arr || [];
+            ii = arr.length;
+            for (i = 0; i < ii; ++i) {
+                if (arr[i].length - 1) {
+                    str.push(arr[i].join(' '));
+                }
+            }
+            return str.join('');
+        }
+
+        function removeBlanks (arr, pos) {
+            var i = arr.length,
+                j = 0,
+                path;
+            while (i-- - 1) {
+                // Pop if length is zero
+                if (arr[i].slice(1).toString() === arr[i - 1].slice(1).toString()) {
+                    arr.pop();
+                } else {
+                    break;
+                }
+            }
+            if (arr.length === 1 && pos){
+                arr.length = 0;
+            }
+        }
+
+        function _divide(arr, times) {
+            var resArr = [],
+                locArr = [],
+                arrLen = arr.length,
+                i = 0,
+                ii = 0,
+                x = 0,
+                prevPos = 0,
+                y = 0,
+                diffTimes = times - arrLen; // If array size is smaller than
+                                            // divisions needed
+            while (diffTimes >= 0) {
+                i = arr.length - 1;
+                arr.push(arr.slice(i));
+                --diffTimes;
+            }
+            arrLen = arr.length;
+            for (i = 0; i <= times; ++i) {
+                locArr.push(Math.round((i / times) * arrLen));
+            }
+            for (i = 0, ii = locArr.length - 1; i < ii; ++i) {
+                resArr.push(arr.slice(locArr[i], locArr[i + 1]));
+                if (resArr[i][0][0] !== 'M' && resArr[i][0][0] !== 'm') {
+                    prevPos = resArr[i - 1].length - 1;
+                    x = resArr[i - 1][prevPos][1];
+                    y = resArr[i - 1][prevPos][2];
+                    resArr[i].unshift(['M', x, y]);
+                }
+            }
+            return resArr;
+        }
+
+        function divideArray (diff) {
+            var arrToDivide = [],
+                countArr = [],
+                transArr = [],
+                i = 0,
+                ii = 0,
+                isArr1 = true;
+            if (diff === 0) {
+                return;
+            } else if (diff > 0) {
+                arrToDivide = pathArr2;
+                isArr1 = false;
+            } else {
+                diff = -diff;
+                arrToDivide = pathArr1;
+            }
+            for (i = 0, ii = arrToDivide.length; i < ii; ++i) {
+                countArr.push(1);
+            }
+            while (diff--) {
+                --i;
+                if (i < 0) {
+                    i = ii - 1;
+                }
+                countArr[i]++;
+            }
+
+            for (i = 0; i < ii; ++i){
+                if (countArr[i] === 1) {
+                    transArr.push(arrToDivide[i]);
+                } else {
+                    transArr.push.apply(transArr, _divide(arrToDivide[i], countArr[i]));
+                }
+            }
+            if (isArr1) {
+                pathArr1 = transArr;
+            } else {
+                pathArr2 = transArr;
+            }
+        }
+        /*
+
+        */
+        if (configObject.divide) {
+            for (i = pathArr1.length; i--;) {
+                removeBlanks(pathArr1[i], i);
+                pathArr1[i].length || pathArr1.pop();
+            }
+            for (i = pathArr2.length; i--;) {
+                removeBlanks(pathArr2[i], i);
+                pathArr2[i].length || pathArr2.pop();
+            }
+            // removeBlanks(pathArr1);
+            // removeBlanks(pathArr2);
+            divideArray(pathArr1.length - pathArr2.length);
+
+            ii = Math.max(pathArr1.length, pathArr2.length);
+            for (i = 0; i < ii; ++i) {
+                temp = _pathNormalizer(linetopath(pathArr1[i]), linetopath(pathArr2[i]));
+                pathArr1[i] = temp[0];
+                pathArr2[i] = temp[1];
+            }
+        }
+
+        for (i = 0, ii = pathArr1.length; i < ii; ++i) {
+            finalp1 = finalp1.concat(pathArr1[i]);
+        }
+        for (i = 0, ii = pathArr2.length; i < ii; ++i) {
+            finalp2 = finalp2.concat(pathArr2[i]);
+        }
+        return [finalp1, finalp2];
+    }
     function pathNormalizer(p1, p2) {
         // Function to convert array to svg path (?) only for curves
         var finalp1 = [],

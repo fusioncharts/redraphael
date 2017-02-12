@@ -5734,7 +5734,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 attr: configObject.start === configObject.end,
                 params: [a, element, a.percents[0], null, element.attr(),undefined, el, {
                     end: (configObject.end || 1) - configObject.start,
-                    smartMorph: configObject.smartMorph
+                    smartMorph: configObject.smartMorph,
+                    hookFn: configObject.hookFn
                 }, params]
             });
         } else {
@@ -6685,6 +6686,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         to = {},
         diff = {};
         configObject = configObject || {};
+        configObject.hookFn && configObject.hookFn.call(element);
         configObject.from = configObject.from || {};
         if (status) {
             for (i = 0, ii = animationElements.length; i < ii; i++) {

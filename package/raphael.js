@@ -786,7 +786,11 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             transform: "transform",
             width: nu,
             x: nu,
-            y: nu
+            y: nu,
+            // Required for pie 3d
+            "color": "colour",
+            "borderColor": "colour",
+            "borderWidth": nu
         },
         eldata = {},
 
@@ -5673,7 +5677,17 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      = (object) original element
     \*/
     elproto.animateWith = function(el, anim, params, ms, easing, callback, configObject) {
-        var element = this;
+        var element = this,
+            refOb = {},
+            key;
+        // Copying the reference object
+        configObject = configObject || {};
+        for (key in configObject) {
+            if (configObject.hasOwnProperty(key)) {
+                refOb[key] = configObject[key];
+            }
+        }
+        configObject = refOb;
         if (element.removed) {
             callback && callback.call(element);
             return element;

@@ -8922,6 +8922,9 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 .replace(/&<br\/>gt;|&g<br\/>t;|&gt<br\/>;/g, "><br/>");
         }
         s.visibility = "hidden";
+        if (o.type === "image") {
+            LoadRefImage(o, params);
+        }
         for (var att in params) {
             if (params[has](att)) {
                 if (!R._availableAttrs[has](att)) {
@@ -9427,11 +9430,11 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             dy: dif
         });
     },
-    Element = function(node, svg, group) {
+    Element = function(node, svg, group, dontAppend) {
         var o = this,
             parent = group || svg;
 
-        parent.canvas && parent.canvas.appendChild(node);
+        !dontAppend && parent.canvas && parent.canvas.appendChild(node);
 
         o.node = o[0] = node;
         node.raphael = true;
@@ -9617,7 +9620,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
         }
 
-        o.parent.canvas.removeChild(node);
+        o.parent.canvas.contains(node) && o.parent.canvas.removeChild(node);
         o.removeData();
         delete paper._elementsById[o.id]; // remove from lookup hash
         R._tear(o, o.parent);
@@ -9900,11 +9903,37 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         applyCustomAttributes(res, attrs);
         return res;
     };
+    function LoadRefImage (element, attrs) {
+        var src = attrs.src,
+            parent = element._.group,
+            node = element.node,
+            RefImg = element._.RefImg;
+
+        if (!RefImg) {
+            RefImg = element._.RefImg = new Image();
+        }
+
+        if (attrs.src !== undefined) {
+            RefImg.src = src;
+            RefImg.onload = function () {
+                element.attr({
+                    width: attrs.width || RefImg.width,
+                    height: attrs.height || RefImg.height
+                });
+                parent.canvas && parent.canvas.appendChild(node);
+            };
+            RefImg.onerror = function (e) {
+                node.onerror && node.onerror(e);
+            };
+            element._.RefImg = RefImg;
+        }
+    };
     R._engine.image = function(svg, attrs, group) {
         var el = $("image"),
             src = attrs.src,
-            res = new Element(el, svg, group);
+            res = new Element(el, svg, group, true);
 
+        res._.group = group || svg;
         res.type = "image";
         el.setAttribute("preserveAspectRatio", "none");
         setFillAndStroke(res, attrs);
@@ -10693,12 +10722,12 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         }
         return 1;
     },
-    Element = function(node, vml, group) {
+    Element = function(node, vml, group, dontAppend) {
         var o = this,
             parent = group || vml,
 			skew;
 
-		parent.canvas && parent.canvas.appendChild(node);
+		!dontAppend && parent.canvas && parent.canvas.appendChild(node);
 		skew = createNode("skew");
         skew.on = true;
         node.appendChild(skew);

@@ -582,12 +582,12 @@ _window.Raphael && _window.Raphael.vml && function(R) {
         }
         return 1;
     },
-    Element = function(node, vml, group) {
+    Element = function(node, vml, group, dontAppend) {
         var o = this,
             parent = group || vml,
 			skew;
 
-		parent.canvas && parent.canvas.appendChild(node);
+		!dontAppend && parent.canvas && parent.canvas.appendChild(node);
 		skew = createNode("skew");
         skew.on = true;
         node.appendChild(skew);

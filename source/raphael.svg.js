@@ -529,6 +529,9 @@ _window.Raphael && _window.Raphael.svg && function(R) {
                 .replace(/&<br\/>gt;|&g<br\/>t;|&gt<br\/>;/g, "><br/>");
         }
         s.visibility = "hidden";
+        if (o.type === "image") {
+            LoadRefImage(o, params);
+        }
         for (var att in params) {
             if (params[has](att)) {
                 if (!R._availableAttrs[has](att)) {
@@ -1034,11 +1037,11 @@ _window.Raphael && _window.Raphael.svg && function(R) {
             dy: dif
         });
     },
-    Element = function(node, svg, group) {
+    Element = function(node, svg, group, dontAppend) {
         var o = this,
             parent = group || svg;
 
-        parent.canvas && parent.canvas.appendChild(node);
+        !dontAppend && parent.canvas && parent.canvas.appendChild(node);
 
         o.node = o[0] = node;
         node.raphael = true;
@@ -1224,7 +1227,7 @@ _window.Raphael && _window.Raphael.svg && function(R) {
             }
         }
 
-        o.parent.canvas.removeChild(node);
+        o.parent.canvas.contains(node) && o.parent.canvas.removeChild(node);
         o.removeData();
         delete paper._elementsById[o.id]; // remove from lookup hash
         R._tear(o, o.parent);
@@ -1507,11 +1510,37 @@ _window.Raphael && _window.Raphael.svg && function(R) {
         applyCustomAttributes(res, attrs);
         return res;
     };
+    function LoadRefImage (element, attrs) {
+        var src = attrs.src,
+            parent = element._.group,
+            node = element.node,
+            RefImg = element._.RefImg;
+
+        if (!RefImg) {
+            RefImg = element._.RefImg = new Image();
+        }
+
+        if (attrs.src !== undefined) {
+            RefImg.src = src;
+            RefImg.onload = function () {
+                element.attr({
+                    width: attrs.width || RefImg.width,
+                    height: attrs.height || RefImg.height
+                });
+                parent.canvas && parent.canvas.appendChild(node);
+            };
+            RefImg.onerror = function (e) {
+                node.onerror && node.onerror(e);
+            };
+            element._.RefImg = RefImg;
+        }
+    };
     R._engine.image = function(svg, attrs, group) {
         var el = $("image"),
             src = attrs.src,
-            res = new Element(el, svg, group);
+            res = new Element(el, svg, group, true);
 
+        res._.group = group || svg;
         res.type = "image";
         el.setAttribute("preserveAspectRatio", "none");
         setFillAndStroke(res, attrs);

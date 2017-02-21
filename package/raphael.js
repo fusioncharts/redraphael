@@ -5708,7 +5708,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         function checkPercentage (num) {
             num > 1 && (num = 1);
             num < 0 && (num = 0);
-            return num * 0.99;
+            return num;
         }
         if (ms == 0) {
             setTimeout(function () {

@@ -5451,7 +5451,15 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     },
     animation = function() {
         var Now = +new Date,
-        l = 0;
+        l = 0,
+        deqArr = [],
+        i = 0,
+        ll = 0,
+        hookManager = function (deqValue) {
+            setTimeout(function () {
+                runAnimation.apply(null, deqValue.params)
+            });
+        };
         for (; l < animationElements.length; l++) {
             var e = animationElements[l];
             if (e.el.removed || e.paused || e.parentEl && e.parentEl.e && e.parentEl.e.paused) {
@@ -5467,23 +5475,16 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             that = e.el,
             set = {},
             now,
+            origms,
             init = {},
             executeEvent = R.stopEvent !== false,
             key,
             i = 0,
             peekVal = e.el && e.el.animElements &&
-                e.el.animElements.peek(),
-            deqValue;
+                e.el.animElements.peek();
             // Checking hooks
             while (peekVal && peekVal.pos <= time / ms) {
-                deqValue = e.el.animElements.deq();
-                if (deqValue.attr) {
-                    setTimeout(function (p) {
-                    p[1].attr(p[8]);
-                    }.bind(null, deqValue.params), 0);
-                } else {
-                    runAnimation.apply(null, deqValue.params);   
-                }
+                deqArr.push(e.el.animElements.deq());
                 peekVal = e.el.animElements.peek();
             }
             if (e.initstatus) {
@@ -5497,15 +5498,23 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             } else {
                 e.status = (e.prev + (e.percent - e.prev) * (time / ms)) / e.anim.top;
             }
+            origms = ms;
+            // If has parentEl
+            if (e.parentEl && e.parentEl.cMs) {
+                ms = e.delayend - e.delaystart;
+                time = e.parentEl.cPos - e.delaystart;
+            }
             if (time < 0) {
                 continue;
             }
-            if (time < ms && !e.delayend || (e.delayend > (time / ms))) {
+            if (time < ms) {
                 var pos = easing(time / ms);
-                if (e.delayend) {
-                    pos = easing( ((time / ms)) /
-                        ((e.delayend || 1)));
+                if (e.el.animElements) {
+                    e.el.cTime = time;
+                    e.el.cMs = ms;
+                    e.el.cPos = time / ms;
                 }
+                ms = origms;
                 for (var attr in from)
                     if (from[has](attr)) {
                         switch (availableAnimAttrs[attr]) {
@@ -5649,6 +5658,10 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
         }
         R.svg && that && that.paper && that.paper.safari();
+        // Starting animation on timer 0
+        for (l = 0, ll = deqArr.length; l < ll; ++l) {
+            hookManager(deqArr[l]);
+        }
         animationElements.length && (requestAnimFrame || getAnimFrameFn())(animation);
     },
     upto255 = function(color) {
@@ -5705,19 +5718,13 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         }
         var a = params instanceof Animation ? params : R.animation(params, ms, easing, callback),
         x, y;
-        if (configObject) {
-            configObject.start = checkPercentage(configObject.start);
-            configObject.end = checkPercentage(configObject.end);
-            if (configObject.end && configObject.start && configObject.start >= configObject.end - 0.01){
-                configObject.start = configObject.end;
-            }
-            // Adding this to remove certain non-uniformity
-            if (configObject.end && !configObject.start) {
-                configObject.start = 0.01;
-            }
-        } else {
-            configObject = {};
+
+        configObject.start = checkPercentage(configObject.start || 0);
+        configObject.end = checkPercentage(configObject.end || 1);
+        if (configObject.start >= configObject.end){
+            configObject.start = configObject.end;
         }
+
         if (!configObject.from && configObject.start > 0.01) {
             // Initializing new Priority Queue if not present already
             el.animElements = el.animElements || new PriorityQueue(function comparator (a, b) {
@@ -5727,7 +5734,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 pos: configObject.start,
                 attr: configObject.start === configObject.end,
                 params: [a, element, a.percents[0], null, element.attr(),undefined, el, {
-                    end: (configObject.end || 1) - configObject.start,
+                    start: configObject.start,
+                    end: configObject.end,
                     smartMorph: configObject.smartMorph,
                     hookFn: configObject.hookFn
                 }, params]
@@ -7198,7 +7206,8 @@ function pathNormalizer(p1, p2, configObject) {
                 origin: element.attr(),
                 totalOrigin: totalOrigin,
                 parentEl : parentEl,
-                delayend: configObject && configObject.end
+                delayend: configObject && configObject.end,
+                delaystart: configObject && configObject.start
             };
             animationElements.push(e);
 

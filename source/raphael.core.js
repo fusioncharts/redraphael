@@ -12,19 +12,22 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
    _window = window;
 }
 (function (glob, factory, optOutModulePattern) {
-    // AMD support
-    if (!optOutModulePattern && typeof define === "function" && define.amd) {
-        // Define as an anonymous module
-        define(["eve"], function( eve ) {
-            return factory(glob, eve);
-        });
-    } else {
-        // Browser globals (glob is window)
-        // Raphael adds itself to window
-        // factory(glob, glob.eve);
-        factory(glob, (typeof module === 'object' && typeof module.exports !== 'undefined') ?
-           module.exports : glob.eve);
-    }
+    // // AMD support
+    // if (!optOutModulePattern && typeof define === "function" && define.amd) {
+    //     // Define as an anonymous module
+    //     define(["eve"], function( eve ) {
+    //         return factory(glob, eve);
+    //     });
+    // } else {
+    //     // Browser globals (glob is window)
+    //     // Raphael adds itself to window
+    //     // factory(glob, glob.eve);
+    //     factory(glob, (typeof module === 'object' && typeof module.exports !== 'undefined') ?
+    //        module.exports : glob.eve);
+    // }
+
+    factory(glob, (typeof module === 'object' && typeof module.exports !== 'undefined') ?
+       module.exports : glob.eve);
 }(_window, function (_win, eve) {
     /*\
      * Raphael

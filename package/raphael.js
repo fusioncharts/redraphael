@@ -5500,20 +5500,17 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
             origms = ms;
             // If has parentEl
-            if (e.parentEl && e.parentEl.cMs) {
+            if (e.parentEl) {
                 ms = e.delayend - e.delaystart;
                 time = e.parentEl.cPos - e.delaystart;
+            } else if (e.el.animElements) {
+                e.el.cPos = time / ms;
             }
             if (time < 0) {
                 continue;
             }
             if (time < ms) {
                 var pos = easing(time / ms);
-                if (e.el.animElements) {
-                    e.el.cTime = time;
-                    e.el.cMs = ms;
-                    e.el.cPos = time / ms;
-                }
                 ms = origms;
                 for (var attr in from)
                     if (from[has](attr)) {

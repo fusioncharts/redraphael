@@ -6208,7 +6208,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             // path1 and path2 are in array
             function trimPathArray (arr) {
                 var i = arr.length;
-                while (i--) {
+                while (i-- - 1) {
                     if (arr[i].join('') === arr[i - 1].join('')) {
                         arr.pop();
                     } else {

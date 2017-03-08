@@ -5058,16 +5058,6 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     var animationElements = [],
     requestAnimFrame,
     // This a temporary fix so that animation can be handled from the scheduler module.
-    getAnimFrameFn = function () {
-        return requestAnimFrame = R.requestAnimFrame ||
-        _win.webkitRequestAnimationFrame ||
-        _win.mozRequestAnimationFrame ||
-        _win.oRequestAnimationFrame ||
-        _win.msRequestAnimationFrame ||
-        function(callback) {
-            setTimeout(callback, 16);
-        };
-    },
     animation = function() {
         var Now = +new Date,
         l = 0,
@@ -5278,11 +5268,22 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         for (l = 0, ll = deqArr.length; l < ll; ++l) {
             hookManager(deqArr[l]);
         }
-        animationElements.length && (requestAnimFrame || getAnimFrameFn())(animation);
+        animationElements.length && (requestAnimFrame || R.getAnimFrameFn())(animation);
     },
     upto255 = function(color) {
         return color > 255 ? 255 : color < 0 ? 0 : color;
     };
+
+    R.getAnimFrameFn = function () {
+        return requestAnimFrame = R.requestAnimFrame ||
+        _win.webkitRequestAnimationFrame ||
+        _win.mozRequestAnimationFrame ||
+        _win.oRequestAnimationFrame ||
+        _win.msRequestAnimationFrame ||
+        function(callback) {
+            setTimeout(callback, 16);
+        };
+    },
 
     /*\
      * Element.animateWith
@@ -6580,7 +6581,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             if (isInAnimSet) {
                 e.start = new Date - e.ms * status;
             }
-            animationElements.length == 1 && (requestAnimFrame || getAnimFrameFn())(animation);
+            animationElements.length == 1 && (requestAnimFrame || R.getAnimFrameFn())(animation);
         } else {
             isInAnim.initstatus = status;
             isInAnim.start = new Date - isInAnim.ms * status;

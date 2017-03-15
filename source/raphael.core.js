@@ -162,6 +162,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         },
         doc = g.doc,
         win = g.win,
+        isIE = /*@cc_on!@*/false || !!doc.documentMode,
 
         supportsTouch = R.supportsTouch = "createTouch" in doc,
 
@@ -742,7 +743,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
           * Returns a recursively cloned version of an object.
          \*/
         clone = R.clone = hasPrototypeBug ? function (obj) {
-                if (Object(obj) !== obj) {
+                if (Object(obj) !== obj || (isIE && obj.nodeType)) {
                     return obj;
                 }
                 var res = new obj.constructor;

@@ -9647,8 +9647,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             RefImg.src = src;
             RefImg.onload = function () {
                 element.attr({
-                    width: attrs.width || RefImg.width,
-                    height: attrs.height || RefImg.height
+                    width: element.attrs.width || RefImg.width,
+                    height: element.attrs.height || RefImg.height
                 });
                 parent.canvas && parent.canvas.appendChild(node);
             };

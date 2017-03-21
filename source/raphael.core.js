@@ -382,7 +382,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             rotation: 0,
             width: 0,
             x: 0,
-            y: 0
+            y: 0,
+            alpha: nu
         },
         availableAnimAttrs = R._availableAnimAttrs = {
             blur: nu,
@@ -409,7 +410,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             // Required for pie 3d
             "color": "colour",
             "borderColor": "colour",
-            "borderWidth": nu
+            "borderWidth": nu,
+            alpha: nu
         },
         eldata = {},
 

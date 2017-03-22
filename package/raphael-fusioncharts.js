@@ -5758,7 +5758,13 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                     end: configObject.end,
                     smartMorph: configObject.smartMorph,
                     hookFn: configObject.hookFn
-                }, params]
+                }, params],
+                executeOb: {
+                    el: this,
+                    attrs: params,
+                    callback: callback,
+                    hookFn: configObject.hookFn
+                }
             });
         } else {
             runAnimation(a, element, a.percents[0], null, element.attr(),undefined, el, configObject);
@@ -7246,8 +7252,25 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 }
             }
         }
+        // In case root object has hooked animation elements
+        // in priority queue execute them all
+        if (this.animElements) {
+            executeAnimQueue(this.animElements);
+        }
         return this;
     };
+
+    function executeAnimQueue (queue) {
+        var ob;
+        // Looping until all executed
+        while (ob = queue.deq()) {
+            ob = ob.executeOb;
+            ob.hookFn && ob.hookFn.call(ob.el);
+            ob.el.attr(ob.attrs);
+            ob.callback && ob.callback.call(ob.el);
+        }
+    }
+
     function stopAnimation(paper) {
         for (var i = 0; i < animationElements.length; i++)
             if (animationElements[i].el.paper == paper) {

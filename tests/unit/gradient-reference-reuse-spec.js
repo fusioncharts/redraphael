@@ -1,3 +1,5 @@
+var Raphael = require('../../lib/raphael');
+
 describe("Gradient fill feature of Raphel.Paper.Element", function () {
     var paper,
         rect,

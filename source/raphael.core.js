@@ -101,7 +101,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
     R.upgrade = "1.0.0";
     R.version = "2.1.0";
     R.eve = eve;
-    RedRaphael = R;
+    // RedRaphael = R;
 
     var loaded,
         undef,
@@ -6638,7 +6638,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
     // EXPOSE
     // SVG and VML are appended just before the EXPOSE line
     // Even with AMD, Raphael should be defined globally
-    oldRaphael.was ? (g.win.Raphael = R) : (Raphael = R);
+    // oldRaphael.was ? (g.win.Raphael = R) : (Raphael = R);
 
 module.exports = R;
 

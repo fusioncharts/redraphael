@@ -1,3 +1,5 @@
+var Raphael = require('../../lib/raphael');
+
 describe("Paper.getById", function () {
     var elementTypes = {
             circle: [50, 50, 40],

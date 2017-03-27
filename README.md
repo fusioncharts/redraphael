@@ -2,6 +2,32 @@
 
 [![Build Status](https://travis-ci.org/fusioncharts/redraphael.png?branch=master)](https://travis-ci.org/fusioncharts/redraphael)
 
+## Install from npm
+```sh
+npm install redraphael
+```
+
+## Draw a basic rectangle using `RedRaphael`
+```javascript
+var RedRaphael = require('redraphael');
+
+RedRaphael(10, 10, 600, 400, function () {
+    var paper = window.pap = this;
+
+    // Draw a red rectangle with red fill color.
+    rect = paper.rect({
+    	x: 0,
+    	y: 0,
+    	width: 500,
+    	height: 200
+    })
+    .attr({
+    	fill: '#FF0000'
+    });
+});
+```
+
+
 ## Usage
 RedRaphael is a fork of Raphael with a number of added features and slightly changed development philosophy.
 The best place to start is the API and usage docuentation.

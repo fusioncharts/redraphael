@@ -1,3 +1,5 @@
+var Raphael = require('../../lib/raphael');
+
 describe('Raphael.remove', function () {
     var $this = {};
 

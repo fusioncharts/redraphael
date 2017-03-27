@@ -7057,6 +7057,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         abs = math.abs,
         pow = math.pow,
         sqrt = math.sqrt,
+        cachedFontHeight = {},
         separator = /[, ]+/,
         zeroStrokeFix = !!(/AppleWebKit/.test(R._g.win.navigator.userAgent) &&
                 (!/Chrome/.test(R._g.win.navigator.userAgent) ||
@@ -7546,7 +7547,59 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         }
     },
 
-    setFillAndStroke = R._setFillAndStroke = function(o, params) {
+    getFontHeight = function (attr, group) {
+            var txtElem = cachedFontHeight.txtElem,
+                theText,
+                theMSG,
+                fontFamily = attr['fontFamily'] || attr['font-family'] || (group && group.attrs.fontFamily) ||
+                    'Verdana,sans',
+                fontSize = (attr['fontSize'] || attr['font-size'] || (group && group.attrs.fontSize) || 10).toString().
+                    replace(/px/, '') + 'px;',
+                availableFontFamily = cachedFontHeight[fontFamily] || (cachedFontHeight[fontFamily] = {}),
+                availableFontSize = availableFontFamily[fontSize],
+                info,
+                randomPos = -100,
+                bbox;
+
+            if (!availableFontSize) {
+                if (!txtElem) {
+                    txtElem = cachedFontHeight.txtElem = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    txtElem.setAttribute('x', randomPos);
+                    txtElem.setAttribute('y', randomPos);
+
+                    theMSG = document.createTextNode('abcdefhiklmnopqrstuvwxyz');
+                    txtElem.appendChild(theMSG);
+
+                    document.getElementsByTagName('svg')[0].appendChild(txtElem);
+                }
+                txtElem.setAttribute('style', 'font-family :' + fontFamily + '; font-size :' + fontSize);
+
+                bbox = txtElem.getBBox();
+
+                diff = randomPos - (bbox.y + bbox.height / 2);
+                availableFontFamily[fontSize] = availableFontSize = [];
+                availableFontSize.push(bbox.height);
+                availableFontSize.push(diff);
+            }
+
+            // info = availableFontSize.hasGJ;
+            switch (attr['vertical-align']) {
+                case "bottom":
+                    diff = availableFontSize[1] - availableFontSize[0] * .5;
+                    break;
+                case "top":
+                    diff = availableFontSize[1] + availableFontSize[0] * .5;
+                    break;
+                default : diff = availableFontSize[1];
+            };
+
+            return {
+                height : availableFontSize[0],
+                diff : diff
+            }
+        },
+
+    setFillAndStroke = R._setFillAndStroke = function(o, params, group) {
         if (!o.paper.canvas) {
             return;
         }
@@ -7900,7 +7953,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 }
             }
         }
-        (o.type === 'text' && !params["_do-not-tune"]) && tuneText(o, params);
+        (o.type === 'text' && !params["_do-not-tune"]) && tuneText(o, params, group);
         s.visibility = vis;
     },
     /*
@@ -7923,7 +7976,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         }
     },
     leading = 1.2,
-    tuneText = function(el, params) {
+    tuneText = function(el, params, group) {
         if (el.type != "text" || !(params[has]("text") || params[has]("font") ||
                 params[has]("font-size") || params[has]("x") || params[has]("y") ||
                 params[has]("line-height") || params[has]("vertical-align"))) {
@@ -8029,25 +8082,26 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             y: a.y
         });
         el._.dirty = 1;
-        var bb = el._getBBox(),
-        dif = a.y - (bb.y + bb.height / 2);
+        var bb = el._getCustomBBox(a, group),
+        // dif = a.y - (bb.y + bb.height / 2);
+        dif = bb.diff;
 
         // If the bbox is calculated then we need to make additional adjustments,
         // to account for the fact that the calculated bbox already has the
         // text alignment, both horizontal and vertical, included in the calculation.
-        if (bb.isCalculated) {
-            switch (a['vertical-align']) {
-                case "top":
-                    dif = bb.height * .75;
-                    break;
-                case "bottom":
-                    dif = - (bb.height * .25);
-                    break;
-                default:
-                    dif = a.y - (bb.y + bb.height * .25);
-                    break;
-            };
-        }
+        // if (bb.isCalculated) {
+        //     switch (a['vertical-align']) {
+        //         case "top":
+        //             dif = bb.height * .75;
+        //             break;
+        //         case "bottom":
+        //             dif = - (bb.height * .25);
+        //             break;
+        //         default:
+        //             dif = a.y - (bb.y + bb.height * .25);
+        //             break;
+        //     };
+        // }
 
         dif && R.is(dif, "finite") && tspans[0] && $(tspans[0], {
             dy: dif
@@ -8287,7 +8341,37 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             currentNode = currentNode.parent;
         }
         return fn;
-    }
+    };
+
+    elproto._getCustomBBox = function(attr, group) {
+        var fn,
+            o = this,
+            node = o.node,
+            bbox = {},
+            a = o.attrs,
+            align,
+            hide,
+            isText = (o.type === "text"),
+            isIE = /*@cc_on!@*/false || !!document.documentMode;
+        if (isIE && isText) {
+            fn = showRecursively(o);
+        }
+        else {
+            if (node.style.display === "none") {
+                o.show();
+                hide = true;
+            }
+        }
+
+        bbox = {};
+        if (isText) {
+            bbox = getFontHeight(attr, group);
+        }
+
+        isIE && isText ? fn && fn() : hide && o.hide();
+        return bbox;
+    };
+
     elproto._getBBox = function() {
         var fn,
             o = this,
@@ -8547,7 +8631,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         // Ideally this code should not be here as .css() is not a function of rapheal.
         css && res.css && res.css(css, undefined, true);
 
-        setFillAndStroke(res, attrs);
+        setFillAndStroke(res, attrs, group);
         applyCustomAttributes(res, attrs);
         return res;
     };

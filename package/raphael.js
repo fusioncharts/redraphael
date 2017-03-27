@@ -1,6 +1,6 @@
 
 /**!
- * RedRaphael 1.1.23 - JavaScript Vector Library
+ * RedRaphael 1.1.24 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0
@@ -554,10 +554,6 @@ if (R.canvas) {
         }
         drag = [];
     };
-
-    if (!R.canvas) {
-        // return;
-    }
 
     $ = R._createNode = function (el, attr) {
         if (attr) {

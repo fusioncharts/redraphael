@@ -555,10 +555,6 @@ if (R.canvas) {
         drag = [];
     };
 
-    if (!R.canvas) {
-        // return;
-    }
-
     $ = R._createNode = function (el, attr) {
         if (attr) {
             if (typeof el === STRING) {

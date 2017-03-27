@@ -1,6 +1,6 @@
 
 /**!
- * RedRaphael 1.1.24 - JavaScript Vector Library
+ * RedRaphael 1.1.25 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0

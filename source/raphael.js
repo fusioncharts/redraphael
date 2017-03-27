@@ -1,7 +1,5 @@
-var Raphael = require('./raphael.core');
+var Raphael = require('./index');
 
-var svg = require('./raphael.svg');
-var vml = require('./raphael.vml');
-var canvas = require('./raphael.canvas');
+global.Raphael = Raphael;
 
 module.exports = Raphael;

@@ -1,7 +1,7 @@
-var Raphael = require('../../lib/raphael');
+var RedRaphael = require('../../lib/raphael');
 var rect;
 
-Raphael(10, 10, 600, 400, function () {
+RedRaphael(10, 10, 600, 400, function () {
     var paper = window.pap = this;
 
     // Draw a red rectangle with red fill color.

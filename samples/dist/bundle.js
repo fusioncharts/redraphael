@@ -1,4 +1,13 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+var Raphael = require('./raphael.core');
+
+var svg = require('./raphael.svg');
+var vml = require('./raphael.vml');
+var canvas = require('./raphael.canvas');
+
+module.exports = Raphael;
+
+},{"./raphael.canvas":2,"./raphael.core":3,"./raphael.svg":5,"./raphael.vml":6}],2:[function(require,module,exports){
 /*jslint forin: true, regexp: true, todo: true, white: false, browser: true,
  sloppy: true, white: true, eqeq: false, newcap: true, nomen: true */
 
@@ -102,10 +111,6 @@ if (R.canvas) {
         }
         drag = [];
     };
-
-    if (!R.canvas) {
-        // return;
-    }
 
     $ = R._createNode = function (el, attr) {
         if (attr) {
@@ -2590,7 +2595,7 @@ if (R.canvas) {
 
 module.exports = R;
 
-},{"./raphael.core":2}],2:[function(require,module,exports){
+},{"./raphael.core":3}],3:[function(require,module,exports){
 (function (global){
 /**!
  * RedRaphael 1.0.0 - JavaScript Vector Library
@@ -2692,7 +2697,7 @@ function R(first) {
 R.upgrade = "1.0.0";
 R.version = "2.1.0";
 R.eve = eve;
-RedRaphael = R;
+// RedRaphael = R;
 
 var loaded,
     undef,
@@ -9052,21 +9057,21 @@ eve.on("raphael.DOMload", function () {
 // EXPOSE
 // SVG and VML are appended just before the EXPOSE line
 // Even with AMD, Raphael should be defined globally
-oldRaphael.was ? g.win.Raphael = R : Raphael = R;
+// oldRaphael.was ? (g.win.Raphael = R) : (Raphael = R);
 
 module.exports = R;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"eve":6}],3:[function(require,module,exports){
-var Raphael = require('./raphael.core');
+},{"eve":7}],4:[function(require,module,exports){
+(function (global){
+var Raphael = require('./index');
 
-var svg = require('./raphael.svg');
-var vml = require('./raphael.vml');
-var canvas = require('./raphael.canvas');
+global.Raphael = Raphael;
 
 module.exports = Raphael;
 
-},{"./raphael.canvas":1,"./raphael.core":2,"./raphael.svg":4,"./raphael.vml":5}],4:[function(require,module,exports){
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./index":1}],5:[function(require,module,exports){
 /**!
 * RedRaphael 1.0.0 - JavaScript Vector Library SVG Module
 * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
@@ -10728,7 +10733,7 @@ if (R.svg) {
 
 module.exports = R;
 
-},{"./raphael.core":2}],5:[function(require,module,exports){
+},{"./raphael.core":3}],6:[function(require,module,exports){
 /**!
 * RedRaphael 1.0.0 - JavaScript Vector Library VML Module
 * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
@@ -11982,7 +11987,7 @@ if (R.vml) {
 
 module.exports = R;
 
-},{"./raphael.core":2}],6:[function(require,module,exports){
+},{"./raphael.core":3}],7:[function(require,module,exports){
 // Copyright (c) 2017 Adobe Systems Incorporated. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -12423,7 +12428,7 @@ module.exports = R;
     typeof module != "undefined" && module.exports ? module.exports = eve : typeof define === "function" && define.amd ? define("eve", [], function() { return eve; }) : glob.eve = eve;
 })(typeof window != "undefined" ? window : this);
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 var RedRaphael = require('../../lib/raphael');
 var rect;
 
@@ -12451,4 +12456,4 @@ RedRaphael(10, 10, 600, 400, function () {
     });
 });
 
-},{"../../lib/raphael":3}]},{},[7]);
+},{"../../lib/raphael":4}]},{},[8]);

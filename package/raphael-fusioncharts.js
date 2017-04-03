@@ -6718,6 +6718,11 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         from = {},
         to = {},
         diff = {};
+
+        if (element.type === null) {
+            return;
+        }
+
         configObject = configObject || {};
         configObject.hookFn && configObject.hookFn.call(element);
         configObject.from = configObject.from || {};

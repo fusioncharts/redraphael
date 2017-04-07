@@ -101,7 +101,7 @@ _window.Raphael && _window.Raphael.canvas && function (R) {
             while (i--) {
                 dragi = drag[i];
                 dragi.el._drag = {};
-                eve("raphael.drag.end." + dragi.el.id, dragi.end_scope || dragi.start_scope || dragi.move_scope || dragi.el, e);
+                dragi.onendHandler && eve("raphael.drag.end." + dragi.el.id, dragi.end_scope || dragi.start_scope || dragi.move_scope || dragi.el, e);
             }
             drag = [];
         };
@@ -2522,12 +2522,15 @@ _window.Raphael && _window.Raphael.canvas && function (R) {
                 el: this,
                 move_scope: move_scope,
                 start_scope: start_scope,
-                end_scope: end_scope
+                end_scope: end_scope,
+                onmoveHandler: onmove,
+                onstartHandler: onstart,
+                onendHandler: onend
             });
             onstart && eve.on("raphael.drag.start." + this.id, onstart);
             onmove && eve.on("raphael.drag.move." + this.id, onmove);
             onend && eve.on("raphael.drag.end." + this.id, onend);
-            eve("raphael.drag.start." + this.id, start_scope || move_scope || this, e.clientX + scrollX, e.clientY + scrollY, e);
+            onstart && eve("raphael.drag.start." + this.id, start_scope || move_scope || this, e.clientX + scrollX, e.clientY + scrollY, e);
         }
         this._drag = {};
         draggable.push({

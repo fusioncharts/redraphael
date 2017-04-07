@@ -936,6 +936,17 @@ _window.Raphael && _window.Raphael.vml && function(R) {
             return this;
         }
 
+        if (eventType === 'dragstart') {
+            this.drag(null, handler);
+            return this;
+        } else if (eventType === 'dragmove') {
+            this.drag(handler);
+            return this;
+        } else if (eventType === 'dragend') {
+            this.drag(null, null, handler);
+            return this;
+        }
+
         this.node['on'+ eventType] = function() {
             var evt = R._g.win.event;
             evt.target = evt.srcElement;

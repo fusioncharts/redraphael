@@ -1531,6 +1531,17 @@ _window.Raphael && _window.Raphael.svg && function(R) {
             return this;
         }
 
+        if (eventType === 'dragstart') {
+            this.drag(null, handler);
+            return this;
+        } else if (eventType === 'dragmove') {
+            this.drag(handler);
+            return this;
+        } else if (eventType === 'dragend') {
+            this.drag(null, null, handler);
+            return this;
+        }
+
         var fn = handler;
         if (R.supportsTouch) {
             eventType = R._touchMap[eventType] ||

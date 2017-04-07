@@ -1,6 +1,6 @@
 
 /**!
- * RedRaphael 1.1.25 - JavaScript Vector Library
+ * RedRaphael 1.1.26 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0
@@ -38,116 +38,111 @@
         wildcard = "*",
         fun = function () {},
         numsort = function (a, b) {
-            return a - b;
-        },
+        return a - b;
+    },
         current_event,
         stop,
-        events = {n: {}},
+        events = { n: {} },
         firstDefined = function () {
-            for (var i = 0, ii = this.length; i < ii; i++) {
-                if (typeof this[i] != "undefined") {
-                    return this[i];
-                }
+        for (var i = 0, ii = this.length; i < ii; i++) {
+            if (typeof this[i] != "undefined") {
+                return this[i];
             }
-        },
+        }
+    },
         lastDefined = function () {
-            var i = this.length;
-            while (--i) {
-                if (typeof this[i] != "undefined") {
-                    return this[i];
-                }
+        var i = this.length;
+        while (--i) {
+            if (typeof this[i] != "undefined") {
+                return this[i];
             }
-        },
+        }
+    },
         objtos = Object.prototype.toString,
         Str = String,
         isArray = Array.isArray || function (ar) {
-            return ar instanceof Array || objtos.call(ar) == "[object Array]";
-        };
+        return ar instanceof Array || objtos.call(ar) == "[object Array]";
+    },
+
     /*\
      * eve
      [ method ]
-
-     * Fires event with given `name`, given scope and other parameters.
-
-     - name (string) name of the *event*, dot (`.`) or slash (`/`) separated
+      * Fires event with given `name`, given scope and other parameters.
+      - name (string) name of the *event*, dot (`.`) or slash (`/`) separated
      - scope (object) context for the event handlers
      - varargs (...) the rest of arguments will be sent to event handlers
-
-     = (object) array of returned values from the listeners. Array has two methods `.firstDefined()` and `.lastDefined()` to get first or last not `undefined` value.
+      = (object) array of returned values from the listeners. Array has two methods `.firstDefined()` and `.lastDefined()` to get first or last not `undefined` value.
     \*/
-        eve = function (name, scope) {
-            var e = events,
-                oldstop = stop,
-                args = Array.prototype.slice.call(arguments, 2),
-                listeners = eve.listeners(name),
-                z = 0,
-                f = false,
-                l,
-                indexed = [],
-                queue = {},
-                out = [],
-                ce = current_event,
-                errors = [];
-            out.firstDefined = firstDefined;
-            out.lastDefined = lastDefined;
-            current_event = name;
-            stop = 0;
-            for (var i = 0, ii = listeners.length; i < ii; i++) if ("zIndex" in listeners[i]) {
-                indexed.push(listeners[i].zIndex);
-                if (listeners[i].zIndex < 0) {
-                    queue[listeners[i].zIndex] = listeners[i];
-                }
+    eve = function (name, scope) {
+        var e = events,
+            oldstop = stop,
+            args = Array.prototype.slice.call(arguments, 2),
+            listeners = eve.listeners(name),
+            z = 0,
+            f = false,
+            l,
+            indexed = [],
+            queue = {},
+            out = [],
+            ce = current_event,
+            errors = [];
+        out.firstDefined = firstDefined;
+        out.lastDefined = lastDefined;
+        current_event = name;
+        stop = 0;
+        for (var i = 0, ii = listeners.length; i < ii; i++) if ("zIndex" in listeners[i]) {
+            indexed.push(listeners[i].zIndex);
+            if (listeners[i].zIndex < 0) {
+                queue[listeners[i].zIndex] = listeners[i];
             }
-            indexed.sort(numsort);
-            while (indexed[z] < 0) {
-                l = queue[indexed[z++]];
-                out.push(l.apply(scope, args));
-                if (stop) {
-                    stop = oldstop;
-                    return out;
-                }
+        }
+        indexed.sort(numsort);
+        while (indexed[z] < 0) {
+            l = queue[indexed[z++]];
+            out.push(l.apply(scope, args));
+            if (stop) {
+                stop = oldstop;
+                return out;
             }
-            for (i = 0; i < ii; i++) {
-                l = listeners[i];
-                if ("zIndex" in l) {
-                    if (l.zIndex == indexed[z]) {
-                        out.push(l.apply(scope, args));
-                        if (stop) {
-                            break;
-                        }
-                        do {
-                            z++;
-                            l = queue[indexed[z]];
-                            l && out.push(l.apply(scope, args));
-                            if (stop) {
-                                break;
-                            }
-                        } while (l)
-                    } else {
-                        queue[l.zIndex] = l;
-                    }
-                } else {
+        }
+        for (i = 0; i < ii; i++) {
+            l = listeners[i];
+            if ("zIndex" in l) {
+                if (l.zIndex == indexed[z]) {
                     out.push(l.apply(scope, args));
                     if (stop) {
                         break;
                     }
+                    do {
+                        z++;
+                        l = queue[indexed[z]];
+                        l && out.push(l.apply(scope, args));
+                        if (stop) {
+                            break;
+                        }
+                    } while (l);
+                } else {
+                    queue[l.zIndex] = l;
+                }
+            } else {
+                out.push(l.apply(scope, args));
+                if (stop) {
+                    break;
                 }
             }
-            stop = oldstop;
-            current_event = ce;
-            return out;
-        };
-        // Undocumented. Debug only.
-        eve._events = events;
+        }
+        stop = oldstop;
+        current_event = ce;
+        return out;
+    };
+    // Undocumented. Debug only.
+    eve._events = events;
     /*\
      * eve.listeners
      [ method ]
-
-     * Internal method which gives you array of all event handlers that will be triggered by the given `name`.
-
-     - name (string) name of the event, dot (`.`) or slash (`/`) separated
-
-     = (array) array of event handlers
+      * Internal method which gives you array of all event handlers that will be triggered by the given `name`.
+      - name (string) name of the event, dot (`.`) or slash (`/`) separated
+      = (array) array of event handlers
     \*/
     eve.listeners = function (name) {
         var names = isArray(name) ? name : name.split(separator),
@@ -183,12 +178,10 @@
     /*\
      * eve.separator
      [ method ]
-
-     * If for some reasons you don’t like default separators (`.` or `/`) you can specify yours
+      * If for some reasons you don’t like default separators (`.` or `/`) you can specify yours
      * here. Be aware that if you pass a string longer than one character it will be treated as
      * a list of characters.
-
-     - separator (string) new separator. Empty string resets to default: `.` or `/`.
+      - separator (string) new separator. Empty string resets to default: `.` or `/`.
     \*/
     eve.separator = function (sep) {
         if (sep) {
@@ -236,7 +229,7 @@
                     exist;
                 for (var i = 0, ii = names.length; i < ii; i++) {
                     e = e.n;
-                    e = e.hasOwnProperty(names[i]) && e[names[i]] || (e[names[i]] = {n: {}});
+                    e = e.hasOwnProperty(names[i]) && e[names[i]] || (e[names[i]] = { n: {} });
                 }
                 e.f = e.f || [];
                 for (i = 0, ii = e.f.length; i < ii; i++) if (e.f[i] == f) {
@@ -244,7 +237,7 @@
                     break;
                 }
                 !exist && e.f.push(f);
-            }(names[i]));
+            })(names[i]);
         }
         return function (zIndex) {
             if (+zIndex == +zIndex) {
@@ -331,7 +324,7 @@
     \*/
     eve.off = eve.unbind = function (name, f) {
         if (!name) {
-            eve._events = events = {n: {}};
+            eve._events = events = { n: {} };
             return;
         }
         var names = isArray(name) ? isArray(name[0]) ? name : [name] : Str(name).split(comaseparator);
@@ -345,7 +338,10 @@
         var e,
             key,
             splice,
-            i, ii, j, jj,
+            i,
+            ii,
+            j,
+            jj,
             cur = [events],
             inodes = [];
         for (i = 0, ii = names.length; i < ii; i++) {
@@ -448,7 +444,9 @@
         return "You are running Eve " + version;
     };
     glob.eve = eve;
-    typeof module != "undefined" && module.exports ? module.exports = eve : typeof define === "function" && define.amd ? define("eve", [], function() { return eve; }) : glob.eve = eve;
+    typeof module != "undefined" && module.exports ? module.exports = eve : typeof define === "function" && define.amd ? define("eve", [], function () {
+        return eve;
+    }) : glob.eve = eve;
 })(typeof window != "undefined" ? window : this);
 
 },{}],2:[function(require,module,exports){
@@ -3054,7 +3052,7 @@ module.exports = R;
  * Licensed under the MIT license.
  */
 
-var eve = require('eve');
+var eve = require('./eve/eve');
 
 var _win = typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : null;
 
@@ -9504,7 +9502,7 @@ eve.on("raphael.DOMload", function () {
 module.exports = R;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"eve":1}],5:[function(require,module,exports){
+},{"./eve/eve":1}],5:[function(require,module,exports){
 /**!
 * RedRaphael 1.0.0 - JavaScript Vector Library SVG Module
 * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>

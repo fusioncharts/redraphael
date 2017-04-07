@@ -6,4 +6,5 @@ dr.js
 *.sublime-*
 !redraphael.sublime-project
 
+*.log
 tests/spec-*.html

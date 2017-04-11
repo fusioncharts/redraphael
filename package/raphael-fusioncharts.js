@@ -5474,12 +5474,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         l = 0,
         deqArr = [],
         i = 0,
-        ll = 0,
-        hookManager = function (deqValue) {
-            setTimeout(function () {
-                runAnimation.apply(null, deqValue.params)
-            });
-        };
+        ll = 0;
+
         for (; l < animationElements.length; l++) {
             var e = animationElements[l];
             if (e.el.removed || e.paused || e.parentEl && e.parentEl.e && e.parentEl.e.paused) {
@@ -5675,10 +5671,14 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
         }
         R.svg && that && that.paper && that.paper.safari();
+
         // Starting animation on timer 0
-        for (l = 0, ll = deqArr.length; l < ll; ++l) {
-            hookManager(deqArr[l]);
-        }
+        (requestAnimFrame || R.getAnimFrameFn())(function () {
+            for (l = 0, ll = deqArr.length; l < ll; ++l) {
+                runAnimation.apply(null, deqArr[l].params);
+            }
+        });
+
         animationElements.length && (requestAnimFrame || R.getAnimFrameFn())(animation);
     },
     upto255 = function(color) {

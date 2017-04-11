@@ -969,12 +969,15 @@ _window.Raphael && _window.Raphael.svg && function(R) {
         var a = el.attrs,
             node = el.node,
             computedStyle = node.firstChild && R._g.doc.defaultView.getComputedStyle(node.firstChild, E),
-            fontSize = computedStyle ?
-                toFloat(R._g.doc.defaultView.getComputedStyle(node.firstChild, E).getPropertyValue("font-size")) : 10,
+            /*fontSize = computedStyle ?
+                toFloat(R._g.doc.defaultView.getComputedStyle(node.firstChild, E).getPropertyValue("font-size")) : 10,*/
+            fontSize = (params['fontSize'] || params['font-size'] || (group && group.attrs.fontSize) || 10).toString().
+                    replace(/px/, ''),
             lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading,
             valign = a[has]("vertical-align") ? a["vertical-align"] : "middle",
-            direction = (params["direction"] || (computedStyle ?
-                computedStyle.getPropertyValue("direction") : "initial")).toLowerCase(),
+            // direction = (params["direction"] || (computedStyle ?
+            //     computedStyle.getPropertyValue("direction") : "initial")).toLowerCase(),
+            direction = params["direction"] || (group && group.attrs.direction) || "initial"
             isIE = /*@cc_on!@*/false || !!document.documentMode;
 
         if (isNaN(lineHeight)) {

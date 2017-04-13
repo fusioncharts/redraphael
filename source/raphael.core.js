@@ -5268,12 +5268,14 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         }
         R.svg && that && that.paper && that.paper.safari();
 
-        // Starting animation on timer 0
-        (requestAnimFrame || R.getAnimFrameFn())(function () {
-            for (l = 0, ll = deqArr.length; l < ll; ++l) {
-                runAnimation.apply(null, deqArr[l].params);
-            }
-        });
+         // Starting animation on timer 0
+        for (l = 0, ll = deqArr.length; l < ll; ++l) {
+            lib.schedular.addJob((function (l) {
+                return function ()  {
+                    runAnimation.apply(null, deqArr[l].params);
+                };
+            })(l), lib.priorityList.animation, false, true);
+        }
 
         animationElements.length && (requestAnimFrame || R.getAnimFrameFn())(animation);
     },

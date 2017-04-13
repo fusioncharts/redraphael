@@ -5274,7 +5274,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 return function ()  {
                     runAnimation.apply(null, deqArr[l].params);
                 };
-            })(l), lib.priorityList.animation, false, true);
+            })(l), lib.priorityList.instant);
         }
 
         animationElements.length && (requestAnimFrame || R.getAnimFrameFn())(animation);

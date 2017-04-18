@@ -4484,243 +4484,6 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     };
 
     /*\
-     * Paper.group
-     [ method ]
-     **
-     * Creates a group
-     **
-     > Parameters
-     **
-     - id (number) id of the group
-     = (object) Raphaël element object with type “group”
-     **
-     > Usage
-     | var g = paper.group();
-    \*/
-    paperproto.group = function () { // id
-        var paper = this,
-            args = arguments,
-            group = lastArgIfGroup(args, true),
-            out = R._engine.group(paper, args[0], group);
-        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
-    };
-
-    /*\
-     * Paper.circle
-     [ method ]
-     **
-     * Draws a circle.
-     **
-     > Parameters
-     **
-     - x (number) x coordinate of the centre
-     - y (number) y coordinate of the centre
-     - r (number) radius
-     = (object) Raphaël element object with type “circle”
-     **
-     > Usage
-     | var c = paper.circle(50, 50, 40);
-    \*/
-    paperproto.circle = function () { // x, y, r
-        var paper = this,
-            args = arguments,
-            group = lastArgIfGroup(args, true),
-            attrs = serializeArgs(args,
-                "cx", 0,
-                "cy", 0,
-                "r", 0,
-                "fill", none,
-                "stroke", black),
-            out = R._engine.circle(paper, attrs, group);
-
-        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
-    };
-
-
-    /*\
-     * Paper.rect
-     [ method ]
-     *
-     * Draws a rectangle.
-     **
-     > Parameters
-     **
-     - x (number) x coordinate of the top left corner
-     - y (number) y coordinate of the top left corner
-     - width (number) width
-     - height (number) height
-     - r (number) #optional radius for rounded corners, default is 0
-     = (object) Raphaël element object with type “rect”
-     **
-     > Usage
-     | // regular rectangle
-     | var c = paper.rect(10, 10, 50, 50);
-     | // rectangle with rounded corners
-     | var c = paper.rect(40, 40, 50, 50, 10);
-    \*/
-    paperproto.rect = function () {
-        var paper = this,
-            args = arguments,
-            group = lastArgIfGroup(args, true),
-            attrs = serializeArgs(args,
-                "x", 0,
-                "y", 0,
-                "width", 0,
-                "height", 0,
-                "r", 0,
-                "fill", none,
-                "stroke", black),
-            out = R._engine.rect(paper, attrs, group);
-
-        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
-    };
-
-    /*\
-     * Paper.ellipse
-     [ method ]
-     **
-     * Draws an ellipse.
-     **
-     > Parameters
-     **
-     - x (number) x coordinate of the centre
-     - y (number) y coordinate of the centre
-     - rx (number) horizontal radius
-     - ry (number) vertical radius
-     = (object) Raphaël element object with type “ellipse”
-     **
-     > Usage
-     | var c = paper.ellipse(50, 50, 40, 20);
-    \*/
-    paperproto.ellipse = function () {
-        var paper = this,
-            args = arguments,
-            group = lastArgIfGroup(args, true),
-            attrs = serializeArgs(args,
-                "x", 0,
-                "y", 0,
-                "rx", 0,
-                "ry", 0,
-                "fill", none,
-                "stroke", black),
-            out = R._engine.ellipse(this, attrs, group);
-
-        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
-    };
-
-    /*\
-     * Paper.path
-     [ method ]
-     **
-     * Creates a path element by given path data string.
-     > Parameters
-     - pathString (string) #optional path string in SVG format.
-     * Path string consists of one-letter commands, followed by comma seprarated arguments in numercal form. Example:
-     | "M10,20L30,40"
-     * Here we can see two commands: “M”, with arguments `(10, 20)` and “L” with arguments `(30, 40)`. Upper case letter mean command is absolute, lower case—relative.
-     *
-     # <p>Here is short list of commands available, for more details see <a href="http://www.w3.org/TR/SVG/paths.html#PathData" title="Details of a path's data attribute's format are described in the SVG specification.">SVG path string format</a>.</p>
-     # <table><thead><tr><th>Command</th><th>Name</th><th>Parameters</th></tr></thead><tbody>
-     # <tr><td>M</td><td>moveto</td><td>(x y)+</td></tr>
-     # <tr><td>Z</td><td>closepath</td><td>(none)</td></tr>
-     # <tr><td>L</td><td>lineto</td><td>(x y)+</td></tr>
-     # <tr><td>H</td><td>horizontal lineto</td><td>x+</td></tr>
-     # <tr><td>V</td><td>vertical lineto</td><td>y+</td></tr>
-     # <tr><td>C</td><td>curveto</td><td>(x1 y1 x2 y2 x y)+</td></tr>
-     # <tr><td>S</td><td>smooth curveto</td><td>(x2 y2 x y)+</td></tr>
-     # <tr><td>Q</td><td>quadratic Bézier curveto</td><td>(x1 y1 x y)+</td></tr>
-     # <tr><td>T</td><td>smooth quadratic Bézier curveto</td><td>(x y)+</td></tr>
-     # <tr><td>A</td><td>elliptical arc</td><td>(rx ry x-axis-rotation large-arc-flag sweep-flag x y)+</td></tr>
-     # <tr><td>R</td><td><a href="http://en.wikipedia.org/wiki/Catmull–Rom_spline#Catmull.E2.80.93Rom_spline">Catmull-Rom curveto</a>*</td><td>x1 y1 (x y)+</td></tr></tbody></table>
-     * * “Catmull-Rom curveto” is a not standard SVG command and added in 2.0 to make life easier.
-     * Note: there is a special case when path consist of just three commands: “M10,10R…z”. In this case path will smoothly connects to its beginning.
-     > Usage
-     | var c = paper.path("M10 10L90 90");
-     | // draw a diagonal line:
-     | // move to 10,10, line to 90,90
-     * For example of path strings, check out these icons: http://raphaeljs.com/icons/
-    \*/
-    paperproto.path = function () {
-        var paper = this,
-            args = arguments,
-            group = lastArgIfGroup(args, true),
-            paperConfig = paper.config,
-            capStyle = (paperConfig && paperConfig["stroke-linecap"]) || "butt",
-            attrs = serializeArgs(args,
-                "path", E,
-                "fill", none,
-                "stroke", black,
-                "stroke-linecap", capStyle),
-            out = R._engine.path(paper, attrs, group);
-        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
-    };
-
-    /*\
-     * Paper.image
-     [ method ]
-     **
-     * Embeds an image into the surface.
-     **
-     > Parameters
-     **
-     - src (string) URI of the source image
-     - x (number) x coordinate position
-     - y (number) y coordinate position
-     - width (number) width of the image
-     - height (number) height of the image
-     = (object) Raphaël element object with type “image”
-     **
-     > Usage
-     | var c = paper.image("apple.png", 10, 10, 80, 80);
-    \*/
-    paperproto.image = function () {
-        var paper = this,
-            args = arguments,
-            group = lastArgIfGroup(args, true),
-            attrs = serializeArgs(args,
-                "src", "",
-                "x", 0,
-                "y", 0,
-                "width", 0,
-                "height", 0)
-            out = R._engine.image(paper, attrs, group);
-        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
-    };
-
-    /*\
-     * Paper.text
-     [ method ]
-     **
-     * Draws a text string. If you need line breaks, put “\n” in the string.
-     **
-     > Parameters
-     **
-     - x (number) x coordinate position
-     - y (number) y coordinate position
-     - text (string) The text string to draw
-     = (object) Raphaël element object with type “text”
-     **
-     > Usage
-     | var t = paper.text(50, 50, "Raphaël\nkicks\nbutt!");
-    \*/
-    paperproto.text = function() {
-        var paper = this,
-            args = arguments,
-            group = lastArgIfGroup(args, true),
-            attrs = serializeArgs(args,
-                "x", 0,
-                "y", 0,
-                "text", E,
-                "stroke", none,
-                "fill", black,
-                "text-anchor", "middle",
-                "vertical-align", "middle"),
-
-            out = R._engine.text(paper, attrs, group, args[1]);
-        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
-    };
-
-    /*\
      * Paper.set
      [ method ]
      **
@@ -8224,7 +7987,246 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         markerCounter = {},
         updateReferenceUrl = function () {
             return R._url = R._g.win.location.href.replace(/#.*?$/, E);
-        };
+        },
+        paperproto = R.fn,
+        serializeArgs = R._serializeArgs;
+
+    /*\
+     * Paper.group
+     [ method ]
+     **
+     * Creates a group
+     **
+     > Parameters
+     **
+     - id (number) id of the group
+     = (object) Raphaël element object with type “group”
+     **
+     > Usage
+     | var g = paper.group();
+    \*/
+    paperproto.group = function () { // id
+        var paper = this,
+            args = arguments,
+            group = lastArgIfGroup(args, true),
+            out = R._engine.group(paper, args[0], group);
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
+    };
+
+    /*\
+     * Paper.circle
+     [ method ]
+     **
+     * Draws a circle.
+     **
+     > Parameters
+     **
+     - x (number) x coordinate of the centre
+     - y (number) y coordinate of the centre
+     - r (number) radius
+     = (object) Raphaël element object with type “circle”
+     **
+     > Usage
+     | var c = paper.circle(50, 50, 40);
+    \*/
+    paperproto.circle = function () { // x, y, r
+        var paper = this,
+            args = arguments,
+            group = lastArgIfGroup(args, true),
+            attrs = serializeArgs(args),
+                // "cx", 0,
+                // "cy", 0,
+                // "r", 0,
+                // "fill", none,
+                // "stroke", black),
+            out = R._engine.circle(paper, attrs, group);
+
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
+    };
+
+
+    /*\
+     * Paper.rect
+     [ method ]
+     *
+     * Draws a rectangle.
+     **
+     > Parameters
+     **
+     - x (number) x coordinate of the top left corner
+     - y (number) y coordinate of the top left corner
+     - width (number) width
+     - height (number) height
+     - r (number) #optional radius for rounded corners, default is 0
+     = (object) Raphaël element object with type “rect”
+     **
+     > Usage
+     | // regular rectangle
+     | var c = paper.rect(10, 10, 50, 50);
+     | // rectangle with rounded corners
+     | var c = paper.rect(40, 40, 50, 50, 10);
+    \*/
+    paperproto.rect = function () {
+        var paper = this,
+            args = arguments,
+            group = lastArgIfGroup(args, true),
+            attrs = serializeArgs(args),
+                // "x", 0,
+                // "y", 0,
+                // "width", 0,
+                // "height", 0,
+                // "r", 0,
+                // "fill", none,
+                // "stroke", black),
+            out = R._engine.rect(paper, attrs, group);
+
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
+    };
+
+    /*\
+     * Paper.ellipse
+     [ method ]
+     **
+     * Draws an ellipse.
+     **
+     > Parameters
+     **
+     - x (number) x coordinate of the centre
+     - y (number) y coordinate of the centre
+     - rx (number) horizontal radius
+     - ry (number) vertical radius
+     = (object) Raphaël element object with type “ellipse”
+     **
+     > Usage
+     | var c = paper.ellipse(50, 50, 40, 20);
+    \*/
+    paperproto.ellipse = function () {
+        var paper = this,
+            args = arguments,
+            group = lastArgIfGroup(args, true),
+            attrs = serializeArgs(args),
+                // "x", 0,
+                // "y", 0,
+                // "rx", 0,
+                // "ry", 0,
+                // "fill", none,
+                // "stroke", black),
+            out = R._engine.ellipse(this, attrs, group);
+
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
+    };
+
+    /*\
+     * Paper.path
+     [ method ]
+     **
+     * Creates a path element by given path data string.
+     > Parameters
+     - pathString (string) #optional path string in SVG format.
+     * Path string consists of one-letter commands, followed by comma seprarated arguments in numercal form. Example:
+     | "M10,20L30,40"
+     * Here we can see two commands: “M”, with arguments `(10, 20)` and “L” with arguments `(30, 40)`. Upper case letter mean command is absolute, lower case—relative.
+     *
+     # <p>Here is short list of commands available, for more details see <a href="http://www.w3.org/TR/SVG/paths.html#PathData" title="Details of a path's data attribute's format are described in the SVG specification.">SVG path string format</a>.</p>
+     # <table><thead><tr><th>Command</th><th>Name</th><th>Parameters</th></tr></thead><tbody>
+     # <tr><td>M</td><td>moveto</td><td>(x y)+</td></tr>
+     # <tr><td>Z</td><td>closepath</td><td>(none)</td></tr>
+     # <tr><td>L</td><td>lineto</td><td>(x y)+</td></tr>
+     # <tr><td>H</td><td>horizontal lineto</td><td>x+</td></tr>
+     # <tr><td>V</td><td>vertical lineto</td><td>y+</td></tr>
+     # <tr><td>C</td><td>curveto</td><td>(x1 y1 x2 y2 x y)+</td></tr>
+     # <tr><td>S</td><td>smooth curveto</td><td>(x2 y2 x y)+</td></tr>
+     # <tr><td>Q</td><td>quadratic Bézier curveto</td><td>(x1 y1 x y)+</td></tr>
+     # <tr><td>T</td><td>smooth quadratic Bézier curveto</td><td>(x y)+</td></tr>
+     # <tr><td>A</td><td>elliptical arc</td><td>(rx ry x-axis-rotation large-arc-flag sweep-flag x y)+</td></tr>
+     # <tr><td>R</td><td><a href="http://en.wikipedia.org/wiki/Catmull–Rom_spline#Catmull.E2.80.93Rom_spline">Catmull-Rom curveto</a>*</td><td>x1 y1 (x y)+</td></tr></tbody></table>
+     * * “Catmull-Rom curveto” is a not standard SVG command and added in 2.0 to make life easier.
+     * Note: there is a special case when path consist of just three commands: “M10,10R…z”. In this case path will smoothly connects to its beginning.
+     > Usage
+     | var c = paper.path("M10 10L90 90");
+     | // draw a diagonal line:
+     | // move to 10,10, line to 90,90
+     * For example of path strings, check out these icons: http://raphaeljs.com/icons/
+    \*/
+    paperproto.path = function () {
+        var paper = this,
+            args = arguments,
+            group = lastArgIfGroup(args, true),
+            paperConfig = paper.config,
+            capStyle = (paperConfig && paperConfig["stroke-linecap"]) || "butt",
+            attrs = serializeArgs(args),
+                // "path", E,
+                // "fill", none,
+                // "stroke", black,
+                // "stroke-linecap", capStyle),
+            out = R._engine.path(paper, attrs, group);
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
+    };
+
+    /*\
+     * Paper.image
+     [ method ]
+     **
+     * Embeds an image into the surface.
+     **
+     > Parameters
+     **
+     - src (string) URI of the source image
+     - x (number) x coordinate position
+     - y (number) y coordinate position
+     - width (number) width of the image
+     - height (number) height of the image
+     = (object) Raphaël element object with type “image”
+     **
+     > Usage
+     | var c = paper.image("apple.png", 10, 10, 80, 80);
+    \*/
+    paperproto.image = function () {
+        var paper = this,
+            args = arguments,
+            group = lastArgIfGroup(args, true),
+            attrs = serializeArgs(args),
+                // "src", "",
+                // "x", 0,
+                // "y", 0,
+                // "width", 0,
+                // "height", 0)
+            out = R._engine.image(paper, attrs, group);
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
+    };
+
+    /*\
+     * Paper.text
+     [ method ]
+     **
+     * Draws a text string. If you need line breaks, put “\n” in the string.
+     **
+     > Parameters
+     **
+     - x (number) x coordinate position
+     - y (number) y coordinate position
+     - text (string) The text string to draw
+     = (object) Raphaël element object with type “text”
+     **
+     > Usage
+     | var t = paper.text(50, 50, "Raphaël\nkicks\nbutt!");
+    \*/
+    paperproto.text = function() {
+        var paper = this,
+            args = arguments,
+            group = lastArgIfGroup(args, true),
+            attrs = serializeArgs(args),
+                // "x", 0,
+                // "y", 0,
+                // "text", E,
+                // "stroke", none,
+                // "fill", black,
+                // "text-anchor", "middle",
+                // "vertical-align", "middle"),
+
+            out = R._engine.text(paper, attrs, group, args[1]);
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
+    };
 
     R.toString = function() {
         return  "Your browser supports SVG.\nYou are running Rapha\xebl " + this.version;
@@ -10053,6 +10055,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     fillString = "fill",
     separator = /[, ]+/,
     eve = R.eve,
+    paperproto = R.fn,
+    serializeArgs = R._serializeArgs,
     ms = " progid:DXImageTransform.Microsoft",
     S = " ",
     E = "",
@@ -10655,7 +10659,252 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         parent.top = o;
         o.next = null;
     };
-    var elproto = R.el;
+    var elproto = R.el,
+        /*
+         * Function to over-write the default attr() function of group so that the individual properties of group
+         * can be applied to its child.
+         */
+        customAttr = function (name, value) {
+            var group = this;
+            group.customAttr = name; 
+            return elproto.attr.call(group, name, value);
+        },
+        /*
+         * Function to apply the group attrs to its child if not present
+         */
+        applyToChild = function (group, childAttr) {
+            var groupAttrs,
+                attr;
+            if (group) {
+                groupAttrs = group.customAttr;
+                for (attr in groupAttrs) {
+                    !childAttr[attr] && (childAttr[attr] = groupAttrs[attr]);
+                }
+            }
+            return childAttr;
+        };
+
+    /*\
+     * Paper.group
+     [ method ]
+     **
+     * Creates a group
+     **
+     > Parameters
+     **
+     - id (number) id of the group
+     = (object) Raphaël element object with type “group”
+     **
+     > Usage
+     | var g = paper.group();
+    \*/
+    paperproto.group = function () { // id
+        var paper = this,
+            args = arguments,
+            group = lastArgIfGroup(args, true),
+            out = R._engine.group(paper, args[0], group);
+
+        out.attr = customAttr;
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
+    };
+
+    /*\
+     * Paper.circle
+     [ method ]
+     **
+     * Draws a circle.
+     **
+     > Parameters
+     **
+     - x (number) x coordinate of the centre
+     - y (number) y coordinate of the centre
+     - r (number) radius
+     = (object) Raphaël element object with type “circle”
+     **
+     > Usage
+     | var c = paper.circle(50, 50, 40);
+    \*/
+    paperproto.circle = function () { // x, y, r
+        var paper = this,
+            args = arguments,
+            group = lastArgIfGroup(args, true),
+            attrs = serializeArgs(args),
+            out;
+
+        attrs = applyToChild(group, attrs);
+        out = R._engine.circle(paper, attrs, group);
+
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
+    };
+
+
+    /*\
+     * Paper.rect
+     [ method ]
+     *
+     * Draws a rectangle.
+     **
+     > Parameters
+     **
+     - x (number) x coordinate of the top left corner
+     - y (number) y coordinate of the top left corner
+     - width (number) width
+     - height (number) height
+     - r (number) #optional radius for rounded corners, default is 0
+     = (object) Raphaël element object with type “rect”
+     **
+     > Usage
+     | // regular rectangle
+     | var c = paper.rect(10, 10, 50, 50);
+     | // rectangle with rounded corners
+     | var c = paper.rect(40, 40, 50, 50, 10);
+    \*/
+    paperproto.rect = function () {
+        var paper = this,
+            args = arguments,
+            group = lastArgIfGroup(args, true),
+            attrs = serializeArgs(args),
+            out;
+
+        attrs = applyToChild(group, attrs);
+        out = R._engine.rect(paper, attrs, group);
+
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
+    };
+
+    /*\
+     * Paper.ellipse
+     [ method ]
+     **
+     * Draws an ellipse.
+     **
+     > Parameters
+     **
+     - x (number) x coordinate of the centre
+     - y (number) y coordinate of the centre
+     - rx (number) horizontal radius
+     - ry (number) vertical radius
+     = (object) Raphaël element object with type “ellipse”
+     **
+     > Usage
+     | var c = paper.ellipse(50, 50, 40, 20);
+    \*/
+    paperproto.ellipse = function () {
+        var paper = this,
+            args = arguments,
+            group = lastArgIfGroup(args, true),
+            attrs = serializeArgs(args),
+            out;
+
+        attrs = applyToChild(group, attrs);
+        out = R._engine.ellipse(this, attrs, group);
+
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
+    };
+
+    /*\
+     * Paper.path
+     [ method ]
+     **
+     * Creates a path element by given path data string.
+     > Parameters
+     - pathString (string) #optional path string in SVG format.
+     * Path string consists of one-letter commands, followed by comma seprarated arguments in numercal form. Example:
+     | "M10,20L30,40"
+     * Here we can see two commands: “M”, with arguments `(10, 20)` and “L” with arguments `(30, 40)`. Upper case letter mean command is absolute, lower case—relative.
+     *
+     # <p>Here is short list of commands available, for more details see <a href="http://www.w3.org/TR/SVG/paths.html#PathData" title="Details of a path's data attribute's format are described in the SVG specification.">SVG path string format</a>.</p>
+     # <table><thead><tr><th>Command</th><th>Name</th><th>Parameters</th></tr></thead><tbody>
+     # <tr><td>M</td><td>moveto</td><td>(x y)+</td></tr>
+     # <tr><td>Z</td><td>closepath</td><td>(none)</td></tr>
+     # <tr><td>L</td><td>lineto</td><td>(x y)+</td></tr>
+     # <tr><td>H</td><td>horizontal lineto</td><td>x+</td></tr>
+     # <tr><td>V</td><td>vertical lineto</td><td>y+</td></tr>
+     # <tr><td>C</td><td>curveto</td><td>(x1 y1 x2 y2 x y)+</td></tr>
+     # <tr><td>S</td><td>smooth curveto</td><td>(x2 y2 x y)+</td></tr>
+     # <tr><td>Q</td><td>quadratic Bézier curveto</td><td>(x1 y1 x y)+</td></tr>
+     # <tr><td>T</td><td>smooth quadratic Bézier curveto</td><td>(x y)+</td></tr>
+     # <tr><td>A</td><td>elliptical arc</td><td>(rx ry x-axis-rotation large-arc-flag sweep-flag x y)+</td></tr>
+     # <tr><td>R</td><td><a href="http://en.wikipedia.org/wiki/Catmull–Rom_spline#Catmull.E2.80.93Rom_spline">Catmull-Rom curveto</a>*</td><td>x1 y1 (x y)+</td></tr></tbody></table>
+     * * “Catmull-Rom curveto” is a not standard SVG command and added in 2.0 to make life easier.
+     * Note: there is a special case when path consist of just three commands: “M10,10R…z”. In this case path will smoothly connects to its beginning.
+     > Usage
+     | var c = paper.path("M10 10L90 90");
+     | // draw a diagonal line:
+     | // move to 10,10, line to 90,90
+     * For example of path strings, check out these icons: http://raphaeljs.com/icons/
+    \*/
+    paperproto.path = function () {
+        var paper = this,
+            args = arguments,
+            group = lastArgIfGroup(args, true),
+            paperConfig = paper.config,
+            capStyle = (paperConfig && paperConfig["stroke-linecap"]) || "butt",
+            attrs = serializeArgs(args),
+            out;
+
+        attrs = applyToChild(group, attrs);
+        out = R._engine.path(paper, attrs, group);
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
+    };
+
+    /*\
+     * Paper.image
+     [ method ]
+     **
+     * Embeds an image into the surface.
+     **
+     > Parameters
+     **
+     - src (string) URI of the source image
+     - x (number) x coordinate position
+     - y (number) y coordinate position
+     - width (number) width of the image
+     - height (number) height of the image
+     = (object) Raphaël element object with type “image”
+     **
+     > Usage
+     | var c = paper.image("apple.png", 10, 10, 80, 80);
+    \*/
+    paperproto.image = function () {
+        var paper = this,
+            args = arguments,
+            group = lastArgIfGroup(args, true),
+            attrs = serializeArgs(args),
+            out;
+
+        attrs = applyToChild(group, attrs);
+        out = R._engine.image(paper, attrs, group);
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
+    };
+
+    /*\
+     * Paper.text
+     [ method ]
+     **
+     * Draws a text string. If you need line breaks, put “\n” in the string.
+     **
+     > Parameters
+     **
+     - x (number) x coordinate position
+     - y (number) y coordinate position
+     - text (string) The text string to draw
+     = (object) Raphaël element object with type “text”
+     **
+     > Usage
+     | var t = paper.text(50, 50, "Raphaël\nkicks\nbutt!");
+    \*/
+    paperproto.text = function() {
+        var paper = this,
+            args = arguments,
+            group = lastArgIfGroup(args, true),
+            attrs = serializeArgs(args),
+            out;
+
+        attrs = applyToChild(group, attrs);
+        out = R._engine.text(paper, attrs, group, args[1]);
+        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
+    };
 
     Element.prototype = elproto;
     elproto.constructor = Element;

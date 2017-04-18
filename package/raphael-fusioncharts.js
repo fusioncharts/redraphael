@@ -10702,8 +10702,11 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         var paper = this,
             args = arguments,
             group = lastArgIfGroup(args, true),
-            out = R._engine.group(paper, args[0], group);
+            attrs,
+            out;
 
+        attrs = applyToChild(group, args[0]);
+        out = R._engine.group(paper, attrs, group);
         out.attr = customAttr;
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };

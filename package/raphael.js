@@ -9753,7 +9753,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      * Element.on
      [ method ]
      **
-     * Attach event with handler to the element
+     * Bind handler function for a particular event to Element
      * @param eventType - Type of event
      * @param handler - Function to be called on the firing of the event
     \*/
@@ -9813,9 +9813,9 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      * Element.off
      [ method ]
      **
-     * Removes all dragmove event handlers from given element.
+     * Remove handler function bind to an event of element
      * @param eventType - Type of event
-     * @param handler - Function to be called on the firing of the event
+     * @param handler - Function to be removed from event
     \*/
     elproto.off = function(eventType, handler) {
         var elem = this,

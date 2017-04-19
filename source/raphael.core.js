@@ -3968,7 +3968,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 end_scope: end_scope
             }];
 
-            onstart && onstart(e.clientX + scrollX, e.clientY + scrollY, e);
+            onstart && onstart.call(start_scope || move_scope || this, e.clientX + scrollX, e.clientY + scrollY, e);
             // onstart && eve.on("raphael.drag.start." + this.id, onstart);
             onmove && eve.on("raphael.drag.move." + this.id, onmove);
             onend && eve.on("raphael.drag.end." + this.id, onend);

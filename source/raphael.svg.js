@@ -1529,6 +1529,14 @@ _window.Raphael && _window.Raphael.svg && function(R) {
         }
     };
 
+    /*\
+     * Element.on
+     [ method ]
+     **
+     * Attach event with handler to the element
+     * @param eventType - Type of event
+     * @param handler - Function to be called on the firing of the event
+    \*/
     elproto.on = function(eventType, handler) {
         var elem = this,
         fn,
@@ -1581,6 +1589,14 @@ _window.Raphael && _window.Raphael.svg && function(R) {
         return this;
     };
 
+    /*\
+     * Element.off
+     [ method ]
+     **
+     * Removes all dragmove event handlers from given element.
+     * @param eventType - Type of event
+     * @param handler - Function to be called on the firing of the event
+    \*/
     elproto.off = function(eventType, handler) {
         var elem = this,
         fn,
@@ -1589,17 +1605,17 @@ _window.Raphael && _window.Raphael.svg && function(R) {
         if (this.removed) {
             return this;
         }
-        // TODO: add code to remove drag events
-        // if (eventType === 'dragstart') {
-        //     this.drag(null, handler);
-        //     return this;
-        // } else if (eventType === 'dragmove') {
-        //     this.drag(handler);
-        //     return this;
-        // } else if (eventType === 'dragend') {
-        //     this.drag(null, null, handler);
-        //     return this;
-        // }
+
+        if (eventType === 'dragstart') {
+            this.undragstart();
+            return this;
+        } else if (eventType === 'dragmove') {
+            this.undragmove();
+            return this;
+        } else if (eventType === 'dragend') {
+            this.undragend();
+            return this;
+        }
 
         fn = handler;
         oldEventType = eventType;

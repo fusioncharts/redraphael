@@ -931,6 +931,14 @@ _window.Raphael && _window.Raphael.vml && function(R) {
         return this;
     };
 
+    /*\
+     * Element.on
+     [ method ]
+     **
+     * Bind handler function for a particular event to Element
+     * @param eventType - Type of event
+     * @param handler - Function to be called on the firing of the event
+    \*/
     elproto.on = function(eventType, handler) {
         if (this.removed) {
             return this;
@@ -958,22 +966,30 @@ _window.Raphael && _window.Raphael.vml && function(R) {
         }
         return this;
     };
+
+    /*\
+     * Element.off
+     [ method ]
+     **
+     * Remove handler function bind to an event of element
+     * @param eventType - Type of event
+     * @param handler - Function to be removed from event
+    \*/
     elproto.off = function(eventType, handler) {
         if (this.removed) {
             return this;
         }
 
-        // TODO: add code to remove drag events
-        // if (eventType === 'dragstart') {
-        //     this.drag(null, handler);
-        //     return this;
-        // } else if (eventType === 'dragmove') {
-        //     this.drag(handler);
-        //     return this;
-        // } else if (eventType === 'dragend') {
-        //     this.drag(null, null, handler);
-        //     return this;
-        // }
+        if (eventType === 'dragstart') {
+            this.undragstart();
+            return this;
+        } else if (eventType === 'dragmove') {
+            this.undragmove();
+            return this;
+        } else if (eventType === 'dragend') {
+            this.undragend();
+            return this;
+        }
         if (this.node.attachEvent) {
             this.node.detachEvent('on'+ eventType, handler);
         }

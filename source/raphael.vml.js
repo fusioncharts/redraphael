@@ -946,12 +946,40 @@ _window.Raphael && _window.Raphael.vml && function(R) {
             this.drag(null, null, handler);
             return this;
         }
+        if (this.node.attachEvent) {
+            this.node.attachEvent('on'+ eventType, handler);
+        }
+        else {
+            this.node['on'+ eventType] = function() {
+                var evt = R._g.win.event;
+                evt.target = evt.srcElement;
+                handler(evt);
+            };
+        }
+        return this;
+    };
+    elproto.off = function(eventType, handler) {
+        if (this.removed) {
+            return this;
+        }
 
-        this.node['on'+ eventType] = function() {
-            var evt = R._g.win.event;
-            evt.target = evt.srcElement;
-            handler(evt);
-        };
+        // TODO: add code to remove drag events
+        // if (eventType === 'dragstart') {
+        //     this.drag(null, handler);
+        //     return this;
+        // } else if (eventType === 'dragmove') {
+        //     this.drag(handler);
+        //     return this;
+        // } else if (eventType === 'dragend') {
+        //     this.drag(null, null, handler);
+        //     return this;
+        // }
+        if (this.node.attachEvent) {
+            this.node.detachEvent('on'+ eventType, handler);
+        }
+        else {
+            this.node['on'+ eventType] = null;
+        }
         return this;
     };
 

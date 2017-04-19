@@ -1530,6 +1530,9 @@ _window.Raphael && _window.Raphael.svg && function(R) {
     };
 
     elproto.on = function(eventType, handler) {
+        var elem = this,
+        fn,
+        oldEventType;
         if (this.removed) {
             return this;
         }
@@ -1545,16 +1548,79 @@ _window.Raphael && _window.Raphael.svg && function(R) {
             return this;
         }
 
-        var fn = handler;
+        fn = handler;
+        oldEventType = eventType;
         if (R.supportsTouch) {
             eventType = R._touchMap[eventType] ||
                 (eventType === 'click' && 'touchstart') || eventType;
-            fn = function(e) {
-                e.preventDefault();
-                handler();
-            };
+            if (eventType !== oldEventType) {
+                // store the new listeners for removeEventListener
+                if (!elem._tempTouchListeners) {
+                    elem._tempTouchListeners = {};
+                }
+                if (!elem._tempTouchListeners[oldEventType]) {
+                    elem._tempTouchListeners[oldEventType] = [];
+                }
+                fn = function(e) {
+                    e.preventDefault();
+                    handler(e);
+                };
+                elem._tempTouchListeners[oldEventType].push({
+                    oldFn: handler,
+                    newFn: fn,
+                    newEvt: eventType
+                })
+            }
         }
-        this.node['on'+ eventType] = fn;
+        if (this.node.addEventListener) {
+            this.node.addEventListener(eventType, fn);
+        }
+        else {
+            this.node['on'+ eventType] = fn;
+        }
+        return this;
+    };
+
+    elproto.off = function(eventType, handler) {
+        var elem = this,
+        fn,
+        i,
+        l;
+        if (this.removed) {
+            return this;
+        }
+        // TODO: add code to remove drag events
+        // if (eventType === 'dragstart') {
+        //     this.drag(null, handler);
+        //     return this;
+        // } else if (eventType === 'dragmove') {
+        //     this.drag(handler);
+        //     return this;
+        // } else if (eventType === 'dragend') {
+        //     this.drag(null, null, handler);
+        //     return this;
+        // }
+
+        fn = handler;
+        oldEventType = eventType;
+
+        if (R.supportsTouch && elem._tempTouchListeners && elem._tempTouchListeners[oldEventType]) {
+            l = elem._tempTouchListeners[oldEventType].length;
+            for (i = 0; i < l && oldEventType === eventType; i += 1) {
+                if (elem._tempTouchListeners[oldEventType][i] &&
+                    elem._tempTouchListeners[oldEventType][i].oldFn === fn) {
+                    eventType = elem._tempTouchListeners[oldEventType][i].newEvt;
+                    fn = elem._tempTouchListeners[oldEventType][i].newFn;
+                    elem._tempTouchListeners[oldEventType].splice(i, 1);
+                }
+            }
+        }
+        if (this.node.removeEventListener) {
+            this.node.removeEventListener(eventType, fn);
+        }
+        else {
+            this.node['on'+ eventType] = null;
+        }
         return this;
     };
 

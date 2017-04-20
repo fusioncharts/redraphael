@@ -10638,14 +10638,45 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         o.next = null;
     };
     var elproto = R.el,
+        notApplicableGroupAttrs = {
+            fill: true,
+            stroke: true,
+            'stroke-width': true,
+            'stroke-dasharray': true,
+            'stroke-linejoin': true
+        },
         /*
          * Function to over-write the default attr() function of group so that the individual properties of group
          * can be applied to its child.
          */
-        customAttr = function (name, value) {
-            var group = this;
-            group.customAttr = name; 
-            return elproto.attr.call(group, name, value);
+        customGroupUpdate = function (name, value) {
+            var group = this,
+                attr,
+                appliedAttrs;
+            if (typeof name === 'object') {
+                // Storing the group attrs to be applied to the set level
+                group.customAttr = name;
+
+                appliedAttrs = {};
+                // Checking for the applicable group attrs
+                for (attr in name) {
+                    if (name[has](attr) && !notApplicableGroupAttrs[attr]) {
+                        appliedAttrs[attr] = name[attr];
+                    }
+                }
+            }
+            else {
+                appliedAttrs = name;
+            }
+            return elproto.attr.call(group, appliedAttrs, value);
+        },
+
+        customElementUpdate = function (name, value) {
+            element = this;
+            if (typeof name === 'object') {
+                name = applyToChild(element.parent, name);
+            }
+            return elproto.attr.call(element, name, value);
         },
         /*
          * Function to apply the group attrs to its child if not present
@@ -10685,7 +10716,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
 
         attrs = applyToChild(group, args[0]);
         out = R._engine.group(paper, attrs, group);
-        out.attr = customAttr;
+        out.attr = customGroupUpdate;
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 
@@ -10714,7 +10745,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
 
         attrs = applyToChild(group, attrs);
         out = R._engine.circle(paper, attrs, group);
-
+        out.attr = customElementUpdate;
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 
@@ -10749,7 +10780,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
 
         attrs = applyToChild(group, attrs);
         out = R._engine.rect(paper, attrs, group);
-
+        out.attr = customElementUpdate;
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 
@@ -10779,7 +10810,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
 
         attrs = applyToChild(group, attrs);
         out = R._engine.ellipse(this, attrs, group);
-
+        out.attr = customElementUpdate;
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 
@@ -10826,6 +10857,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
 
         attrs = applyToChild(group, attrs);
         out = R._engine.path(paper, attrs, group);
+        out.attr = customElementUpdate;
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 
@@ -10856,6 +10888,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
 
         attrs = applyToChild(group, attrs);
         out = R._engine.image(paper, attrs, group);
+        out.attr = customElementUpdate;
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 

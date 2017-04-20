@@ -3505,7 +3505,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             o && eve("raphael.drag.over." + dragi.el.id, dragi.el, o);
             x += scrollX;
             y += scrollY;
-            eve("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, x - dragi.el._drag.x, y - dragi.el._drag.y, x, y, e);
+            e.data = [x - dragi.el._drag.x, y - dragi.el._drag.y, x, y];
+            eve("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, e);
         }
     },
     dragUp = function(e) {
@@ -3967,8 +3968,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 start_scope: start_scope,
                 end_scope: end_scope
             }];
-
-            onstart && onstart.call(start_scope || move_scope || this, e.clientX + scrollX, e.clientY + scrollY, e);
+            e.data = [e.clientX + scrollX, e.clientY + scrollY];
+            onstart && onstart.call(start_scope || move_scope || this, e);
             // onstart && eve.on("raphael.drag.start." + this.id, onstart);
             onmove && eve.on("raphael.drag.move." + this.id, onmove);
             onend && eve.on("raphael.drag.end." + this.id, onend);

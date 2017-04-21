@@ -9146,24 +9146,32 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     },
     leading = 1.2,
     tuneText = function(el, params, group) {
-        if (el.type != "text" || !(params[has]("text") || params[has]("font") ||
-                params[has]("font-size") || params[has]("x") || params[has]("y") ||
-                params[has]("line-height") || params[has]("vertical-align"))) {
+        var a = el.attrs,
+            node,
+            computedStyle,
+            fontSize,
+            lineHeight,
+            valign,
+            direction,
+            isIE;
+
+        if (!(params[has]("text") || a.text) || !(params[has]("x") || a.x) || !(params[has]("y") || a.y) ||
+            (el.type != "text" || !(params[has]("font") ||  params[has]("font-size") || params[has]("line-height") ||
+                params[has]("vertical-align")))) {
             return;
         }
-        var a = el.attrs,
-            node = el.node,
-            computedStyle = node.firstChild && R._g.doc.defaultView.getComputedStyle(node.firstChild, E),
-            /*fontSize = computedStyle ?
-                toFloat(R._g.doc.defaultView.getComputedStyle(node.firstChild, E).getPropertyValue("font-size")) : 10,*/
-            fontSize = (params['fontSize'] || params['font-size'] || (group && group.attrs.fontSize) || 10).toString().
-                    replace(/px/, ''),
-            lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading,
-            valign = a[has]("vertical-align") ? a["vertical-align"] : "middle",
-            // direction = (params["direction"] || (computedStyle ?
-            //     computedStyle.getPropertyValue("direction") : "initial")).toLowerCase(),
-            direction = params["direction"] || (group && group.attrs.direction) || "initial"
-            isIE = /*@cc_on!@*/false || !!document.documentMode;
+        node = el.node;
+        computedStyle = node.firstChild && R._g.doc.defaultView.getComputedStyle(node.firstChild, E);
+        /*fontSize = computedStyle ?
+            toFloat(R._g.doc.defaultView.getComputedStyle(node.firstChild, E).getPropertyValue("font-size")) : 10,*/
+        fontSize = (params['fontSize'] || params['font-size'] || (group && group.attrs.fontSize) || 10).toString().
+                replace(/px/, '');
+        lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading;
+        valign = a[has]("vertical-align") ? a["vertical-align"] : "middle";
+        // direction = (params["direction"] || (computedStyle ?
+        //     computedStyle.getPropertyValue("direction") : "initial")).toLowerCase(),
+        direction = params["direction"] || (group && group.attrs.direction) || "initial";
+        isIE = /*@cc_on!@*/false || !!document.documentMode;
 
         if (isNaN(lineHeight)) {
             lineHeight = fontSize * leading;

@@ -3909,7 +3909,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             o && eve("raphael.drag.over." + dragi.el.id, dragi.el, o);
             x += scrollX;
             y += scrollY;
-            eve("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, x - dragi.el._drag.x, y - dragi.el._drag.y, x, y, e);
+            e.data = [x - dragi.el._drag.x, y - dragi.el._drag.y, x, y];
+            eve("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, e);
         }
     },
     dragUp = function(e) {
@@ -3921,7 +3922,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         while (i--) {
             dragi = drag[i];
             dragi.el._drag = {};
-            dragi.onendHandler && eve("raphael.drag.end." + dragi.el.id, dragi.end_scope || dragi.start_scope || dragi.move_scope || dragi.el, e);
+            eve("raphael.drag.end." + dragi.el.id, dragi.end_scope || dragi.start_scope || dragi.move_scope || dragi.el, e);
         }
         drag = [];
     },
@@ -4365,25 +4366,26 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             !drag.length && R.mousemove(dragMove).mouseup(dragUp);
 
 
-            drag.push({
+            drag = [{
                 el: this,
                 move_scope: move_scope,
                 start_scope: start_scope,
-                end_scope: end_scope,
-                onmoveHandler: onmove,
-                onstartHandler: onstart,
-                onendHandler: onend
-            });
-
-            onstart && eve.on("raphael.drag.start." + this.id, onstart);
+                end_scope: end_scope
+            }];
+            e.data = [e.clientX + scrollX, e.clientY + scrollY];
+            onstart && onstart.call(start_scope || move_scope || this, e);
+            // onstart && eve.on("raphael.drag.start." + this.id, onstart);
             onmove && eve.on("raphael.drag.move." + this.id, onmove);
             onend && eve.on("raphael.drag.end." + this.id, onend);
-            onstart && eve("raphael.drag.start." + this.id, start_scope || move_scope || this, e.clientX + scrollX, e.clientY + scrollY, e);
+            // onstart && eve("raphael.drag.start." + this.id, start_scope || move_scope || this, e.clientX + scrollX, e.clientY + scrollY, e);
         }
         this._drag = {};
         draggable.push({
             el: this,
-            start: start
+            start: start,
+            onstart: onstart,
+            onmove: onmove,
+            onend: onend
         });
         // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
         if (supportsTouch && !supportsOnlyTouch) {
@@ -4424,6 +4426,64 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
 
         !draggable.length && R.unmousemove(dragMove).unmouseup(dragUp);
         delete this._drag;
+    };
+
+    /*\
+     * Element.undragmove
+     [ method ]
+     **
+     * Removes all dragmove event handlers from given element.
+    \*/
+    elproto.undragmove = function() {
+        var i = draggable.length;
+        while (i--) {
+            if (draggable[i].el == this && draggable[i].onmove) {
+                this.unmousedown(draggable[i].start);
+                draggable.splice(i, 1);
+                eve.unbind("raphael.drag.move." + this.id);
+            }
+        }
+
+        !draggable.length && R.unmousemove(dragMove).unmouseup(dragUp);
+    };
+
+    /*\
+     * Element.undragend
+     [ method ]
+     **
+     * Removes all dragend event handlers from given element.
+    \*/
+    elproto.undragend = function() {
+        var i = draggable.length;
+        while (i--) {
+            if (draggable[i].el == this && draggable[i].onend) {
+                this.unmousedown(draggable[i].start);
+                draggable.splice(i, 1);
+                eve.unbind("raphael.drag.end." + this.id);
+            }
+        }
+
+        !draggable.length && R.unmousemove(dragMove).unmouseup(dragUp);
+    };
+
+    /*\
+     * Element.undragstart
+     [ method ]
+     **
+     * Removes all dragstart event handlers from given element.
+    \*/
+    elproto.undragstart = function() {
+        var i = draggable.length;
+        while (i--) {
+            if (draggable[i].el == this && draggable[i].onstart) {
+                this.unmousedown(draggable[i].start);
+                draggable.splice(i, 1);
+                eve.unbind("raphael.drag.start." + this.id);
+                this._dragstart = false;
+            }
+        }
+
+        !draggable.length && R.unmousemove(dragMove).unmouseup(dragUp);
     };
 
     elproto.follow = function(el, callback, stalk) {
@@ -9722,7 +9782,18 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         }
     };
 
+    /*\
+     * Element.on
+     [ method ]
+     **
+     * Bind handler function for a particular event to Element
+     * @param eventType - Type of event
+     * @param handler - Function to be called on the firing of the event
+    \*/
     elproto.on = function(eventType, handler) {
+        var elem = this,
+        fn,
+        oldEventType;
         if (this.removed) {
             return this;
         }
@@ -9738,16 +9809,87 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             return this;
         }
 
-        var fn = handler;
+        fn = handler;
+        oldEventType = eventType;
         if (R.supportsTouch) {
             eventType = R._touchMap[eventType] ||
                 (eventType === 'click' && 'touchstart') || eventType;
-            fn = function(e) {
-                e.preventDefault();
-                handler();
-            };
+            if (eventType !== oldEventType) {
+                // store the new listeners for removeEventListener
+                if (!elem._tempTouchListeners) {
+                    elem._tempTouchListeners = {};
+                }
+                if (!elem._tempTouchListeners[oldEventType]) {
+                    elem._tempTouchListeners[oldEventType] = [];
+                }
+                fn = function(e) {
+                    e.preventDefault();
+                    handler(e);
+                };
+                elem._tempTouchListeners[oldEventType].push({
+                    oldFn: handler,
+                    newFn: fn,
+                    newEvt: eventType
+                })
+            }
         }
-        this.node['on'+ eventType] = fn;
+        if (this.node.addEventListener) {
+            this.node.addEventListener(eventType, fn);
+        }
+        else {
+            this.node['on'+ eventType] = fn;
+        }
+        return this;
+    };
+
+    /*\
+     * Element.off
+     [ method ]
+     **
+     * Remove handler function bind to an event of element
+     * @param eventType - Type of event
+     * @param handler - Function to be removed from event
+    \*/
+    elproto.off = function(eventType, handler) {
+        var elem = this,
+        fn,
+        i,
+        l;
+        if (this.removed) {
+            return this;
+        }
+
+        if (eventType === 'dragstart') {
+            this.undragstart();
+            return this;
+        } else if (eventType === 'dragmove') {
+            this.undragmove();
+            return this;
+        } else if (eventType === 'dragend') {
+            this.undragend();
+            return this;
+        }
+
+        fn = handler;
+        oldEventType = eventType;
+
+        if (R.supportsTouch && elem._tempTouchListeners && elem._tempTouchListeners[oldEventType]) {
+            l = elem._tempTouchListeners[oldEventType].length;
+            for (i = 0; i < l && oldEventType === eventType; i += 1) {
+                if (elem._tempTouchListeners[oldEventType][i] &&
+                    elem._tempTouchListeners[oldEventType][i].oldFn === fn) {
+                    eventType = elem._tempTouchListeners[oldEventType][i].newEvt;
+                    fn = elem._tempTouchListeners[oldEventType][i].newFn;
+                    elem._tempTouchListeners[oldEventType].splice(i, 1);
+                }
+            }
+        }
+        if (this.node.removeEventListener) {
+            this.node.removeEventListener(eventType, fn);
+        }
+        else {
+            this.node['on'+ eventType] = null;
+        }
         return this;
     };
 
@@ -11252,6 +11394,14 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         return this;
     };
 
+    /*\
+     * Element.on
+     [ method ]
+     **
+     * Bind handler function for a particular event to Element
+     * @param eventType - Type of event
+     * @param handler - Function to be called on the firing of the event
+    \*/
     elproto.on = function(eventType, handler) {
         if (this.removed) {
             return this;
@@ -11267,12 +11417,48 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             this.drag(null, null, handler);
             return this;
         }
+        if (this.node.attachEvent) {
+            this.node.attachEvent('on'+ eventType, handler);
+        }
+        else {
+            this.node['on'+ eventType] = function() {
+                var evt = R._g.win.event;
+                evt.target = evt.srcElement;
+                handler(evt);
+            };
+        }
+        return this;
+    };
 
-        this.node['on'+ eventType] = function() {
-            var evt = R._g.win.event;
-            evt.target = evt.srcElement;
-            handler(evt);
-        };
+    /*\
+     * Element.off
+     [ method ]
+     **
+     * Remove handler function bind to an event of element
+     * @param eventType - Type of event
+     * @param handler - Function to be removed from event
+    \*/
+    elproto.off = function(eventType, handler) {
+        if (this.removed) {
+            return this;
+        }
+
+        if (eventType === 'dragstart') {
+            this.undragstart();
+            return this;
+        } else if (eventType === 'dragmove') {
+            this.undragmove();
+            return this;
+        } else if (eventType === 'dragend') {
+            this.undragend();
+            return this;
+        }
+        if (this.node.attachEvent) {
+            this.node.detachEvent('on'+ eventType, handler);
+        }
+        else {
+            this.node['on'+ eventType] = null;
+        }
         return this;
     };
 

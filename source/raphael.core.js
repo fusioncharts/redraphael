@@ -3505,7 +3505,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             o && eve("raphael.drag.over." + dragi.el.id, dragi.el, o);
             x += scrollX;
             y += scrollY;
-            eve("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, x - dragi.el._drag.x, y - dragi.el._drag.y, x, y, e);
+            e.data = [x - dragi.el._drag.x, y - dragi.el._drag.y, x, y];
+            eve("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, e);
         }
     },
     dragUp = function(e) {
@@ -3517,7 +3518,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         while (i--) {
             dragi = drag[i];
             dragi.el._drag = {};
-            dragi.onendHandler && eve("raphael.drag.end." + dragi.el.id, dragi.end_scope || dragi.start_scope || dragi.move_scope || dragi.el, e);
+            eve("raphael.drag.end." + dragi.el.id, dragi.end_scope || dragi.start_scope || dragi.move_scope || dragi.el, e);
         }
         drag = [];
     },
@@ -3961,25 +3962,26 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             !drag.length && R.mousemove(dragMove).mouseup(dragUp);
 
 
-            drag.push({
+            drag = [{
                 el: this,
                 move_scope: move_scope,
                 start_scope: start_scope,
-                end_scope: end_scope,
-                onmoveHandler: onmove,
-                onstartHandler: onstart,
-                onendHandler: onend
-            });
-
-            onstart && eve.on("raphael.drag.start." + this.id, onstart);
+                end_scope: end_scope
+            }];
+            e.data = [e.clientX + scrollX, e.clientY + scrollY];
+            onstart && onstart.call(start_scope || move_scope || this, e);
+            // onstart && eve.on("raphael.drag.start." + this.id, onstart);
             onmove && eve.on("raphael.drag.move." + this.id, onmove);
             onend && eve.on("raphael.drag.end." + this.id, onend);
-            onstart && eve("raphael.drag.start." + this.id, start_scope || move_scope || this, e.clientX + scrollX, e.clientY + scrollY, e);
+            // onstart && eve("raphael.drag.start." + this.id, start_scope || move_scope || this, e.clientX + scrollX, e.clientY + scrollY, e);
         }
         this._drag = {};
         draggable.push({
             el: this,
-            start: start
+            start: start,
+            onstart: onstart,
+            onmove: onmove,
+            onend: onend
         });
         // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
         if (supportsTouch && !supportsOnlyTouch) {
@@ -4020,6 +4022,64 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
 
         !draggable.length && R.unmousemove(dragMove).unmouseup(dragUp);
         delete this._drag;
+    };
+
+    /*\
+     * Element.undragmove
+     [ method ]
+     **
+     * Removes all dragmove event handlers from given element.
+    \*/
+    elproto.undragmove = function() {
+        var i = draggable.length;
+        while (i--) {
+            if (draggable[i].el == this && draggable[i].onmove) {
+                this.unmousedown(draggable[i].start);
+                draggable.splice(i, 1);
+                eve.unbind("raphael.drag.move." + this.id);
+            }
+        }
+
+        !draggable.length && R.unmousemove(dragMove).unmouseup(dragUp);
+    };
+
+    /*\
+     * Element.undragend
+     [ method ]
+     **
+     * Removes all dragend event handlers from given element.
+    \*/
+    elproto.undragend = function() {
+        var i = draggable.length;
+        while (i--) {
+            if (draggable[i].el == this && draggable[i].onend) {
+                this.unmousedown(draggable[i].start);
+                draggable.splice(i, 1);
+                eve.unbind("raphael.drag.end." + this.id);
+            }
+        }
+
+        !draggable.length && R.unmousemove(dragMove).unmouseup(dragUp);
+    };
+
+    /*\
+     * Element.undragstart
+     [ method ]
+     **
+     * Removes all dragstart event handlers from given element.
+    \*/
+    elproto.undragstart = function() {
+        var i = draggable.length;
+        while (i--) {
+            if (draggable[i].el == this && draggable[i].onstart) {
+                this.unmousedown(draggable[i].start);
+                draggable.splice(i, 1);
+                eve.unbind("raphael.drag.start." + this.id);
+                this._dragstart = false;
+            }
+        }
+
+        !draggable.length && R.unmousemove(dragMove).unmouseup(dragUp);
     };
 
     elproto.follow = function(el, callback, stalk) {

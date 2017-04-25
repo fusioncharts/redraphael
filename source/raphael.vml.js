@@ -1214,6 +1214,14 @@ _window.Raphael && _window.Raphael.vml && function(R) {
         return this;
     };
 
+    /*\
+     * Element.on
+     [ method ]
+     **
+     * Bind handler function for a particular event to Element
+     * @param eventType - Type of event
+     * @param handler - Function to be called on the firing of the event
+    \*/
     elproto.on = function(eventType, handler) {
         if (this.removed) {
             return this;
@@ -1229,12 +1237,48 @@ _window.Raphael && _window.Raphael.vml && function(R) {
             this.drag(null, null, handler);
             return this;
         }
+        if (this.node.attachEvent) {
+            this.node.attachEvent('on'+ eventType, handler);
+        }
+        else {
+            this.node['on'+ eventType] = function() {
+                var evt = R._g.win.event;
+                evt.target = evt.srcElement;
+                handler(evt);
+            };
+        }
+        return this;
+    };
 
-        this.node['on'+ eventType] = function() {
-            var evt = R._g.win.event;
-            evt.target = evt.srcElement;
-            handler(evt);
-        };
+    /*\
+     * Element.off
+     [ method ]
+     **
+     * Remove handler function bind to an event of element
+     * @param eventType - Type of event
+     * @param handler - Function to be removed from event
+    \*/
+    elproto.off = function(eventType, handler) {
+        if (this.removed) {
+            return this;
+        }
+
+        if (eventType === 'dragstart') {
+            this.undragstart();
+            return this;
+        } else if (eventType === 'dragmove') {
+            this.undragmove();
+            return this;
+        } else if (eventType === 'dragend') {
+            this.undragend();
+            return this;
+        }
+        if (this.node.attachEvent) {
+            this.node.detachEvent('on'+ eventType, handler);
+        }
+        else {
+            this.node['on'+ eventType] = null;
+        }
         return this;
     };
 

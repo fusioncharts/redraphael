@@ -5554,7 +5554,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
             origms = ms;
             // If has parentEl
-            if (e.parentEl) {
+            if (e.parentEl && e.parentEl.animElements) {
                 ms = e.delayend - e.delaystart;
                 time = e.parentEl.cPos - e.delaystart;
             } else if (e.el.animElements) {

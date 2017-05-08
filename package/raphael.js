@@ -9315,11 +9315,11 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             dy: dif
         });
     },
-    Element = function(node, svg, group, dontAppend) {
+    Element = function(node, svg, group/*, dontAppend*/) {
         var o = this,
             parent = group || svg;
 
-        !dontAppend && parent.canvas && parent.canvas.appendChild(node);
+        /*!dontAppend && */parent.canvas && parent.canvas.appendChild(node);
 
         o.node = o[0] = node;
         node.raphael = true;
@@ -9928,7 +9928,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                     width: element.attrs.width || RefImg.width,
                     height: element.attrs.height || RefImg.height
                 });
-                parent.canvas && parent.canvas.appendChild(node);
+                // parent.canvas && parent.canvas.appendChild(node);
             };
             RefImg.onerror = function (e) {
                 node.onerror && node.onerror(e);
@@ -10730,12 +10730,12 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         }
         return 1;
     },
-    Element = function(node, vml, group, dontAppend) {
+    Element = function(node, vml, group/*, dontAppend*/) {
         var o = this,
             parent = group || vml,
 			skew;
 
-		!dontAppend && parent.canvas && parent.canvas.appendChild(node);
+		/*!dontAppend && */parent.canvas && parent.canvas.appendChild(node);
 		skew = createNode("skew");
         skew.on = true;
         node.appendChild(skew);

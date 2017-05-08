@@ -1094,11 +1094,11 @@ _window.Raphael && _window.Raphael.svg && function(R) {
             dy: dif
         });
     },
-    Element = function(node, svg, group, dontAppend) {
+    Element = function(node, svg, group/*, dontAppend*/) {
         var o = this,
             parent = group || svg;
 
-        !dontAppend && parent.canvas && parent.canvas.appendChild(node);
+        /*!dontAppend && */parent.canvas && parent.canvas.appendChild(node);
 
         o.node = o[0] = node;
         node.raphael = true;
@@ -1707,7 +1707,7 @@ _window.Raphael && _window.Raphael.svg && function(R) {
                     width: element.attrs.width || RefImg.width,
                     height: element.attrs.height || RefImg.height
                 });
-                parent.canvas && parent.canvas.appendChild(node);
+                // parent.canvas && parent.canvas.appendChild(node);
             };
             RefImg.onerror = function (e) {
                 node.onerror && node.onerror(e);

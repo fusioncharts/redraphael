@@ -3848,6 +3848,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
             scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
             dragi,
+            data,
             j = drag.length;
 
         while (j--) {
@@ -3887,8 +3888,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             o && eve("raphael.drag.over." + dragi.el.id, dragi.el, o);
             x += scrollX;
             y += scrollY;
-            e.data = [x - dragi.el._drag.x, y - dragi.el._drag.y, x, y];
-            eve("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, e);
+            data = e.data = [x - dragi.el._drag.x, y - dragi.el._drag.y, x, y];
+            eve("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, e, data);
         }
     },
     dragUp = function(e) {
@@ -4331,7 +4332,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     elproto.drag = function(onmove, onstart, onend, move_scope, start_scope, end_scope) {
         function start(e) {
             var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
-                scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft;
+                scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
+                data;
 
             this._drag.x = e.clientX + scrollX;
             this._drag.y = e.clientY + scrollY;
@@ -4350,8 +4352,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 start_scope: start_scope,
                 end_scope: end_scope
             }];
-            e.data = [e.clientX + scrollX, e.clientY + scrollY];
-            onstart && onstart.call(start_scope || move_scope || this, e);
+            data = e.data = [e.clientX + scrollX, e.clientY + scrollY];
+            onstart && onstart.call(start_scope || move_scope || this, e, data);
             // onstart && eve.on("raphael.drag.start." + this.id, onstart);
             onmove && eve.on("raphael.drag.move." + this.id, onmove);
             onend && eve.on("raphael.drag.end." + this.id, onend);

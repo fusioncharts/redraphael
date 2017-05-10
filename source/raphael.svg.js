@@ -22,7 +22,6 @@ _window.Raphael && _window.Raphael.svg && function(R) {
         abs = math.abs,
         pow = math.pow,
         sqrt = math.sqrt,
-        cachedFontHeight = {},
         separator = /[, ]+/,
         zeroStrokeFix = !!(/AppleWebKit/.test(R._g.win.navigator.userAgent) &&
                 (!/Chrome/.test(R._g.win.navigator.userAgent) ||
@@ -42,6 +41,8 @@ _window.Raphael && _window.Raphael.svg && function(R) {
         updateReferenceUrl = function () {
             return R._url = R._g.win.location.href.replace(/#.*?$/, E);
         };
+
+    R.cachedFontHeight = {};
 
     R.toString = function() {
         return  "Your browser supports SVG.\nYou are running Rapha\xebl " + this.version;
@@ -512,7 +513,8 @@ _window.Raphael && _window.Raphael.svg && function(R) {
     },
 
     getFontHeight = function (attr, group) {
-            var txtElem = cachedFontHeight.txtElem,
+            var cachedFontHeight = R.cachedFontHeight,
+                txtElem = cachedFontHeight.txtElem,
                 theText,
                 theMSG,
                 fontFamily = attr['fontFamily'] || attr['font-family'] || (group && group.attrs.fontFamily) ||

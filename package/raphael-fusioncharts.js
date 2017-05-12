@@ -9520,6 +9520,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             info,
             randomPos,
             bboxY,
+            diff,
             bboxHeight;
         if (isIE && isText) {
             fn = showRecursively(o);
@@ -9537,7 +9538,6 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             availableFontFamily = cachedFontHeight[fontFamily] || (cachedFontHeight[fontFamily] = {});
             availableFontSize = availableFontFamily[fontSize];
             randomPos = -100;
-            factor = lines > 1 ? 0.5 * 1.2 : 1;
 
             if (!availableFontSize) {
                 if (!txtElem) {
@@ -9562,10 +9562,10 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             bboxHeight = availableFontSize[0];
             switch (valign) {
                 case "bottom":
-                    diff = randomPos - bboxY - bboxHeight/ 2 * lines / factor - bboxHeight * .5;
+                    diff = randomPos - bboxY - bboxHeight * lines;
                     break;
                 case "top":
-                    diff = randomPos - bboxY - bboxHeight/ 2 * lines * factor + bboxHeight * .5;
+                    diff = randomPos - bboxY;
                     break;
                 default :
                 diff = randomPos - bboxY - bboxHeight/ 2 * lines;

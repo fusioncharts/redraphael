@@ -1259,13 +1259,10 @@ _window.Raphael && _window.Raphael.svg && function(R) {
         return fn;
     };
 
-     elproto._getCustomBBox = function(fontFamily, fontSize, valign, lines) {
+    elproto._getCustomBBox = function(fontFamily, fontSize, valign, lines) {
         var fn,
             o = this,
             node = o.node,
-            bbox = {},
-            // a = o.attrs,
-            // align,
             hide,
             isText = (o.type === "text"),
             isIE = /*@cc_on!@*/false || !!document.documentMode,
@@ -1277,7 +1274,8 @@ _window.Raphael && _window.Raphael.svg && function(R) {
             availableFontSize,
             info,
             randomPos,
-            bbox;
+            bboxY,
+            bboxHeight;
         if (isIE && isText) {
             fn = showRecursively(o);
         }
@@ -1288,18 +1286,13 @@ _window.Raphael && _window.Raphael.svg && function(R) {
             }
         }
 
-        bbox = {};
         if (isText) {
-            cachedFontHeight = R.cachedFontHeight,
-            txtElem = cachedFontHeight.txtElem,
-            theText,
-            theMSG,
-            availableFontFamily = cachedFontHeight[fontFamily] || (cachedFontHeight[fontFamily] = {}),
-            availableFontSize = availableFontFamily[fontSize],
-            info,
-            randomPos = -100,
-            factor = lines > 1 ? 0.5 : 1,
-            bbox;
+            cachedFontHeight = R.cachedFontHeight;
+            txtElem = cachedFontHeight.txtElem;
+            availableFontFamily = cachedFontHeight[fontFamily] || (cachedFontHeight[fontFamily] = {});
+            availableFontSize = availableFontFamily[fontSize];
+            randomPos = -100;
+            factor = lines > 1 ? 0.5 * 1.2 : 1;
 
             if (!availableFontSize) {
                 if (!txtElem) {
@@ -1320,18 +1313,17 @@ _window.Raphael && _window.Raphael.svg && function(R) {
                 availableFontSize.push(bbox.y);
             }
 
-            diff = randomPos - (availableFontSize[1] + availableFontSize[0]/ 2 * lines * factor);
-            // info = availableFontSize.hasGJ;
-            console.log(lines, valign)
+            bboxY = availableFontSize[1];
+            bboxHeight = availableFontSize[0];
             switch (valign) {
                 case "bottom":
-                    diff -= availableFontSize[0] * .5;
+                    diff = randomPos - bboxY - bboxHeight/ 2 * lines / factor - bboxHeight * .5;
                     break;
                 case "top":
-                    diff += availableFontSize[0] * .5;
+                    diff = randomPos - bboxY - bboxHeight/ 2 * lines * factor + bboxHeight * .5;
                     break;
                 default :
-                diff = randomPos - (availableFontSize[1] + availableFontSize[0]/ 2 * lines);
+                diff = randomPos - bboxY - bboxHeight/ 2 * lines;
             };
 
             bbox = {

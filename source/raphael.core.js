@@ -4723,10 +4723,10 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     };
     function x_y() {
         return this.x + S + this.y;
-    }
+    };
     function x_y_w_h() {
         return this.x + S + this.y + S + this.width + " \xd7 " + this.height;
-    }
+    };
 
     /*\
      * Element.isPointInside
@@ -4918,8 +4918,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             });
             return point;
         };
-    };
-    var getTotalLength = getLengthFactory(1),
+    },
+    getTotalLength = getLengthFactory(1),
     getPointAtLength = getLengthFactory(),
     getSubpathsAtLength = getLengthFactory(0, 1);
 
@@ -5343,6 +5343,11 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     },
     upto255 = function(color) {
         return color > 255 ? 255 : color < 0 ? 0 : color;
+    },
+    checkPercentage = function (num) {
+        num > 1 && (num = 1);
+        num < 0 && (num = 0);
+        return num;
     };
 
     R.getAnimFrameFn = function () {
@@ -5354,7 +5359,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         function(callback) {
             setTimeout(callback, 16);
         };
-    },
+    };
 
     /*\
      * Element.animateWith
@@ -5393,15 +5398,12 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             callback && callback.call(element);
             return element;
         }
-        function checkPercentage (num) {
-            num > 1 && (num = 1);
-            num < 0 && (num = 0);
-            return num;
-        }
         if (ms == 0) {
-            setTimeout(function () {
-                R.is(callback, "function") && callback.call(element);
-            }, 0);
+            if (R.is(callback, "function")) {
+                setTimeout(function () {
+                    callback.call(element);
+                }, 0);
+            }
             return element.attr (params);
         }
         var a = params instanceof Animation ? params : R.animation(params, ms, easing, callback),

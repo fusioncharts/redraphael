@@ -767,7 +767,17 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                         res[key] = clone(obj[key]);
                     }
                 return res;
-            };
+            },
+        Node = this.window.Node;
+        //Adding pollyfill for IE11
+        if (Node && !Node.prototype.contains) {
+            Node.prototype.contains = function(el){
+                while (el = el.parentNode) {
+                    if (el === this) return true;
+                }
+                return false;
+            }
+        };
 
     R._g = g;
 

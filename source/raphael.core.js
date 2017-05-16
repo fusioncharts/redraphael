@@ -768,7 +768,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                     }
                 return res;
             },
-        Node = this.window.Node;
+        Node = _win.Node;
         //Adding pollyfill for IE11
         if (Node && !Node.prototype.contains) {
             Node.prototype.contains = function(el){

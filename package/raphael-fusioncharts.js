@@ -3881,6 +3881,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
             dragi,
             data,
+            dummyEve = {},
+            key,
             j = drag.length;
 
         while (j--) {
@@ -3920,8 +3922,15 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             o && eve("raphael.drag.over." + dragi.el.id, dragi.el, o);
             x += scrollX;
             y += scrollY;
-            data = e.data = [x - dragi.el._drag.x, y - dragi.el._drag.y, x, y];
-            eve("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, e, data);
+            for (key in e) {
+                if (typeof e[key] === 'function') {
+                    dummyEve[key] = e[key].bind(e);
+                } else {
+                    dummyEve[key] = e[key];
+                }
+            }
+            data = dummyEve.data = [x - dragi.el._drag.x, y - dragi.el._drag.y, x, y];
+            eve("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, dummyEve, data);
         }
     },
     dragUp = function(e) {

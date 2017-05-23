@@ -5776,6 +5776,9 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      - ms (number) #optional number of milliseconds for animation to run
      - easing (string) #optional easing type. Accept on of @Raphael.easing_formulas or CSS format: `cubic&#x2010;bezier(XX,&#160;XX,&#160;XX,&#160;XX)`
      - callback (function) #optional callback function. Will be called at the end of animation.
+     - configObject (object) #optional takes an object with optional properties like 
+        start(what percentage to start aniation), end(what percentage to end animation), hookFn(function
+        to be called before applying animation), smartMorph(whether to use smartMorphing in path animation)
      * or
      - element (object) element to sync with
      - anim (object) animation to sync with

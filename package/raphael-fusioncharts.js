@@ -6265,7 +6265,13 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         }
 
     }
-
+    /**
+     * Function to make to uncommon path array to a equal length
+     * of path array and same type (L - lineto) to make it animatable
+     * @param {array} path array 1
+     * @param {array} path array 2
+     * @return {object} object containing final 'from' and 'to' path
+     */
     function pathNormalizer(p1, p2) {
         'use strict';
         // Function to convert array to svg path (?) only for curves
@@ -6298,6 +6304,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         // Setting path again
         pathArr1 = toSvgPath(p1);
         pathArr2 = toSvgPath(p2);
+        // If invalid path return the original path
         if(pathArr1.join().indexOf('undefined') !== -1) {
             return [p1, p2];
         }
@@ -6308,7 +6315,11 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         if (!dPath.getTotalLength || !dPath.getPointAtLength) {
             return [p1, p2];
         }
-
+        /* Function to check if the current environment
+        ** can animate the path, as pathNormalizer pauses
+        ** getTotalLength and getPointAtLength function of svg
+        ** which are not supported by all browsers
+        */
         function canFallback (path1, path2) {
             var str1 = '',
                 str2 = '',
@@ -6359,7 +6370,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
             return false;
         }
-
+        /* Convert svg path array to string,
+            Also removes repeated commands */
         function toSvgPath(arr) {
             var str = [],
                 i = 0,
@@ -6394,7 +6406,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             pathArr1[i] = temp[0];
             pathArr2[i] = temp[1];
         }
-
+        // Convert line path 2 dimensional array to string
         function linetopath (arr) {
             var i = 0,
                 ii = 0,
@@ -6408,7 +6420,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
             return str.join('');
         }
-
+        /* path2curve appends repeated last path command,
+            this function removes it or any other repeated path command */
         function removeBlanks (arr, pos) {
             var i = arr.length,
                 j = 0,
@@ -6425,7 +6438,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 arr.length = 0;
             }
         }
-
+        /* Divide a path array to number to a given number of times
+            as provided in parameters, All path array should start with M command */
         function _divide(arr, times) {
             var resArr = [],
                 locArr = [],
@@ -6435,11 +6449,12 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 x = 0,
                 prevPos = 0,
                 y = 0,
-                diffTimes = times - arrLen; // If array size is smaller than
-                                            // divisions needed
+                // If array size is smaller than
+                // divisions needed
+                diffTimes = times - arrLen;
             while (diffTimes >= 0) {
                 i = arr.length - 1;
-                arr.push(arr.slice(i));
+                arr.push(arr.slice(i)[0]);
                 --diffTimes;
             }
             arrLen = arr.length;
@@ -6457,7 +6472,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
             return resArr;
         }
-
+        /* If two path array have different number of MoveTo commands,
+            divide the smaller number of MoveTo command holder to match the other one */
         function divideArray (diff) {
             var arrToDivide = [],
                 countArr = [],
@@ -6474,6 +6490,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 diff = -diff;
                 arrToDivide = pathArr1;
             }
+            // Maintaining a count array to judge number of times a1
+            // path needs to be divided, 1 means dont divide
             for (i = 0, ii = arrToDivide.length; i < ii; ++i) {
                 countArr.push(1);
             }
@@ -6498,19 +6516,16 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 pathArr2 = transArr;
             }
         }
-        /*
-
-        */
         for (i = pathArr1.length; i--;) {
             removeBlanks(pathArr1[i], i);
+            // If last element is blank pop it
             pathArr1[i].length || pathArr1.pop();
         }
         for (i = pathArr2.length; i--;) {
             removeBlanks(pathArr2[i], i);
             pathArr2[i].length || pathArr2.pop();
         }
-        // removeBlanks(pathArr1);
-        // removeBlanks(pathArr2);
+        // Making number off moveto commands equal in both path
         divideArray(pathArr1.length - pathArr2.length);
 
         ii = Math.max(pathArr1.length, pathArr2.length);

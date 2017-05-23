@@ -5966,7 +5966,13 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         return a;
     };
 
-    // Function for trasition between colors
+    /*
+    ** Function to convert two color string in array format such that
+    ** it is animatabale
+    ** @param {string} c1 color 1
+    ** @param {string} c2 color 2
+    ** @param {function} function to getRGB
+    */
     function colorNormalizer(c1, c2, getRGB) {
         "use strict";
         var colorAr1 = c1.split('-'),
@@ -5982,6 +5988,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         if (colorAr1.length === 1 && colorAr2.length === 1) {
             return [c1, c2];
         }
+        // Convert colors to linear format, and mark if any of them is radial
+        // linear to radial animation is not correct
         colorAr1 = allToLinear(colorAr1);
         colorAr2 = allToLinear(colorAr2);
 
@@ -5995,9 +6003,12 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             colorAr1[0] = colorAr2[0];
         }
 
-        // If one radial convert both to radial
+        // If one is radial convert both to radial
         converToRadialIfOneRadial(colorAr1, colorAr2);
-
+        /* Making a unique array to store all unique
+            color positions of both color so that new color
+            can be generated that have same amount of positions
+            added */
         for(i = 1, ii = colorAr1.length; i < ii; ++i){
             pos = colorAr1[i].position;
             if(uniqArr.indexOf(pos) === -1){
@@ -6011,7 +6022,9 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
         }
         uniqArr.push(0);
+        // sort the positions
         uniqArr.sort(function(a,b){return a - b});
+        // generating new colors from the existing colors
         newColArr = [colorAr1[0]];
         for (i = 1, ii = uniqArr.length; i < ii; ++i) {
             pos = uniqArr[i];
@@ -6046,7 +6059,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 converToRadialIfOneRadial(b, a, true);
             }
         }
-
+        // Function to convert color to array in linear format
+        // and mark if any one of them is radial
         function allToLinear(arr) {
             var i = 0,
                 ii = 0,
@@ -6241,7 +6255,6 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
             return arr;
         }
-
     }
     /**
      * Function to make to uncommon path array to a equal length
@@ -6706,6 +6719,10 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     }
 
     // function to get equal points for two different path
+    // We set path to an dynamically created svg path node
+    // and get equal number of path commands from two different
+    // paths. Uses getPointAtLength and getTotalLength of svg that
+    // arent supported on every browser
     function _pathNormalizer(p1, p2) {
         'use strict';
         var i = 0,

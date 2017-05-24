@@ -5653,7 +5653,6 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                                         if(from[attr].isRadial || diff[attr].isRadial){
                                             now = now.replace('-', '');
                                         }
-                                        // e.el.log && console.log(now);
                                     }
                                     break;
                                 case "path":
@@ -6024,9 +6023,9 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             added */
         for(i = 1, ii = colorAr1.length; i < ii; ++i){
             pos = colorAr1[i].position;
-            if(uniqArr.indexOf(pos) === -1){
+            // if(uniqArr.indexOf(pos) === -1){
                 uniqArr.push(pos);
-            }
+            // }
         }
         for(i = 1, ii = colorAr2.length; i < ii; ++i){
             pos = colorAr2[i].position;

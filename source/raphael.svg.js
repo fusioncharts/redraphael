@@ -791,7 +791,7 @@ _window.Raphael && _window.Raphael.svg && function(R) {
                                 }
                             }
                             attrs.gradient = value;
-                            attrs.fill = "none";
+                            // attrs.fill = "none";
                             s.fill = E;
                             break;
                         }

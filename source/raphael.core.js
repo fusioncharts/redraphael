@@ -5242,11 +5242,11 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                                                     radial += ',';
                                                     radial += from[attr][0].f2 * (1 - pos) + diff[attr][0].f2 * pos || '';
                                                     radial += ',';
-                                                    radial += from[attr][0].f3 * (1 - pos) + diff[attr][0].f3 * pos || '';
-                                                    radial += ',';
+                                                    radial += (from[attr][0].f3 * (1 - pos) + diff[attr][0].f3 * pos) * 100 || '';
+                                                    radial += '%,';
                                                     radial += from[attr][0].f4 * (1 - pos) + diff[attr][0].f4 * pos || '';
                                                     radial += ',';
-                                                    radial += from[attr][0].f5 * (1 - pos) + diff[attr][0].f5 * pos || '';
+                                                    radial += from[attr][0].f5 * (1 - pos) + diff[attr][0].f5 * pos;
                                                     radial += ',';
                                                     radial += from[attr][0].f6;
                                                     radial += ')';

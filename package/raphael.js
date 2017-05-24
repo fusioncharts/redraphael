@@ -5653,6 +5653,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                                         if(from[attr].isRadial || diff[attr].isRadial){
                                             now = now.replace('-', '');
                                         }
+                                        // e.el.log && console.log(now);
                                     }
                                     break;
                                 case "path":
@@ -6061,8 +6062,12 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             if(a.isRadial && !b.isRadial){
                 angle += +b[0];
                 b[0] = {
-                    f1 : a[0].f1,
-                    f2 : a[0].f2
+                    f1: 0,
+                    f2: 0,
+                    f3: 0,
+                    f4: 0,
+                    f5: 0,
+                    f6: ''
                 }
                 b.isRadial = true;
             }

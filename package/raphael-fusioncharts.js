@@ -4383,6 +4383,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         function start(e) {
             var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
                 scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
+                key,
+                dummyEve = {},
                 data;
 
             this._drag.x = e.clientX + scrollX;
@@ -4402,8 +4404,15 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 start_scope: start_scope,
                 end_scope: end_scope
             }];
-            data = e.data = [e.clientX + scrollX, e.clientY + scrollY];
-            onstart && onstart.call(start_scope || move_scope || this, e, data);
+            for (key in e) {
+                if (typeof e[key] === 'function') {
+                    dummyEve[key] = e[key].bind(e);
+                } else {
+                    dummyEve[key] = e[key];
+                }
+            }
+            data = dummyEve.data = [e.clientX + scrollX, e.clientY + scrollY];
+            onstart && onstart.call(start_scope || move_scope || this, dummyEve, data);
             // onstart && eve.on("raphael.drag.start." + this.id, onstart);
             onmove && eve.on("raphael.drag.move." + this.id, onmove);
             onend && eve.on("raphael.drag.end." + this.id, onend);
@@ -5807,7 +5816,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      - ms (number) #optional number of milliseconds for animation to run
      - easing (string) #optional easing type. Accept on of @Raphael.easing_formulas or CSS format: `cubic&#x2010;bezier(XX,&#160;XX,&#160;XX,&#160;XX)`
      - callback (function) #optional callback function. Will be called at the end of animation.
-     - configObject (object) #optional takes an object with optional properties like 
+     - configObject (object) #optional takes an object with optional properties like
         start(what percentage to start aniation), end(what percentage to end animation), hookFn(function
         to be called before applying animation), smartMorph(whether to use smartMorphing in path animation)
      * or

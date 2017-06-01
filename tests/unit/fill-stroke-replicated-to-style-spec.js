@@ -1,3 +1,5 @@
+var Raphael = require('../../lib/raphael');
+
 describe('elproto.attr', function () {
 	var paper,
 		shape1;

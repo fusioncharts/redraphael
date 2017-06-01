@@ -1,3 +1,5 @@
+var Raphael = require('../../lib/raphael');
+
 describe("Events on elements", function () {
     var paper,
         rect;

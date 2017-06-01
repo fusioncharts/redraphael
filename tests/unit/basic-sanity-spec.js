@@ -1,3 +1,5 @@
+var Raphael = require('../../lib/raphael');
+
 describe("window", function () {
 	it("should have Raphael exposed", function () {
 		expect(Raphael).toBeDefined();

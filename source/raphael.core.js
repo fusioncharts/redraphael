@@ -5151,10 +5151,11 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
     // This a temporary fix so that animation can be handled from the scheduler module.
     animation = function() {
         var Now = +new Date,
-        l = 0,
-        deqArr = [],
-        i = 0,
-        ll = 0;
+            l = 0,
+            deqArr = [],
+            i = 0,
+            ll = 0,
+            animFrameFn;
 
         for (; l < animationElements.length; l++) {
             var e = animationElements[l];
@@ -5354,11 +5355,17 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
 
          // Starting animation on timer 0
         for (l = 0, ll = deqArr.length; l < ll; ++l) {
-            lib.schedular.addJob((function (l) {
+            // lib.schedular.addJob((function (l) {
+            //     return function ()  {
+            //         runAnimation.apply(null, deqArr[l].params);
+            //     };
+            // })(l), lib.priorityList.instant);
+            animFrameFn = R.getAnimFrameFn();
+            animFrameFn((function (l) {
                 return function ()  {
                     runAnimation.apply(null, deqArr[l].params);
                 };
-            })(l), lib.priorityList.instant);
+            })(l));
         }
 
         animationElements.length && (requestAnimFrame || R.getAnimFrameFn())(animation);
@@ -7907,4 +7914,3 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
     // oldRaphael.was ? (g.win.Raphael = R) : (Raphael = R);
 
 module.exports = R;
-

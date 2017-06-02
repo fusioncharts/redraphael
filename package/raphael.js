@@ -11,8 +11,6 @@
  */
 
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-"use strict";
-
 // Copyright (c) 2017 Adobe Systems Incorporated. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,21 +36,21 @@
         separator = /[\.\/]/,
         comaseparator = /\s*,\s*/,
         wildcard = "*",
-        fun = function fun() {},
-        numsort = function numsort(a, b) {
+        fun = function () {},
+        numsort = function (a, b) {
         return a - b;
     },
         current_event,
         stop,
         events = { n: {} },
-        firstDefined = function firstDefined() {
+        firstDefined = function () {
         for (var i = 0, ii = this.length; i < ii; i++) {
             if (typeof this[i] != "undefined") {
                 return this[i];
             }
         }
     },
-        lastDefined = function lastDefined() {
+        lastDefined = function () {
         var i = this.length;
         while (--i) {
             if (typeof this[i] != "undefined") {
@@ -75,7 +73,7 @@
      - varargs (...) the rest of arguments will be sent to event handlers
       = (object) array of returned values from the listeners. Array has two methods `.firstDefined()` and `.lastDefined()` to get first or last not `undefined` value.
     \*/
-    eve = function eve(name, scope) {
+    eve = function (name, scope) {
         var e = events,
             oldstop = stop,
             args = Array.prototype.slice.call(arguments, 2),
@@ -92,14 +90,13 @@
         out.lastDefined = lastDefined;
         current_event = name;
         stop = 0;
-        for (var i = 0, ii = listeners.length; i < ii; i++) {
-            if ("zIndex" in listeners[i]) {
-                indexed.push(listeners[i].zIndex);
-                if (listeners[i].zIndex < 0) {
-                    queue[listeners[i].zIndex] = listeners[i];
-                }
+        for (var i = 0, ii = listeners.length; i < ii; i++) if ("zIndex" in listeners[i]) {
+            indexed.push(listeners[i].zIndex);
+            if (listeners[i].zIndex < 0) {
+                queue[listeners[i].zIndex] = listeners[i];
             }
-        }indexed.sort(numsort);
+        }
+        indexed.sort(numsort);
         while (indexed[z] < 0) {
             l = queue[indexed[z++]];
             out.push(l.apply(scope, args));
@@ -235,12 +232,11 @@
                     e = e.hasOwnProperty(names[i]) && e[names[i]] || (e[names[i]] = { n: {} });
                 }
                 e.f = e.f || [];
-                for (i = 0, ii = e.f.length; i < ii; i++) {
-                    if (e.f[i] == f) {
-                        exist = true;
-                        break;
-                    }
-                }!exist && e.f.push(f);
+                for (i = 0, ii = e.f.length; i < ii; i++) if (e.f[i] == f) {
+                    exist = true;
+                    break;
+                }
+                !exist && e.f.push(f);
             })(names[i]);
         }
         return function (zIndex) {
@@ -361,14 +357,12 @@
                         });
                     }
                 } else {
-                    for (key in e) {
-                        if (e[has](key)) {
-                            splice.push(e[key]);
-                            inodes.unshift({
-                                n: e,
-                                name: key
-                            });
-                        }
+                    for (key in e) if (e[has](key)) {
+                        splice.push(e[key]);
+                        inodes.unshift({
+                            n: e,
+                            name: key
+                        });
                     }
                 }
                 cur.splice.apply(cur, splice);
@@ -379,30 +373,24 @@
             while (e.n) {
                 if (f) {
                     if (e.f) {
-                        for (j = 0, jj = e.f.length; j < jj; j++) {
-                            if (e.f[j] == f) {
-                                e.f.splice(j, 1);
-                                break;
-                            }
-                        }!e.f.length && delete e.f;
-                    }
-                    for (key in e.n) {
-                        if (e.n[has](key) && e.n[key].f) {
-                            var funcs = e.n[key].f;
-                            for (j = 0, jj = funcs.length; j < jj; j++) {
-                                if (funcs[j] == f) {
-                                    funcs.splice(j, 1);
-                                    break;
-                                }
-                            }!funcs.length && delete e.n[key].f;
+                        for (j = 0, jj = e.f.length; j < jj; j++) if (e.f[j] == f) {
+                            e.f.splice(j, 1);
+                            break;
                         }
+                        !e.f.length && delete e.f;
+                    }
+                    for (key in e.n) if (e.n[has](key) && e.n[key].f) {
+                        var funcs = e.n[key].f;
+                        for (j = 0, jj = funcs.length; j < jj; j++) if (funcs[j] == f) {
+                            funcs.splice(j, 1);
+                            break;
+                        }
+                        !funcs.length && delete e.n[key].f;
                     }
                 } else {
                     delete e.f;
-                    for (key in e.n) {
-                        if (e.n[has](key) && e.n[key].f) {
-                            delete e.n[key].f;
-                        }
+                    for (key in e.n) if (e.n[has](key) && e.n[key].f) {
+                        delete e.n[key].f;
                     }
                 }
                 e = e.n;
@@ -439,7 +427,7 @@
      = (function) same return function as @eve.on
     \*/
     eve.once = function (name, f) {
-        var f2 = function f2() {
+        var f2 = function () {
             eve.off(name, f2);
             return f.apply(this, arguments);
         };
@@ -459,11 +447,9 @@
     typeof module != "undefined" && module.exports ? module.exports = eve : typeof define === "function" && define.amd ? define("eve", [], function () {
         return eve;
     }) : glob.eve = eve;
-})(typeof window != "undefined" ? window : undefined);
+})(typeof window != "undefined" ? window : this);
 
 },{}],2:[function(require,module,exports){
-'use strict';
-
 var Raphael = require('./raphael.core');
 
 var svg = require('./raphael.svg');
@@ -473,10 +459,6 @@ var canvas = require('./raphael.canvas');
 module.exports = Raphael;
 
 },{"./raphael.canvas":3,"./raphael.core":4,"./raphael.svg":5,"./raphael.vml":6}],3:[function(require,module,exports){
-'use strict';
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 /*jslint forin: true, regexp: true, todo: true, white: false, browser: true,
  sloppy: true, white: true, eqeq: false, newcap: true, nomen: true */
 
@@ -524,7 +506,7 @@ if (R.canvas) {
         Element,
         draggable = [],
         drag = [],
-        dragMove = function dragMove(e) {
+        dragMove = function (e) {
         var x = e.clientX,
             y = e.clientY,
             scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
@@ -568,7 +550,7 @@ if (R.canvas) {
             eve("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, x - dragi.el._drag.x, y - dragi.el._drag.y, x, y, e);
         }
     },
-        dragUp = function dragUp(e) {
+        dragUp = function (e) {
         R.unmousemove(dragMove).unmouseup(dragUp);
         var i = drag.length,
             dragi;
@@ -582,13 +564,11 @@ if (R.canvas) {
 
     $ = R._createNode = function (el, attr) {
         if (attr) {
-            if ((typeof el === 'undefined' ? 'undefined' : _typeof(el)) === STRING) {
+            if (typeof el === STRING) {
                 el = $(el);
             }
-            for (var key in attr) {
-                if (attr.hasOwnProperty(key)) {
-                    el.setAttribute(key, Str(attr[key]));
-                }
+            for (var key in attr) if (attr.hasOwnProperty(key)) {
+                el.setAttribute(key, Str(attr[key]));
             }
         } else {
             el = doc.createElement(el);
@@ -631,7 +611,7 @@ if (R.canvas) {
         }*/
     };
 
-    FauxNode = function FauxNode(parent) {
+    FauxNode = function (parent) {
         this.type = "basic";
 
         this.owner = parent;
@@ -661,7 +641,7 @@ if (R.canvas) {
          *
          * @returns {_L10.FauxNode.prototype}
          */
-        render: function render() {
+        render: function () {
 
             var o = this;
 
@@ -677,7 +657,7 @@ if (R.canvas) {
          *
          * @returns {undefined}
          */
-        draw: function draw() {
+        draw: function () {
             var o = this,
                 ctx = o.context,
                 el = o._rElement,
@@ -719,21 +699,21 @@ if (R.canvas) {
          *
          * Overridden by individual derived FauxNodes
          */
-        paint: function paint() {},
+        paint: function () {},
 
         /**
          * The redraw of the FauxNodes is to be handled by the CanvasObjectModel
          * instance as it involves redrawing all the elements corresponsing to
          * that canvas in the proper order.
          */
-        redraw: function redraw() {
+        redraw: function () {
             this.COMInstance.redraw(this);
         },
 
         /**
          * Clears the rectangle corresponding to the bounding box of the node.
          */
-        clear: function clear() {
+        clear: function () {
             var o = this,
                 ctx = o.context,
                 bbox = o._bbox;
@@ -748,7 +728,7 @@ if (R.canvas) {
          * Creates the area node in the image map so that mouse interactivity
          * can be emulated using it.
          */
-        addMouseInteractivity: function addMouseInteractivity() {
+        addMouseInteractivity: function () {
             var o = this,
                 attrs = o._rElement.attrs,
                 bbox = o._bbox,
@@ -776,7 +756,7 @@ if (R.canvas) {
          * Update the coords of the area node (image map) corresponding to the FauxNode
          * after it has been modified by changing attributes.
          */
-        updateMapAreaCoords: function updateMapAreaCoords() {
+        updateMapAreaCoords: function () {
             var o = this,
                 oArea = o._mouseArea,
                 bbox = o._bbox;
@@ -801,7 +781,7 @@ if (R.canvas) {
          *
          * @returns {_L10.FauxNode.prototype.transformBBox.tbox}
          */
-        applyTransform: function applyTransform(m) {
+        applyTransform: function (m) {
             var o = this,
                 ctx = o.context,
                 split;
@@ -817,7 +797,7 @@ if (R.canvas) {
         /**
          *
          */
-        setBBox: function setBBox() {
+        setBBox: function () {
             var o = this,
                 el = o._rElement,
                 m = el.matrix,
@@ -839,11 +819,11 @@ if (R.canvas) {
             o._mouseArea && o.updateMapAreaCoords();
         },
 
-        getBBox: function getBBox() {
+        getBBox: function () {
             return this._bbox;
         },
 
-        drawPath: function drawPath(path) {
+        drawPath: function (path) {
             var o = this,
                 ctx = o.context,
                 len = path && path.length || 0,
@@ -999,15 +979,15 @@ if (R.canvas) {
                             // cx, cy
                             var centp = new Point((curr.x + cp.x) / 2.0 + Math.cos(xAxisRotation) * cpp.x - Math.sin(xAxisRotation) * cpp.y, (curr.y + cp.y) / 2.0 + Math.sin(xAxisRotation) * cpp.x + Math.cos(xAxisRotation) * cpp.y);
                             // vector magnitude
-                            var m = function m(v) {
+                            var m = function (v) {
                                 return Math.sqrt(Math.pow(v[0], 2) + Math.pow(v[1], 2));
                             };
                             // ratio between two vectors
-                            var r = function r(u, v) {
+                            var r = function (u, v) {
                                 return (u[0] * v[0] + u[1] * v[1]) / (m(u) * m(v));
                             };
                             // angle between two vectors
-                            var a = function a(u, v) {
+                            var a = function (u, v) {
                                 return (u[0] * v[1] < u[1] * v[0] ? -1 : 1) * Math.acos(r(u, v));
                             };
                             // initial angle
@@ -1058,7 +1038,7 @@ if (R.canvas) {
          * Methods to add and remove event listeners emulating the DOM of
          * standard browsers (and also the non-standard one).
          */
-        addEventListener: function addEventListener() {
+        addEventListener: function () {
             var o = this,
                 args = arguments,
                 eventName = args && args[0],
@@ -1165,7 +1145,7 @@ if (R.canvas) {
             }
         },
 
-        removeEventListener: function removeEventListener() {
+        removeEventListener: function () {
             var o = this,
                 args = arguments,
                 eventName = args && args[0],
@@ -1183,11 +1163,11 @@ if (R.canvas) {
             }
         },
 
-        attachEvent: function attachEvent() {},
+        attachEvent: function () {},
 
-        detachEvent: function detachEvent() {},
+        detachEvent: function () {},
 
-        validateAttrs: function validateAttrs(attrs) {
+        validateAttrs: function (attrs) {
 
             var o = this,
                 elAttrs = clone(o._rElement.attrs),
@@ -1217,15 +1197,15 @@ if (R.canvas) {
             return attrs;
         },
 
-        attrs: function attrs() {}
+        attrs: function () {}
     };
 
-    var NodeListItem = function NodeListItem(node) {
+    var NodeListItem = function (node) {
         this.node = node;
         this.next = null;
         this.prev = null;
     },
-        NodeList = function NodeList() {
+        NodeList = function () {
         this.top = null;
         this.bottom = null;
     };
@@ -1234,7 +1214,7 @@ if (R.canvas) {
 
         constructor: NodeList,
 
-        add: function add(node) {
+        add: function (node) {
 
             node = new NodeListItem(node);
 
@@ -1250,7 +1230,7 @@ if (R.canvas) {
             this.top = node;
         },
 
-        addList: function addList(list) {
+        addList: function (list) {
             if (!this.bottom) {
                 this.bottom = list.bottom;
             }
@@ -1263,7 +1243,7 @@ if (R.canvas) {
             this.top = list.top;
         },
 
-        toFront: function toFront(node) {
+        toFront: function (node) {
             if (this.top === node) {
                 return false;
             }
@@ -1293,7 +1273,7 @@ if (R.canvas) {
              node.redraw();*/
         },
 
-        toBack: function toBack(node) {
+        toBack: function (node) {
             if (this.bottom === node) {
                 return false;
             }
@@ -1318,11 +1298,11 @@ if (R.canvas) {
              node.redraw();*/
         },
 
-        insertBefore: function insertBefore() {},
+        insertBefore: function () {},
 
-        insertAfter: function insertAfter() {},
+        insertAfter: function () {},
 
-        each: function each(fn, args) {
+        each: function (fn, args) {
             var item = this.bottom;
 
             while (item) {
@@ -1331,7 +1311,7 @@ if (R.canvas) {
             }
         },
 
-        iterate: function iterate(fn, args) {
+        iterate: function (fn, args) {
             var item = this.bottom,
                 retVal = true;
 
@@ -1346,7 +1326,7 @@ if (R.canvas) {
             }
         },
 
-        dispose: function dispose() {
+        dispose: function () {
 
             this.each(function () {
                 this.node.dispose && this.node.dispose();
@@ -1364,7 +1344,7 @@ if (R.canvas) {
          above, a NodeCollection iterator, that indicated the collection the layer has to be rendered. If
         not provided then this is the first layer of ncowner.
      */
-    var CanvasLayer = function CanvasLayer(ncowner, canvas) {
+    var CanvasLayer = function (ncowner, canvas) {
         this.items = new NodeList();
 
         this.owner = ncowner;
@@ -1381,7 +1361,7 @@ if (R.canvas) {
     CanvasLayer.prototype = {
         constructor: CanvasLayer,
 
-        appendChild: function appendChild() {
+        appendChild: function () {
             var o = this,
                 ownerWrapper = o.owner.wrapper,
                 ele = this.element;
@@ -1393,11 +1373,11 @@ if (R.canvas) {
             }
         },
 
-        insertBefore: function insertBefore() {},
+        insertBefore: function () {},
 
-        insertAfter: function insertAfter() {},
+        insertAfter: function () {},
 
-        init: function init() {
+        init: function () {
             this.element = $("canvas");
             // CHECKPOINT: width and height in %?
             $(this.element, {
@@ -1410,30 +1390,30 @@ if (R.canvas) {
             this.appendChild();
         },
 
-        getCanvas: function getCanvas() {
+        getCanvas: function () {
             return this.element;
         },
 
-        getContext: function getContext() {
+        getContext: function () {
             return this.element.getContext('2d');
         },
 
-        addToLayer: function addToLayer(node) {
+        addToLayer: function (node) {
             this.items.add(node);
         },
 
-        mergeWithLayerOnTop: function mergeWithLayerOnTop(layerObj) {
+        mergeWithLayerOnTop: function (layerObj) {
             this.items.addList(layerObj.items);
             layerObj.dispose(true);
         },
 
-        mergeWithLayerOnBottom: function mergeWithLayerOnBottom(layerObj) {
+        mergeWithLayerOnBottom: function (layerObj) {
             layerObj.items.addList(this.items);
             this.items = layerObj.items;
             layerObj.dispose(true);
         },
 
-        dispose: function dispose(softDispose) {
+        dispose: function (softDispose) {
 
             if (!softDispose) {
                 this.items.each(function () {
@@ -1449,7 +1429,7 @@ if (R.canvas) {
         }
     };
 
-    var NodeCollection = function NodeCollection(parent, wrapper, canvas) {
+    var NodeCollection = function (parent, wrapper, canvas) {
 
         this.nodeItems = new NodeList();
         this.collectionItems = new NodeList();
@@ -1472,7 +1452,7 @@ if (R.canvas) {
     NodeCollection.prototype = {
         constructor: NodeCollection,
 
-        init: function init() {
+        init: function () {
 
             var o = this,
                 parent = o.parent,
@@ -1494,19 +1474,19 @@ if (R.canvas) {
             o.currentLayer = o.baseLayer = new CanvasLayer(o);
         },
 
-        getCurrentContext: function getCurrentContext() {
+        getCurrentContext: function () {
             return this.currentLayer.getContext();
         },
 
-        setLayerOnTop: function setLayerOnTop(layerObj) {
+        setLayerOnTop: function (layerObj) {
             this.layerOnTop = layerObj;
         },
 
-        getCurrentCanvas: function getCurrentCanvas() {
+        getCurrentCanvas: function () {
             return this.currentLayer.getCanvas();
         },
 
-        addNode: function addNode(node) {
+        addNode: function (node) {
             this.nodeItems.add(node);
 
             if (node.type === "group") {
@@ -1516,7 +1496,7 @@ if (R.canvas) {
             }
         },
 
-        addCollection: function addCollection(collectionNode) {
+        addCollection: function (collectionNode) {
 
             collectionNode = collectionNode || new NodeCollection(this);
 
@@ -1526,7 +1506,7 @@ if (R.canvas) {
             collectionNode.setLayerOnTop(this.currentLayer);
         },
 
-        dispose: function dispose() {
+        dispose: function () {
             this.nodeItems.dispose();
             this.collectionItems.dispose();
             this.layerItems.dispose();
@@ -1544,7 +1524,7 @@ if (R.canvas) {
      * The engine will be the point of contact for Raphael._engine that will be
      * the direct consumer of the FauxNodes.
      */
-    var CanvasObjectModel = function CanvasObjectModel(cnvs, wrpr, width, height) {
+    var CanvasObjectModel = function (cnvs, wrpr, width, height) {
 
         var com = this,
             root = new NodeCollection(null, wrpr, cnvs);
@@ -1641,7 +1621,7 @@ if (R.canvas) {
         com.refreshAll = function () {};
     };
 
-    Point = function Point(x, y) {
+    Point = function (x, y) {
         this.x = x;
         this.y = y;
     };
@@ -1796,7 +1776,7 @@ if (R.canvas) {
      * shapes that are create using canvas object model.
      */
 
-    RectFauxNode = function RectFauxNode(parentObj) {
+    RectFauxNode = function (parentObj) {
         this.type = "rect";
         this._isValid = false;
 
@@ -1809,7 +1789,7 @@ if (R.canvas) {
 
         constructor: RectFauxNode,
 
-        paint: function paint() {
+        paint: function () {
 
             var o = this,
                 ctx = o.context,
@@ -1850,7 +1830,7 @@ if (R.canvas) {
             return;
         },
 
-        validateAttrs: function validateAttrs(attrs) {
+        validateAttrs: function (attrs) {
             var o = this,
                 elAttrs = clone(o._rElement.attrs),
                 attr,
@@ -1899,7 +1879,7 @@ if (R.canvas) {
             return attrs;
         },
 
-        setShapeBBox: function setShapeBBox(m) {
+        setShapeBBox: function (m) {
             var o = this,
                 el = o._rElement,
                 attrs = el.attrs,
@@ -1926,7 +1906,7 @@ if (R.canvas) {
         }
     });
 
-    var CircleFauxNode = function CircleFauxNode(parentObj) {
+    var CircleFauxNode = function (parentObj) {
         this.type = "circle";
         this._isValid = false;
 
@@ -1934,7 +1914,7 @@ if (R.canvas) {
         this.context = parentObj.getCurrentContext();
         this.layer = parentObj.currentLayer;
     },
-        PathFauxNode = function PathFauxNode(parentObj) {
+        PathFauxNode = function (parentObj) {
         this.type = "path";
         this._isValid = false;
 
@@ -1942,7 +1922,7 @@ if (R.canvas) {
         this.context = parentObj.getCurrentContext();
         this.layer = parentObj.currentLayer;
     },
-        TextFauxNode = function TextFauxNode(parentObj) {
+        TextFauxNode = function (parentObj) {
         this.type = "text";
         this._isValid = false;
 
@@ -1950,7 +1930,7 @@ if (R.canvas) {
         this.context = parentObj.getCurrentContext();
         this.layer = parentObj.currentLayer;
     },
-        GroupFauxNode = function GroupFauxNode(parent, width, height) {
+        GroupFauxNode = function (parent, width, height) {
 
         this.type = "group";
 
@@ -1971,7 +1951,7 @@ if (R.canvas) {
 
         constructor: CircleFauxNode,
 
-        paint: function paint() {
+        paint: function () {
             var o = this,
                 ctx = o.context,
                 attrs = o.validateAttrs(),
@@ -2004,7 +1984,7 @@ if (R.canvas) {
             return;
         },
 
-        setShapeBBox: function setShapeBBox(m) {
+        setShapeBBox: function (m) {
             var o = this,
                 el = o._rElement,
                 attrs = el.attrs,
@@ -2035,7 +2015,7 @@ if (R.canvas) {
 
         constructor: PathFauxNode,
 
-        paint: function paint() {
+        paint: function () {
             var o = this,
                 el = o._rElement,
                 attrs = el.attrs,
@@ -2069,7 +2049,7 @@ if (R.canvas) {
 
         constructor: TextFauxNode,
 
-        paint: function paint() {
+        paint: function () {
             var o = this,
                 el = o._rElement,
                 attrs = el.attr(),
@@ -2147,7 +2127,7 @@ if (R.canvas) {
 
         constructor: GroupFauxNode,
 
-        draw: function draw() {
+        draw: function () {
 
             // Clear the group canvas first.
             this.layerItems.each(function () {
@@ -2163,7 +2143,7 @@ if (R.canvas) {
          *
          * @returns {_L10.FauxNode.prototype}
          */
-        render: function render() {
+        render: function () {
 
             var o = this;
 
@@ -2173,7 +2153,7 @@ if (R.canvas) {
             return o;
         },
 
-        paint: function paint() {
+        paint: function () {
             var o = this,
                 list = o.nodeList,
                 el = o._rElement,
@@ -2194,11 +2174,11 @@ if (R.canvas) {
             }
         },
 
-        setBBox: function setBBox() {},
+        setBBox: function () {},
 
-        addMouseInteractivity: function addMouseInteractivity() {},
+        addMouseInteractivity: function () {},
 
-        applyTransform: function applyTransform(m) {
+        applyTransform: function (m) {
             var o = this,
                 parent = o.parent,
                 parentMatrix = parent.getTransformMatrix && parent.getTransformMatrix();
@@ -2216,12 +2196,12 @@ if (R.canvas) {
             });
         },
 
-        getTransformMatrix: function getTransformMatrix() {
+        getTransformMatrix: function () {
             return this.matrixApplied;
         }
     });
 
-    Element = function Element(node, paper, group) {
+    Element = function (node, paper, group) {
         var o = this,
             parent = group || paper;
 
@@ -2264,7 +2244,7 @@ if (R.canvas) {
     Element.prototype = elproto;
     elproto.constructor = Element;
 
-    var repaint = function repaint(el, finalAttrs, positionChanged, dimensionChanged) {
+    var repaint = function (el, finalAttrs, positionChanged, dimensionChanged) {
 
         var node = getNode(el),
             preC = R._getConnectedNodes(node),
@@ -2281,7 +2261,7 @@ if (R.canvas) {
 
         node.redraw();
     },
-        setFillAndStroke = function setFillAndStroke(el, params) {
+        setFillAndStroke = function (el, params) {
 
         var attrs = el.attrs,
             node = el.node,
@@ -2353,7 +2333,7 @@ if (R.canvas) {
         }
     },
         leading = 1.2,
-        tuneText = function tuneText(el, params, finalAttrs) {
+        tuneText = function (el, params, finalAttrs) {
         if (el.type != "text" || !(params[has]("text") || params[has]("font") || params[has]("font-size") || params[has]("x") || params[has]("y") || params[has]("line-height") || params[has]("vertical-align"))) {
             return;
         }
@@ -2750,11 +2730,10 @@ if (R.canvas) {
         // fetch a copy of all attributes
         if (name == null) {
             res = {};
-            for (key in attrs) {
-                if (attrs.hasOwnProperty(key)) {
-                    res[key] = attrs[key];
-                }
-            }res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
+            for (key in attrs) if (attrs.hasOwnProperty(key)) {
+                res[key] = attrs[key];
+            }
+            res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
             res.transform = o._.transform;
             /** @todo res.visibility = o.node.style.display === "none" ? "hidden" : "visible"; */
             return res;
@@ -2881,13 +2860,12 @@ if (R.canvas) {
 
     elproto.undrag = function () {
         var i = draggable.length;
-        while (i--) {
-            if (draggable[i].el == this) {
-                this.unmousedown(draggable[i].start);
-                draggable.splice(i, 1);
-                eve.unbind("raphael.drag.*." + this.id);
-            }
-        }!draggable.length && R.unmousemove(dragMove).unmouseup(dragUp);
+        while (i--) if (draggable[i].el == this) {
+            this.unmousedown(draggable[i].start);
+            draggable.splice(i, 1);
+            eve.unbind("raphael.drag.*." + this.id);
+        }
+        !draggable.length && R.unmousemove(dragMove).unmouseup(dragUp);
     };
 
     /***************** Drag *****************/
@@ -3066,10 +3044,6 @@ module.exports = R;
 
 },{"./raphael.core":4}],4:[function(require,module,exports){
 (function (global){
-"use strict";
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 /**!
  * RedRaphael 1.0.0 - JavaScript Vector Library
  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
@@ -3202,7 +3176,7 @@ var loaded,
     arrayShift = Array.prototype.shift,
     arrayPop = Array.prototype.pop,
     hasPrototypeBug = function () {
-    var a = function a() {};
+    var a = function () {};
     return a.hasOwnProperty("prototype");
 }(),
     g = {
@@ -3220,7 +3194,7 @@ var loaded,
 
 // The devices which both touch and pointer.
 supportsOnlyTouch = R.supportsOnlyTouch = supportsTouch && !(win.navigator.maxTouchPoints || win.navigator.msMaxTouchPoints),
-    CustomAttributes = function CustomAttributes() {
+    CustomAttributes = function () {
     /*\
      * Raphael.ca
      [ property (object) ]
@@ -3255,7 +3229,7 @@ supportsOnlyTouch = R.supportsOnlyTouch = supportsTouch && !(win.navigator.maxTo
      | c.animate({hsb: [1, 0, 0.5]}, 1e3);
     \*/
 },
-    pluck = function pluck(checkWith) {
+    pluck = function (checkWith) {
     var i = 1,
         ii = arguments.length;
     for (; i < ii; ++i) {
@@ -3265,7 +3239,7 @@ supportsOnlyTouch = R.supportsOnlyTouch = supportsTouch && !(win.navigator.maxTo
     }
 },
     caproto = R.ca = R.customAttributes = CustomAttributes.prototype,
-    Paper = function Paper() {
+    Paper = function () {
     /*\
      * Paper.ca
      [ property (object) ]
@@ -3471,14 +3445,14 @@ events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchsta
     alpha: nu
 },
     eldata = {},
-    sortByKey = function sortByKey(a, b) {
+    sortByKey = function (a, b) {
     return a.key - b.key;
 },
-    sortByNumber = function sortByNumber(a, b) {
+    sortByNumber = function (a, b) {
     return toFloat(a) - toFloat(b);
 },
-    fun = function fun() {},
-    pipe = function pipe(x) {
+    fun = function () {},
+    pipe = function (x) {
     return x;
 },
     rectPath = R._rectPath = function (x, y, w, h, r) {
@@ -3487,36 +3461,36 @@ events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchsta
     }
     return [["M", x, y], ["l", w, 0], ["l", 0, h], ["l", -w, 0], ["z"]];
 },
-    ellipsePath = function ellipsePath(x, y, rx, ry) {
+    ellipsePath = function (x, y, rx, ry) {
     if (ry == null) {
         ry = rx;
     }
     return [["M", x, y], ["m", 0, -ry], ["a", rx, ry, 0, 1, 1, 0, 2 * ry], ["a", rx, ry, 0, 1, 1, 0, -2 * ry], ["z"]];
 },
     getPath = R._getPath = {
-    group: function group() {
+    group: function () {
         return false;
     },
-    path: function path(el) {
+    path: function (el) {
         return el.attr("path");
     },
-    circle: function circle(el) {
+    circle: function (el) {
         var a = el.attrs;
         return ellipsePath(a.cx, a.cy, a.r);
     },
-    ellipse: function ellipse(el) {
+    ellipse: function (el) {
         var a = el.attrs;
         return ellipsePath(a.cx, a.cy, a.rx, a.ry);
     },
-    rect: function rect(el) {
+    rect: function (el) {
         var a = el.attrs;
         return rectPath(a.x, a.y, a.width, a.height, a.r);
     },
-    image: function image(el) {
+    image: function (el) {
         var a = el.attrs;
         return rectPath(a.x, a.y, a.width, a.height);
     },
-    text: function text(el) {
+    text: function (el) {
         var bbox = el._getBBox();
         return rectPath(bbox.x, bbox.y, bbox.width, bbox.height);
     }
@@ -3634,12 +3608,12 @@ pick = R.pick = function () {
                 continue;
             }
 
-            if ((typeof tgtVal === "undefined" ? "undefined" : _typeof(tgtVal)) !== OBJECTSTRING) {
+            if (typeof tgtVal !== OBJECTSTRING) {
                 if (!(skipUndef && tgtVal === undefined)) {
                     obj1[item] = tgtVal;
                 }
             } else {
-                if (srcVal === null || (typeof srcVal === "undefined" ? "undefined" : _typeof(srcVal)) !== OBJECTSTRING) {
+                if (srcVal === null || typeof srcVal !== OBJECTSTRING) {
                     srcVal = obj1[item] = tgtVal instanceof Array ? [] : {};
                 }
                 cRef = checkCyclicRef(tgtVal, srcArr);
@@ -3659,14 +3633,14 @@ pick = R.pick = function () {
                 continue;
             }
 
-            if (tgtVal !== null && (typeof tgtVal === "undefined" ? "undefined" : _typeof(tgtVal)) === OBJECTSTRING) {
+            if (tgtVal !== null && typeof tgtVal === OBJECTSTRING) {
                 // Fix for issue BUG: FWXT-602
                 // IE < 9 Object.prototype.toString.call(null) gives
                 // "[object Object]" instead of "[object Null]"
                 // that's why null value becomes Object in IE < 9
                 str = objectToString.call(tgtVal);
                 if (str === objectToStr) {
-                    if (srcVal === null || (typeof srcVal === "undefined" ? "undefined" : _typeof(srcVal)) !== OBJECTSTRING) {
+                    if (srcVal === null || typeof srcVal !== OBJECTSTRING) {
                         srcVal = obj1[item] = {};
                     }
                     cRef = checkCyclicRef(tgtVal, srcArr);
@@ -3696,16 +3670,16 @@ pick = R.pick = function () {
     return obj1;
 },
     extend = R.extend = function (obj1, obj2, skipUndef) {
-    if ((typeof obj1 === "undefined" ? "undefined" : _typeof(obj1)) !== OBJECTSTRING && (typeof obj2 === "undefined" ? "undefined" : _typeof(obj2)) !== OBJECTSTRING) {
+    if (typeof obj1 !== OBJECTSTRING && typeof obj2 !== OBJECTSTRING) {
         //if none of the arguments are object then return back
         return null;
     }
 
-    if ((typeof obj2 === "undefined" ? "undefined" : _typeof(obj2)) !== OBJECTSTRING || obj2 === null) {
+    if (typeof obj2 !== OBJECTSTRING || obj2 === null) {
         return obj1;
     }
 
-    if ((typeof obj1 === "undefined" ? "undefined" : _typeof(obj1)) !== OBJECTSTRING) {
+    if (typeof obj1 !== OBJECTSTRING) {
         obj1 = obj2 instanceof Array ? [] : {};
     }
     merge(obj1, obj2, skipUndef);
@@ -3735,7 +3709,7 @@ is = R.is = function (o, type) {
     if (type === 'object' && (o === undef || o === null)) {
         return false;
     }
-    return type == "null" && o === null || type == (typeof o === "undefined" ? "undefined" : _typeof(o)) && o !== null || type == object && o === Object(o) || type == "array" && Array.isArray && Array.isArray(o) || objectToString.call(o).slice(8, -1).toLowerCase() == type;
+    return type == "null" && o === null || type == typeof o && o !== null || type == object && o === Object(o) || type == "array" && Array.isArray && Array.isArray(o) || objectToString.call(o).slice(8, -1).toLowerCase() == type;
 },
 
 /*\
@@ -3777,21 +3751,19 @@ clone = R.clone = hasPrototypeBug ? function (obj) {
         return obj;
     }
     var res = new obj.constructor();
-    for (var key in obj) {
-        if (key !== "prototype" && obj[has](key)) {
-            res[key] = clone(obj[key]);
-        }
-    }return res;
+    for (var key in obj) if (key !== "prototype" && obj[has](key)) {
+        res[key] = clone(obj[key]);
+    }
+    return res;
 } : function (obj) {
     if (Object(obj) !== obj) {
         return obj;
     }
     var res = new obj.constructor();
-    for (var key in obj) {
-        if (obj[has](key)) {
-            res[key] = clone(obj[key]);
-        }
-    }return res;
+    for (var key in obj) if (obj[has](key)) {
+        res[key] = clone(obj[key]);
+    }
+    return res;
 },
     Node = _win.Node;
 //Adding pollyfill for IE11
@@ -3899,7 +3871,7 @@ if (R.type == "VML") {
     d.innerHTML = '<v:shape adj="1"/>';
     b = d.firstChild;
     b.style.behavior = "url(#default#VML)";
-    if (!(b && _typeof(b.adj) == object)) {
+    if (!(b && typeof b.adj == object)) {
         R.type = E;
         // return (R.type = E);
     }
@@ -4033,7 +4005,7 @@ R.setWindow = function (newwin) {
     }
 };
 
-var _toHex = function toHex(color) {
+var toHex = function (color) {
     if (R.vml) {
         // http://dean.edwards.name/weblog/2009/10/convert-any-colour-value-to-hex-in-msie/
         var trim = /^\s+|\s+$/g;
@@ -4047,7 +4019,7 @@ var _toHex = function toHex(color) {
             bod = createPopup().document.body;
         }
         var range = bod.createTextRange();
-        _toHex = cacher(function (color) {
+        toHex = cacher(function (color) {
             try {
                 bod.style.color = Str(color).replace(trim, E);
                 var value = range.queryCommandValue("ForeColor");
@@ -4062,23 +4034,23 @@ var _toHex = function toHex(color) {
         i.title = "Rapha\xebl Colour Picker";
         i.style.display = none;
         g.doc.body.appendChild(i);
-        _toHex = cacher(function (color) {
+        toHex = cacher(function (color) {
             i.style.color = color;
             return g.doc.defaultView.getComputedStyle(i, E).getPropertyValue("color");
         });
     }
-    return _toHex(color);
+    return toHex(color);
 },
-    hsbtoString = function hsbtoString() {
+    hsbtoString = function () {
     return "hsb(" + [this.h, this.s, this.b] + ")";
 },
-    hsltoString = function hsltoString() {
+    hsltoString = function () {
     return "hsl(" + [this.h, this.s, this.l] + ")";
 },
-    rgbtoString = function rgbtoString() {
+    rgbtoString = function () {
     return this.hex;
 },
-    prepareRGB = function prepareRGB(r, g, b) {
+    prepareRGB = function (r, g, b) {
     if (g == null && is(r, object) && "r" in r && "g" in r && "b" in r) {
         b = r.b;
         g = r.g;
@@ -4098,7 +4070,7 @@ var _toHex = function toHex(color) {
 
     return [r, g, b];
 },
-    packageRGB = function packageRGB(r, g, b, o) {
+    packageRGB = function (r, g, b, o) {
     var rgb = {
         r: r *= 255,
         g: g *= 255,
@@ -4419,7 +4391,7 @@ R.getRGB = cacher(function (colour) {
             toString: clrToString
         };
     }
-    !(hsrg[has](colour.toLowerCase().substring(0, 2)) || colour.charAt() === "#") && (colour = _toHex(colour));
+    !(hsrg[has](colour.toLowerCase().substring(0, 2)) || colour.charAt() === "#") && (colour = toHex(colour));
 
     if (rgb = colour.match(colourRegExp)) {
         if (rgb[2]) {
@@ -4758,7 +4730,7 @@ R.parseTransformString = cacher(function (TString) {
     return data;
 });
 // PATHS
-var paths = function paths(ps) {
+var paths = function (ps) {
     var p = paths.ps = paths.ps || {};
     if (p[ps]) {
         p[ps].sleep = 100;
@@ -4768,11 +4740,9 @@ var paths = function paths(ps) {
         };
     }
     setTimeout(function () {
-        for (var key in p) {
-            if (p[has](key) && key != ps) {
-                p[key].sleep--;
-                !p[key].sleep && delete p[key];
-            }
+        for (var key in p) if (p[has](key) && key != ps) {
+            p[key].sleep--;
+            !p[key].sleep && delete p[key];
         }
     });
     return p[ps];
@@ -5192,7 +5162,7 @@ R.isPointInsidePath = function (path, x, y) {
 };
 R._removedFactory = function (methodname) {
     return function () {
-        eve("raphael.log", null, "Rapha\xEBl: you are calling to method \u201C" + methodname + "\u201D of removed object", methodname);
+        eve("raphael.log", null, "Rapha\xebl: you are calling to method \u201c" + methodname + "\u201d of removed object", methodname);
     };
 };
 
@@ -5265,7 +5235,7 @@ var pathDimensions = R.pathBBox = function (path) {
     pth.bbox = clone(bb);
     return bb;
 },
-    pathClone = function pathClone(pathArray) {
+    pathClone = function (pathArray) {
     var res = clone(pathArray);
     res.toString = R._path2string;
     return res;
@@ -5451,15 +5421,15 @@ var pathDimensions = R.pathBBox = function (path) {
     pth.abs = pathClone(res);
     return res;
 },
-    l2c = function l2c(x1, y1, x2, y2) {
+    l2c = function (x1, y1, x2, y2) {
     return [x1, y1, x2, y2, x2, y2];
 },
-    q2c = function q2c(x1, y1, ax, ay, x2, y2) {
+    q2c = function (x1, y1, ax, ay, x2, y2) {
     var _13 = 1 / 3,
         _23 = 2 / 3;
     return [_13 * x1 + _23 * ax, _13 * y1 + _23 * ay, _13 * x2 + _23 * ax, _13 * y2 + _23 * ay, x2, y2];
 },
-    a2c = function a2c(x1, y1, rx, ry, angle, large_arc_flag, sweep_flag, x2, y2, recursive) {
+    a2c = function (x1, y1, rx, ry, angle, large_arc_flag, sweep_flag, x2, y2, recursive) {
     // for more information of where this math came from visit:
     // http://www.w3.org/TR/SVG11/implnote.html#ArcImplementationNotes
     var _120 = PI * 120 / 180,
@@ -5550,7 +5520,7 @@ var pathDimensions = R.pathBBox = function (path) {
         return newres;
     }
 },
-    findDotAtSegment = function findDotAtSegment(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t) {
+    findDotAtSegment = function (p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t) {
     var t1 = 1 - t;
     return {
         x: pow(t1, 3) * p1x + pow(t1, 2) * 3 * t * c1x + t1 * 3 * t * t * c2x + pow(t, 3) * p2x,
@@ -5633,7 +5603,7 @@ var pathDimensions = R.pathBBox = function (path) {
         qx: null,
         qy: null
     },
-        processPath = function processPath(path, d) {
+        processPath = function (path, d) {
         var nx, ny;
         if (!path) {
             return ["C", d.x, d.y, d.x, d.y, d.x, d.y];
@@ -5680,7 +5650,7 @@ var pathDimensions = R.pathBBox = function (path) {
         }
         return path;
     },
-        fixArc = function fixArc(pp, i) {
+        fixArc = function (pp, i) {
         if (pp[i].length > 7) {
             pp[i].shift();
             var pi = pp[i];
@@ -5691,7 +5661,7 @@ var pathDimensions = R.pathBBox = function (path) {
             ii = mmax(p.length, p2 && p2.length || 0);
         }
     },
-        fixM = function fixM(path1, path2, a1, a2, i) {
+        fixM = function (path1, path2, a1, a2, i) {
         if (path1 && path2 && path1[i][0] == "M" && path2[i][0] != "M" && !i) {
             path2.splice(i, 0, ["M", a2.x, a2.y]);
             a1.bx = 0;
@@ -5831,7 +5801,7 @@ toMatrix = R.toMatrix = function (path, transform) {
         _: {
             transform: E
         },
-        getBBox: function getBBox() {
+        getBBox: function () {
             return bb;
         }
     };
@@ -5952,7 +5922,7 @@ transformPath = R.transformPath = function (path, transform) {
         _.dirtyT = 1;
     }
 },
-    getEmpty = function getEmpty(item) {
+    getEmpty = function (item) {
     var l = item[0];
     switch (l.toLowerCase()) {
         case "t":
@@ -6369,16 +6339,16 @@ if (navigator.vendor == "Apple Computer, Inc." && (version && version[1] < 4 || 
     paperproto.safari = fun;
 }
 
-var preventDefault = function preventDefault() {
+var preventDefault = function () {
     this.returnValue = false;
 },
-    preventTouch = function preventTouch() {
+    preventTouch = function () {
     return this.originalEvent.preventDefault();
 },
-    stopPropagation = function stopPropagation() {
+    stopPropagation = function () {
     this.cancelBubble = true;
 },
-    stopTouch = function stopTouch() {
+    stopTouch = function () {
     return this.originalEvent.stopPropagation();
 },
     addEvent = R.addEvent = function () {
@@ -6389,7 +6359,7 @@ var preventDefault = function preventDefault() {
 
             touchMap[dragEventMap[type]] && (realName = touchMap[dragEventMap[type]]);
 
-            f = function f(e) {
+            f = function (e) {
                 var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
                     scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
                     target;
@@ -6416,7 +6386,7 @@ var preventDefault = function preventDefault() {
         };
     } else if (g.doc.attachEvent) {
         return function (obj, type, fn, element) {
-            var f = function f(e) {
+            var f = function (e) {
                 e = e || g.win.event;
                 var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
                     scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
@@ -6427,7 +6397,7 @@ var preventDefault = function preventDefault() {
                 return fn.call(element, e, x, y);
             };
             obj.attachEvent("on" + type, f);
-            var detacher = function detacher() {
+            var detacher = function () {
                 obj.detachEvent("on" + type, f);
                 return true;
             };
@@ -6436,7 +6406,7 @@ var preventDefault = function preventDefault() {
     }
 }(),
     drag = [],
-    dragMove = function dragMove(e) {
+    dragMove = function (e) {
     var x = e.clientX,
         y = e.clientY,
         scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
@@ -6495,7 +6465,7 @@ var preventDefault = function preventDefault() {
         eve("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, dummyEve, data);
     }
 },
-    dragUp = function dragUp(e) {
+    dragUp = function (e) {
     R.undragmove(dragMove).undragend(dragUp);
     R.unmousemove(dragMove).unmouseup(dragUp);
     var i = drag.length,
@@ -6750,14 +6720,13 @@ for (var i = events.length; i--;) {
         R["un" + eventName] = elproto["un" + eventName] = function (fn) {
             var events = this.events || [],
                 l = events.length;
-            while (l--) {
-                if (events[l].name == eventName && events[l].f == fn) {
-                    events[l].unbind();
-                    events.splice(l, 1);
-                    !events.length && delete this.events;
-                    return this;
-                }
-            }return this;
+            while (l--) if (events[l].name == eventName && events[l].f == fn) {
+                events[l].unbind();
+                events.splice(l, 1);
+                !events.length && delete this.events;
+                return this;
+            }
+            return this;
         };
     })(events[i]);
 }
@@ -6789,11 +6758,10 @@ elproto.data = function (key, value) {
     var data = eldata[this.id] = eldata[this.id] || {};
     if (arguments.length == 1) {
         if (R.is(key, object)) {
-            for (var i in key) {
-                if (key[has](i)) {
-                    this.data(i, key[i]);
-                }
-            }return this;
+            for (var i in key) if (key[has](i)) {
+                this.data(i, key[i]);
+            }
+            return this;
         }
         eve("raphael.data.get." + this.id, this, data[key], key);
         return data[key];
@@ -6834,10 +6802,10 @@ elproto.getData = function () {
 };
 
 var downables = [],
-    mouseDown = function mouseDown() {
+    mouseDown = function () {
     this.untrack = addEvent(g.doc, 'mouseup', mouseUp, this);
 },
-    mouseUp = function mouseUp() {
+    mouseUp = function () {
     this.untrack();
     this.untrack = null;
     return this.fn && this.fn.apply(this.scope || this.el, arguments);
@@ -7452,7 +7420,7 @@ paperproto.setDimension = function (paramsObj, height) {
     var paper = this,
         width;
     // Check if the first argument is an object or not
-    if ((typeof paramsObj === "undefined" ? "undefined" : _typeof(paramsObj)) === 'object') {
+    if (typeof paramsObj === 'object') {
         width = paramsObj.width;
         height = paramsObj.height;
         paper.setSize(paramsObj.width, paramsObj.height);
@@ -7549,7 +7517,7 @@ paperproto.top = paperproto.bottom = null;
 \*/
 paperproto.raphael = R;
 
-var getOffset = function getOffset(elem) {
+var getOffset = function (elem) {
     var box = elem.getBoundingClientRect(),
         doc = elem.ownerDocument,
         body = doc.body,
@@ -7818,14 +7786,14 @@ elproto.glow = function (glow) {
     return out.insertBefore(this).translate(s.offsetx, s.offsety);
 };
 var curveslengths = {},
-    getPointAtSegmentLength = function getPointAtSegmentLength(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, length) {
+    getPointAtSegmentLength = function (p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, length) {
     if (length == null) {
         return bezlen(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y);
     } else {
         return R.findDotsAtSegment(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, getTatLen(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, length));
     }
 },
-    getLengthFactory = function getLengthFactory(istotal, subpath) {
+    getLengthFactory = function (istotal, subpath) {
     return function (path, length, onlystart) {
         path = path2curve(path);
         var x,
@@ -7984,16 +7952,16 @@ elproto.getSubpath = function (from, to) {
  # <p>See also <a href="http://raphaeljs.com/easing.html">Easing demo</a>.</p>
 \*/
 var ef = R.easing_formulas = {
-    linear: function linear(n) {
+    linear: function (n) {
         return n;
     },
-    "<": function _(n) {
+    "<": function (n) {
         return pow(n, 1.7);
     },
-    ">": function _(n) {
+    ">": function (n) {
         return pow(n, .48);
     },
-    "<>": function _(n) {
+    "<>": function (n) {
         var q = .48 - n / 1.04,
             Q = mathSqrt(.1734 + q * q),
             x = Q - q,
@@ -8003,22 +7971,22 @@ var ef = R.easing_formulas = {
             t = X + Y + .5;
         return (1 - t) * 3 * t * t + t * t * t;
     },
-    backIn: function backIn(n) {
+    backIn: function (n) {
         var s = 1.70158;
         return n * n * ((s + 1) * n - s);
     },
-    backOut: function backOut(n) {
+    backOut: function (n) {
         n = n - 1;
         var s = 1.70158;
         return n * n * ((s + 1) * n + s) + 1;
     },
-    elastic: function elastic(n) {
+    elastic: function (n) {
         if (n == !!n) {
             return n;
         }
         return pow(2, -10 * n) * mathSin((n - .075) * (2 * PI) / .3) + 1;
     },
-    bounce: function bounce(n) {
+    bounce: function (n) {
         var s = 7.5625,
             p = 2.75,
             l;
@@ -8041,7 +8009,7 @@ var ef = R.easing_formulas = {
         return l;
     },
     // used in line chart anchor animation
-    oneBounceOut: function oneBounceOut(n) {
+    oneBounceOut: function (n) {
         var top = 120;
         if (n <= 0.9) {
             return ef.easeIn(n) * 1.33;
@@ -8049,7 +8017,7 @@ var ef = R.easing_formulas = {
         return 1.2 - n / 5;
     },
     // Used in translating bubble plots
-    elasticOnce: function elasticOnce(n) {
+    elasticOnce: function (n) {
         var p = 0.9;
         if (n == !!n) {
             return n;
@@ -8057,51 +8025,51 @@ var ef = R.easing_formulas = {
         return Math.pow(2, -10 * n) * Math.sin((n - p / 4) * (2 * Math.PI) / p) + 1;
     },
     // accelerating from zero velocity
-    easeInQuad: function easeInQuad(t) {
+    easeInQuad: function (t) {
         return t * t;
     },
     // decelerating to zero velocity
-    easeOutQuad: function easeOutQuad(t) {
+    easeOutQuad: function (t) {
         return t * (2 - t);
     },
     // acceleration until halfway, then deceleration
-    easeInOutQuad: function easeInOutQuad(t) {
+    easeInOutQuad: function (t) {
         return t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
     },
     // accelerating from zero velocity
-    easeInCubic: function easeInCubic(t) {
+    easeInCubic: function (t) {
         return t * t * t;
     },
     // decelerating to zero velocity
-    easeOutCubic: function easeOutCubic(t) {
+    easeOutCubic: function (t) {
         return --t * t * t + 1;
     },
     // acceleration until halfway, then deceleration
-    easeInOutCubic: function easeInOutCubic(t) {
+    easeInOutCubic: function (t) {
         return t < .5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
     },
     // accelerating from zero velocity
-    easeInQuart: function easeInQuart(t) {
+    easeInQuart: function (t) {
         return t * t * t * t;
     },
     // decelerating to zero velocity
-    easeOutQuart: function easeOutQuart(t) {
+    easeOutQuart: function (t) {
         return 1 - --t * t * t * t;
     },
     // acceleration until halfway, then deceleration
-    easeInOutQuart: function easeInOutQuart(t) {
+    easeInOutQuart: function (t) {
         return t < .5 ? 8 * t * t * t * t : 1 - 8 * --t * t * t * t;
     },
     // accelerating from zero velocity
-    easeInQuint: function easeInQuint(t) {
+    easeInQuint: function (t) {
         return t * t * t * t * t;
     },
     // decelerating to zero velocity
-    easeOutQuint: function easeOutQuint(t) {
+    easeOutQuint: function (t) {
         return 1 + --t * t * t * t * t;
     },
     // acceleration until halfway, then deceleration
-    easeInOutQuint: function easeInOutQuint(t) {
+    easeInOutQuint: function (t) {
         return t < .5 ? 16 * t * t * t * t * t : 1 + 16 * --t * t * t * t * t;
     }
 };
@@ -8115,12 +8083,13 @@ var animationElements = [],
     requestAnimFrame,
 
 // This a temporary fix so that animation can be handled from the scheduler module.
-animation = function animation() {
+animation = function () {
     var Now = +new Date(),
         l = 0,
         deqArr = [],
         i = 0,
-        ll = 0;
+        ll = 0,
+        animFrameFn;
 
     for (; l < animationElements.length; l++) {
         var e = animationElements[l];
@@ -8173,106 +8142,105 @@ animation = function animation() {
         if (time < ms) {
             var pos = easing(time / ms);
             ms = origms;
-            for (var attr in from) {
-                if (from[has](attr)) {
-                    switch (availableAnimAttrs[attr]) {
-                        case nu:
-                            now = +from[attr] + pos * ms * diff[attr];
-                            break;
-                        case "colour":
-                            if (!diff[attr].length) {
-                                tmpOpacity = from[attr].opacity + pos * ms * diff[attr].opacity;
-                                if (isNaN(tmpOpacity)) {
-                                    tmpOpacity = 1;
-                                }
-                                now = "rgba(" + [upto255(round(from[attr].r + pos * ms * diff[attr].r)), upto255(round(from[attr].g + pos * ms * diff[attr].g)), upto255(round(from[attr].b + pos * ms * diff[attr].b)), tmpOpacity].join(",") + ")";
-                            } else {
-                                now = [];
-                                for (i = 0, ii = from[attr].length; i < ii; ++i) {
-                                    if (i === 0) {
-                                        if (from[attr].isRadial || diff[attr].isRadial) {
-                                            radial = "xr(";
-                                            radial += from[attr][0].f1 * (1 - pos) + diff[attr][0].f1 * pos || '';
-                                            radial += ',';
-                                            radial += from[attr][0].f2 * (1 - pos) + diff[attr][0].f2 * pos || '';
-                                            radial += ',';
-                                            radial += (from[attr][0].f3 * (1 - pos) + diff[attr][0].f3 * pos) * 100 || '';
-                                            radial += '%,';
-                                            radial += from[attr][0].f4 * (1 - pos) + diff[attr][0].f4 * pos || '';
-                                            radial += ',';
-                                            radial += from[attr][0].f5 * (1 - pos) + diff[attr][0].f5 * pos;
-                                            radial += ',';
-                                            radial += from[attr][0].f6;
-                                            radial += ')';
-                                            now.push(radial);
-                                        } else {
-                                            now.push(from[attr][i] * (1 - pos) + pos * diff[attr][i]);
-                                            if (now[0] <= 0) {
-                                                now[0] += 360;
-                                            }
-                                        }
+            for (var attr in from) if (from[has](attr)) {
+                switch (availableAnimAttrs[attr]) {
+                    case nu:
+                        now = +from[attr] + pos * ms * diff[attr];
+                        break;
+                    case "colour":
+                        if (!diff[attr].length) {
+                            tmpOpacity = from[attr].opacity + pos * ms * diff[attr].opacity;
+                            if (isNaN(tmpOpacity)) {
+                                tmpOpacity = 1;
+                            }
+                            now = "rgba(" + [upto255(round(from[attr].r + pos * ms * diff[attr].r)), upto255(round(from[attr].g + pos * ms * diff[attr].g)), upto255(round(from[attr].b + pos * ms * diff[attr].b)), tmpOpacity].join(",") + ")";
+                        } else {
+                            now = [];
+                            for (i = 0, ii = from[attr].length; i < ii; ++i) {
+                                if (i === 0) {
+                                    if (from[attr].isRadial || diff[attr].isRadial) {
+                                        radial = "xr(";
+                                        radial += from[attr][0].f1 * (1 - pos) + diff[attr][0].f1 * pos || '';
+                                        radial += ',';
+                                        radial += from[attr][0].f2 * (1 - pos) + diff[attr][0].f2 * pos || '';
+                                        radial += ',';
+                                        radial += (from[attr][0].f3 * (1 - pos) + diff[attr][0].f3 * pos) * 100 || '';
+                                        radial += '%,';
+                                        radial += from[attr][0].f4 * (1 - pos) + diff[attr][0].f4 * pos || '';
+                                        radial += ',';
+                                        radial += from[attr][0].f5 * (1 - pos) + diff[attr][0].f5 * pos;
+                                        radial += ',';
+                                        radial += from[attr][0].f6;
+                                        radial += ')';
+                                        now.push(radial);
                                     } else {
-                                        now.push("rgba(" + [upto255(round(from[attr][i].r + pos * ms * diff[attr][i].r)), upto255(round(from[attr][i].g + pos * ms * diff[attr][i].g)), upto255(round(from[attr][i].b + pos * ms * diff[attr][i].b)), from[attr][i].opacity + pos * ms * diff[attr][i].opacity].join(",") + "):" + from[attr][i].position);
+                                        now.push(from[attr][i] * (1 - pos) + pos * diff[attr][i]);
+                                        if (now[0] <= 0) {
+                                            now[0] += 360;
+                                        }
                                     }
-                                }
-                                now = now.join("-");
-                                // If radial focus doesnt have a separator
-                                if (from[attr].isRadial || diff[attr].isRadial) {
-                                    now = now.replace('-', '');
+                                } else {
+                                    now.push("rgba(" + [upto255(round(from[attr][i].r + pos * ms * diff[attr][i].r)), upto255(round(from[attr][i].g + pos * ms * diff[attr][i].g)), upto255(round(from[attr][i].b + pos * ms * diff[attr][i].b)), from[attr][i].opacity + pos * ms * diff[attr][i].opacity].join(",") + "):" + from[attr][i].position);
                                 }
                             }
-                            break;
-                        case "path":
+                            now = now.join("-");
+                            // If radial focus doesnt have a separator
+                            if (from[attr].isRadial || diff[attr].isRadial) {
+                                now = now.replace('-', '');
+                            }
+                        }
+                        break;
+                    case "path":
+                        now = [];
+                        for (var i = 0, ii = from[attr].length; i < ii; i++) {
+                            now[i] = [from[attr][i][0]];
+                            var jj;
+                            jj = from[attr][i] ? from[attr][i].length : 0;
+                            for (var j = 1; j < jj; j++) {
+                                now[i][j] = (+from[attr][i][j] + pos * ms * diff[attr][i][j]).toFixed(4);
+                            }
+                            now[i] = now[i].join(S);
+                        }
+                        now = now.join(S);
+                        break;
+                    case "transform":
+                        if (diff[attr].real) {
                             now = [];
-                            for (var i = 0, ii = from[attr].length; i < ii; i++) {
+                            for (i = 0, ii = from[attr].length; i < ii; i++) {
                                 now[i] = [from[attr][i][0]];
-                                var jj;
-                                jj = from[attr][i] ? from[attr][i].length : 0;
-                                for (var j = 1; j < jj; j++) {
-                                    now[i][j] = (+from[attr][i][j] + pos * ms * diff[attr][i][j]).toFixed(4);
-                                }
-                                now[i] = now[i].join(S);
-                            }
-                            now = now.join(S);
-                            break;
-                        case "transform":
-                            if (diff[attr].real) {
-                                now = [];
-                                for (i = 0, ii = from[attr].length; i < ii; i++) {
-                                    now[i] = [from[attr][i][0]];
-                                    for (j = 1, jj = from[attr][i].length; j < jj; j++) {
-                                        now[i][j] = from[attr][i][j] + pos * ms * diff[attr][i][j];
-                                    }
-                                }
-                            } else {
-                                var get = function get(i) {
-                                    return +from[attr][i] + pos * ms * diff[attr][i];
-                                };
-                                // now = [["r", get(2), 0, 0], ["t", get(3), get(4)], ["s", get(0), get(1), 0, 0]];
-                                now = [["m", get(0), get(1), get(2), get(3), get(4), get(5)]];
-                            }
-                            break;
-                        case "csv":
-                            if (attr == "clip-rect") {
-                                now = [];
-                                i = 4;
-                                while (i--) {
-                                    now[i] = +from[attr][i] + pos * ms * diff[attr][i];
+                                for (j = 1, jj = from[attr][i].length; j < jj; j++) {
+                                    now[i][j] = from[attr][i][j] + pos * ms * diff[attr][i][j];
                                 }
                             }
-                            break;
-                        default:
-                            var from2 = [][concat](from[attr]);
+                        } else {
+                            var get = function (i) {
+                                return +from[attr][i] + pos * ms * diff[attr][i];
+                            };
+                            // now = [["r", get(2), 0, 0], ["t", get(3), get(4)], ["s", get(0), get(1), 0, 0]];
+                            now = [["m", get(0), get(1), get(2), get(3), get(4), get(5)]];
+                        }
+                        break;
+                    case "csv":
+                        if (attr == "clip-rect") {
                             now = [];
-                            i = that.ca[attr].length;
+                            i = 4;
                             while (i--) {
-                                now[i] = +from2[i] + pos * ms * diff[attr][i];
+                                now[i] = +from[attr][i] + pos * ms * diff[attr][i];
                             }
-                            break;
-                    }
-                    set[attr] = now;
+                        }
+                        break;
+                    default:
+                        var from2 = [][concat](from[attr]);
+                        now = [];
+                        i = that.ca[attr].length;
+                        while (i--) {
+                            now[i] = +from2[i] + pos * ms * diff[attr][i];
+                        }
+                        break;
                 }
-            }that.attr(set);
+                set[attr] = now;
+            }
+            that.attr(set);
             if (executeEvent) {
                 (function (id, that, anim) {
                     setTimeout(function () {
@@ -8293,11 +8261,10 @@ animation = function animation() {
             delete e.el;
             animationElements.splice(l--, 1);
             if (e.repeat > 1 && !e.next) {
-                for (key in to) {
-                    if (to[has](key)) {
-                        init[key] = e.totalOrigin[key];
-                    }
-                }e.el.attr(init);
+                for (key in to) if (to[has](key)) {
+                    init[key] = e.totalOrigin[key];
+                }
+                e.el.attr(init);
                 runAnimation(e.anim, e.el, e.anim.percents[0], null, e.totalOrigin, e.repeat - 1);
             }
             if (e.next && !e.stop) {
@@ -8309,19 +8276,25 @@ animation = function animation() {
 
     // Starting animation on timer 0
     for (l = 0, ll = deqArr.length; l < ll; ++l) {
-        lib.schedular.addJob(function (l) {
+        // lib.schedular.addJob((function (l) {
+        //     return function ()  {
+        //         runAnimation.apply(null, deqArr[l].params);
+        //     };
+        // })(l), lib.priorityList.instant);
+        animFrameFn = R.getAnimFrameFn();
+        animFrameFn(function (l) {
             return function () {
                 runAnimation.apply(null, deqArr[l].params);
             };
-        }(l), lib.priorityList.instant);
+        }(l));
     }
 
     animationElements.length && (requestAnimFrame || R.getAnimFrameFn())(animation);
 },
-    upto255 = function upto255(color) {
+    upto255 = function (color) {
     return color > 255 ? 255 : color < 0 ? 0 : color;
 },
-    checkPercentage = function checkPercentage(num) {
+    checkPercentage = function (num) {
     num > 1 && (num = 1);
     num < 0 && (num = 0);
     return num;
@@ -8488,12 +8461,11 @@ function Animation(anim, ms) {
     this.ms = ms;
     this.times = 1;
     if (anim) {
-        for (var attr in anim) {
-            if (anim[has](attr)) {
-                newAnim[toFloat(attr)] = anim[attr];
-                percents.push(toFloat(attr));
-            }
-        }percents.sort(sortByNumber);
+        for (var attr in anim) if (anim[has](attr)) {
+            newAnim[toFloat(attr)] = anim[attr];
+            percents.push(toFloat(attr));
+        }
+        percents.sort(sortByNumber);
     }
     this.anim = newAnim;
     this.top = percents[percents.length - 1];
@@ -9439,182 +9411,181 @@ function runAnimation(anim, element, percent, status, totalOrigin, times, parent
         return;
     }
     if (!isInAnim) {
-        for (var attr in params) {
-            if (params[has](attr)) {
-                if (availableAnimAttrs[has](attr) || element.ca[attr]) {
-                    from[attr] = configObject.from[attr] || element.attr(attr);
-                    from[attr] == null && (from[attr] = availableAttrs[attr]);
-                    to[attr] = params[attr];
-                    change = false;
-                    switch (availableAnimAttrs[attr]) {
-                        case nu:
-                            tempDiff = to[attr] - from[attr];
-                            (tempDiff || isNaN(tempDiff)) && (change = true);
-                            diff[attr] = tempDiff / ms;
+        for (var attr in params) if (params[has](attr)) {
+            if (availableAnimAttrs[has](attr) || element.ca[attr]) {
+                from[attr] = configObject.from[attr] || element.attr(attr);
+                from[attr] == null && (from[attr] = availableAttrs[attr]);
+                to[attr] = params[attr];
+                change = false;
+                switch (availableAnimAttrs[attr]) {
+                    case nu:
+                        tempDiff = to[attr] - from[attr];
+                        (tempDiff || isNaN(tempDiff)) && (change = true);
+                        diff[attr] = tempDiff / ms;
+                        break;
+                    case "colour":
+                        if (from[attr] === to[attr]) {
                             break;
-                        case "colour":
-                            if (from[attr] === to[attr]) {
-                                break;
-                            } else {
-                                change = true;
-                            }
-                            var colorsNormalized = colorNormalizer(from[attr], to[attr], R.getRGB);
-                            from[attr] = colorsNormalized[0];
-                            var toColour = colorsNormalized[1];
-                            if (typeof toColour === "string") {
-                                if (from[attr].toLowerCase() !== "none") {
-                                    from[attr] = R.getRGB(from[attr]);
-                                    if (!from[attr].opacity) {
-                                        from[attr].opacity = 1;
-                                    }
-                                } else {
-                                    from[attr] = {
-                                        r: 0,
-                                        g: 0,
-                                        b: 0,
-                                        opacity: 0
-                                    };
-                                }
-                                if (to[attr].toLowerCase() !== "none") {
-                                    toColour = R.getRGB(to[attr]);
-                                    if (!toColour.opacity) {
-                                        toColour.opacity = 1;
-                                    }
-                                } else {
-                                    toColour = {
-                                        r: 0,
-                                        g: 0,
-                                        b: 0,
-                                        opacity: 0
-                                    };
-                                }
-                                diff[attr] = {
-                                    r: (toColour.r - from[attr].r) / ms,
-                                    g: (toColour.g - from[attr].g) / ms,
-                                    b: (toColour.b - from[attr].b) / ms,
-                                    opacity: (toColour.opacity - from[attr].opacity) / ms
-                                };
-                            } else {
-                                diff[attr] = [];
-                                for (i = 0, ii = from[attr].length; i < ii; ++i) {
-                                    if (i === 0) {
-                                        diff[attr].push(toColour[0]);
-                                    } else {
-                                        diff[attr].push({
-                                            r: (toColour[i].r - from[attr][i].r) / ms,
-                                            g: (toColour[i].g - from[attr][i].g) / ms,
-                                            b: (toColour[i].b - from[attr][i].b) / ms,
-                                            opacity: (toColour[i].opacity - from[attr][i].opacity) / ms
-                                        });
-                                    }
-                                }
-                            }
-                            break;
-                        case "path":
-                            var toPath,
-                                pathes = path2curve(from[attr], to[attr]);
-                            if (configObject.smartMorph) {
-                                pathes = pathNormalizer(pathes[0], pathes[1], configObject);
-                            }
-                            toPath = pathes[1];
-                            from[attr] = pathes[0];
-                            diff[attr] = [];
-                            for (i = 0, ii = from[attr].length; i < ii; i++) {
-                                diff[attr][i] = [0];
-                                var jj;
-                                jj = from[attr][i] ? from[attr][i].length : 0;
-                                for (var j = 1; j < jj; j++) {
-                                    diff[attr][i][j] = (toPath[i][j] - from[attr][i][j]) / ms;
-                                    !change && diff[attr][i][j] && (change = true);
-                                }
-                            }
-                            break;
-                        case "transform":
-                            var _ = element._,
-                                eq = equaliseTransform(_[attr], to[attr]);
+                        } else {
                             change = true;
-                            if (eq) {
-                                from[attr] = eq.from;
-                                to[attr] = eq.to;
-                                diff[attr] = [];
-                                diff[attr].real = true;
-                                for (i = 0, ii = from[attr].length; i < ii; i++) {
-                                    diff[attr][i] = [from[attr][i][0]];
-                                    for (j = 1, jj = from[attr][i].length; j < jj; j++) {
-                                        diff[attr][i][j] = (to[attr][i][j] - from[attr][i][j]) / ms;
-                                    }
+                        }
+                        var colorsNormalized = colorNormalizer(from[attr], to[attr], R.getRGB);
+                        from[attr] = colorsNormalized[0];
+                        var toColour = colorsNormalized[1];
+                        if (typeof toColour === "string") {
+                            if (from[attr].toLowerCase() !== "none") {
+                                from[attr] = R.getRGB(from[attr]);
+                                if (!from[attr].opacity) {
+                                    from[attr].opacity = 1;
                                 }
                             } else {
-                                var m = element.matrix || new Matrix(),
-                                    to2 = {
-                                    _: {
-                                        transform: _.transform
-                                    },
-                                    getBBox: function getBBox() {
-                                        return element.getBBox(1);
-                                    }
+                                from[attr] = {
+                                    r: 0,
+                                    g: 0,
+                                    b: 0,
+                                    opacity: 0
                                 };
-                                from[attr] = [m.a, m.b, m.c, m.d, m.e, m.f];
-                                extractTransform(to2, to[attr]);
-                                to[attr] = to2._.transform;
-                                diff[attr] = [(to2.matrix.a - m.a) / ms, (to2.matrix.b - m.b) / ms, (to2.matrix.c - m.c) / ms, (to2.matrix.d - m.d) / ms, (to2.matrix.e - m.e) / ms, (to2.matrix.f - m.f) / ms];
-                                // from[attr] = [_.sx, _.sy, _.deg, _.dx, _.dy];
-                                // var to2 = {_:{}, getBBox: function () { return element.getBBox(); }};
-                                // extractTransform(to2, to[attr]);
-                                // diff[attr] = [
-                                //     (to2._.sx - _.sx) / ms,
-                                //     (to2._.sy - _.sy) / ms,
-                                //     (to2._.deg - _.deg) / ms,
-                                //     (to2._.dx - _.dx) / ms,
-                                //     (to2._.dy - _.dy) / ms
-                                // ];
                             }
-                            break;
-                        case "csv":
-                            var values = Str(params[attr])[split](separator),
-                                from2 = Str(from[attr])[split](separator);
-                            if (attr == "clip-rect") {
-                                from[attr] = from2;
-                                diff[attr] = [];
-                                i = from2.length;
-                                while (i--) {
-                                    tempDiff = values[i] - from[attr][i];
-                                    (tempDiff || isNaN(tempDiff)) && (change = true);
-                                    diff[attr][i] = tempDiff / ms;
+                            if (to[attr].toLowerCase() !== "none") {
+                                toColour = R.getRGB(to[attr]);
+                                if (!toColour.opacity) {
+                                    toColour.opacity = 1;
+                                }
+                            } else {
+                                toColour = {
+                                    r: 0,
+                                    g: 0,
+                                    b: 0,
+                                    opacity: 0
+                                };
+                            }
+                            diff[attr] = {
+                                r: (toColour.r - from[attr].r) / ms,
+                                g: (toColour.g - from[attr].g) / ms,
+                                b: (toColour.b - from[attr].b) / ms,
+                                opacity: (toColour.opacity - from[attr].opacity) / ms
+                            };
+                        } else {
+                            diff[attr] = [];
+                            for (i = 0, ii = from[attr].length; i < ii; ++i) {
+                                if (i === 0) {
+                                    diff[attr].push(toColour[0]);
+                                } else {
+                                    diff[attr].push({
+                                        r: (toColour[i].r - from[attr][i].r) / ms,
+                                        g: (toColour[i].g - from[attr][i].g) / ms,
+                                        b: (toColour[i].b - from[attr][i].b) / ms,
+                                        opacity: (toColour[i].opacity - from[attr][i].opacity) / ms
+                                    });
                                 }
                             }
-                            to[attr] = values;
-                            break;
-                        default:
-                            values = [][concat](params[attr]);
-                            from2 = [][concat](from[attr]);
+                        }
+                        break;
+                    case "path":
+                        var toPath,
+                            pathes = path2curve(from[attr], to[attr]);
+                        if (configObject.smartMorph) {
+                            pathes = pathNormalizer(pathes[0], pathes[1], configObject);
+                        }
+                        toPath = pathes[1];
+                        from[attr] = pathes[0];
+                        diff[attr] = [];
+                        for (i = 0, ii = from[attr].length; i < ii; i++) {
+                            diff[attr][i] = [0];
+                            var jj;
+                            jj = from[attr][i] ? from[attr][i].length : 0;
+                            for (var j = 1; j < jj; j++) {
+                                diff[attr][i][j] = (toPath[i][j] - from[attr][i][j]) / ms;
+                                !change && diff[attr][i][j] && (change = true);
+                            }
+                        }
+                        break;
+                    case "transform":
+                        var _ = element._,
+                            eq = equaliseTransform(_[attr], to[attr]);
+                        change = true;
+                        if (eq) {
+                            from[attr] = eq.from;
+                            to[attr] = eq.to;
                             diff[attr] = [];
-                            i = element.ca[attr].length;
+                            diff[attr].real = true;
+                            for (i = 0, ii = from[attr].length; i < ii; i++) {
+                                diff[attr][i] = [from[attr][i][0]];
+                                for (j = 1, jj = from[attr][i].length; j < jj; j++) {
+                                    diff[attr][i][j] = (to[attr][i][j] - from[attr][i][j]) / ms;
+                                }
+                            }
+                        } else {
+                            var m = element.matrix || new Matrix(),
+                                to2 = {
+                                _: {
+                                    transform: _.transform
+                                },
+                                getBBox: function () {
+                                    return element.getBBox(1);
+                                }
+                            };
+                            from[attr] = [m.a, m.b, m.c, m.d, m.e, m.f];
+                            extractTransform(to2, to[attr]);
+                            to[attr] = to2._.transform;
+                            diff[attr] = [(to2.matrix.a - m.a) / ms, (to2.matrix.b - m.b) / ms, (to2.matrix.c - m.c) / ms, (to2.matrix.d - m.d) / ms, (to2.matrix.e - m.e) / ms, (to2.matrix.f - m.f) / ms];
+                            // from[attr] = [_.sx, _.sy, _.deg, _.dx, _.dy];
+                            // var to2 = {_:{}, getBBox: function () { return element.getBBox(); }};
+                            // extractTransform(to2, to[attr]);
+                            // diff[attr] = [
+                            //     (to2._.sx - _.sx) / ms,
+                            //     (to2._.sy - _.sy) / ms,
+                            //     (to2._.deg - _.deg) / ms,
+                            //     (to2._.dx - _.dx) / ms,
+                            //     (to2._.dy - _.dy) / ms
+                            // ];
+                        }
+                        break;
+                    case "csv":
+                        var values = Str(params[attr])[split](separator),
+                            from2 = Str(from[attr])[split](separator);
+                        if (attr == "clip-rect") {
+                            from[attr] = from2;
+                            diff[attr] = [];
+                            i = from2.length;
                             while (i--) {
-                                tempDiff = (values[i] || 0) - (from2[i] || 0);
+                                tempDiff = values[i] - from[attr][i];
                                 (tempDiff || isNaN(tempDiff)) && (change = true);
                                 diff[attr][i] = tempDiff / ms;
                             }
-                            break;
-                    }
-                    if (!change) {
-                        delete from[attr];
-                        delete to[attr];
-                        delete params[attr];
-                        delete diff[attr];
-                    }
-                } else if (R._availableAttrs[has](attr) || attr === 'text' || element.ca[attr]) {
-                    element.attr(attr, params[attr]);
-                    delete params[attr];
+                        }
+                        to[attr] = values;
+                        break;
+                    default:
+                        values = [][concat](params[attr]);
+                        from2 = [][concat](from[attr]);
+                        diff[attr] = [];
+                        i = element.ca[attr].length;
+                        while (i--) {
+                            tempDiff = (values[i] || 0) - (from2[i] || 0);
+                            (tempDiff || isNaN(tempDiff)) && (change = true);
+                            diff[attr][i] = tempDiff / ms;
+                        }
+                        break;
                 }
+                if (!change) {
+                    delete from[attr];
+                    delete to[attr];
+                    delete params[attr];
+                    delete diff[attr];
+                }
+            } else if (R._availableAttrs[has](attr) || attr === 'text' || element.ca[attr]) {
+                element.attr(attr, params[attr]);
+                delete params[attr];
             }
-        }var easing = params.easing,
+        }
+        var easing = params.easing,
             easyeasy = R.easing_formulas[easing];
         if (!easyeasy) {
             easyeasy = Str(easing).match(bezierrg);
             if (easyeasy && easyeasy.length == 5) {
                 var curve = easyeasy;
-                easyeasy = function easyeasy(t) {
+                easyeasy = function (t) {
                     return CubicBezierAtTime(t, +curve[1], +curve[2], +curve[3], +curve[4], ms);
                 };
             } else {
@@ -9696,12 +9667,11 @@ R.animation = function (params, ms, easing, callback, event) {
     var p = {},
         json,
         attr;
-    for (attr in params) {
-        if (params[has](attr) && toFloat(attr) != attr && toFloat(attr) + "%" != attr) {
-            json = true;
-            p[attr] = params[attr];
-        }
-    }if (!json) {
+    for (attr in params) if (params[has](attr) && toFloat(attr) != attr && toFloat(attr) + "%" != attr) {
+        json = true;
+        p[attr] = params[attr];
+    }
+    if (!json) {
         return new Animation(params, ms);
     } else {
         easing && (p.easing = easing);
@@ -9934,16 +9904,14 @@ function executeAnimQueue(queue) {
 }
 
 function stopAnimation(paper) {
-    for (var i = 0; i < animationElements.length; i++) {
-        if (animationElements[i].el.paper == paper) {
-            animationElements.splice(i--, 1);
-        }
+    for (var i = 0; i < animationElements.length; i++) if (animationElements[i].el.paper == paper) {
+        animationElements.splice(i--, 1);
     }
 }
 eve.on("raphael.remove", stopAnimation);
 eve.on("raphael.clear", stopAnimation);
 elproto.toString = function () {
-    return "Rapha\xEBl\u2019s object";
+    return "Rapha\xebl\u2019s object";
 };
 
 elproto.toFront = function () {
@@ -10105,7 +10073,7 @@ elproto.removeChild = function (element) {
 };
 
 // Set
-var Set = function Set(items) {
+var Set = function (items) {
     this.items = [];
     this.length = 0;
     this.type = "set";
@@ -10174,18 +10142,17 @@ setproto.forEach = function (callback, thisArg) {
     }
     return this;
 };
-for (var method in elproto) {
-    if (elproto[has](method)) {
-        setproto[method] = function (methodname) {
-            return function () {
-                var arg = arguments;
-                return this.forEach(function (el) {
-                    el[methodname][apply](el, arg);
-                });
-            };
-        }(method);
-    }
-}setproto.attr = function (name, value) {
+for (var method in elproto) if (elproto[has](method)) {
+    setproto[method] = function (methodname) {
+        return function () {
+            var arg = arguments;
+            return this.forEach(function (el) {
+                el[methodname][apply](el, arg);
+            });
+        };
+    }(method);
+}
+setproto.attr = function (name, value) {
     if (name && R.is(name, array) && R.is(name[0], object)) {
         for (var j = 0, jj = name.length; j < jj; j++) {
             this.items[j].attr(name[j]);
@@ -10262,11 +10229,9 @@ setproto.splice = function (index, count, insertion) {
  = (boolean) `true` if object was found & removed from the set
 \*/
 setproto.exclude = function (el) {
-    for (var i = 0, ii = this.length; i < ii; i++) {
-        if (this[i] == el) {
-            this.splice(i, 1);
-            return true;
-        }
+    for (var i = 0, ii = this.length; i < ii; i++) if (this[i] == el) {
+        this.splice(i, 1);
+        return true;
     }
 };
 setproto.animate = function (params, ms, easing, callback) {
@@ -10279,7 +10244,7 @@ setproto.animate = function (params, ms, easing, callback) {
     if (!len) {
         return this;
     }
-    callback && (collector = function collector() {
+    callback && (collector = function () {
         ! --len && callback.call(set);
     });
     easing = R.is(easing, string) ? easing : collector;
@@ -10302,15 +10267,14 @@ setproto.getBBox = function () {
         y = [],
         x2 = [],
         y2 = [];
-    for (var i = this.items.length; i--;) {
-        if (!this.items[i].removed) {
-            var box = this.items[i].getBBox();
-            x.push(box.x);
-            y.push(box.y);
-            x2.push(box.x + box.width);
-            y2.push(box.y + box.height);
-        }
-    }x = mmin[apply](0, x);
+    for (var i = this.items.length; i--;) if (!this.items[i].removed) {
+        var box = this.items[i].getBBox();
+        x.push(box.x);
+        y.push(box.y);
+        x2.push(box.x + box.width);
+        y2.push(box.y + box.height);
+    }
+    x = mmin[apply](0, x);
     y = mmin[apply](0, y);
     x2 = mmax[apply](0, x2);
     y2 = mmax[apply](0, y2);
@@ -10331,7 +10295,7 @@ setproto.clone = function (s) {
     return s;
 };
 setproto.toString = function () {
-    return "Rapha\xEBl\u2018s set";
+    return "Rapha\xebl\u2018s set";
 };
 
 setproto.glow = function (glowConfig) {
@@ -10373,40 +10337,35 @@ R.registerFont = function (font) {
         glyphs: {}
     },
         family = font.face["font-family"];
-    for (var prop in font.face) {
-        if (font.face[has](prop)) {
-            fontcopy.face[prop] = font.face[prop];
-        }
-    }if (this.fonts[family]) {
+    for (var prop in font.face) if (font.face[has](prop)) {
+        fontcopy.face[prop] = font.face[prop];
+    }
+    if (this.fonts[family]) {
         this.fonts[family].push(fontcopy);
     } else {
         this.fonts[family] = [fontcopy];
     }
     if (!font.svg) {
         fontcopy.face["units-per-em"] = toInt(font.face["units-per-em"], 10);
-        for (var glyph in font.glyphs) {
-            if (font.glyphs[has](glyph)) {
-                var path = font.glyphs[glyph];
-                fontcopy.glyphs[glyph] = {
-                    w: path.w,
-                    k: {},
-                    d: path.d && "M" + path.d.replace(/[mlcxtrv]/g, function (command) {
-                        return {
-                            l: "L",
-                            c: "C",
-                            x: "z",
-                            t: "m",
-                            r: "l",
-                            v: "c"
-                        }[command] || "M";
-                    }) + "z"
-                };
-                if (path.k) {
-                    for (var k in path.k) {
-                        if (path[has](k)) {
-                            fontcopy.glyphs[glyph].k[k] = path.k[k];
-                        }
-                    }
+        for (var glyph in font.glyphs) if (font.glyphs[has](glyph)) {
+            var path = font.glyphs[glyph];
+            fontcopy.glyphs[glyph] = {
+                w: path.w,
+                k: {},
+                d: path.d && "M" + path.d.replace(/[mlcxtrv]/g, function (command) {
+                    return {
+                        l: "L",
+                        c: "C",
+                        x: "z",
+                        t: "m",
+                        r: "l",
+                        v: "c"
+                    }[command] || "M";
+                }) + "z"
+            };
+            if (path.k) {
+                for (var k in path.k) if (path[has](k)) {
+                    fontcopy.glyphs[glyph].k[k] = path.k[k];
                 }
             }
         }
@@ -10445,12 +10404,10 @@ paperproto.getFont = function (family, weight, style, stretch) {
     var font = R.fonts[family];
     if (!font) {
         var name = new RegExp("(^|\\s)" + family.replace(/[^\w\d\s+!~.:_-]/g, E) + "(\\s|$)", "i");
-        for (var fontName in R.fonts) {
-            if (R.fonts[has](fontName)) {
-                if (name.test(fontName)) {
-                    font = R.fonts[fontName];
-                    break;
-                }
+        for (var fontName in R.fonts) if (R.fonts[has](fontName)) {
+            if (name.test(fontName)) {
+                font = R.fonts[fontName];
+                break;
             }
         }
     }
@@ -10621,7 +10578,7 @@ R.fullfill = function () {
     var tokenRegex = /\{([^\}]+)\}/g,
         objNotationRegex = /(?:(?:^|\.)(.+?)(?=\[|\.|$|\()|\[('|")(.+?)\2\])(\(\))?/g,
         // matches .xxxxx or ["xxxxx"] to run over object properties
-    replacer = function replacer(all, key, obj) {
+    replacer = function (all, key, obj) {
         var res = obj;
         key.replace(objNotationRegex, function (all, name, quote, quotedName, isFunc) {
             name = name || quotedName;
@@ -10812,10 +10769,10 @@ R.define = function (name, init, ca, fn, e, data) {
     return R.fn[name];
 };
 // Firefox <3.6 fix: http://webreflection.blogspot.com/2009/11/195-chars-to-help-lazy-loading.html
-(function (doc, loaded, _f) {
+(function (doc, loaded, f) {
     if (doc.readyState == null && doc.addEventListener) {
-        doc.addEventListener(loaded, _f = function f() {
-            doc.removeEventListener(loaded, _f, false);
+        doc.addEventListener(loaded, f = function () {
+            doc.removeEventListener(loaded, f, false);
             doc.readyState = "complete";
         }, false);
         doc.readyState = "loading";
@@ -10839,8 +10796,6 @@ module.exports = R;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"./eve/eve":1}],5:[function(require,module,exports){
-"use strict";
-
 /**!
 * RedRaphael 1.0.0 - JavaScript Vector Library SVG Module
 * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
@@ -10856,65 +10811,6 @@ module.exports = R;
 var R = require('./raphael.core');
 
 if (R.svg) {
-    /*
-     * Recursively shows the element and stores the visibilties of its parents
-     * in a tree structure for future restoration.
-     * @param el - Element which is to shown recursively
-     * @return Function - Function to restore the old visibility state.
-    */
-    var showRecursively = function showRecursively(el) {
-        var origAttrTree = {},
-            currentEl = el,
-            currentNode = origAttrTree,
-            fn = function fn() {
-            var localEl = el,
-                localNode = origAttrTree;
-            while (localEl) {
-                if (localNode._doHide) {
-                    localEl.hide();
-                }
-                localEl = localEl.parent;
-                localNode = localNode.parent;
-            }
-        };
-        while (currentEl) {
-            if (currentEl.node && currentEl.node.style && currentEl.node.style.display === "none") {
-                currentEl.show();
-                currentNode._doHide = true;
-            }
-            currentEl = currentEl.parent;
-            currentNode.parent = {};
-            currentNode = currentNode.parent;
-        }
-        return fn;
-    };
-
-    var LoadRefImage = function LoadRefImage(element, attrs) {
-        var src = attrs.src,
-            parent = element._.group,
-            node = element.node,
-            RefImg = element._.RefImg;
-
-        if (!RefImg) {
-            RefImg = element._.RefImg = new Image();
-        }
-
-        if (attrs.src !== undefined) {
-            RefImg.src = src;
-            RefImg.onload = function () {
-                element.attr({
-                    width: element.attrs.width || RefImg.width,
-                    height: element.attrs.height || RefImg.height
-                });
-                // parent.canvas && parent.canvas.appendChild(node);
-            };
-            RefImg.onerror = function (e) {
-                node.onerror && node.onerror(e);
-            };
-            element._.RefImg = RefImg;
-        }
-    };
-
     var has = "hasOwnProperty",
         Str = String,
         toFloat = parseFloat,
@@ -10939,7 +10835,7 @@ if (R.svg) {
         oval: "M2.5,0A2.5,2.5,0,0,1,2.5,5 2.5,2.5,0,0,1,2.5,0z"
     },
         markerCounter = {},
-        updateReferenceUrl = function updateReferenceUrl() {
+        updateReferenceUrl = function () {
         return R._url = R._g.win.location.href.replace(/#.*?$/, E);
     };
 
@@ -10966,7 +10862,7 @@ if (R.svg) {
     // }
     R._url = E;
 
-    var updateGradientReference = function updateGradientReference(element, newGradient) {
+    var updateGradientReference = function (element, newGradient) {
         var gradient = element.gradient;
 
         if (gradient) {
@@ -10993,13 +10889,11 @@ if (R.svg) {
             if (typeof el == "string") {
                 el = $(el);
             }
-            for (var key in attr) {
-                if (attr[has](key)) {
-                    if (key.substring(0, 6) == "xlink:") {
-                        el.setAttributeNS(xlink, key.substring(6), Str(attr[key]));
-                    } else {
-                        el.setAttribute(key, Str(attr[key]));
-                    }
+            for (var key in attr) if (attr[has](key)) {
+                if (key.substring(0, 6) == "xlink:") {
+                    el.setAttributeNS(xlink, key.substring(6), Str(attr[key]));
+                } else {
+                    el.setAttribute(key, Str(attr[key]));
                 }
             }
         } else {
@@ -11016,7 +10910,7 @@ if (R.svg) {
         redlect: 'reflect',
         repeat: 'repeat'
     },
-        addGradientFill = function addGradientFill(element, gradient) {
+        addGradientFill = function (element, gradient) {
         if (!element.paper || !element.paper.defs) {
             return 0;
         }
@@ -11181,13 +11075,13 @@ if (R.svg) {
         s.fillOpacity = 1;
         return 1;
     },
-        updatePosition = function updatePosition(o) {
+        updatePosition = function (o) {
         var bbox = o.getBBox(1);
         $(o.pattern, {
             patternTransform: o.matrix.invert() + " translate(" + bbox.x + "," + bbox.y + ")"
         });
     },
-        addArrow = function addArrow(o, value, isEnd) {
+        addArrow = function (o, value, isEnd) {
         if (o.type == "path") {
             var values = Str(value).toLowerCase().split("-"),
                 p = o.paper,
@@ -11330,11 +11224,9 @@ if (R.svg) {
                 delete o._.arrows[se + "Type"];
                 delete o._.arrows[se + "String"];
             }
-            for (attr in markerCounter) {
-                if (markerCounter[has](attr) && !markerCounter[attr]) {
-                    var item = R._g.doc.getElementById(attr);
-                    item && item.parentNode.removeChild(item);
-                }
+            for (attr in markerCounter) if (markerCounter[has](attr) && !markerCounter[attr]) {
+                var item = R._g.doc.getElementById(attr);
+                item && item.parentNode.removeChild(item);
             }
         }
     },
@@ -11357,7 +11249,7 @@ if (R.svg) {
         "--.": [8, 3, 1, 3],
         "--..": [8, 3, 1, 3, 1, 3]
     },
-        addDashes = function addDashes(o, value, params) {
+        addDashes = function (o, value, params) {
         var predefValue = dasharray[Str(value).toLowerCase()],
             calculatedValues,
             width,
@@ -11398,7 +11290,7 @@ if (R.svg) {
             }
         }
     },
-        applyCustomAttributes = function applyCustomAttributes(o, attrs) {
+        applyCustomAttributes = function (o, attrs) {
         for (var key in attrs) {
             eve("raphael.attr." + key + "." + o.id, o, attrs[key], key);
             o.ca[key] && o.attr(key, attrs[key]);
@@ -11794,7 +11686,7 @@ if (R.svg) {
         }
     },
         leading = 1.2,
-        tuneText = function tuneText(el, params, group) {
+        tuneText = function (el, params, group) {
         if (el.type != "text" || !(params[has]("text") || params[has]("font") || params[has]("font-size") || params[has]("x") || params[has]("y") || params[has]("line-height") || params[has]("vertical-align"))) {
             return;
         }
@@ -11903,7 +11795,7 @@ if (R.svg) {
             dy: dif
         });
     },
-        Element = function Element(node, svg, group /*, dontAppend*/) {
+        Element = function (node, svg, group /*, dontAppend*/) {
         var o = this,
             parent = group || svg;
 
@@ -12102,7 +11994,39 @@ if (R.svg) {
         }
 
         o.removed = true;
-    };;
+    };
+    /*
+     * Recursively shows the element and stores the visibilties of its parents
+     * in a tree structure for future restoration.
+     * @param el - Element which is to shown recursively
+     * @return Function - Function to restore the old visibility state.
+    */
+    function showRecursively(el) {
+        var origAttrTree = {},
+            currentEl = el,
+            currentNode = origAttrTree,
+            fn = function () {
+            var localEl = el,
+                localNode = origAttrTree;
+            while (localEl) {
+                if (localNode._doHide) {
+                    localEl.hide();
+                }
+                localEl = localEl.parent;
+                localNode = localNode.parent;
+            }
+        };
+        while (currentEl) {
+            if (currentEl.node && currentEl.node.style && currentEl.node.style.display === "none") {
+                currentEl.show();
+                currentNode._doHide = true;
+            }
+            currentEl = currentEl.parent;
+            currentNode.parent = {};
+            currentNode = currentNode.parent;
+        }
+        return fn;
+    };
 
     elproto._getCustomBBox = function (fontFamily, fontSize, valign, lines) {
         var fn,
@@ -12234,11 +12158,10 @@ if (R.svg) {
         }
         if (name == null) {
             var res = {};
-            for (var a in this.attrs) {
-                if (this.attrs[has](a)) {
-                    res[a] = this.attrs[a];
-                }
-            }res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
+            for (var a in this.attrs) if (this.attrs[has](a)) {
+                res[a] = this.attrs[a];
+            }
+            res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
             res.transform = this._.transform;
             res.visibility = this.node.style.display === "none" ? "hidden" : "visible";
             return res;
@@ -12386,7 +12309,7 @@ if (R.svg) {
                 if (!elem._tempTouchListeners[oldEventType]) {
                     elem._tempTouchListeners[oldEventType] = [];
                 }
-                fn = function fn(e) {
+                fn = function (e) {
                     e.preventDefault();
                     handler(e);
                 };
@@ -12504,7 +12427,31 @@ if (R.svg) {
         applyCustomAttributes(res, attrs);
         return res;
     };
-    ;
+    function LoadRefImage(element, attrs) {
+        var src = attrs.src,
+            parent = element._.group,
+            node = element.node,
+            RefImg = element._.RefImg;
+
+        if (!RefImg) {
+            RefImg = element._.RefImg = new Image();
+        }
+
+        if (attrs.src !== undefined) {
+            RefImg.src = src;
+            RefImg.onload = function () {
+                element.attr({
+                    width: element.attrs.width || RefImg.width,
+                    height: element.attrs.height || RefImg.height
+                });
+                // parent.canvas && parent.canvas.appendChild(node);
+            };
+            RefImg.onerror = function (e) {
+                node.onerror && node.onerror(e);
+            };
+            element._.RefImg = RefImg;
+        }
+    };
     R._engine.image = function (svg, attrs, group) {
         var el = $("image"),
             src = attrs.src,
@@ -12694,25 +12641,21 @@ if (R.svg) {
         this.removed = true;
     };
     var setproto = R.st;
-    for (var method in elproto) {
-        if (elproto[has](method) && !setproto[has](method)) {
-            setproto[method] = function (methodname) {
-                return function () {
-                    var arg = arguments;
-                    return this.forEach(function (el) {
-                        el[methodname].apply(el, arg);
-                    });
-                };
-            }(method);
-        }
+    for (var method in elproto) if (elproto[has](method) && !setproto[has](method)) {
+        setproto[method] = function (methodname) {
+            return function () {
+                var arg = arguments;
+                return this.forEach(function (el) {
+                    el[methodname].apply(el, arg);
+                });
+            };
+        }(method);
     }
 }
 
 module.exports = R;
 
 },{"./raphael.core":4}],6:[function(require,module,exports){
-"use strict";
-
 /**!
 * RedRaphael 1.0.0 - JavaScript Vector Library VML Module
 * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
@@ -12768,7 +12711,7 @@ if (R.vml) {
         circle: 1,
         ellipse: 1
     },
-        path2vml = function path2vml(path) {
+        path2vml = function (path) {
         var total = /[ahqstv]/ig,
             command = R._pathToAbsolute;
         Str(path).match(total) && (command = R._path2curve);
@@ -12805,7 +12748,7 @@ if (R.vml) {
         }
         return res.length ? res.join(S) : 'm0,0';
     },
-        compensation = function compensation(deg, dx, dy) {
+        compensation = function (deg, dx, dy) {
         var m = R.matrix();
         m.rotate(-deg, .5, .5);
         return {
@@ -12813,7 +12756,7 @@ if (R.vml) {
             dy: m.y(dx, dy)
         };
     },
-        setCoords = function setCoords(p, sx, sy, dx, dy, deg) {
+        setCoords = function (p, sx, sy, dx, dy, deg) {
         var _ = p._,
             m = p.matrix,
             fillpos = _.fillpos,
@@ -12858,9 +12801,9 @@ if (R.vml) {
     };
     R._url = E;
     R.toString = function () {
-        return "Your browser doesn\u2019t support SVG. Falling down to VML.\nYou are running Rapha\xEBl " + this.version;
+        return "Your browser doesn\u2019t support SVG. Falling down to VML.\nYou are running Rapha\xebl " + this.version;
     };
-    var addArrow = function addArrow(o, value, isEnd) {
+    var addArrow = function (o, value, isEnd) {
         var values = Str(value).toLowerCase().split("-"),
             se = isEnd ? "end" : "start",
             i = values.length,
@@ -12892,7 +12835,7 @@ if (R.vml) {
         stroke[se + "arrowlength"] = w;
         stroke[se + "arrowwidth"] = h;
     },
-        applyCustomAttributes = function applyCustomAttributes(o, attrs) {
+        applyCustomAttributes = function (o, attrs) {
         for (var key in attrs) {
             eve("raphael.attr." + key + "." + o.id, o, attrs[key], key);
             o.ca[key] && o.attr(key, attrs[key]);
@@ -12911,11 +12854,10 @@ if (R.vml) {
             isGroup = o.type === 'group',
             res = o;
 
-        for (var par in params) {
-            if (params[has](par)) {
-                a[par] = params[par];
-            }
-        }if (newpath) {
+        for (var par in params) if (params[has](par)) {
+            a[par] = params[par];
+        }
+        if (newpath) {
             a.path = R._getPath[o.type](o);
             o._.dirty = 1;
         }
@@ -13154,12 +13096,12 @@ if (R.vml) {
 
             ("x" in params || "y" in params || res.bby !== undefined) && (res.path.v = R.format("m{0},{1}l{2},{1}", round(a.x * zoom), round((a.y + (res.bby || 0)) * zoom), round(a.x * zoom) + 1));
             var dirtyattrs = ["x", "y", "text", "font", "font-family", "font-weight", "font-style", "font-size", "line-height"];
-            for (var d = 0, dd = dirtyattrs.length; d < dd; d++) {
-                if (dirtyattrs[d] in params) {
-                    res._.dirty = 1;
-                    break;
-                }
-            } // text-anchor emulation
+            for (var d = 0, dd = dirtyattrs.length; d < dd; d++) if (dirtyattrs[d] in params) {
+                res._.dirty = 1;
+                break;
+            }
+
+            // text-anchor emulation
             switch (a["text-anchor"]) {
                 case "start":
                     res.textpath.style["v-text-align"] = "left";
@@ -13198,7 +13140,7 @@ if (R.vml) {
             followerElem[fnName].apply(followerElem, args);
         }
     },
-        addGradientFill = function addGradientFill(o, gradient, fill) {
+        addGradientFill = function (o, gradient, fill) {
         o.attrs = o.attrs || {};
         var attrs = o.attrs,
             pow = Math.pow,
@@ -13274,7 +13216,7 @@ if (R.vml) {
         }
         return 1;
     },
-        Element = function Element(node, vml, group /*, dontAppend*/) {
+        Element = function (node, vml, group /*, dontAppend*/) {
         var o = this,
             parent = group || vml,
             skew;
@@ -13517,11 +13459,10 @@ if (R.vml) {
         }
         if (name == null) {
             var res = {};
-            for (var a in this.attrs) {
-                if (this.attrs[has](a)) {
-                    res[a] = this.attrs[a];
-                }
-            }res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
+            for (var a in this.attrs) if (this.attrs[has](a)) {
+                res[a] = this.attrs[a];
+            }
+            res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
             res.transform = this._.transform;
             res.visibility = this.node.style.display === "none" ? "hidden" : "visible";
             return res;
@@ -14006,17 +13947,15 @@ if (R.vml) {
     };
 
     var setproto = R.st;
-    for (var method in elproto) {
-        if (elproto[has](method) && !setproto[has](method)) {
-            setproto[method] = function (methodname) {
-                return function () {
-                    var arg = arguments;
-                    return this.forEach(function (el) {
-                        el[methodname].apply(el, arg);
-                    });
-                };
-            }(method);
-        }
+    for (var method in elproto) if (elproto[has](method) && !setproto[has](method)) {
+        setproto[method] = function (methodname) {
+            return function () {
+                var arg = arguments;
+                return this.forEach(function (el) {
+                    el[methodname].apply(el, arg);
+                });
+            };
+        }(method);
     }
 }
 
@@ -14024,8 +13963,6 @@ module.exports = R;
 
 },{"./raphael.core":4}],7:[function(require,module,exports){
 (function (global){
-'use strict';
-
 var Raphael = require('./index');
 
 global.Raphael = Raphael;

@@ -22,7 +22,6 @@ _window.Raphael && _window.Raphael.svg && function(R) {
         abs = math.abs,
         pow = math.pow,
         sqrt = math.sqrt,
-        cachedFontHeight = {},
         separator = /[, ]+/,
         zeroStrokeFix = !!(/AppleWebKit/.test(R._g.win.navigator.userAgent) &&
                 (!/Chrome/.test(R._g.win.navigator.userAgent) ||
@@ -281,6 +280,8 @@ _window.Raphael && _window.Raphael.svg && function(R) {
             out = R._engine.text(paper, attrs, group, args[1]);
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
+
+    R.cachedFontHeight = {};
 
     R.toString = function() {
         return  "Your browser supports SVG.\nYou are running Rapha\xebl " + this.version;
@@ -750,58 +751,6 @@ _window.Raphael && _window.Raphael.svg && function(R) {
         }
     },
 
-    getFontHeight = function (attr, group) {
-            var txtElem = cachedFontHeight.txtElem,
-                theText,
-                theMSG,
-                fontFamily = attr['fontFamily'] || attr['font-family'] || (group && group.attrs.fontFamily) ||
-                    'Verdana,sans',
-                fontSize = (attr['fontSize'] || attr['font-size'] || (group && group.attrs.fontSize) || 10).toString().
-                    replace(/px/, '') + 'px;',
-                availableFontFamily = cachedFontHeight[fontFamily] || (cachedFontHeight[fontFamily] = {}),
-                availableFontSize = availableFontFamily[fontSize],
-                info,
-                randomPos = -100,
-                bbox;
-
-            if (!availableFontSize) {
-                if (!txtElem) {
-                    txtElem = cachedFontHeight.txtElem = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                    txtElem.setAttribute('x', randomPos);
-                    txtElem.setAttribute('y', randomPos);
-
-                    theMSG = document.createTextNode('abcdefhiklmnopqrstuvwxyz');
-                    txtElem.appendChild(theMSG);
-
-                    document.getElementsByTagName('svg')[0].appendChild(txtElem);
-                }
-                txtElem.setAttribute('style', 'font-family :' + fontFamily + '; font-size :' + fontSize);
-
-                bbox = txtElem.getBBox();
-
-                diff = randomPos - (bbox.y + bbox.height / 2);
-                availableFontFamily[fontSize] = availableFontSize = [];
-                availableFontSize.push(bbox.height);
-                availableFontSize.push(diff);
-            }
-
-            // info = availableFontSize.hasGJ;
-            switch (attr['vertical-align']) {
-                case "bottom":
-                    diff = availableFontSize[1] - availableFontSize[0] * .5;
-                    break;
-                case "top":
-                    diff = availableFontSize[1] + availableFontSize[0] * .5;
-                    break;
-                default : diff = availableFontSize[1];
-            };
-
-            return {
-                height : availableFontSize[0],
-                diff : diff
-            }
-        },
-
     setFillAndStroke = R._setFillAndStroke = function(o, params, group) {
         if (!o.paper.canvas) {
             return;
@@ -1214,18 +1163,20 @@ _window.Raphael && _window.Raphael.svg && function(R) {
                 params[has]("vertical-align")))) {
             return;
         }
+
         node = el.node;
         computedStyle = node.firstChild && R._g.doc.defaultView.getComputedStyle(node.firstChild, E);
-        /*fontSize = computedStyle ?
-            toFloat(R._g.doc.defaultView.getComputedStyle(node.firstChild, E).getPropertyValue("font-size")) : 10,*/
-        fontSize = (params['fontSize'] || params['font-size'] || (group && group.attrs.fontSize) || 10).toString().
-                replace(/px/, '');
+        fontSize = params['fontSize'] || params['font-size'] || a['font-size'] || (group && group.attrs.fontSize);
         lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading;
-        valign = a[has]("vertical-align") ? a["vertical-align"] : "middle";
-        // direction = (params["direction"] || (computedStyle ?
-        //     computedStyle.getPropertyValue("direction") : "initial")).toLowerCase(),
-        direction = params["direction"] || (group && group.attrs.direction) || "initial";
+        actualValign = a[has]("vertical-align") ? a["vertical-align"] : "middle";
+        direction = params["direction"] || (group && group.attrs.direction) || "initial"
         isIE = /*@cc_on!@*/false || !!document.documentMode;
+        fontFamily = params['fontFamily'] || params['font-family'] || a['font-family'] ||
+            (group && group.attrs.fontFamily) || 'Verdana,sans';
+
+        fontSize = fontSize === undefined ? (lineHeight / 1.2 || 10) :
+            fontSize.toString().replace(/px/, '');
+
 
         if (isNaN(lineHeight)) {
             lineHeight = fontSize * leading;
@@ -1235,7 +1186,7 @@ _window.Raphael && _window.Raphael.svg && function(R) {
             params.text = params.text.join('<br>');
         }
 
-        valign = valign === 'top' ? -0.5 : (valign === 'bottom' ? 0.5 : 0);
+        valign = actualValign === 'top' ? -0.5 : (actualValign === 'bottom' ? 0.5 : 0);
 
         if (params[has]("text") && (params.text !== a.text || el._textdirty)) {
             a.text = params.text;
@@ -1316,36 +1267,18 @@ _window.Raphael && _window.Raphael.svg && function(R) {
             y: a.y
         });
         el._.dirty = 1;
-        var bb = el._getCustomBBox(a, group),
-        // dif = a.y - (bb.y + bb.height / 2);
+        var bb = el._getCustomBBox(fontFamily, fontSize + 'px', actualValign, i),
         dif = bb.diff;
-
-        // If the bbox is calculated then we need to make additional adjustments,
-        // to account for the fact that the calculated bbox already has the
-        // text alignment, both horizontal and vertical, included in the calculation.
-        // if (bb.isCalculated) {
-        //     switch (a['vertical-align']) {
-        //         case "top":
-        //             dif = bb.height * .75;
-        //             break;
-        //         case "bottom":
-        //             dif = - (bb.height * .25);
-        //             break;
-        //         default:
-        //             dif = a.y - (bb.y + bb.height * .25);
-        //             break;
-        //     };
-        // }
 
         dif && R.is(dif, "finite") && tspans[0] && $(tspans[0], {
             dy: dif
         });
     },
-    Element = function(node, svg, group, dontAppend) {
+    Element = function(node, svg, group/*, dontAppend*/) {
         var o = this,
             parent = group || svg;
 
-        !dontAppend && parent.canvas && parent.canvas.appendChild(node);
+        /*!dontAppend && */parent.canvas && parent.canvas.appendChild(node);
 
         o.node = o[0] = node;
         node.raphael = true;
@@ -1575,16 +1508,24 @@ _window.Raphael && _window.Raphael.svg && function(R) {
         return fn;
     };
 
-    elproto._getCustomBBox = function(attr, group) {
+    elproto._getCustomBBox = function(fontFamily, fontSize, valign, lines) {
         var fn,
             o = this,
             node = o.node,
-            bbox = {},
-            a = o.attrs,
-            align,
             hide,
             isText = (o.type === "text"),
-            isIE = /*@cc_on!@*/false || !!document.documentMode;
+            isIE = /*@cc_on!@*/false || !!document.documentMode,
+            cachedFontHeight,
+            txtElem,
+            theText,
+            theMSG,
+            availableFontFamily,
+            availableFontSize,
+            info,
+            randomPos,
+            bboxY,
+            diff,
+            bboxHeight;
         if (isIE && isText) {
             fn = showRecursively(o);
         }
@@ -1595,9 +1536,49 @@ _window.Raphael && _window.Raphael.svg && function(R) {
             }
         }
 
-        bbox = {};
         if (isText) {
-            bbox = getFontHeight(attr, group);
+            cachedFontHeight = R.cachedFontHeight;
+            txtElem = cachedFontHeight.txtElem;
+            availableFontFamily = cachedFontHeight[fontFamily] || (cachedFontHeight[fontFamily] = {});
+            availableFontSize = availableFontFamily[fontSize];
+            randomPos = -100;
+
+            if (!availableFontSize) {
+                if (!txtElem) {
+                    txtElem = cachedFontHeight.txtElem = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    txtElem.setAttribute('x', randomPos);
+                    txtElem.setAttribute('y', randomPos);
+
+                    theMSG = document.createTextNode('abcdefhiklmnopqrstuvwxyz');
+                    txtElem.appendChild(theMSG);
+
+                    document.getElementsByTagName('svg')[0].appendChild(txtElem);
+                }
+                txtElem.setAttribute('style', 'font-family :' + fontFamily + '; font-size :' + fontSize);
+
+                bbox = txtElem.getBBox();
+                availableFontFamily[fontSize] = availableFontSize = [];
+                availableFontSize.push(bbox.height);
+                availableFontSize.push(bbox.y);
+            }
+
+            bboxY = availableFontSize[1];
+            bboxHeight = availableFontSize[0];
+            switch (valign) {
+                case "bottom":
+                    diff = randomPos - bboxY - bboxHeight * lines;
+                    break;
+                case "top":
+                    diff = randomPos - bboxY;
+                    break;
+                default :
+                diff = randomPos - bboxY - bboxHeight/ 2 * lines;
+            };
+
+            bbox = {
+                height : availableFontSize[0],
+                diff : diff
+            }
         }
 
         isIE && isText ? fn && fn() : hide && o.hide();
@@ -1954,7 +1935,7 @@ _window.Raphael && _window.Raphael.svg && function(R) {
                     width: element.attrs.width || RefImg.width,
                     height: element.attrs.height || RefImg.height
                 });
-                parent.canvas && parent.canvas.appendChild(node);
+                // parent.canvas && parent.canvas.appendChild(node);
             };
             RefImg.onerror = function (e) {
                 node.onerror && node.onerror(e);

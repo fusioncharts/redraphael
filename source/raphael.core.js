@@ -767,7 +767,17 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                         res[key] = clone(obj[key]);
                     }
                 return res;
-            };
+            },
+        Node = _win.Node;
+        //Adding pollyfill for IE11
+        if (Node && !Node.prototype.contains) {
+            Node.prototype.contains = function(el){
+                while (el = el.parentNode) {
+                    if (el === this) return true;
+                }
+                return false;
+            }
+        };
 
     R._g = g;
 
@@ -3466,6 +3476,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
             scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
             dragi,
+            data,
             j = drag.length;
 
         while (j--) {
@@ -3505,8 +3516,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             o && eve("raphael.drag.over." + dragi.el.id, dragi.el, o);
             x += scrollX;
             y += scrollY;
-            e.data = [x - dragi.el._drag.x, y - dragi.el._drag.y, x, y];
-            eve("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, e);
+            data = e.data = [x - dragi.el._drag.x, y - dragi.el._drag.y, x, y];
+            eve("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, e, data);
         }
     },
     dragUp = function(e) {
@@ -3949,7 +3960,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     elproto.drag = function(onmove, onstart, onend, move_scope, start_scope, end_scope) {
         function start(e) {
             var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
-                scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft;
+                scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
+                data;
 
             this._drag.x = e.clientX + scrollX;
             this._drag.y = e.clientY + scrollY;
@@ -3968,8 +3980,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 start_scope: start_scope,
                 end_scope: end_scope
             }];
-            e.data = [e.clientX + scrollX, e.clientY + scrollY];
-            onstart && onstart.call(start_scope || move_scope || this, e);
+            data = e.data = [e.clientX + scrollX, e.clientY + scrollY];
+            onstart && onstart.call(start_scope || move_scope || this, e, data);
             // onstart && eve.on("raphael.drag.start." + this.id, onstart);
             onmove && eve.on("raphael.drag.move." + this.id, onmove);
             onend && eve.on("raphael.drag.end." + this.id, onend);
@@ -4484,10 +4496,10 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     };
     function x_y() {
         return this.x + S + this.y;
-    }
+    };
     function x_y_w_h() {
         return this.x + S + this.y + S + this.width + " \xd7 " + this.height;
-    }
+    };
 
     /*\
      * Element.isPointInside
@@ -4679,8 +4691,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             });
             return point;
         };
-    };
-    var getTotalLength = getLengthFactory(1),
+    },
+    getTotalLength = getLengthFactory(1),
     getPointAtLength = getLengthFactory(),
     getSubpathsAtLength = getLengthFactory(0, 1);
 
@@ -4935,7 +4947,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
             origms = ms;
             // If has parentEl
-            if (e.parentEl) {
+            if (e.parentEl && e.parentEl.animElements) {
                 ms = e.delayend - e.delaystart;
                 time = e.parentEl.cPos - e.delaystart;
             } else if (e.el.animElements) {
@@ -5104,6 +5116,11 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     },
     upto255 = function(color) {
         return color > 255 ? 255 : color < 0 ? 0 : color;
+    },
+    checkPercentage = function (num) {
+        num > 1 && (num = 1);
+        num < 0 && (num = 0);
+        return num;
     };
 
     R.getAnimFrameFn = function () {
@@ -5115,7 +5132,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         function(callback) {
             setTimeout(callback, 16);
         };
-    },
+    };
 
     /*\
      * Element.animateWith
@@ -5154,15 +5171,12 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             callback && callback.call(element);
             return element;
         }
-        function checkPercentage (num) {
-            num > 1 && (num = 1);
-            num < 0 && (num = 0);
-            return num;
-        }
         if (ms == 0) {
-            setTimeout(function () {
-                R.is(callback, "function") && callback.call(element);
-            }, 0);
+            if (R.is(callback, "function")) {
+                setTimeout(function () {
+                    callback.call(element);
+                }, 0);
+            }
             return element.attr (params);
         }
         var a = params instanceof Animation ? params : R.animation(params, ms, easing, callback),

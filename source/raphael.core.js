@@ -8,27 +8,11 @@
  *
  * Licensed under the MIT license.
  */
-if (typeof _window === 'undefined' && typeof window === 'object') {
-   _window = window;
-}
-(function (glob, factory, optOutModulePattern) {
-    // // AMD support
-    // if (!optOutModulePattern && typeof define === "function" && define.amd) {
-    //     // Define as an anonymous module
-    //     define(["eve"], function( eve ) {
-    //         return factory(glob, eve);
-    //     });
-    // } else {
-    //     // Browser globals (glob is window)
-    //     // Raphael adds itself to window
-    //     // factory(glob, glob.eve);
-    //     factory(glob, (typeof module === 'object' && typeof module.exports !== 'undefined') ?
-    //        module.exports : glob.eve);
-    // }
 
-    factory(glob, (typeof module === 'object' && typeof module.exports !== 'undefined') ?
-       module.exports : glob.eve);
-}(_window, function (_win, eve) {
+var eve = require('./eve/eve');
+
+var _win = (typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : null);
+
     /*\
      * Raphael
      [ method ]
@@ -117,7 +101,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     R.upgrade = "1.0.0";
     R.version = "2.1.0";
     R.eve = eve;
-    RedRaphael = R;
+    // RedRaphael = R;
 
     var loaded,
         undef,
@@ -204,6 +188,15 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
              | c.attr({hsb: "0.5 .8 1"});
              | c.animate({hsb: [1, 0, 0.5]}, 1e3);
             \*/
+        },
+        pluck = function (checkWith) {
+            var i = 1,
+                ii = arguments.length;
+            for (; i < ii; ++i) {
+                if (arguments[i] !== checkWith) {
+                    return arguments[i]
+                }
+            }
         },
         caproto = R.ca = R.customAttributes = CustomAttributes.prototype,
 
@@ -876,7 +869,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         b = d.firstChild;
         b.style.behavior = "url(#default#VML)";
         if (!(b && typeof b.adj == object)) {
-            return (R.type = E);
+            R.type = E;
+            // return (R.type = E);
         }
         d = null;
     }
@@ -3477,6 +3471,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
             dragi,
             data,
+            dummyEve = {},
+            key,
             j = drag.length;
 
         while (j--) {
@@ -3516,8 +3512,15 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             o && eve("raphael.drag.over." + dragi.el.id, dragi.el, o);
             x += scrollX;
             y += scrollY;
-            data = e.data = [x - dragi.el._drag.x, y - dragi.el._drag.y, x, y];
-            eve("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, e, data);
+            for (key in e) {
+                if (typeof e[key] === 'function') {
+                    dummyEve[key] = e[key].bind(e);
+                } else {
+                    dummyEve[key] = e[key];
+                }
+            }
+            data = dummyEve.data = [x - dragi.el._drag.x, y - dragi.el._drag.y, x, y];
+            eve("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, dummyEve, data);
         }
     },
     dragUp = function(e) {
@@ -3961,6 +3964,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         function start(e) {
             var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
                 scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
+                key,
+                dummyEve = {},
                 data;
 
             this._drag.x = e.clientX + scrollX;
@@ -3980,8 +3985,15 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 start_scope: start_scope,
                 end_scope: end_scope
             }];
-            data = e.data = [e.clientX + scrollX, e.clientY + scrollY];
-            onstart && onstart.call(start_scope || move_scope || this, e, data);
+            for (key in e) {
+                if (typeof e[key] === 'function') {
+                    dummyEve[key] = e[key].bind(e);
+                } else {
+                    dummyEve[key] = e[key];
+                }
+            }
+            data = dummyEve.data = [e.clientX + scrollX, e.clientY + scrollY];
+            onstart && onstart.call(start_scope || move_scope || this, dummyEve, data);
             // onstart && eve.on("raphael.drag.start." + this.id, onstart);
             onmove && eve.on("raphael.drag.move." + this.id, onmove);
             onend && eve.on("raphael.drag.end." + this.id, onend);
@@ -4902,10 +4914,11 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     // This a temporary fix so that animation can be handled from the scheduler module.
     animation = function() {
         var Now = +new Date,
-        l = 0,
-        deqArr = [],
-        i = 0,
-        ll = 0;
+            l = 0,
+            deqArr = [],
+            i = 0,
+            ll = 0,
+            animFrameFn;
 
         for (; l < animationElements.length; l++) {
             var e = animationElements[l];
@@ -4987,13 +5000,13 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                                                     radial += ',';
                                                     radial += from[attr][0].f2 * (1 - pos) + diff[attr][0].f2 * pos || '';
                                                     radial += ',';
-                                                    radial += from[attr][0].f3 * (1 - pos) + diff[attr][0].f3 * pos || '';
-                                                    radial += ',';
+                                                    radial += (from[attr][0].f3 * (1 - pos) + diff[attr][0].f3 * pos) * 100 || '';
+                                                    radial += '%,';
                                                     radial += from[attr][0].f4 * (1 - pos) + diff[attr][0].f4 * pos || '';
                                                     radial += ',';
-                                                    radial += from[attr][0].f5 * (1 - pos) + diff[attr][0].f5 * pos || '';
+                                                    radial += from[attr][0].f5 * (1 - pos) + diff[attr][0].f5 * pos;
                                                     radial += ',';
-                                                    radial += from[attr][0].f6 || 'userSpaceOnUse';
+                                                    radial += from[attr][0].f6;
                                                     radial += ')';
                                                     now.push(radial)
                                                 } else {
@@ -5105,11 +5118,17 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
 
          // Starting animation on timer 0
         for (l = 0, ll = deqArr.length; l < ll; ++l) {
-            lib.schedular.addJob((function (l) {
+            // lib.schedular.addJob((function (l) {
+            //     return function ()  {
+            //         runAnimation.apply(null, deqArr[l].params);
+            //     };
+            // })(l), lib.priorityList.instant);
+            animFrameFn = R.getAnimFrameFn();
+            animFrameFn((function (l) {
                 return function ()  {
                     runAnimation.apply(null, deqArr[l].params);
                 };
-            })(l), lib.priorityList.instant);
+            })(l));
         }
 
         animationElements.length && (requestAnimFrame || R.getAnimFrameFn())(animation);
@@ -5148,6 +5167,9 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
      - ms (number) #optional number of milliseconds for animation to run
      - easing (string) #optional easing type. Accept on of @Raphael.easing_formulas or CSS format: `cubic&#x2010;bezier(XX,&#160;XX,&#160;XX,&#160;XX)`
      - callback (function) #optional callback function. Will be called at the end of animation.
+     - configObject (object) #optional takes an object with optional properties like
+        start(what percentage to start aniation), end(what percentage to end animation), hookFn(function
+        to be called before applying animation), smartMorph(whether to use smartMorphing in path animation)
      * or
      - element (object) element to sync with
      - anim (object) animation to sync with
@@ -5338,7 +5360,13 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         return a;
     };
 
-    // Function for trasition between colors
+    /*
+    ** Function to convert two color string in array format such that
+    ** it is animatabale
+    ** @param {string} c1 color 1
+    ** @param {string} c2 color 2
+    ** @param {function} function to getRGB
+    */
     function colorNormalizer(c1, c2, getRGB) {
         "use strict";
         var colorAr1 = c1.split('-'),
@@ -5354,6 +5382,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         if (colorAr1.length === 1 && colorAr2.length === 1) {
             return [c1, c2];
         }
+        // Convert colors to linear format, and mark if any of them is radial
+        // linear to radial animation is not correct
         colorAr1 = allToLinear(colorAr1);
         colorAr2 = allToLinear(colorAr2);
 
@@ -5367,14 +5397,17 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             colorAr1[0] = colorAr2[0];
         }
 
-        // If one radial convert both to radial
+        // If one is radial convert both to radial
         converToRadialIfOneRadial(colorAr1, colorAr2);
-
+        /* Making a unique array to store all unique
+            color positions of both color so that new color
+            can be generated that have same amount of positions
+            added */
         for(i = 1, ii = colorAr1.length; i < ii; ++i){
             pos = colorAr1[i].position;
-            if(uniqArr.indexOf(pos) === -1){
+            // if(uniqArr.indexOf(pos) === -1){
                 uniqArr.push(pos);
-            }
+            // }
         }
         for(i = 1, ii = colorAr2.length; i < ii; ++i){
             pos = colorAr2[i].position;
@@ -5383,7 +5416,9 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
         }
         uniqArr.push(0);
+        // sort the positions
         uniqArr.sort(function(a,b){return a - b});
+        // generating new colors from the existing colors
         newColArr = [colorAr1[0]];
         for (i = 1, ii = uniqArr.length; i < ii; ++i) {
             pos = uniqArr[i];
@@ -5408,8 +5443,12 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             if(a.isRadial && !b.isRadial){
                 angle += +b[0];
                 b[0] = {
-                    f1 : a[0].f1,
-                    f2 : a[0].f2
+                    f1: 0,
+                    f2: 0,
+                    f3: 0,
+                    f4: 0,
+                    f5: 0,
+                    f6: ''
                 }
                 b.isRadial = true;
             }
@@ -5418,7 +5457,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 converToRadialIfOneRadial(b, a, true);
             }
         }
-
+        // Function to convert color to array in linear format
+        // and mark if any one of them is radial
         function allToLinear(arr) {
             var i = 0,
                 ii = 0,
@@ -5463,14 +5503,14 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                         openBrPos = arr[0].indexOf('(') + 1;
                         closedBrPos = rPos;
                         temp = arr[0].substr(openBrPos, closedBrPos - openBrPos).split(',');
-                        radial.f1 = parseInt(temp[0]) || 0;
-                        radial.f2 = parseInt(temp[1]) || 0;
+                        radial.f1 = parseFloat(temp[0]) || 0;
+                        radial.f2 = parseFloat(temp[1]) || 0;
                         if (~temp[2].indexOf('%')) {
-                            temp[2] = parseInt(temp[2]) / 100;
+                            temp[2] = parseFloat(temp[2]) / 100;
                         }
-                        radial.f3 = parseInt(temp[2]) || 0;
-                        radial.f4 = parseInt(temp[3]) || 0;
-                        radial.f5 = parseInt(temp[4]) || 0;
+                        radial.f3 = parseFloat(temp[2]) || 0;
+                        radial.f4 = parseFloat(temp[3]) || 0;
+                        radial.f5 = parseFloat(temp[4]) || 0;
                         radial.f6 = temp[5];
                     }
                     arr[0] = arr[0].substr(closedBrPos + 1);
@@ -5613,9 +5653,14 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
             return arr;
         }
-
     }
-
+    /**
+     * Function to make to uncommon path array to a equal length
+     * of path array and same type (L - lineto) to make it animatable
+     * @param {array} path array 1
+     * @param {array} path array 2
+     * @return {object} object containing final 'from' and 'to' path
+     */
     function pathNormalizer(p1, p2) {
         'use strict';
         // Function to convert array to svg path (?) only for curves
@@ -5648,6 +5693,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         // Setting path again
         pathArr1 = toSvgPath(p1);
         pathArr2 = toSvgPath(p2);
+        // If invalid path return the original path
         if(pathArr1.join().indexOf('undefined') !== -1) {
             return [p1, p2];
         }
@@ -5658,7 +5704,11 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         if (!dPath.getTotalLength || !dPath.getPointAtLength) {
             return [p1, p2];
         }
-
+        /* Function to check if the current environment
+        ** can animate the path, as pathNormalizer pauses
+        ** getTotalLength and getPointAtLength function of svg
+        ** which are not supported by all browsers
+        */
         function canFallback (path1, path2) {
             var str1 = '',
                 str2 = '',
@@ -5709,7 +5759,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
             return false;
         }
-
+        /* Convert svg path array to string,
+            Also removes repeated commands */
         function toSvgPath(arr) {
             var str = [],
                 i = 0,
@@ -5744,7 +5795,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             pathArr1[i] = temp[0];
             pathArr2[i] = temp[1];
         }
-
+        // Convert line path 2 dimensional array to string
         function linetopath (arr) {
             var i = 0,
                 ii = 0,
@@ -5758,7 +5809,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
             return str.join('');
         }
-
+        /* path2curve appends repeated last path command,
+            this function removes it or any other repeated path command */
         function removeBlanks (arr, pos) {
             var i = arr.length,
                 j = 0,
@@ -5775,7 +5827,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 arr.length = 0;
             }
         }
-
+        /* Divide a path array to number to a given number of times
+            as provided in parameters, All path array should start with M command */
         function _divide(arr, times) {
             var resArr = [],
                 locArr = [],
@@ -5785,11 +5838,12 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 x = 0,
                 prevPos = 0,
                 y = 0,
-                diffTimes = times - arrLen; // If array size is smaller than
-                                            // divisions needed
+                // If array size is smaller than
+                // divisions needed
+                diffTimes = times - arrLen;
             while (diffTimes >= 0) {
                 i = arr.length - 1;
-                arr.push(arr.slice(i));
+                arr.push(arr.slice(i)[0]);
                 --diffTimes;
             }
             arrLen = arr.length;
@@ -5807,7 +5861,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
             }
             return resArr;
         }
-
+        /* If two path array have different number of MoveTo commands,
+            divide the smaller number of MoveTo command holder to match the other one */
         function divideArray (diff) {
             var arrToDivide = [],
                 countArr = [],
@@ -5824,6 +5879,8 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 diff = -diff;
                 arrToDivide = pathArr1;
             }
+            // Maintaining a count array to judge number of times a1
+            // path needs to be divided, 1 means dont divide
             for (i = 0, ii = arrToDivide.length; i < ii; ++i) {
                 countArr.push(1);
             }
@@ -5848,19 +5905,16 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
                 pathArr2 = transArr;
             }
         }
-        /*
-
-        */
         for (i = pathArr1.length; i--;) {
             removeBlanks(pathArr1[i], i);
+            // If last element is blank pop it
             pathArr1[i].length || pathArr1.pop();
         }
         for (i = pathArr2.length; i--;) {
             removeBlanks(pathArr2[i], i);
             pathArr2[i].length || pathArr2.pop();
         }
-        // removeBlanks(pathArr1);
-        // removeBlanks(pathArr2);
+        // Making number off moveto commands equal in both path
         divideArray(pathArr1.length - pathArr2.length);
 
         ii = Math.max(pathArr1.length, pathArr2.length);
@@ -6063,6 +6117,10 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     }
 
     // function to get equal points for two different path
+    // We set path to an dynamically created svg path node
+    // and get equal number of path commands from two different
+    // paths. Uses getPointAtLength and getTotalLength of svg that
+    // arent supported on every browser
     function _pathNormalizer(p1, p2) {
         'use strict';
         var i = 0,
@@ -7616,7 +7674,6 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     // EXPOSE
     // SVG and VML are appended just before the EXPOSE line
     // Even with AMD, Raphael should be defined globally
-    oldRaphael.was ? (g.win.Raphael = R) : (Raphael = R);
+    // oldRaphael.was ? (g.win.Raphael = R) : (Raphael = R);
 
-    return R;
-}, (typeof optOutModulePattern != "undefined" ? optOutModulePattern : false)));
+module.exports = R;

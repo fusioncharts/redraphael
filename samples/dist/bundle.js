@@ -1,455 +1,4 @@
-
-/**!
- * RedRaphael 1.1.26 - JavaScript Vector Library
- * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
- *
- * Raphael 2.1.0
- * Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
- * Copyright © 2008-2012 Sencha Labs <http://sencha.com>
- *
- * Licensed under the MIT license.
- */
-
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-// Copyright (c) 2017 Adobe Systems Incorporated. All rights reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-// ┌────────────────────────────────────────────────────────────┐ \\
-// │ Eve 0.5.3 - JavaScript Events Library                      │ \\
-// ├────────────────────────────────────────────────────────────┤ \\
-// │ Author Dmitry Baranovskiy (http://dmitry.baranovskiy.com/) │ \\
-// └────────────────────────────────────────────────────────────┘ \\
-
-(function (glob) {
-    var version = "0.5.3",
-        has = "hasOwnProperty",
-        separator = /[\.\/]/,
-        comaseparator = /\s*,\s*/,
-        wildcard = "*",
-        fun = function () {},
-        numsort = function (a, b) {
-        return a - b;
-    },
-        current_event,
-        stop,
-        events = { n: {} },
-        firstDefined = function () {
-        for (var i = 0, ii = this.length; i < ii; i++) {
-            if (typeof this[i] != "undefined") {
-                return this[i];
-            }
-        }
-    },
-        lastDefined = function () {
-        var i = this.length;
-        while (--i) {
-            if (typeof this[i] != "undefined") {
-                return this[i];
-            }
-        }
-    },
-        objtos = Object.prototype.toString,
-        Str = String,
-        isArray = Array.isArray || function (ar) {
-        return ar instanceof Array || objtos.call(ar) == "[object Array]";
-    },
-
-    /*\
-     * eve
-     [ method ]
-      * Fires event with given `name`, given scope and other parameters.
-      - name (string) name of the *event*, dot (`.`) or slash (`/`) separated
-     - scope (object) context for the event handlers
-     - varargs (...) the rest of arguments will be sent to event handlers
-      = (object) array of returned values from the listeners. Array has two methods `.firstDefined()` and `.lastDefined()` to get first or last not `undefined` value.
-    \*/
-    eve = function (name, scope) {
-        var e = events,
-            oldstop = stop,
-            args = Array.prototype.slice.call(arguments, 2),
-            listeners = eve.listeners(name),
-            z = 0,
-            f = false,
-            l,
-            indexed = [],
-            queue = {},
-            out = [],
-            ce = current_event,
-            errors = [];
-        out.firstDefined = firstDefined;
-        out.lastDefined = lastDefined;
-        current_event = name;
-        stop = 0;
-        for (var i = 0, ii = listeners.length; i < ii; i++) if ("zIndex" in listeners[i]) {
-            indexed.push(listeners[i].zIndex);
-            if (listeners[i].zIndex < 0) {
-                queue[listeners[i].zIndex] = listeners[i];
-            }
-        }
-        indexed.sort(numsort);
-        while (indexed[z] < 0) {
-            l = queue[indexed[z++]];
-            out.push(l.apply(scope, args));
-            if (stop) {
-                stop = oldstop;
-                return out;
-            }
-        }
-        for (i = 0; i < ii; i++) {
-            l = listeners[i];
-            if ("zIndex" in l) {
-                if (l.zIndex == indexed[z]) {
-                    out.push(l.apply(scope, args));
-                    if (stop) {
-                        break;
-                    }
-                    do {
-                        z++;
-                        l = queue[indexed[z]];
-                        l && out.push(l.apply(scope, args));
-                        if (stop) {
-                            break;
-                        }
-                    } while (l);
-                } else {
-                    queue[l.zIndex] = l;
-                }
-            } else {
-                out.push(l.apply(scope, args));
-                if (stop) {
-                    break;
-                }
-            }
-        }
-        stop = oldstop;
-        current_event = ce;
-        return out;
-    };
-    // Undocumented. Debug only.
-    eve._events = events;
-    /*\
-     * eve.listeners
-     [ method ]
-      * Internal method which gives you array of all event handlers that will be triggered by the given `name`.
-      - name (string) name of the event, dot (`.`) or slash (`/`) separated
-      = (array) array of event handlers
-    \*/
-    eve.listeners = function (name) {
-        var names = isArray(name) ? name : name.split(separator),
-            e = events,
-            item,
-            items,
-            k,
-            i,
-            ii,
-            j,
-            jj,
-            nes,
-            es = [e],
-            out = [];
-        for (i = 0, ii = names.length; i < ii; i++) {
-            nes = [];
-            for (j = 0, jj = es.length; j < jj; j++) {
-                e = es[j].n;
-                items = [e[names[i]], e[wildcard]];
-                k = 2;
-                while (k--) {
-                    item = items[k];
-                    if (item) {
-                        nes.push(item);
-                        out = out.concat(item.f || []);
-                    }
-                }
-            }
-            es = nes;
-        }
-        return out;
-    };
-    /*\
-     * eve.separator
-     [ method ]
-      * If for some reasons you don’t like default separators (`.` or `/`) you can specify yours
-     * here. Be aware that if you pass a string longer than one character it will be treated as
-     * a list of characters.
-      - separator (string) new separator. Empty string resets to default: `.` or `/`.
-    \*/
-    eve.separator = function (sep) {
-        if (sep) {
-            sep = Str(sep).replace(/(?=[\.\^\]\[\-])/g, "\\");
-            sep = "[" + sep + "]";
-            separator = new RegExp(sep);
-        } else {
-            separator = /[\.\/]/;
-        }
-    };
-    /*\
-     * eve.on
-     [ method ]
-     **
-     * Binds given event handler with a given name. You can use wildcards “`*`” for the names:
-     | eve.on("*.under.*", f);
-     | eve("mouse.under.floor"); // triggers f
-     * Use @eve to trigger the listener.
-     **
-     - name (string) name of the event, dot (`.`) or slash (`/`) separated, with optional wildcards
-     - f (function) event handler function
-     **
-     - name (array) if you don’t want to use separators, you can use array of strings
-     - f (function) event handler function
-     **
-     = (function) returned function accepts a single numeric parameter that represents z-index of the handler. It is an optional feature and only used when you need to ensure that some subset of handlers will be invoked in a given order, despite of the order of assignment.
-     > Example:
-     | eve.on("mouse", eatIt)(2);
-     | eve.on("mouse", scream);
-     | eve.on("mouse", catchIt)(1);
-     * This will ensure that `catchIt` function will be called before `eatIt`.
-     *
-     * If you want to put your handler before non-indexed handlers, specify a negative value.
-     * Note: I assume most of the time you don’t need to worry about z-index, but it’s nice to have this feature “just in case”.
-    \*/
-    eve.on = function (name, f) {
-        if (typeof f != "function") {
-            return function () {};
-        }
-        var names = isArray(name) ? isArray(name[0]) ? name : [name] : Str(name).split(comaseparator);
-        for (var i = 0, ii = names.length; i < ii; i++) {
-            (function (name) {
-                var names = isArray(name) ? name : Str(name).split(separator),
-                    e = events,
-                    exist;
-                for (var i = 0, ii = names.length; i < ii; i++) {
-                    e = e.n;
-                    e = e.hasOwnProperty(names[i]) && e[names[i]] || (e[names[i]] = { n: {} });
-                }
-                e.f = e.f || [];
-                for (i = 0, ii = e.f.length; i < ii; i++) if (e.f[i] == f) {
-                    exist = true;
-                    break;
-                }
-                !exist && e.f.push(f);
-            })(names[i]);
-        }
-        return function (zIndex) {
-            if (+zIndex == +zIndex) {
-                f.zIndex = +zIndex;
-            }
-        };
-    };
-    /*\
-     * eve.f
-     [ method ]
-     **
-     * Returns function that will fire given event with optional arguments.
-     * Arguments that will be passed to the result function will be also
-     * concated to the list of final arguments.
-     | el.onclick = eve.f("click", 1, 2);
-     | eve.on("click", function (a, b, c) {
-     |     console.log(a, b, c); // 1, 2, [event object]
-     | });
-     - event (string) event name
-     - varargs (…) and any other arguments
-     = (function) possible event handler function
-    \*/
-    eve.f = function (event) {
-        var attrs = [].slice.call(arguments, 1);
-        return function () {
-            eve.apply(null, [event, null].concat(attrs).concat([].slice.call(arguments, 0)));
-        };
-    };
-    /*\
-     * eve.stop
-     [ method ]
-     **
-     * Is used inside an event handler to stop the event, preventing any subsequent listeners from firing.
-    \*/
-    eve.stop = function () {
-        stop = 1;
-    };
-    /*\
-     * eve.nt
-     [ method ]
-     **
-     * Could be used inside event handler to figure out actual name of the event.
-     **
-     - subname (string) #optional subname of the event
-     **
-     = (string) name of the event, if `subname` is not specified
-     * or
-     = (boolean) `true`, if current event’s name contains `subname`
-    \*/
-    eve.nt = function (subname) {
-        var cur = isArray(current_event) ? current_event.join(".") : current_event;
-        if (subname) {
-            return new RegExp("(?:\\.|\\/|^)" + subname + "(?:\\.|\\/|$)").test(cur);
-        }
-        return cur;
-    };
-    /*\
-     * eve.nts
-     [ method ]
-     **
-     * Could be used inside event handler to figure out actual name of the event.
-     **
-     **
-     = (array) names of the event
-    \*/
-    eve.nts = function () {
-        return isArray(current_event) ? current_event : current_event.split(separator);
-    };
-    /*\
-     * eve.off
-     [ method ]
-     **
-     * Removes given function from the list of event listeners assigned to given name.
-     * If no arguments specified all the events will be cleared.
-     **
-     - name (string) name of the event, dot (`.`) or slash (`/`) separated, with optional wildcards
-     - f (function) event handler function
-    \*/
-    /*\
-     * eve.unbind
-     [ method ]
-     **
-     * See @eve.off
-    \*/
-    eve.off = eve.unbind = function (name, f) {
-        if (!name) {
-            eve._events = events = { n: {} };
-            return;
-        }
-        var names = isArray(name) ? isArray(name[0]) ? name : [name] : Str(name).split(comaseparator);
-        if (names.length > 1) {
-            for (var i = 0, ii = names.length; i < ii; i++) {
-                eve.off(names[i], f);
-            }
-            return;
-        }
-        names = isArray(name) ? name : Str(name).split(separator);
-        var e,
-            key,
-            splice,
-            i,
-            ii,
-            j,
-            jj,
-            cur = [events],
-            inodes = [];
-        for (i = 0, ii = names.length; i < ii; i++) {
-            for (j = 0; j < cur.length; j += splice.length - 2) {
-                splice = [j, 1];
-                e = cur[j].n;
-                if (names[i] != wildcard) {
-                    if (e[names[i]]) {
-                        splice.push(e[names[i]]);
-                        inodes.unshift({
-                            n: e,
-                            name: names[i]
-                        });
-                    }
-                } else {
-                    for (key in e) if (e[has](key)) {
-                        splice.push(e[key]);
-                        inodes.unshift({
-                            n: e,
-                            name: key
-                        });
-                    }
-                }
-                cur.splice.apply(cur, splice);
-            }
-        }
-        for (i = 0, ii = cur.length; i < ii; i++) {
-            e = cur[i];
-            while (e.n) {
-                if (f) {
-                    if (e.f) {
-                        for (j = 0, jj = e.f.length; j < jj; j++) if (e.f[j] == f) {
-                            e.f.splice(j, 1);
-                            break;
-                        }
-                        !e.f.length && delete e.f;
-                    }
-                    for (key in e.n) if (e.n[has](key) && e.n[key].f) {
-                        var funcs = e.n[key].f;
-                        for (j = 0, jj = funcs.length; j < jj; j++) if (funcs[j] == f) {
-                            funcs.splice(j, 1);
-                            break;
-                        }
-                        !funcs.length && delete e.n[key].f;
-                    }
-                } else {
-                    delete e.f;
-                    for (key in e.n) if (e.n[has](key) && e.n[key].f) {
-                        delete e.n[key].f;
-                    }
-                }
-                e = e.n;
-            }
-        }
-        // prune inner nodes in path
-        prune: for (i = 0, ii = inodes.length; i < ii; i++) {
-            e = inodes[i];
-            for (key in e.n[e.name].f) {
-                // not empty (has listeners)
-                continue prune;
-            }
-            for (key in e.n[e.name].n) {
-                // not empty (has children)
-                continue prune;
-            }
-            // is empty
-            delete e.n[e.name];
-        }
-    };
-    /*\
-     * eve.once
-     [ method ]
-     **
-     * Binds given event handler with a given name to only run once then unbind itself.
-     | eve.once("login", f);
-     | eve("login"); // triggers f
-     | eve("login"); // no listeners
-     * Use @eve to trigger the listener.
-     **
-     - name (string) name of the event, dot (`.`) or slash (`/`) separated, with optional wildcards
-     - f (function) event handler function
-     **
-     = (function) same return function as @eve.on
-    \*/
-    eve.once = function (name, f) {
-        var f2 = function () {
-            eve.off(name, f2);
-            return f.apply(this, arguments);
-        };
-        return eve.on(name, f2);
-    };
-    /*\
-     * eve.version
-     [ property (string) ]
-     **
-     * Current version of the library.
-    \*/
-    eve.version = version;
-    eve.toString = function () {
-        return "You are running Eve " + version;
-    };
-    glob.eve = eve;
-    typeof module != "undefined" && module.exports ? module.exports = eve : typeof define === "function" && define.amd ? define("eve", [], function () {
-        return eve;
-    }) : glob.eve = eve;
-})(typeof window != "undefined" ? window : this);
-
-},{}],2:[function(require,module,exports){
 var Raphael = require('./raphael.core');
 
 var svg = require('./raphael.svg');
@@ -458,7 +7,7 @@ var canvas = require('./raphael.canvas');
 
 module.exports = Raphael;
 
-},{"./raphael.canvas":3,"./raphael.core":4,"./raphael.svg":5,"./raphael.vml":6}],3:[function(require,module,exports){
+},{"./raphael.canvas":2,"./raphael.core":3,"./raphael.svg":5,"./raphael.vml":6}],2:[function(require,module,exports){
 /*jslint forin: true, regexp: true, todo: true, white: false, browser: true,
  sloppy: true, white: true, eqeq: false, newcap: true, nomen: true */
 
@@ -496,6 +45,7 @@ if (R.canvas) {
         DEFAULT_STROKE = "#000",
         has = "hasOwnProperty",
         S = " ",
+
 
     /** @todo: detect touch */
     supportsTouch = 'ontouchstart' in win || navigator.msMaxTouchPoints > 0,
@@ -557,7 +107,7 @@ if (R.canvas) {
         while (i--) {
             dragi = drag[i];
             dragi.el._drag = {};
-            dragi.onendHandler && eve("raphael.drag.end." + dragi.el.id, dragi.end_scope || dragi.start_scope || dragi.move_scope || dragi.el, e);
+            eve("raphael.drag.end." + dragi.el.id, dragi.end_scope || dragi.start_scope || dragi.move_scope || dragi.el, e);
         }
         drag = [];
     };
@@ -597,9 +147,11 @@ if (R.canvas) {
 
         /** @todo: do not use offsetX and offsetY */
         var x = event.offsetX,
-            //mathFloor(event.pageX || (event.clientX + doc.body.scrollLeft + doc.documentElement.scrollLeft) || 0),
+
+        //mathFloor(event.pageX || (event.clientX + doc.body.scrollLeft + doc.documentElement.scrollLeft) || 0),
         y = event.offsetY,
-            //mathFloor(event.pageY || (event.clientY + doc.body.scrollTop + doc.documentElement.scrollTop) || 0),
+
+        //mathFloor(event.pageY || (event.clientY + doc.body.scrollTop + doc.documentElement.scrollTop) || 0),
         type = event.type,
             node = R._getTargetNode([x, y]);
 
@@ -1794,6 +1346,7 @@ if (R.canvas) {
             var o = this,
                 ctx = o.context,
 
+
             // CHECKPOINT 3. Rename validateAttrs to getValidAttrs?
             attrs = o.validateAttrs(),
                 x = attrs.x,
@@ -1801,6 +1354,7 @@ if (R.canvas) {
                 w = attrs.width,
                 h = attrs.height,
                 r = attrs.r,
+
 
             /** @todo: provide support for rx, ry */
             rx = r || attrs.rx,
@@ -1958,6 +1512,7 @@ if (R.canvas) {
                 x = attrs.cx,
                 y = attrs.cy,
                 r = attrs.r,
+
 
             /** @todo: provide support for rx, ry */
             rx = r || attrs.rx,
@@ -2378,6 +1933,7 @@ if (R.canvas) {
             y = con.y,
             width = con.width,
             height = con.height,
+
 
         //handler = R._containerEventHandler,
         wrapper,
@@ -2839,15 +2395,12 @@ if (R.canvas) {
                 el: this,
                 move_scope: move_scope,
                 start_scope: start_scope,
-                end_scope: end_scope,
-                onmoveHandler: onmove,
-                onstartHandler: onstart,
-                onendHandler: onend
+                end_scope: end_scope
             });
             onstart && eve.on("raphael.drag.start." + this.id, onstart);
             onmove && eve.on("raphael.drag.move." + this.id, onmove);
             onend && eve.on("raphael.drag.end." + this.id, onend);
-            onstart && eve("raphael.drag.start." + this.id, start_scope || move_scope || this, e.clientX + scrollX, e.clientY + scrollY, e);
+            eve("raphael.drag.start." + this.id, start_scope || move_scope || this, e.clientX + scrollX, e.clientY + scrollY, e);
         }
         this._drag = {};
         draggable.push({
@@ -3042,7 +2595,7 @@ if (R.canvas) {
 
 module.exports = R;
 
-},{"./raphael.core":4}],4:[function(require,module,exports){
+},{"./raphael.core":3}],3:[function(require,module,exports){
 (function (global){
 /**!
  * RedRaphael 1.0.0 - JavaScript Vector Library
@@ -3055,7 +2608,7 @@ module.exports = R;
  * Licensed under the MIT license.
  */
 
-var eve = require('./eve/eve');
+var eve = require('eve');
 
 var _win = typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : null;
 
@@ -3229,15 +2782,6 @@ supportsOnlyTouch = R.supportsOnlyTouch = supportsTouch && !(win.navigator.maxTo
      | c.animate({hsb: [1, 0, 0.5]}, 1e3);
     \*/
 },
-    pluck = function (checkWith) {
-    var i = 1,
-        ii = arguments.length;
-    for (; i < ii; ++i) {
-        if (arguments[i] !== checkWith) {
-            return arguments[i];
-        }
-    }
-},
     caproto = R.ca = R.customAttributes = CustomAttributes.prototype,
     Paper = function () {
     /*\
@@ -3317,6 +2861,7 @@ paperproto = R.fn = Paper.prototype = R.prototype,
     image: 1,
     group: 1
 },
+
 
 // Add new dragstart, dragmove and dragend events in order to support touch drag in both touch and hybrid devices
 events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchstart touchmove touchend touchcancel dragstart dragmove dragend"[split](S),
@@ -3413,8 +2958,7 @@ events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchsta
     rotation: 0,
     width: 0,
     x: 0,
-    y: 0,
-    alpha: nu
+    y: 0
 },
     availableAnimAttrs = R._availableAnimAttrs = {
     blur: nu,
@@ -3437,12 +2981,7 @@ events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchsta
     transform: "transform",
     width: nu,
     x: nu,
-    y: nu,
-    // Required for pie 3d
-    "color": "colour",
-    "borderColor": "colour",
-    "borderWidth": nu,
-    alpha: nu
+    y: nu
 },
     eldata = {},
     sortByKey = function (a, b) {
@@ -3712,6 +3251,7 @@ is = R.is = function (o, type) {
     return type == "null" && o === null || type == typeof o && o !== null || type == object && o === Object(o) || type == "array" && Array.isArray && Array.isArray(o) || objectToString.call(o).slice(8, -1).toLowerCase() == type;
 },
 
+
 /*\
   * Raphael.createUUID
   [ method ]
@@ -3764,97 +3304,9 @@ clone = R.clone = hasPrototypeBug ? function (obj) {
         res[key] = clone(obj[key]);
     }
     return res;
-},
-    Node = _win.Node;
-//Adding pollyfill for IE11
-if (Node && !Node.prototype.contains) {
-    Node.prototype.contains = function (el) {
-        while (el = el.parentNode) {
-            if (el === this) return true;
-        }
-        return false;
-    };
 };
 
 R._g = g;
-
-// PriorityQueue Function Declaration
-function PriorityQueue(comparator) {
-    this._comparator = comparator;
-    this._elements = [];
-}
-
-PriorityQueue.prototype.isEmpty = function () {
-    return this.size() === 0;
-};
-
-PriorityQueue.prototype.peek = function () {
-    if (this.isEmpty()) return null;
-
-    return this._elements[0];
-};
-
-PriorityQueue.prototype.deq = function () {
-    var first = this.peek();
-    var last = this._elements.pop();
-    var size = this.size();
-
-    if (size === 0) return first;
-
-    this._elements[0] = last;
-    var current = 0;
-
-    while (current < size) {
-        var largest = current;
-        var left = 2 * current + 1;
-        var right = 2 * current + 2;
-
-        if (left < size && this._compare(left, largest) >= 0) {
-            largest = left;
-        }
-
-        if (right < size && this._compare(right, largest) >= 0) {
-            largest = right;
-        }
-
-        if (largest === current) break;
-
-        this._swap(largest, current);
-        current = largest;
-    }
-
-    return first;
-};
-
-PriorityQueue.prototype.enq = function (element) {
-    var size = this._elements.push(element);
-    var current = size - 1;
-
-    while (current > 0) {
-        var parent = Math.floor((current - 1) / 2);
-
-        if (this._compare(current, parent) <= 0) break;
-
-        this._swap(parent, current);
-        current = parent;
-    }
-
-    return size;
-};
-
-PriorityQueue.prototype.size = function () {
-    return this._elements.length;
-};
-
-PriorityQueue.prototype._compare = function (a, b) {
-    return this._comparator(this._elements[a], this._elements[b]);
-};
-
-PriorityQueue.prototype._swap = function (a, b) {
-    var aux = this._elements[a];
-    this._elements[a] = this._elements[b];
-    this._elements[b] = aux;
-};
 
 /*\
  * Raphael.type
@@ -5331,7 +4783,7 @@ var pathDimensions = R.pathBBox = function (path) {
         pathArray = R.parsePathString(pathArray);
     }
     if (!pathArray || !pathArray.length) {
-        res = [["M", 0, 0]];
+        res = ["M", 0, 0];
         res.toString = R._path2string;
         return res;
     }
@@ -5662,7 +5114,7 @@ var pathDimensions = R.pathBBox = function (path) {
         }
     },
         fixM = function (path1, path2, a1, a2, i) {
-        if (path1 && path2 && path1[i][0] == "M" && path2[i][0] != "M" && !i) {
+        if (path1 && path2 && path1[i][0] == "M" && path2[i][0] != "M") {
             path2.splice(i, 0, ["M", a2.x, a2.y]);
             a1.bx = 0;
             a1.by = 0;
@@ -6412,9 +5864,6 @@ var preventDefault = function () {
         scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
         scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
         dragi,
-        data,
-        dummyEve = {},
-        key,
         j = drag.length;
 
     while (j--) {
@@ -6454,15 +5903,7 @@ var preventDefault = function () {
         o && eve("raphael.drag.over." + dragi.el.id, dragi.el, o);
         x += scrollX;
         y += scrollY;
-        for (key in e) {
-            if (typeof e[key] === 'function') {
-                dummyEve[key] = e[key].bind(e);
-            } else {
-                dummyEve[key] = e[key];
-            }
-        }
-        data = dummyEve.data = [x - dragi.el._drag.x, y - dragi.el._drag.y, x, y];
-        eve("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, dummyEve, data);
+        eve("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, x - dragi.el._drag.x, y - dragi.el._drag.y, x, y, e);
     }
 },
     dragUp = function (e) {
@@ -6902,10 +6343,7 @@ var draggable = [];
 elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_scope) {
     function start(e) {
         var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
-            scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
-            key,
-            dummyEve = {},
-            data;
+            scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft;
 
         this._drag.x = e.clientX + scrollX;
         this._drag.y = e.clientY + scrollY;
@@ -6917,33 +6355,22 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
         }
         !drag.length && R.mousemove(dragMove).mouseup(dragUp);
 
-        drag = [{
+        drag.push({
             el: this,
             move_scope: move_scope,
             start_scope: start_scope,
             end_scope: end_scope
-        }];
-        for (key in e) {
-            if (typeof e[key] === 'function') {
-                dummyEve[key] = e[key].bind(e);
-            } else {
-                dummyEve[key] = e[key];
-            }
-        }
-        data = dummyEve.data = [e.clientX + scrollX, e.clientY + scrollY];
-        onstart && onstart.call(start_scope || move_scope || this, dummyEve, data);
-        // onstart && eve.on("raphael.drag.start." + this.id, onstart);
+        });
+
+        onstart && eve.on("raphael.drag.start." + this.id, onstart);
         onmove && eve.on("raphael.drag.move." + this.id, onmove);
         onend && eve.on("raphael.drag.end." + this.id, onend);
-        // onstart && eve("raphael.drag.start." + this.id, start_scope || move_scope || this, e.clientX + scrollX, e.clientY + scrollY, e);
+        eve("raphael.drag.start." + this.id, start_scope || move_scope || this, e.clientX + scrollX, e.clientY + scrollY, e);
     }
     this._drag = {};
     draggable.push({
         el: this,
-        start: start,
-        onstart: onstart,
-        onmove: onmove,
-        onend: onend
+        start: start
     });
     // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
     if (supportsTouch && !supportsOnlyTouch) {
@@ -6984,64 +6411,6 @@ elproto.undrag = function () {
 
     !draggable.length && R.unmousemove(dragMove).unmouseup(dragUp);
     delete this._drag;
-};
-
-/*\
- * Element.undragmove
- [ method ]
- **
- * Removes all dragmove event handlers from given element.
-\*/
-elproto.undragmove = function () {
-    var i = draggable.length;
-    while (i--) {
-        if (draggable[i].el == this && draggable[i].onmove) {
-            this.unmousedown(draggable[i].start);
-            draggable.splice(i, 1);
-            eve.unbind("raphael.drag.move." + this.id);
-        }
-    }
-
-    !draggable.length && R.unmousemove(dragMove).unmouseup(dragUp);
-};
-
-/*\
- * Element.undragend
- [ method ]
- **
- * Removes all dragend event handlers from given element.
-\*/
-elproto.undragend = function () {
-    var i = draggable.length;
-    while (i--) {
-        if (draggable[i].el == this && draggable[i].onend) {
-            this.unmousedown(draggable[i].start);
-            draggable.splice(i, 1);
-            eve.unbind("raphael.drag.end." + this.id);
-        }
-    }
-
-    !draggable.length && R.unmousemove(dragMove).unmouseup(dragUp);
-};
-
-/*\
- * Element.undragstart
- [ method ]
- **
- * Removes all dragstart event handlers from given element.
-\*/
-elproto.undragstart = function () {
-    var i = draggable.length;
-    while (i--) {
-        if (draggable[i].el == this && draggable[i].onstart) {
-            this.unmousedown(draggable[i].start);
-            draggable.splice(i, 1);
-            eve.unbind("raphael.drag.start." + this.id);
-            this._dragstart = false;
-        }
-    }
-
-    !draggable.length && R.unmousemove(dragMove).unmouseup(dragUp);
 };
 
 elproto.follow = function (el, callback, stalk) {
@@ -7099,6 +6468,209 @@ paperproto.show = function () {
     var paper = this;
     paper.canvas.style.visibility = E;
     return paper;
+};
+
+/*\
+ * Paper.group
+ [ method ]
+ **
+ * Creates a group
+ **
+ > Parameters
+ **
+ - id (number) id of the group
+ = (object) Raphaël element object with type “group”
+ **
+ > Usage
+ | var g = paper.group();
+\*/
+paperproto.group = function () {
+    // id
+    var paper = this,
+        args = arguments,
+        group = lastArgIfGroup(args, true),
+        out = R._engine.group(paper, args[0], group);
+    return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
+};
+
+/*\
+ * Paper.circle
+ [ method ]
+ **
+ * Draws a circle.
+ **
+ > Parameters
+ **
+ - x (number) x coordinate of the centre
+ - y (number) y coordinate of the centre
+ - r (number) radius
+ = (object) Raphaël element object with type “circle”
+ **
+ > Usage
+ | var c = paper.circle(50, 50, 40);
+\*/
+paperproto.circle = function () {
+    // x, y, r
+    var paper = this,
+        args = arguments,
+        group = lastArgIfGroup(args, true),
+        attrs = serializeArgs(args, "cx", 0, "cy", 0, "r", 0, "fill", none, "stroke", black),
+        out = R._engine.circle(paper, attrs, group);
+
+    return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
+};
+
+/*\
+ * Paper.rect
+ [ method ]
+ *
+ * Draws a rectangle.
+ **
+ > Parameters
+ **
+ - x (number) x coordinate of the top left corner
+ - y (number) y coordinate of the top left corner
+ - width (number) width
+ - height (number) height
+ - r (number) #optional radius for rounded corners, default is 0
+ = (object) Raphaël element object with type “rect”
+ **
+ > Usage
+ | // regular rectangle
+ | var c = paper.rect(10, 10, 50, 50);
+ | // rectangle with rounded corners
+ | var c = paper.rect(40, 40, 50, 50, 10);
+\*/
+paperproto.rect = function () {
+    var paper = this,
+        args = arguments,
+        group = lastArgIfGroup(args, true),
+        attrs = serializeArgs(args, "x", 0, "y", 0, "width", 0, "height", 0, "r", 0, "fill", none, "stroke", black),
+        out = R._engine.rect(paper, attrs, group);
+
+    return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
+};
+
+/*\
+ * Paper.ellipse
+ [ method ]
+ **
+ * Draws an ellipse.
+ **
+ > Parameters
+ **
+ - x (number) x coordinate of the centre
+ - y (number) y coordinate of the centre
+ - rx (number) horizontal radius
+ - ry (number) vertical radius
+ = (object) Raphaël element object with type “ellipse”
+ **
+ > Usage
+ | var c = paper.ellipse(50, 50, 40, 20);
+\*/
+paperproto.ellipse = function () {
+    var paper = this,
+        args = arguments,
+        group = lastArgIfGroup(args, true),
+        attrs = serializeArgs(args, "x", 0, "y", 0, "rx", 0, "ry", 0, "fill", none, "stroke", black),
+        out = R._engine.ellipse(this, attrs, group);
+
+    return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
+};
+
+/*\
+ * Paper.path
+ [ method ]
+ **
+ * Creates a path element by given path data string.
+ > Parameters
+ - pathString (string) #optional path string in SVG format.
+ * Path string consists of one-letter commands, followed by comma seprarated arguments in numercal form. Example:
+ | "M10,20L30,40"
+ * Here we can see two commands: “M”, with arguments `(10, 20)` and “L” with arguments `(30, 40)`. Upper case letter mean command is absolute, lower case—relative.
+ *
+ # <p>Here is short list of commands available, for more details see <a href="http://www.w3.org/TR/SVG/paths.html#PathData" title="Details of a path's data attribute's format are described in the SVG specification.">SVG path string format</a>.</p>
+ # <table><thead><tr><th>Command</th><th>Name</th><th>Parameters</th></tr></thead><tbody>
+ # <tr><td>M</td><td>moveto</td><td>(x y)+</td></tr>
+ # <tr><td>Z</td><td>closepath</td><td>(none)</td></tr>
+ # <tr><td>L</td><td>lineto</td><td>(x y)+</td></tr>
+ # <tr><td>H</td><td>horizontal lineto</td><td>x+</td></tr>
+ # <tr><td>V</td><td>vertical lineto</td><td>y+</td></tr>
+ # <tr><td>C</td><td>curveto</td><td>(x1 y1 x2 y2 x y)+</td></tr>
+ # <tr><td>S</td><td>smooth curveto</td><td>(x2 y2 x y)+</td></tr>
+ # <tr><td>Q</td><td>quadratic Bézier curveto</td><td>(x1 y1 x y)+</td></tr>
+ # <tr><td>T</td><td>smooth quadratic Bézier curveto</td><td>(x y)+</td></tr>
+ # <tr><td>A</td><td>elliptical arc</td><td>(rx ry x-axis-rotation large-arc-flag sweep-flag x y)+</td></tr>
+ # <tr><td>R</td><td><a href="http://en.wikipedia.org/wiki/Catmull–Rom_spline#Catmull.E2.80.93Rom_spline">Catmull-Rom curveto</a>*</td><td>x1 y1 (x y)+</td></tr></tbody></table>
+ * * “Catmull-Rom curveto” is a not standard SVG command and added in 2.0 to make life easier.
+ * Note: there is a special case when path consist of just three commands: “M10,10R…z”. In this case path will smoothly connects to its beginning.
+ > Usage
+ | var c = paper.path("M10 10L90 90");
+ | // draw a diagonal line:
+ | // move to 10,10, line to 90,90
+ * For example of path strings, check out these icons: http://raphaeljs.com/icons/
+\*/
+paperproto.path = function () {
+    var paper = this,
+        args = arguments,
+        group = lastArgIfGroup(args, true),
+        paperConfig = paper.config,
+        capStyle = paperConfig && paperConfig["stroke-linecap"] || "butt",
+        attrs = serializeArgs(args, "path", E, "fill", none, "stroke", black, "stroke-linecap", capStyle),
+        out = R._engine.path(paper, attrs, group);
+    return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
+};
+
+/*\
+ * Paper.image
+ [ method ]
+ **
+ * Embeds an image into the surface.
+ **
+ > Parameters
+ **
+ - src (string) URI of the source image
+ - x (number) x coordinate position
+ - y (number) y coordinate position
+ - width (number) width of the image
+ - height (number) height of the image
+ = (object) Raphaël element object with type “image”
+ **
+ > Usage
+ | var c = paper.image("apple.png", 10, 10, 80, 80);
+\*/
+paperproto.image = function () {
+    var paper = this,
+        args = arguments,
+        group = lastArgIfGroup(args, true),
+        attrs = serializeArgs(args, "src", "", "x", 0, "y", 0, "width", 0, "height", 0);
+    out = R._engine.image(paper, attrs, group);
+    return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
+};
+
+/*\
+ * Paper.text
+ [ method ]
+ **
+ * Draws a text string. If you need line breaks, put “\n” in the string.
+ **
+ > Parameters
+ **
+ - x (number) x coordinate position
+ - y (number) y coordinate position
+ - text (string) The text string to draw
+ = (object) Raphaël element object with type “text”
+ **
+ > Usage
+ | var t = paper.text(50, 50, "Raphaël\nkicks\nbutt!");
+\*/
+paperproto.text = function () {
+    var paper = this,
+        args = arguments,
+        group = lastArgIfGroup(args, true),
+        attrs = serializeArgs(args, "x", 0, "y", 0, "text", E, "stroke", none, "fill", black, "text-anchor", "middle", "vertical-align", "middle"),
+        out = R._engine.text(paper, attrs, group, args[1]);
+    return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
 };
 
 /*\
@@ -7248,8 +6820,8 @@ paperproto.status = function (anim, value) {
 };
 
 // Works exactly as paper.animateWith()
-paperproto.animateWith = function (el, anim, params, ms, easing, callback, configObject) {
-    return elproto.animateWith.call(this, el, anim, params, ms, easing, callback, configObject);
+paperproto.animateWith = function (el, anim, params, ms, easing, callback) {
+    return elproto.animateWith.call(this, el, anim, params, ms, easing, callback);
 };
 
 /*\
@@ -7446,10 +7018,10 @@ paperproto.getElementsByPoint = function (x, y) {
 };
 function x_y() {
     return this.x + S + this.y;
-};
+}
 function x_y_w_h() {
     return this.x + S + this.y + S + this.width + " \xd7 " + this.height;
-};
+}
 
 /*\
  * Element.isPointInside
@@ -7646,8 +7218,8 @@ var curveslengths = {},
         });
         return point;
     };
-},
-    getTotalLength = getLengthFactory(1),
+};
+var getTotalLength = getLengthFactory(1),
     getPointAtLength = getLengthFactory(),
     getSubpathsAtLength = getLengthFactory(0, 1);
 
@@ -7804,70 +7376,6 @@ var ef = R.easing_formulas = {
             }
         }
         return l;
-    },
-    // used in line chart anchor animation
-    oneBounceOut: function (n) {
-        var top = 120;
-        if (n <= 0.9) {
-            return ef.easeIn(n) * 1.33;
-        }
-        return 1.2 - n / 5;
-    },
-    // Used in translating bubble plots
-    elasticOnce: function (n) {
-        var p = 0.9;
-        if (n == !!n) {
-            return n;
-        }
-        return Math.pow(2, -10 * n) * Math.sin((n - p / 4) * (2 * Math.PI) / p) + 1;
-    },
-    // accelerating from zero velocity
-    easeInQuad: function (t) {
-        return t * t;
-    },
-    // decelerating to zero velocity
-    easeOutQuad: function (t) {
-        return t * (2 - t);
-    },
-    // acceleration until halfway, then deceleration
-    easeInOutQuad: function (t) {
-        return t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-    },
-    // accelerating from zero velocity
-    easeInCubic: function (t) {
-        return t * t * t;
-    },
-    // decelerating to zero velocity
-    easeOutCubic: function (t) {
-        return --t * t * t + 1;
-    },
-    // acceleration until halfway, then deceleration
-    easeInOutCubic: function (t) {
-        return t < .5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
-    },
-    // accelerating from zero velocity
-    easeInQuart: function (t) {
-        return t * t * t * t;
-    },
-    // decelerating to zero velocity
-    easeOutQuart: function (t) {
-        return 1 - --t * t * t * t;
-    },
-    // acceleration until halfway, then deceleration
-    easeInOutQuart: function (t) {
-        return t < .5 ? 8 * t * t * t * t : 1 - 8 * --t * t * t * t;
-    },
-    // accelerating from zero velocity
-    easeInQuint: function (t) {
-        return t * t * t * t * t;
-    },
-    // decelerating to zero velocity
-    easeOutQuint: function (t) {
-        return 1 + --t * t * t * t * t;
-    },
-    // acceleration until halfway, then deceleration
-    easeInOutQuint: function (t) {
-        return t < .5 ? 16 * t * t * t * t * t : 1 + 16 * --t * t * t * t * t;
     }
 };
 ef.easeIn = ef["ease-in"] = ef["<"];
@@ -7879,15 +7387,16 @@ ef["back-out"] = ef.backOut;
 var animationElements = [],
     requestAnimFrame,
 
-// This a temporary fix so that animation can be handled from the scheduler module.
-animation = function () {
-    var Now = +new Date(),
-        l = 0,
-        deqArr = [],
-        i = 0,
-        ll = 0,
-        animFrameFn;
 
+// This a temporary fix so that animation can be handled from the scheduler module.
+getAnimFrameFn = function () {
+    return requestAnimFrame = R.requestAnimFrame || _win.webkitRequestAnimationFrame || _win.mozRequestAnimationFrame || _win.oRequestAnimationFrame || _win.msRequestAnimationFrame || function (callback) {
+        setTimeout(callback, 16);
+    };
+},
+    animation = function () {
+    var Now = +new Date(),
+        l = 0;
     for (; l < animationElements.length; l++) {
         var e = animationElements[l];
         if (e.el.removed || e.paused || e.parentEl && e.parentEl.e && e.parentEl.e.paused) {
@@ -7903,17 +7412,9 @@ animation = function () {
             that = e.el,
             set = {},
             now,
-            origms,
             init = {},
             executeEvent = R.stopEvent !== false,
-            key,
-            i = 0,
-            peekVal = e.el && e.el.animElements && e.el.animElements.peek();
-        // Checking hooks
-        while (peekVal && peekVal.pos <= time / ms) {
-            deqArr.push(e.el.animElements.deq());
-            peekVal = e.el.animElements.peek();
-        }
+            key;
         if (e.initstatus) {
             time = (e.initstatus * e.anim.top - e.prev) / (e.percent - e.prev) * ms;
             e.status = e.initstatus;
@@ -7925,75 +7426,24 @@ animation = function () {
         } else {
             e.status = (e.prev + (e.percent - e.prev) * (time / ms)) / e.anim.top;
         }
-        origms = ms;
-        // If has parentEl
-        if (e.parentEl && e.parentEl.animElements) {
-            ms = e.delayend - e.delaystart;
-            time = e.parentEl.cPos - e.delaystart;
-        } else if (e.el.animElements) {
-            e.el.cPos = time / ms;
-        }
         if (time < 0) {
             continue;
         }
         if (time < ms) {
             var pos = easing(time / ms);
-            ms = origms;
             for (var attr in from) if (from[has](attr)) {
                 switch (availableAnimAttrs[attr]) {
                     case nu:
                         now = +from[attr] + pos * ms * diff[attr];
                         break;
                     case "colour":
-                        if (!diff[attr].length) {
-                            tmpOpacity = from[attr].opacity + pos * ms * diff[attr].opacity;
-                            if (isNaN(tmpOpacity)) {
-                                tmpOpacity = 1;
-                            }
-                            now = "rgba(" + [upto255(round(from[attr].r + pos * ms * diff[attr].r)), upto255(round(from[attr].g + pos * ms * diff[attr].g)), upto255(round(from[attr].b + pos * ms * diff[attr].b)), tmpOpacity].join(",") + ")";
-                        } else {
-                            now = [];
-                            for (i = 0, ii = from[attr].length; i < ii; ++i) {
-                                if (i === 0) {
-                                    if (from[attr].isRadial || diff[attr].isRadial) {
-                                        radial = "xr(";
-                                        radial += from[attr][0].f1 * (1 - pos) + diff[attr][0].f1 * pos || '';
-                                        radial += ',';
-                                        radial += from[attr][0].f2 * (1 - pos) + diff[attr][0].f2 * pos || '';
-                                        radial += ',';
-                                        radial += (from[attr][0].f3 * (1 - pos) + diff[attr][0].f3 * pos) * 100 || '';
-                                        radial += '%,';
-                                        radial += from[attr][0].f4 * (1 - pos) + diff[attr][0].f4 * pos || '';
-                                        radial += ',';
-                                        radial += from[attr][0].f5 * (1 - pos) + diff[attr][0].f5 * pos;
-                                        radial += ',';
-                                        radial += from[attr][0].f6;
-                                        radial += ')';
-                                        now.push(radial);
-                                    } else {
-                                        now.push(from[attr][i] * (1 - pos) + pos * diff[attr][i]);
-                                        if (now[0] <= 0) {
-                                            now[0] += 360;
-                                        }
-                                    }
-                                } else {
-                                    now.push("rgba(" + [upto255(round(from[attr][i].r + pos * ms * diff[attr][i].r)), upto255(round(from[attr][i].g + pos * ms * diff[attr][i].g)), upto255(round(from[attr][i].b + pos * ms * diff[attr][i].b)), from[attr][i].opacity + pos * ms * diff[attr][i].opacity].join(",") + "):" + from[attr][i].position);
-                                }
-                            }
-                            now = now.join("-");
-                            // If radial focus doesnt have a separator
-                            if (from[attr].isRadial || diff[attr].isRadial) {
-                                now = now.replace('-', '');
-                            }
-                        }
+                        now = "rgb(" + [upto255(round(from[attr].r + pos * ms * diff[attr].r)), upto255(round(from[attr].g + pos * ms * diff[attr].g)), upto255(round(from[attr].b + pos * ms * diff[attr].b))].join(",") + ")";
                         break;
                     case "path":
                         now = [];
                         for (var i = 0, ii = from[attr].length; i < ii; i++) {
                             now[i] = [from[attr][i][0]];
-                            var jj;
-                            jj = from[attr][i] ? from[attr][i].length : 0;
-                            for (var j = 1; j < jj; j++) {
+                            for (var j = 1, jj = from[attr][i].length; j < jj; j++) {
                                 now[i][j] = (+from[attr][i][j] + pos * ms * diff[attr][i][j]).toFixed(4);
                             }
                             now[i] = now[i].join(S);
@@ -8070,37 +7520,10 @@ animation = function () {
         }
     }
     R.svg && that && that.paper && that.paper.safari();
-
-    // Starting animation on timer 0
-    for (l = 0, ll = deqArr.length; l < ll; ++l) {
-        // lib.schedular.addJob((function (l) {
-        //     return function ()  {
-        //         runAnimation.apply(null, deqArr[l].params);
-        //     };
-        // })(l), lib.priorityList.instant);
-        animFrameFn = R.getAnimFrameFn();
-        animFrameFn(function (l) {
-            return function () {
-                runAnimation.apply(null, deqArr[l].params);
-            };
-        }(l));
-    }
-
-    animationElements.length && (requestAnimFrame || R.getAnimFrameFn())(animation);
+    animationElements.length && (requestAnimFrame || getAnimFrameFn())(animation);
 },
     upto255 = function (color) {
     return color > 255 ? 255 : color < 0 ? 0 : color;
-},
-    checkPercentage = function (num) {
-    num > 1 && (num = 1);
-    num < 0 && (num = 0);
-    return num;
-};
-
-R.getAnimFrameFn = function () {
-    return requestAnimFrame = R.requestAnimFrame || _win.webkitRequestAnimationFrame || _win.mozRequestAnimationFrame || _win.oRequestAnimationFrame || _win.msRequestAnimationFrame || function (callback) {
-        setTimeout(callback, 16);
-    };
 };
 
 /*\
@@ -8117,9 +7540,6 @@ R.getAnimFrameFn = function () {
  - ms (number) #optional number of milliseconds for animation to run
  - easing (string) #optional easing type. Accept on of @Raphael.easing_formulas or CSS format: `cubic&#x2010;bezier(XX,&#160;XX,&#160;XX,&#160;XX)`
  - callback (function) #optional callback function. Will be called at the end of animation.
- - configObject (object) #optional takes an object with optional properties like
-    start(what percentage to start aniation), end(what percentage to end animation), hookFn(function
-    to be called before applying animation), smartMorph(whether to use smartMorphing in path animation)
  * or
  - element (object) element to sync with
  - anim (object) animation to sync with
@@ -8127,64 +7547,22 @@ R.getAnimFrameFn = function () {
  **
  = (object) original element
 \*/
-elproto.animateWith = function (el, anim, params, ms, easing, callback, configObject) {
-    var element = this,
-        refOb = {},
-        key;
-    // Copying the reference object
-    configObject = configObject || {};
-    for (key in configObject) {
-        if (configObject.hasOwnProperty(key)) {
-            refOb[key] = configObject[key];
-        }
-    }
-    configObject = refOb;
+elproto.animateWith = function (el, anim, params, ms, easing, callback) {
+    var element = this;
     if (element.removed) {
         callback && callback.call(element);
         return element;
     }
     if (ms == 0) {
-        if (R.is(callback, "function")) {
-            setTimeout(function () {
-                callback.call(element);
-            }, 0);
-        }
+        setTimeout(function () {
+            R.is(callback, "function") && callback.call(element);
+        }, 0);
         return element.attr(params);
     }
     var a = params instanceof Animation ? params : R.animation(params, ms, easing, callback),
         x,
         y;
-
-    configObject.start = checkPercentage(configObject.start || 0);
-    configObject.end = checkPercentage(configObject.end || 1);
-    if (configObject.start >= configObject.end) {
-        configObject.start = configObject.end;
-    }
-
-    if (!configObject.from && configObject.start > 0.01) {
-        // Initializing new Priority Queue if not present already
-        el.animElements = el.animElements || new PriorityQueue(function comparator(a, b) {
-            return b.pos - a.pos;
-        });
-        el.animElements.enq({
-            pos: configObject.start,
-            attr: configObject.start === configObject.end,
-            params: [a, element, a.percents[0], null, element.attr(), undefined, el, {
-                start: configObject.start,
-                end: configObject.end,
-                smartMorph: configObject.smartMorph,
-                hookFn: configObject.hookFn
-            }, params],
-            executeOb: {
-                el: this,
-                attrs: params,
-                callback: callback,
-                hookFn: configObject.hookFn
-            }
-        });
-    } else {
-        runAnimation(a, element, a.percents[0], null, element.attr(), undefined, el, configObject);
-    }
+    runAnimation(a, element, a.percents[0], null, element.attr(), undefined, el);
     for (var i = 0, ii = animationElements.length; i < ii; i++) {
         if (animationElements[i].anim == anim && animationElements[i].el == el) {
             animationElements[ii - 1].start = animationElements[i].start;
@@ -8192,6 +7570,8 @@ elproto.animateWith = function (el, anim, params, ms, easing, callback, configOb
         }
     }
     return element;
+    //
+    //
     // var a = params ? R.animation(params, ms, easing, callback) : anim,
     //     status = element.status(anim);
     // return this.animate(a).status(a, status * anim.ms / a.ms);
@@ -8309,847 +7689,7 @@ Animation.prototype.repeat = function (times) {
     a.times = math.floor(mmax(times, 0)) || 1;
     return a;
 };
-
-/*
-** Function to convert two color string in array format such that
-** it is animatabale
-** @param {string} c1 color 1
-** @param {string} c2 color 2
-** @param {function} function to getRGB
-*/
-function colorNormalizer(c1, c2, getRGB) {
-    "use strict";
-
-    var colorAr1 = c1.split('-'),
-        colorAr2 = c2.split('-'),
-        i = 0,
-        ii = 0,
-        j = 0,
-        newColArr = [],
-        newColArr2 = [],
-        temp = {},
-        pos = 0,
-        uniqArr = [];
-    if (colorAr1.length === 1 && colorAr2.length === 1) {
-        return [c1, c2];
-    }
-    // Convert colors to linear format, and mark if any of them is radial
-    // linear to radial animation is not correct
-    colorAr1 = allToLinear(colorAr1);
-    colorAr2 = allToLinear(colorAr2);
-
-    // Handling if default color was added to one
-    // and not other
-    if (!colorAr1.defaultAngleSet && colorAr2.defaultAngleSet) {
-        colorAr2[0] = colorAr1[0];
-    }
-
-    if (!colorAr2.defaultAngleSet && colorAr1.defaultAngleSet) {
-        colorAr1[0] = colorAr2[0];
-    }
-
-    // If one is radial convert both to radial
-    converToRadialIfOneRadial(colorAr1, colorAr2);
-    /* Making a unique array to store all unique
-        color positions of both color so that new color
-        can be generated that have same amount of positions
-        added */
-    for (i = 1, ii = colorAr1.length; i < ii; ++i) {
-        pos = colorAr1[i].position;
-        // if(uniqArr.indexOf(pos) === -1){
-        uniqArr.push(pos);
-        // }
-    }
-    for (i = 1, ii = colorAr2.length; i < ii; ++i) {
-        pos = colorAr2[i].position;
-        if (uniqArr.indexOf(pos) === -1) {
-            uniqArr.push(pos);
-        }
-    }
-    uniqArr.push(0);
-    // sort the positions
-    uniqArr.sort(function (a, b) {
-        return a - b;
-    });
-    // generating new colors from the existing colors
-    newColArr = [colorAr1[0]];
-    for (i = 1, ii = uniqArr.length; i < ii; ++i) {
-        pos = uniqArr[i];
-        temp = colorAr1.getColorAtPosition(pos);
-        newColArr.push(temp);
-    }
-    newColArr2 = [colorAr2[0]];
-    for (i = 1, ii = uniqArr.length; i < ii; ++i) {
-        pos = uniqArr[i];
-        temp = colorAr2.getColorAtPosition(pos);
-        newColArr2.push(temp);
-    }
-
-    // copying isRadial property
-    newColArr.isRadial = colorAr1.isRadial;
-    newColArr2.isRadial = colorAr2.isRadial;
-    return [newColArr, newColArr2];
-    // Getting all unique points
-
-    function converToRadialIfOneRadial(a, b, end) {
-        var angle = 0;
-        if (a.isRadial && !b.isRadial) {
-            angle += +b[0];
-            b[0] = {
-                f1: 0,
-                f2: 0,
-                f3: 0,
-                f4: 0,
-                f5: 0,
-                f6: ''
-            };
-            b.isRadial = true;
-        }
-
-        if (!end) {
-            converToRadialIfOneRadial(b, a, true);
-        }
-    }
-    // Function to convert color to array in linear format
-    // and mark if any one of them is radial
-    function allToLinear(arr) {
-        var i = 0,
-            ii = 0,
-            j = 0,
-            item = {},
-            temp = [],
-            temp2 = {},
-            key,
-            prevVal = 0,
-            lastVal = 0,
-            counter = 0,
-            rPos = 0,
-            openBrPos = 0,
-            closedBrPos = 0,
-            radial = {
-            f1: 0.5,
-            f2: 0.5
-        };
-
-        // Solid color operation
-        if (arr.length === 1) {
-            if (arr[0] === "none") {
-                arr[0] = "rgba(0,0,0,0)";
-            }
-            // Push angle zero to start
-            arr.unshift(0);
-            // Mentioning that a default angle was added
-            arr.defaultAngleSet = true;
-        }
-
-        // Convert angle to number
-        if (isNaN(arr[0])) {
-            // Check if is radial
-            if (~"rx".indexOf(arr[0].charAt(0))) {
-                arr.isRadial = true;
-
-                rPos = 1;
-                // check if focus if provided
-                // otherwise use default focus
-                if (arr[0].indexOf(')') !== -1) {
-                    rPos = arr[0].indexOf(')');
-                    openBrPos = arr[0].indexOf('(') + 1;
-                    closedBrPos = rPos;
-                    temp = arr[0].substr(openBrPos, closedBrPos - openBrPos).split(',');
-                    radial.f1 = parseFloat(temp[0]) || 0;
-                    radial.f2 = parseFloat(temp[1]) || 0;
-                    if (~temp[2].indexOf('%')) {
-                        temp[2] = parseFloat(temp[2]) / 100;
-                    }
-                    radial.f3 = parseFloat(temp[2]) || 0;
-                    radial.f4 = parseFloat(temp[3]) || 0;
-                    radial.f5 = parseFloat(temp[4]) || 0;
-                    radial.f6 = temp[5];
-                }
-                arr[0] = arr[0].substr(closedBrPos + 1);
-                arr.unshift(radial);
-            } else {
-                arr[0] = 0;
-            }
-        } else {
-            arr[0] = +arr[0];
-        }
-
-        for (i = 1, ii = arr.length; i < ii; ++i) {
-            temp = arr[i].split(":");
-            // conver first element to rgb object and store
-            temp2 = getRGB(temp[0]);
-            arr[i] = {};
-            arr[i].r = temp2.r;
-            arr[i].g = temp2.g;
-            arr[i].b = temp2.b;
-            arr[i].opacity = temp2.opacity;
-            // if opacity not present set  to 1
-            arr[i].opacity = +arr[i].opacity;
-            if (isNaN(arr[i].opacity)) {
-                arr[i].opacity = 1;
-            }
-            // set the position
-            arr[i].position = +temp[1];
-        }
-
-        // Sorting array according to position
-        // angle and radial focus should be elemnt 0
-        arr.sort(function (a, b) {
-            if (typeof a === "number" || a.f1) {
-                return -1;
-            }
-            if (typeof b === "number" || a.f2) {
-                return 1;
-            }
-            if (isNaN(a.position) && isNaN(b.position)) {
-                return 0;
-            }
-            if (isNaN(a.position)) {
-                return -1;
-            }
-            if (isNaN(b.position)) {
-                return 1;
-            }
-            return a.position - b.position;
-        });
-
-        // If first position is not zero
-        // add new color with position zero
-        if (+arr[1].position !== 0) {
-            if (isNaN(arr[1].position)) {
-                arr[1].position = 0;
-            } else {
-                temp2 = {};
-                for (key in arr[1]) {
-                    temp2[key] = arr[1][key];
-                }
-                temp2.position = 0;
-                // Shifting array to add current object
-                // in position 1
-                arr.push({});
-                for (i = arr.length - 1; i !== 1; --i) {
-                    arr[i] = arr[i - 1];
-                }
-                arr[1] = temp2;
-            }
-        }
-        // index to last position
-        ii = arr.length - 1;
-        // If last position is not 100
-        // add new color with position 100
-        if (arr[ii].position !== 100) {
-            if (isNaN(arr[ii].position)) {
-                arr[ii].position = 100;
-            } else {
-                temp2 = {};
-                for (key in arr[ii]) {
-                    temp2[key] = arr[ii][key];
-                }
-                temp2.position = 100;
-                // Shifting array to add current object
-                // in position 1
-                arr.push(temp2);
-            }
-        }
-
-        // Filling correct position value whereever NaN found
-        for (i = 2, ii = arr.length; i < ii; ++i) {
-            if (!arr[i].position) {
-                prevVal = arr[i - 1].position;
-                counter = 1;
-                for (j = i + 1; j < ii; ++j) {
-                    ++counter;
-                    if (!isNaN(arr[j].position)) {
-                        lastVal = +arr[j].position;
-                        break;
-                    }
-                }
-                arr[i].position = prevVal + (lastVal - prevVal) / counter;
-            }
-        }
-
-        arr.getColorAtPosition = function (pos) {
-            var prevPos = -1,
-                nextPos = this.length,
-                i = 1,
-                ii = this.length,
-                item = {},
-                colPrev,
-                colNext,
-                ratio = 0,
-                key = "",
-                col = { r: 0, g: 0, b: 0 };
-
-            // Critical section; check again
-            for (; i < ii - 1; ++i) {
-                if (this[i].position <= pos) {
-                    prevPos = i;
-                    nextPos = i + 1;
-                }
-                if (!(this[i].position < pos) && this[i].position >= pos) {
-                    nextPos = i;
-                    break;
-                }
-            }
-            ratio = (pos - this[prevPos].position) / (this[nextPos].position - this[prevPos].position);
-            if (isNaN(ratio)) {
-                ratio = 0;
-            }
-            for (key in col) {
-                col[key] = upto255((1 - ratio) * this[prevPos][key] + ratio * this[nextPos][key]);
-            }
-            col.position = pos;
-            col.opacity = (1 - ratio) * this[prevPos]["opacity"] + ratio * this[nextPos]["opacity"];
-            return col;
-        };
-        return arr;
-    }
-}
-/**
- * Function to make to uncommon path array to a equal length
- * of path array and same type (L - lineto) to make it animatable
- * @param {array} path array 1
- * @param {array} path array 2
- * @return {object} object containing final 'from' and 'to' path
- */
-function pathNormalizer(p1, p2) {
-    'use strict';
-    // Function to convert array to svg path (?) only for curves
-
-    var finalp1 = [],
-        finalp2 = [],
-        pathArr1 = toSvgPath(p1),
-        pathArr2 = toSvgPath(p2),
-        i = 0,
-        ii = 0,
-        temp,
-        createElementNS = document.createElementNS && document.createElementNS.bind(document),
-        dPath = createElementNS && createElementNS("http://www.w3.org/2000/svg", "path");
-
-    // If path invalid or svg not supported return
-    if (!pathArr1 || !pathArr2 || !dPath) {
-        return [p1, p2];
-    }
-    if (canFallback(p1, p2)) {
-        return [p1, p2];
-    }
-    // If any of the parameters is
-    // absent return to normal flow
-    if (!p1 || !p2) {
-        return [p1, p2];
-    }
-    // If svg not available return to normal flow
-    if (!document.createElementNS) {
-        return [p1, p2];
-    }
-    // Setting path again
-    pathArr1 = toSvgPath(p1);
-    pathArr2 = toSvgPath(p2);
-    // If invalid path return the original path
-    if (pathArr1.join().indexOf('undefined') !== -1) {
-        return [p1, p2];
-    }
-    if (pathArr2.join().indexOf('undefined') !== -1) {
-        return [p1, p2];
-    }
-    // If svg functions not available return to normal flow
-    if (!dPath.getTotalLength || !dPath.getPointAtLength) {
-        return [p1, p2];
-    }
-    /* Function to check if the current environment
-    ** can animate the path, as pathNormalizer pauses
-    ** getTotalLength and getPointAtLength function of svg
-    ** which are not supported by all browsers
-    */
-    function canFallback(path1, path2) {
-        var str1 = '',
-            str2 = '',
-            testLen,
-            testPoint;
-        // Checking path totoalLength is accurate or not
-        // testing with a known path
-        // this check is for Firefox
-        dPath.setAttribute('d', 'M300 10 L300 300 C50 310,50 640,350 650' + 'C600 640,600 310,400 300 L400 10 L295 10');
-        testLen = dPath.getTotalLength();
-        testPoint = dPath.getPointAtLength(10);
-        if (testLen < 1829.1 || testLen > 1829.2) {
-            return true;
-        }
-        if (Math.round(testPoint.x) !== 300 || Math.round(testPoint.y) !== 20) {
-            return true;
-        }
-        // path1 and path2 are in array
-        function trimPathArray(arr) {
-            var i = arr.length;
-            while (i-- - 1) {
-                if (arr[i].join('') === arr[i - 1].join('')) {
-                    arr.pop();
-                } else {
-                    break;
-                }
-            }
-        }
-        function getPathFromArray(arr) {
-            var str = '',
-                i = 0,
-                ii = arr.length;
-            for (; i < ii; ++i) {
-                str += arr[i].join(' ');
-            }
-            return str;
-        }
-        trimPathArray(path1);
-        trimPathArray(path2);
-        str1 = getPathFromArray(path1);
-        str2 = getPathFromArray(path2);
-        if (str1.split(/[Mm]/).length > 2 || str2.split(/[Mm]/).length > 2) {
-            return false;
-        }
-        if (path1.length === path2.length) {
-            return true;
-        }
-        return false;
-    }
-    /* Convert svg path array to string,
-        Also removes repeated commands */
-    function toSvgPath(arr) {
-        var str = [],
-            i = 0,
-            ii = arr.length,
-            item = [];
-        if (typeof arr === 'string') {
-            return arr;
-        }
-        // Converting the array to string; path type
-        for (i = 0; i < ii; ++i) {
-            if (!arr[i].join) {
-                return;
-            } else {
-                // Removing continuous Move commands
-                // Picking up the last one
-                if (!i || !arr[i + 1] || arr[i + 1][0] !== 'M' || arr[i][0] !== 'M') {
-                    str.push(arr[i].join(' '));
-                }
-            }
-        }
-        str = str.join('');
-        str = str.split(/[Mm]/).slice(1);
-        for (i = 0, ii = str.length; i < ii; ++i) {
-            str[i] = 'M' + str[i];
-        }
-        return str;
-    }
-
-    ii = Math.max(pathArr1.length, pathArr2.length);
-    for (i = 0; i < ii; ++i) {
-        temp = _pathNormalizer(pathArr1[i], pathArr2[i]);
-        pathArr1[i] = temp[0];
-        pathArr2[i] = temp[1];
-    }
-    // Convert line path 2 dimensional array to string
-    function linetopath(arr) {
-        var i = 0,
-            ii = 0,
-            str = [];
-        arr = arr || [];
-        ii = arr.length;
-        for (i = 0; i < ii; ++i) {
-            if (arr[i].length - 1) {
-                str.push(arr[i].join(' '));
-            }
-        }
-        return str.join('');
-    }
-    /* path2curve appends repeated last path command,
-        this function removes it or any other repeated path command */
-    function removeBlanks(arr, pos) {
-        var i = arr.length,
-            j = 0,
-            path;
-        while (i-- - 1) {
-            // Pop if length is zero
-            if (arr[i].slice(1).toString() === arr[i - 1].slice(1).toString()) {
-                arr.pop();
-            } else {
-                break;
-            }
-        }
-        if (arr.length === 1 && pos) {
-            arr.length = 0;
-        }
-    }
-    /* Divide a path array to number to a given number of times
-        as provided in parameters, All path array should start with M command */
-    function _divide(arr, times) {
-        var resArr = [],
-            locArr = [],
-            arrLen = arr.length,
-            i = 0,
-            ii = 0,
-            x = 0,
-            prevPos = 0,
-            y = 0,
-
-        // If array size is smaller than
-        // divisions needed
-        diffTimes = times - arrLen;
-        while (diffTimes >= 0) {
-            i = arr.length - 1;
-            arr.push(arr.slice(i)[0]);
-            --diffTimes;
-        }
-        arrLen = arr.length;
-        for (i = 0; i <= times; ++i) {
-            locArr.push(Math.round(i / times * arrLen));
-        }
-        for (i = 0, ii = locArr.length - 1; i < ii; ++i) {
-            resArr.push(arr.slice(locArr[i], locArr[i + 1]));
-            if (resArr[i][0][0] !== 'M' && resArr[i][0][0] !== 'm') {
-                prevPos = resArr[i - 1].length - 1;
-                x = resArr[i - 1][prevPos][1];
-                y = resArr[i - 1][prevPos][2];
-                resArr[i].unshift(['M', x, y]);
-            }
-        }
-        return resArr;
-    }
-    /* If two path array have different number of MoveTo commands,
-        divide the smaller number of MoveTo command holder to match the other one */
-    function divideArray(diff) {
-        var arrToDivide = [],
-            countArr = [],
-            transArr = [],
-            i = 0,
-            ii = 0,
-            isArr1 = true;
-        if (diff === 0) {
-            return;
-        } else if (diff > 0) {
-            arrToDivide = pathArr2;
-            isArr1 = false;
-        } else {
-            diff = -diff;
-            arrToDivide = pathArr1;
-        }
-        // Maintaining a count array to judge number of times a1
-        // path needs to be divided, 1 means dont divide
-        for (i = 0, ii = arrToDivide.length; i < ii; ++i) {
-            countArr.push(1);
-        }
-        while (diff--) {
-            --i;
-            if (i < 0) {
-                i = ii - 1;
-            }
-            countArr[i]++;
-        }
-
-        for (i = 0; i < ii; ++i) {
-            if (countArr[i] === 1) {
-                transArr.push(arrToDivide[i]);
-            } else {
-                transArr.push.apply(transArr, _divide(arrToDivide[i], countArr[i]));
-            }
-        }
-        if (isArr1) {
-            pathArr1 = transArr;
-        } else {
-            pathArr2 = transArr;
-        }
-    }
-    for (i = pathArr1.length; i--;) {
-        removeBlanks(pathArr1[i], i);
-        // If last element is blank pop it
-        pathArr1[i].length || pathArr1.pop();
-    }
-    for (i = pathArr2.length; i--;) {
-        removeBlanks(pathArr2[i], i);
-        pathArr2[i].length || pathArr2.pop();
-    }
-    // Making number off moveto commands equal in both path
-    divideArray(pathArr1.length - pathArr2.length);
-
-    ii = Math.max(pathArr1.length, pathArr2.length);
-    for (i = 0; i < ii; ++i) {
-        temp = _pathNormalizer(linetopath(pathArr1[i]), linetopath(pathArr2[i]));
-        pathArr1[i] = temp[0];
-        pathArr2[i] = temp[1];
-    }
-
-    for (i = 0, ii = pathArr1.length; i < ii; ++i) {
-        finalp1 = finalp1.concat(pathArr1[i]);
-    }
-    for (i = 0, ii = pathArr2.length; i < ii; ++i) {
-        finalp2 = finalp2.concat(pathArr2[i]);
-    }
-    return [finalp1, finalp2];
-}
-
-// A function to calculate common path
-// in two given paths
-function commonPathCalculator(p1, p2) {
-    'use strict';
-
-    var i = 0,
-        j = 0,
-        ii = 0,
-        jj = 0,
-        k = 0,
-        kk = 0,
-        uncommon1 = 0,
-        uncommon2 = 0,
-        lim1 = 0,
-        lim2 = 0,
-        nearestPoint1,
-        nearestPoint2,
-        map1 = {},
-        map2 = {},
-        groupedPath1 = [],
-        groupedPath2 = [],
-        gpIndex1 = -1,
-        gpIndex2 = -1,
-        isSame = true;
-    // Splitting the string commands to get
-    // particular points later
-    // Will be required while breaking paths
-    // into common and uncommon parts
-    function splitter(path) {
-        var i = 0,
-            ii = 0;
-        path = path.split(/[MCLmcl]/).slice(1);
-        for (i = 0, ii = path.length; i < ii; ++i) {
-            path[i] = path[i].split(' ').slice(1);
-            i || path[i].unshift('M');
-            if (i) {
-                path[i].length === 2 && path[i].unshift('L') || path[i].unshift('C');
-            }
-        }
-        return path;
-    }
-    // populate the arr to object in reverse manner
-    // i.e value to key mapping
-    function mapper(arr, ob) {
-        var i = 0,
-            ii = arr.length,
-            val,
-            item;
-        for (i = 0, ii = arr.length; i < ii; ++i) {
-            val = arr[i].join(' ');
-            item = arr[i];
-            if (item[0] === 'C' && item[3] === item[5] && item[4] === item[6]) {
-                arr[i].stringValue = ['L', item[3], item[4]].join(' ');
-            } else item.stringValue = val;
-            // Creating an array if undefined
-            // pushing otherwise
-            ob[item.stringValue] && ob[item.stringValue].push(i);
-            ob[item.stringValue] || (ob[item.stringValue] = [i]);
-        }
-    }
-    // Function to get nearest point that exist
-    // in the other array
-    function getNearestExistingPoint(arr, map, start, ii, lim) {
-        var i = start,
-            k = 0,
-            kk = 0,
-            item;
-        for (; i < ii; ++i) {
-            item = map[arr[i].stringValue];
-            if (item) {
-                for (k = 0, kk = item.length; k < kk; ++k) {
-                    if (item[k] >= lim) {
-                        return {
-                            index: i,
-                            mapValue: item[k],
-                            diff: i - start
-                        };
-                    }
-                }
-            }
-        }
-        return -1;
-    }
-    // function to get last coordinate for CurveTo command
-    function getCoordinateAsMove(arr) {
-        var last = arr.length - 1;
-        return ['M', arr[last - 1], arr[last]].join(' ');
-    }
-    // function to conver path array to string
-    function pathToString(arr) {
-        return arr.join('');
-    }
-    // commonPathCalculator flow here
-    p1 = splitter(p1);
-    p2 = splitter(p2);
-    mapper(p1, map1);
-    mapper(p2, map2);
-    // Setting length
-    ii = p1.length;
-    jj = p2.length;
-    i = 0;
-    j = 0;
-    // Making partitions for common
-    // and uncommon parts
-    // Checking if first is common or uncommon
-    while (i < ii && j < jj) {
-        ++gpIndex1;
-        ++gpIndex2;
-        // initializing blank arrays
-        groupedPath1[gpIndex1] = [];
-        groupedPath2[gpIndex2] = [];
-        isSame = p1[i].stringValue === p2[j].stringValue;
-        if (i) {
-            // Logic to push prev coordinate as move command
-            groupedPath1[gpIndex1].push(getCoordinateAsMove(p1[i - 1]));
-            groupedPath2[gpIndex2].push(getCoordinateAsMove(p2[j - 1]));
-        }
-        if (isSame) {
-            while (i < ii && j < jj && p1[i].stringValue === p2[j].stringValue) {
-                groupedPath1[gpIndex1].push(p1[i].stringValue);
-                groupedPath2[gpIndex2].push(p2[j].stringValue);
-                ++i;
-                ++j;
-            }
-        } else {
-            nearestPoint1 = getNearestExistingPoint(p1, map2, i, ii, j);
-            nearestPoint2 = getNearestExistingPoint(p2, map1, j, jj, i);
-            // Assuming nearestPoint1 is nearer than nearestPoint2
-            lim1 = nearestPoint1.index;
-            lim2 = nearestPoint1.mapValue;
-            // If nearestPoint2 is nearer
-            if (!~nearestPoint1 || nearestPoint1.diff > nearestPoint2.diff) {
-                lim1 = nearestPoint2.mapValue;
-                lim2 = nearestPoint2.index;
-            }
-            if (!~nearestPoint1 && !~nearestPoint2) {
-                // If both not found include all as uncommon
-                lim1 = ii - 1;
-                lim2 = jj - 1;
-            }
-            // Pushing uncommon paths
-            while (i <= lim1) {
-                groupedPath1[gpIndex1].push(p1[i].stringValue);
-                ++i;
-            }
-            while (j <= lim2) {
-                groupedPath2[gpIndex2].push(p2[j].stringValue);
-                ++j;
-            }
-        }
-        groupedPath1[gpIndex1] = pathToString(groupedPath1[gpIndex1]);
-        groupedPath2[gpIndex2] = pathToString(groupedPath2[gpIndex2]);
-    }
-    // If Any one is left add them all
-    if (i < ii) {
-        ++gpIndex1;
-        groupedPath1[gpIndex1] = [];
-        groupedPath1[gpIndex1].push(getCoordinateAsMove(p1[i - 1]));
-        ++gpIndex2;
-        groupedPath2[gpIndex2] = [];
-        groupedPath2[gpIndex2].push(getCoordinateAsMove(p2[j - 1]));
-        while (i < ii) {
-            groupedPath1[gpIndex1].push(p1[i].stringValue);
-            ++i;
-        }
-        groupedPath1[gpIndex1] = pathToString(groupedPath1[gpIndex1]);
-    }
-    if (j < jj) {
-        ++gpIndex1;
-        groupedPath1[gpIndex1] = [];
-        groupedPath1[gpIndex1].push(getCoordinateAsMove(p1[i - 1]));
-        ++gpIndex2;
-        groupedPath2[gpIndex2] = [];
-        groupedPath2[gpIndex2].push(getCoordinateAsMove(p2[j - 1]));
-        while (j < jj) {
-            groupedPath2[gpIndex2].push(p2[j].stringValue);
-            ++j;
-        }
-        groupedPath2[gpIndex2] = pathToString(groupedPath2[gpIndex2]);
-    }
-    return [groupedPath1, groupedPath2];
-}
-
-// function to get equal points for two different path
-// We set path to an dynamically created svg path node
-// and get equal number of path commands from two different
-// paths. Uses getPointAtLength and getTotalLength of svg that
-// arent supported on every browser
-function _pathNormalizer(p1, p2) {
-    'use strict';
-
-    var i = 0,
-        j = 0,
-        ii = 0,
-        jj = 0,
-        item = {},
-        fPath1 = [],
-        fPath2 = [],
-        divisions = 0,
-        commonPath,
-        tmp;
-    // Uncommon path normalizer
-    function normalizeUncommonPaths(p1, p2) {
-        var dPath1,
-            dPath2,
-            i = 0,
-            j = 0,
-            item = {},
-            pathLen1 = 0,
-            pathLen2 = 0,
-            fPath1 = [],
-            fPath2 = [],
-            divisions = 0,
-            round = Math.round;
-        // Creating path elements to use functions 'getTotalLength'
-        // and 'getPointAtLength'
-        dPath1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        dPath1.setAttribute("d", p1);
-
-        dPath2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        dPath2.setAttribute("d", p2);
-
-        // Getting length of the paths
-        pathLen1 = dPath1.getTotalLength();
-        pathLen2 = dPath2.getTotalLength();
-
-        // Number of divisions will depend on larger path
-        divisions = 0.15 * Math.max(pathLen1, pathLen2);
-        divisions = Math.ceil(divisions);
-
-        if (!divisions || !isFinite(divisions) || divisions < 10) {
-            divisions = 10;
-        }
-
-        for (i = 0; i <= divisions; ++i) {
-            item = dPath1.getPointAtLength(i / divisions * pathLen1);
-            fPath1.push([i ? "L" : "M", round(item.x), round(item.y)]);
-            item = dPath2.getPointAtLength(i / divisions * pathLen2);
-            fPath2.push([i ? "L" : "M", round(item.x), round(item.y)]);
-        }
-        return [fPath1, fPath2];
-    }
-    if (!p1 || p1 === 'M  ') {
-        p1 = p2.split(' ').slice(0, 3).join(' ').replace(/[LC]/, '');
-    }
-    if (!p2 || p2 === 'M  ') {
-        p2 = p1.split(' ').slice(0, 3).join(' ').replace(/[LC]/, '');
-    }
-    commonPath = commonPathCalculator(p1, p2);
-
-    for (i = 0, ii = commonPath[0].length; i < ii; ++i) {
-        tmp = normalizeUncommonPaths(commonPath[0][i], commonPath[1][i]);
-        if (i) {
-            fPath1 = fPath1.concat(tmp[0].slice(1));
-            fPath2 = fPath2.concat(tmp[1].slice(1));
-        } else {
-            fPath1 = fPath1.concat(tmp[0]);
-            fPath2 = fPath2.concat(tmp[1]);
-        }
-    }
-    return [fPath1, fPath2];
-}
-
-function runAnimation(anim, element, percent, status, totalOrigin, times, parentEl, configObject) {
+function runAnimation(anim, element, percent, status, totalOrigin, times, parentEl) {
     percent = toFloat(percent);
     var params,
         isInAnim,
@@ -9157,7 +7697,6 @@ function runAnimation(anim, element, percent, status, totalOrigin, times, parent
         percents = [],
         next,
         prev,
-        temp,
         timestamp,
         tempDiff,
         change,
@@ -9165,14 +7704,6 @@ function runAnimation(anim, element, percent, status, totalOrigin, times, parent
         from = {},
         to = {},
         diff = {};
-
-    if (element.type === null) {
-        return;
-    }
-
-    configObject = configObject || {};
-    configObject.hookFn && configObject.hookFn.call(element);
-    configObject.from = configObject.from || {};
     if (status) {
         for (i = 0, ii = animationElements.length; i < ii; i++) {
             var e = animationElements[i];
@@ -9210,7 +7741,7 @@ function runAnimation(anim, element, percent, status, totalOrigin, times, parent
     if (!isInAnim) {
         for (var attr in params) if (params[has](attr)) {
             if (availableAnimAttrs[has](attr) || element.ca[attr]) {
-                from[attr] = configObject.from[attr] || element.attr(attr);
+                from[attr] = element.attr(attr);
                 from[attr] == null && (from[attr] = availableAttrs[attr]);
                 to[attr] = params[attr];
                 change = false;
@@ -9221,79 +7752,36 @@ function runAnimation(anim, element, percent, status, totalOrigin, times, parent
                         diff[attr] = tempDiff / ms;
                         break;
                     case "colour":
-                        if (from[attr] === to[attr]) {
-                            break;
-                        } else {
-                            change = true;
-                        }
-                        var colorsNormalized = colorNormalizer(from[attr], to[attr], R.getRGB);
-                        from[attr] = colorsNormalized[0];
-                        var toColour = colorsNormalized[1];
-                        if (typeof toColour === "string") {
-                            if (from[attr].toLowerCase() !== "none") {
-                                from[attr] = R.getRGB(from[attr]);
-                                if (!from[attr].opacity) {
-                                    from[attr].opacity = 1;
-                                }
-                            } else {
-                                from[attr] = {
-                                    r: 0,
-                                    g: 0,
-                                    b: 0,
-                                    opacity: 0
-                                };
-                            }
-                            if (to[attr].toLowerCase() !== "none") {
-                                toColour = R.getRGB(to[attr]);
-                                if (!toColour.opacity) {
-                                    toColour.opacity = 1;
-                                }
-                            } else {
-                                toColour = {
-                                    r: 0,
-                                    g: 0,
-                                    b: 0,
-                                    opacity: 0
-                                };
-                            }
-                            diff[attr] = {
-                                r: (toColour.r - from[attr].r) / ms,
-                                g: (toColour.g - from[attr].g) / ms,
-                                b: (toColour.b - from[attr].b) / ms,
-                                opacity: (toColour.opacity - from[attr].opacity) / ms
-                            };
-                        } else {
-                            diff[attr] = [];
-                            for (i = 0, ii = from[attr].length; i < ii; ++i) {
-                                if (i === 0) {
-                                    diff[attr].push(toColour[0]);
-                                } else {
-                                    diff[attr].push({
-                                        r: (toColour[i].r - from[attr][i].r) / ms,
-                                        g: (toColour[i].g - from[attr][i].g) / ms,
-                                        b: (toColour[i].b - from[attr][i].b) / ms,
-                                        opacity: (toColour[i].opacity - from[attr][i].opacity) / ms
-                                    });
-                                }
-                            }
-                        }
+                        from[attr] = R.getRGB(from[attr]);
+                        var toColour = R.getRGB(to[attr]);
+                        tempDiff = {};
+                        tempDiff.r = toColour.r - from[attr].r, tempDiff.g = toColour.g - from[attr].g, tempDiff.b = toColour.b - from[attr].b;
+                        // todo to be checked for NaN
+                        (tempDiff.r || tempDiff.g || tempDiff.b) && (change = true);
+                        diff[attr] = {
+                            r: tempDiff.r / ms,
+                            g: tempDiff.g / ms,
+                            b: tempDiff.b / ms
+                        };
                         break;
                     case "path":
-                        var toPath,
-                            pathes = path2curve(from[attr], to[attr]);
-                        if (configObject.smartMorph) {
-                            pathes = pathNormalizer(pathes[0], pathes[1], configObject);
+                        var pathes, toPath;
+                        // path2curve is taking longer time to execute, to optimize breaking if both
+                        // start and end path are same.
+                        if ((from[attr].join ? from[attr].join() : from[attr]) === (to[attr].join ? to[attr].join() : to[attr])) {
+                            change = false;
+                            break;
                         }
+                        pathes = path2curve(from[attr], to[attr]);
                         toPath = pathes[1];
+                        change = true;
                         from[attr] = pathes[0];
                         diff[attr] = [];
                         for (i = 0, ii = from[attr].length; i < ii; i++) {
                             diff[attr][i] = [0];
-                            var jj;
-                            jj = from[attr][i] ? from[attr][i].length : 0;
-                            for (var j = 1; j < jj; j++) {
-                                diff[attr][i][j] = (toPath[i][j] - from[attr][i][j]) / ms;
-                                !change && diff[attr][i][j] && (change = true);
+                            for (var j = 1, jj = from[attr][i].length; j < jj; j++) {
+                                tempDiff = toPath[i][j] - from[attr][i][j];
+                                diff[attr][i][j] = tempDiff / ms;
                             }
                         }
                         break;
@@ -9410,9 +7898,7 @@ function runAnimation(anim, element, percent, status, totalOrigin, times, parent
             repeat: times || anim.times,
             origin: element.attr(),
             totalOrigin: totalOrigin,
-            parentEl: parentEl,
-            delayend: configObject && configObject.end,
-            delaystart: configObject && configObject.start
+            parentEl: parentEl
         };
         animationElements.push(e);
 
@@ -9426,7 +7912,7 @@ function runAnimation(anim, element, percent, status, totalOrigin, times, parent
         if (isInAnimSet) {
             e.start = new Date() - e.ms * status;
         }
-        animationElements.length == 1 && (requestAnimFrame || R.getAnimFrameFn())(animation);
+        animationElements.length == 1 && (requestAnimFrame || getAnimFrameFn())(animation);
     } else {
         isInAnim.initstatus = status;
         isInAnim.start = new Date() - isInAnim.ms * status;
@@ -9681,25 +8167,8 @@ elproto.stop = function (anim, stopChildAnimation, jumpToEnd) {
             }
         }
     }
-    // In case root object has hooked animation elements
-    // in priority queue execute them all
-    if (this.animElements) {
-        executeAnimQueue(this.animElements);
-    }
     return this;
 };
-
-function executeAnimQueue(queue) {
-    var ob;
-    // Looping until all executed
-    while (ob = queue.deq()) {
-        ob = ob.executeOb;
-        ob.hookFn && ob.hookFn.call(ob.el);
-        ob.el.attr(ob.attrs);
-        ob.callback && ob.callback.call(ob.el);
-    }
-}
-
 function stopAnimation(paper) {
     for (var i = 0; i < animationElements.length; i++) if (animationElements[i].el.paper == paper) {
         animationElements.splice(i--, 1);
@@ -10374,7 +8843,8 @@ R.format = function (token, params) {
 R.fullfill = function () {
     var tokenRegex = /\{([^\}]+)\}/g,
         objNotationRegex = /(?:(?:^|\.)(.+?)(?=\[|\.|$|\()|\[('|")(.+?)\2\])(\(\))?/g,
-        // matches .xxxxx or ["xxxxx"] to run over object properties
+
+    // matches .xxxxx or ["xxxxx"] to run over object properties
     replacer = function (all, key, obj) {
         var res = obj;
         key.replace(objNotationRegex, function (all, name, quote, quotedName, isFunc) {
@@ -10592,7 +9062,16 @@ eve.on("raphael.DOMload", function () {
 module.exports = R;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./eve/eve":1}],5:[function(require,module,exports){
+},{"eve":7}],4:[function(require,module,exports){
+(function (global){
+var Raphael = require('./index');
+
+global.Raphael = Raphael;
+
+module.exports = Raphael;
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./index":1}],5:[function(require,module,exports){
 /**!
 * RedRaphael 1.0.0 - JavaScript Vector Library SVG Module
 * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
@@ -10634,255 +9113,7 @@ if (R.svg) {
         markerCounter = {},
         updateReferenceUrl = function () {
         return R._url = R._g.win.location.href.replace(/#.*?$/, E);
-    },
-        paperproto = R.fn,
-        serializeArgs = R._serializeArgs;
-
-    /*\
-     * Paper.group
-     [ method ]
-     **
-     * Creates a group
-     **
-     > Parameters
-     **
-     - id (number) id of the group
-     = (object) Raphaël element object with type “group”
-     **
-     > Usage
-     | var g = paper.group();
-    \*/
-    paperproto.group = function () {
-        // id
-        var paper = this,
-            args = arguments,
-            group = R._lastArgIfGroup(args, true),
-            out = R._engine.group(paper, args[0], group);
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
     };
-
-    /*\
-     * Paper.circle
-     [ method ]
-     **
-     * Draws a circle.
-     **
-     > Parameters
-     **
-     - x (number) x coordinate of the centre
-     - y (number) y coordinate of the centre
-     - r (number) radius
-     = (object) Raphaël element object with type “circle”
-     **
-     > Usage
-     | var c = paper.circle(50, 50, 40);
-    \*/
-    paperproto.circle = function () {
-        // x, y, r
-        var paper = this,
-            args = arguments,
-            group = R._lastArgIfGroup(args, true),
-            attrs = serializeArgs(args),
-
-        // "cx", 0,
-        // "cy", 0,
-        // "r", 0,
-        // "fill", none,
-        // "stroke", black),
-        out = R._engine.circle(paper, attrs, group);
-
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
-
-    /*\
-     * Paper.rect
-     [ method ]
-     *
-     * Draws a rectangle.
-     **
-     > Parameters
-     **
-     - x (number) x coordinate of the top left corner
-     - y (number) y coordinate of the top left corner
-     - width (number) width
-     - height (number) height
-     - r (number) #optional radius for rounded corners, default is 0
-     = (object) Raphaël element object with type “rect”
-     **
-     > Usage
-     | // regular rectangle
-     | var c = paper.rect(10, 10, 50, 50);
-     | // rectangle with rounded corners
-     | var c = paper.rect(40, 40, 50, 50, 10);
-    \*/
-    paperproto.rect = function () {
-        var paper = this,
-            args = arguments,
-            group = R._lastArgIfGroup(args, true),
-            attrs = serializeArgs(args),
-
-        // "x", 0,
-        // "y", 0,
-        // "width", 0,
-        // "height", 0,
-        // "r", 0,
-        // "fill", none,
-        // "stroke", black),
-        out = R._engine.rect(paper, attrs, group);
-
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
-
-    /*\
-     * Paper.ellipse
-     [ method ]
-     **
-     * Draws an ellipse.
-     **
-     > Parameters
-     **
-     - x (number) x coordinate of the centre
-     - y (number) y coordinate of the centre
-     - rx (number) horizontal radius
-     - ry (number) vertical radius
-     = (object) Raphaël element object with type “ellipse”
-     **
-     > Usage
-     | var c = paper.ellipse(50, 50, 40, 20);
-    \*/
-    paperproto.ellipse = function () {
-        var paper = this,
-            args = arguments,
-            group = R._lastArgIfGroup(args, true),
-            attrs = serializeArgs(args),
-
-        // "x", 0,
-        // "y", 0,
-        // "rx", 0,
-        // "ry", 0,
-        // "fill", none,
-        // "stroke", black),
-        out = R._engine.ellipse(this, attrs, group);
-
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
-
-    /*\
-     * Paper.path
-     [ method ]
-     **
-     * Creates a path element by given path data string.
-     > Parameters
-     - pathString (string) #optional path string in SVG format.
-     * Path string consists of one-letter commands, followed by comma seprarated arguments in numercal form. Example:
-     | "M10,20L30,40"
-     * Here we can see two commands: “M”, with arguments `(10, 20)` and “L” with arguments `(30, 40)`. Upper case letter mean command is absolute, lower case—relative.
-     *
-     # <p>Here is short list of commands available, for more details see <a href="http://www.w3.org/TR/SVG/paths.html#PathData" title="Details of a path's data attribute's format are described in the SVG specification.">SVG path string format</a>.</p>
-     # <table><thead><tr><th>Command</th><th>Name</th><th>Parameters</th></tr></thead><tbody>
-     # <tr><td>M</td><td>moveto</td><td>(x y)+</td></tr>
-     # <tr><td>Z</td><td>closepath</td><td>(none)</td></tr>
-     # <tr><td>L</td><td>lineto</td><td>(x y)+</td></tr>
-     # <tr><td>H</td><td>horizontal lineto</td><td>x+</td></tr>
-     # <tr><td>V</td><td>vertical lineto</td><td>y+</td></tr>
-     # <tr><td>C</td><td>curveto</td><td>(x1 y1 x2 y2 x y)+</td></tr>
-     # <tr><td>S</td><td>smooth curveto</td><td>(x2 y2 x y)+</td></tr>
-     # <tr><td>Q</td><td>quadratic Bézier curveto</td><td>(x1 y1 x y)+</td></tr>
-     # <tr><td>T</td><td>smooth quadratic Bézier curveto</td><td>(x y)+</td></tr>
-     # <tr><td>A</td><td>elliptical arc</td><td>(rx ry x-axis-rotation large-arc-flag sweep-flag x y)+</td></tr>
-     # <tr><td>R</td><td><a href="http://en.wikipedia.org/wiki/Catmull–Rom_spline#Catmull.E2.80.93Rom_spline">Catmull-Rom curveto</a>*</td><td>x1 y1 (x y)+</td></tr></tbody></table>
-     * * “Catmull-Rom curveto” is a not standard SVG command and added in 2.0 to make life easier.
-     * Note: there is a special case when path consist of just three commands: “M10,10R…z”. In this case path will smoothly connects to its beginning.
-     > Usage
-     | var c = paper.path("M10 10L90 90");
-     | // draw a diagonal line:
-     | // move to 10,10, line to 90,90
-     * For example of path strings, check out these icons: http://raphaeljs.com/icons/
-    \*/
-    paperproto.path = function () {
-        var paper = this,
-            args = arguments,
-            group = R._lastArgIfGroup(args, true),
-            paperConfig = paper.config,
-            capStyle = paperConfig && paperConfig["stroke-linecap"] || "butt",
-            attrs = serializeArgs(args),
-
-        // "path", E,
-        // "fill", none,
-        // "stroke", black,
-        // "stroke-linecap", capStyle),
-        out = R._engine.path(paper, attrs, group);
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
-
-    /*\
-     * Paper.image
-     [ method ]
-     **
-     * Embeds an image into the surface.
-     **
-     > Parameters
-     **
-     - src (string) URI of the source image
-     - x (number) x coordinate position
-     - y (number) y coordinate position
-     - width (number) width of the image
-     - height (number) height of the image
-     = (object) Raphaël element object with type “image”
-     **
-     > Usage
-     | var c = paper.image("apple.png", 10, 10, 80, 80);
-    \*/
-    paperproto.image = function () {
-        var paper = this,
-            args = arguments,
-            group = R._lastArgIfGroup(args, true),
-            attrs = serializeArgs(args),
-
-        // "src", "",
-        // "x", 0,
-        // "y", 0,
-        // "width", 0,
-        // "height", 0)
-        out = R._engine.image(paper, attrs, group);
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
-
-    /*\
-     * Paper.text
-     [ method ]
-     **
-     * Draws a text string. If you need line breaks, put “\n” in the string.
-     **
-     > Parameters
-     **
-     - x (number) x coordinate position
-     - y (number) y coordinate position
-     - text (string) The text string to draw
-     = (object) Raphaël element object with type “text”
-     **
-     > Usage
-     | var t = paper.text(50, 50, "Raphaël\nkicks\nbutt!");
-    \*/
-    paperproto.text = function () {
-        var paper = this,
-            args = arguments,
-            group = R._lastArgIfGroup(args, true),
-            attrs = serializeArgs(args),
-
-        // "x", 0,
-        // "y", 0,
-        // "text", E,
-        // "stroke", none,
-        // "fill", black,
-        // "text-anchor", "middle",
-        // "vertical-align", "middle"),
-
-        out = R._engine.text(paper, attrs, group, args[1]);
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
-
-    R.cachedFontHeight = {};
 
     R.toString = function () {
         return "Your browser supports SVG.\nYou are running Rapha\xebl " + this.version;
@@ -11111,10 +9342,11 @@ if (R.svg) {
 
         $(o, {
             fill: "url('" + R._url + "#" + id + "')",
+            opacity: 1,
             "fill-opacity": 1
         });
-
         s.fill = E;
+        s.opacity = 1;
         s.fillOpacity = 1;
         return 1;
     },
@@ -11339,7 +9571,7 @@ if (R.svg) {
             o.ca[key] && o.attr(key, attrs[key]);
         }
     },
-        setFillAndStroke = R._setFillAndStroke = function (o, params, group) {
+        setFillAndStroke = R._setFillAndStroke = function (o, params) {
         if (!o.paper.canvas) {
             return;
         }
@@ -11347,18 +9579,13 @@ if (R.svg) {
             attrs = o.attrs,
             paper = o.paper,
             s = node.style,
-            vis = s.visibility,
-            i,
-            l;
+            vis = s.visibility;
         // Convert all the &lt; and &gt; to < and > and if there is any <br/> tag in between &lt; and &gt;
         // then converting them into <<br/> and ><br/> respectively.
         if (params && params.text && params.text.replace) {
             params.text = params.text.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&<br\/>lt;|&l<br\/>t;|&lt<br\/>;/g, "<<br/>").replace(/&<br\/>gt;|&g<br\/>t;|&gt<br\/>;/g, "><br/>");
         }
         s.visibility = "hidden";
-        if (o.type === "image") {
-            LoadRefImage(o, params);
-        }
         for (var att in params) {
             if (params[has](att)) {
                 if (!R._availableAttrs[has](att)) {
@@ -11594,11 +9821,9 @@ if (R.svg) {
                         if (!clr.error) {
                             delete params.gradient;
                             delete attrs.gradient;
-                            // !R.is(attrs.opacity, "undefined") &&
-                            //     R.is(params.opacity, "undefined") &&
-                            //     $(node, {
-                            //         opacity: attrs.opacity
-                            //     });
+                            !R.is(attrs.opacity, "undefined") && R.is(params.opacity, "undefined") && $(node, {
+                                opacity: attrs.opacity
+                            });
                             !R.is(attrs["fill-opacity"], "undefined") && R.is(params["fill-opacity"], "undefined") && $(node, {
                                 "fill-opacity": attrs["fill-opacity"]
                             });
@@ -11614,7 +9839,7 @@ if (R.svg) {
                                 }
                             }
                             attrs.gradient = value;
-                            // attrs.fill = "none";
+                            attrs.fill = "none";
                             s.fill = E;
                             break;
                         }
@@ -11661,38 +9886,23 @@ if (R.svg) {
                         value === 'hidden' ? o.hide() : o.show();
                         break;
                     case "opacity":
-                        // if (attrs.gradient && !attrs[has]("stroke-opacity")) {
-                        //     $(node, {
-                        //         "stroke-opacity": value > 1 ? value / 100 : value
-                        //     });
-                        // }
-                        value = value > 1 ? value / 100 : value;
-                        $(node, {
-                            "opacity": value
-                        });
-                        s.opacity = value;
-                        break;
+                        if (attrs.gradient && !attrs[has]("stroke-opacity")) {
+                            $(node, {
+                                "stroke-opacity": value > 1 ? value / 100 : value
+                            });
+                        }
                     // fall
                     case "fill-opacity":
-                        // if (attrs.gradient) {
-                        //     gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\([\'\"]#|[\'\"]\)$/g, E));
-                        //     if (gradient) {
-                        //         stops = gradient.getElementsByTagName("stop");
-                        //         l = stops.length;
-                        //         for (i = 0; i < l; i += 1) {
-                        //           $(stops[i], {
-                        //               "stop-opacity": value
-                        //           });
-                        //         }
-                        //     }
-                        //     break;
-                        // }
-                        value = value > 1 ? value / 100 : value;
-                        $(node, {
-                            "fill-opacity": value
-                        });
-                        s.fillOpacity = value;
-                        break;
+                        if (attrs.gradient) {
+                            gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\(#|\)$/g, E));
+                            if (gradient) {
+                                stops = gradient.getElementsByTagName("stop");
+                                $(stops[stops.length - 1], {
+                                    "stop-opacity": value
+                                });
+                            }
+                            break;
+                        }
                     default:
                         att == "font-size" && (value = toInt(value, 10) + "px");
                         var cssrule = att.replace(/(\-.)/g, function (w) {
@@ -11705,9 +9915,10 @@ if (R.svg) {
                 }
             }
         }
-        o.type === 'text' && !params["_do-not-tune"] && tuneText(o, params, group);
+        o.type === 'text' && !params["_do-not-tune"] && tuneText(o, params);
         s.visibility = vis;
     },
+
 
     /*
      * Keeps the follower element in sync with the leaders.
@@ -11729,30 +9940,18 @@ if (R.svg) {
         }
     },
         leading = 1.2,
-        tuneText = function (el, params, group) {
-        var a = el.attrs,
-            node,
-            computedStyle,
-            fontSize,
-            lineHeight,
-            valign,
-            direction,
-            isIE;
-
-        if (!(params[has]("text") || a.text) || !(params[has]("x") || a.x) || !(params[has]("y") || a.y) || el.type != "text" || !(params[has]("font") || params[has]("font-size") || params[has]("line-height") || params[has]("vertical-align"))) {
+        tuneText = function (el, params) {
+        if (el.type != "text" || !(params[has]("text") || params[has]("font") || params[has]("font-size") || params[has]("x") || params[has]("y") || params[has]("line-height") || params[has]("vertical-align"))) {
             return;
         }
-
-        node = el.node;
-        computedStyle = node.firstChild && R._g.doc.defaultView.getComputedStyle(node.firstChild, E);
-        fontSize = params['fontSize'] || params['font-size'] || a['font-size'] || group && group.attrs.fontSize;
-        lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading;
-        actualValign = a[has]("vertical-align") ? a["vertical-align"] : "middle";
-        direction = params["direction"] || group && group.attrs.direction || "initial";
-        isIE = /*@cc_on!@*/false || !!document.documentMode;
-        fontFamily = params['fontFamily'] || params['font-family'] || a['font-family'] || group && group.attrs.fontFamily || 'Verdana,sans';
-
-        fontSize = fontSize === undefined ? lineHeight / 1.2 || 10 : fontSize.toString().replace(/px/, '');
+        var a = el.attrs,
+            node = el.node,
+            computedStyle = node.firstChild && R._g.doc.defaultView.getComputedStyle(node.firstChild, E),
+            fontSize = computedStyle ? toFloat(R._g.doc.defaultView.getComputedStyle(node.firstChild, E).getPropertyValue("font-size")) : 10,
+            lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading,
+            valign = a[has]("vertical-align") ? a["vertical-align"] : "middle",
+            direction = (params["direction"] || (computedStyle ? computedStyle.getPropertyValue("direction") : "initial")).toLowerCase(),
+            isIE = /*@cc_on!@*/false || !!document.documentMode;
 
         if (isNaN(lineHeight)) {
             lineHeight = fontSize * leading;
@@ -11762,7 +9961,7 @@ if (R.svg) {
             params.text = params.text.join('<br>');
         }
 
-        valign = actualValign === 'top' ? -0.5 : actualValign === 'bottom' ? 0.5 : 0;
+        valign = valign === 'top' ? -0.5 : valign === 'bottom' ? 0.5 : 0;
 
         if (params[has]("text") && (params.text !== a.text || el._textdirty)) {
             a.text = params.text;
@@ -11841,18 +10040,35 @@ if (R.svg) {
             y: a.y
         });
         el._.dirty = 1;
-        var bb = el._getCustomBBox(fontFamily, fontSize + 'px', actualValign, i),
-            dif = bb.diff;
+        var bb = el._getBBox(),
+            dif = a.y - (bb.y + bb.height / 2);
+
+        // If the bbox is calculated then we need to make additional adjustments,
+        // to account for the fact that the calculated bbox already has the
+        // text alignment, both horizontal and vertical, included in the calculation.
+        if (bb.isCalculated) {
+            switch (a['vertical-align']) {
+                case "top":
+                    dif = bb.height * .75;
+                    break;
+                case "bottom":
+                    dif = -(bb.height * .25);
+                    break;
+                default:
+                    dif = a.y - (bb.y + bb.height * .25);
+                    break;
+            };
+        }
 
         dif && R.is(dif, "finite") && tspans[0] && $(tspans[0], {
             dy: dif
         });
     },
-        Element = function (node, svg, group /*, dontAppend*/) {
+        Element = function (node, svg, group) {
         var o = this,
             parent = group || svg;
 
-        /*!dontAppend && */parent.canvas && parent.canvas.appendChild(node);
+        parent.canvas && parent.canvas.appendChild(node);
 
         o.node = o[0] = node;
         node.raphael = true;
@@ -11981,10 +10197,12 @@ if (R.svg) {
             transform: o.matrix
         });
 
-        sw = o.attrs[has]("stroke-width") ? o.attrs["stroke-width"] : 1;
-        o.attr({
-            "stroke-width": sw
-        });
+        if (_.sx != 1 || _.sy != 1) {
+            sw = o.attrs[has]("stroke-width") ? o.attrs["stroke-width"] : 1;
+            o.attr({
+                "stroke-width": sw
+            });
+        }
 
         return o;
     };
@@ -12037,7 +10255,7 @@ if (R.svg) {
             }
         }
 
-        o.parent.canvas.contains(node) && o.parent.canvas.removeChild(node);
+        o.parent.canvas.removeChild(node);
         o.removeData();
         delete paper._elementsById[o.id]; // remove from lookup hash
         R._tear(o, o.parent);
@@ -12079,84 +10297,7 @@ if (R.svg) {
             currentNode = currentNode.parent;
         }
         return fn;
-    };
-
-    elproto._getCustomBBox = function (fontFamily, fontSize, valign, lines) {
-        var fn,
-            o = this,
-            node = o.node,
-            hide,
-            isText = o.type === "text",
-            isIE = /*@cc_on!@*/false || !!document.documentMode,
-            cachedFontHeight,
-            txtElem,
-            theText,
-            theMSG,
-            availableFontFamily,
-            availableFontSize,
-            info,
-            randomPos,
-            bboxY,
-            diff,
-            bboxHeight;
-        if (isIE && isText) {
-            fn = showRecursively(o);
-        } else {
-            if (node.style.display === "none") {
-                o.show();
-                hide = true;
-            }
-        }
-
-        if (isText) {
-            cachedFontHeight = R.cachedFontHeight;
-            txtElem = cachedFontHeight.txtElem;
-            availableFontFamily = cachedFontHeight[fontFamily] || (cachedFontHeight[fontFamily] = {});
-            availableFontSize = availableFontFamily[fontSize];
-            randomPos = -100;
-
-            if (!availableFontSize) {
-                if (!txtElem) {
-                    txtElem = cachedFontHeight.txtElem = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                    txtElem.setAttribute('x', randomPos);
-                    txtElem.setAttribute('y', randomPos);
-
-                    theMSG = document.createTextNode('abcdefhiklmnopqrstuvwxyz');
-                    txtElem.appendChild(theMSG);
-
-                    document.getElementsByTagName('svg')[0].appendChild(txtElem);
-                }
-                txtElem.setAttribute('style', 'font-family :' + fontFamily + '; font-size :' + fontSize);
-
-                bbox = txtElem.getBBox();
-                availableFontFamily[fontSize] = availableFontSize = [];
-                availableFontSize.push(bbox.height);
-                availableFontSize.push(bbox.y);
-            }
-
-            bboxY = availableFontSize[1];
-            bboxHeight = availableFontSize[0];
-            switch (valign) {
-                case "bottom":
-                    diff = randomPos - bboxY - bboxHeight * lines;
-                    break;
-                case "top":
-                    diff = randomPos - bboxY;
-                    break;
-                default:
-                    diff = randomPos - bboxY - bboxHeight / 2 * lines;
-            };
-
-            bbox = {
-                height: availableFontSize[0],
-                diff: diff
-            };
-        }
-
-        isIE && isText ? fn && fn() : hide && o.hide();
-        return bbox;
-    };
-
+    }
     elproto._getBBox = function () {
         var fn,
             o = this,
@@ -12323,110 +10464,20 @@ if (R.svg) {
         }
     };
 
-    /*\
-     * Element.on
-     [ method ]
-     **
-     * Bind handler function for a particular event to Element
-     * @param eventType - Type of event
-     * @param handler - Function to be called on the firing of the event
-    \*/
     elproto.on = function (eventType, handler) {
-        var elem = this,
-            fn,
-            oldEventType;
         if (this.removed) {
             return this;
         }
 
-        if (eventType === 'dragstart') {
-            this.drag(null, handler);
-            return this;
-        } else if (eventType === 'dragmove') {
-            this.drag(handler);
-            return this;
-        } else if (eventType === 'dragend') {
-            this.drag(null, null, handler);
-            return this;
-        }
-
-        fn = handler;
-        oldEventType = eventType;
+        var fn = handler;
         if (R.supportsTouch) {
             eventType = R._touchMap[eventType] || eventType === 'click' && 'touchstart' || eventType;
-            if (eventType !== oldEventType) {
-                // store the new listeners for removeEventListener
-                if (!elem._tempTouchListeners) {
-                    elem._tempTouchListeners = {};
-                }
-                if (!elem._tempTouchListeners[oldEventType]) {
-                    elem._tempTouchListeners[oldEventType] = [];
-                }
-                fn = function (e) {
-                    e.preventDefault();
-                    handler(e);
-                };
-                elem._tempTouchListeners[oldEventType].push({
-                    oldFn: handler,
-                    newFn: fn,
-                    newEvt: eventType
-                });
-            }
+            fn = function (e) {
+                e.preventDefault();
+                handler();
+            };
         }
-        if (this.node.addEventListener) {
-            this.node.addEventListener(eventType, fn);
-        } else {
-            this.node['on' + eventType] = fn;
-        }
-        return this;
-    };
-
-    /*\
-     * Element.off
-     [ method ]
-     **
-     * Remove handler function bind to an event of element
-     * @param eventType - Type of event
-     * @param handler - Function to be removed from event
-    \*/
-    elproto.off = function (eventType, handler) {
-        var elem = this,
-            fn,
-            i,
-            l;
-        if (this.removed) {
-            return this;
-        }
-
-        if (eventType === 'dragstart') {
-            this.undragstart();
-            return this;
-        } else if (eventType === 'dragmove') {
-            this.undragmove();
-            return this;
-        } else if (eventType === 'dragend') {
-            this.undragend();
-            return this;
-        }
-
-        fn = handler;
-        oldEventType = eventType;
-
-        if (R.supportsTouch && elem._tempTouchListeners && elem._tempTouchListeners[oldEventType]) {
-            l = elem._tempTouchListeners[oldEventType].length;
-            for (i = 0; i < l && oldEventType === eventType; i += 1) {
-                if (elem._tempTouchListeners[oldEventType][i] && elem._tempTouchListeners[oldEventType][i].oldFn === fn) {
-                    eventType = elem._tempTouchListeners[oldEventType][i].newEvt;
-                    fn = elem._tempTouchListeners[oldEventType][i].newFn;
-                    elem._tempTouchListeners[oldEventType].splice(i, 1);
-                }
-            }
-        }
-        if (this.node.removeEventListener) {
-            this.node.removeEventListener(eventType, fn);
-        } else {
-            this.node['on' + eventType] = null;
-        }
+        this.node['on' + eventType] = fn;
         return this;
     };
 
@@ -12480,37 +10531,11 @@ if (R.svg) {
         applyCustomAttributes(res, attrs);
         return res;
     };
-    function LoadRefImage(element, attrs) {
-        var src = attrs.src,
-            parent = element._.group,
-            node = element.node,
-            RefImg = element._.RefImg;
-
-        if (!RefImg) {
-            RefImg = element._.RefImg = new Image();
-        }
-
-        if (attrs.src !== undefined) {
-            RefImg.src = src;
-            RefImg.onload = function () {
-                element.attr({
-                    width: element.attrs.width || RefImg.width,
-                    height: element.attrs.height || RefImg.height
-                });
-                // parent.canvas && parent.canvas.appendChild(node);
-            };
-            RefImg.onerror = function (e) {
-                node.onerror && node.onerror(e);
-            };
-            element._.RefImg = RefImg;
-        }
-    };
     R._engine.image = function (svg, attrs, group) {
         var el = $("image"),
             src = attrs.src,
-            res = new Element(el, svg, group, true);
+            res = new Element(el, svg, group);
 
-        res._.group = group || svg;
         res.type = "image";
         el.setAttribute("preserveAspectRatio", "none");
         setFillAndStroke(res, attrs);
@@ -12525,7 +10550,7 @@ if (R.svg) {
         // Ideally this code should not be here as .css() is not a function of rapheal.
         css && res.css && res.css(css, undefined, true);
 
-        setFillAndStroke(res, attrs, group);
+        setFillAndStroke(res, attrs);
         applyCustomAttributes(res, attrs);
         return res;
     };
@@ -12708,7 +10733,7 @@ if (R.svg) {
 
 module.exports = R;
 
-},{"./raphael.core":4}],6:[function(require,module,exports){
+},{"./raphael.core":3}],6:[function(require,module,exports){
 /**!
 * RedRaphael 1.0.0 - JavaScript Vector Library VML Module
 * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
@@ -12736,8 +10761,6 @@ if (R.vml) {
         fillString = "fill",
         separator = /[, ]+/,
         eve = R.eve,
-        paperproto = R.fn,
-        serializeArgs = R._serializeArgs,
         ms = " progid:DXImageTransform.Microsoft",
         arrayShift = Array.prototype.shift,
         S = " ",
@@ -13176,6 +11199,7 @@ if (R.vml) {
         // res.paper.canvas.style.display = E;
     },
 
+
     /*
      * Keeps the follower element in sync with the leaders.
      * First and second arguments represents the context(element) and the
@@ -13271,12 +11295,12 @@ if (R.vml) {
         }
         return 1;
     },
-        Element = function (node, vml, group /*, dontAppend*/) {
+        Element = function (node, vml, group) {
         var o = this,
             parent = group || vml,
             skew;
 
-        /*!dontAppend && */parent.canvas && parent.canvas.appendChild(node);
+        parent.canvas && parent.canvas.appendChild(node);
         skew = createNode("skew");
         skew.on = true;
         node.appendChild(skew);
@@ -13315,288 +11339,7 @@ if (R.vml) {
         parent.top = o;
         o.next = null;
     };
-    var elproto = R.el,
-        notApplicableGroupAttrs = {
-        fill: true,
-        stroke: true,
-        'stroke-width': true,
-        'stroke-dasharray': true,
-        'stroke-linejoin': true
-    },
-
-    /*
-     * Function to over-write the default attr() function of group so that the individual properties of group
-     * can be applied to its child.
-     */
-    customGroupUpdate = function (name, value) {
-        var group = this,
-            attr,
-            appliedAttrs;
-        if (typeof name === 'object') {
-            // Storing the group attrs to be applied to the set level
-            group.customAttr = name;
-
-            appliedAttrs = {};
-            // Checking for the applicable group attrs
-            for (attr in name) {
-                if (name[has](attr) && !notApplicableGroupAttrs[attr]) {
-                    appliedAttrs[attr] = name[attr];
-                }
-            }
-        } else {
-            appliedAttrs = name;
-        }
-        return elproto.attr.call(group, appliedAttrs, value);
-    },
-        customElementUpdate = function (name, value) {
-        element = this;
-        if (typeof name === 'object') {
-            name = applyToChild(element.parent, name);
-        }
-        return elproto.attr.call(element, name, value);
-    },
-
-    /*
-     * Function to apply the group attrs to its child if not present
-     */
-    applyToChild = function (group, childAttr) {
-        var groupAttrs, attr;
-        if (group) {
-            groupAttrs = group.customAttr;
-            for (attr in groupAttrs) {
-                !childAttr[attr] && (childAttr[attr] = groupAttrs[attr]);
-            }
-        }
-        return childAttr;
-    };
-
-    /*\
-     * Paper.group
-     [ method ]
-     **
-     * Creates a group
-     **
-     > Parameters
-     **
-     - id (number) id of the group
-     = (object) Raphaël element object with type “group”
-     **
-     > Usage
-     | var g = paper.group();
-    \*/
-    paperproto.group = function () {
-        // id
-        var paper = this,
-            args = arguments,
-            group = lastArgIfGroup(args, true),
-            attrs,
-            out;
-
-        attrs = applyToChild(group, args[0]);
-        out = R._engine.group(paper, attrs, group);
-        out.attr = customGroupUpdate;
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
-
-    /*\
-     * Paper.circle
-     [ method ]
-     **
-     * Draws a circle.
-     **
-     > Parameters
-     **
-     - x (number) x coordinate of the centre
-     - y (number) y coordinate of the centre
-     - r (number) radius
-     = (object) Raphaël element object with type “circle”
-     **
-     > Usage
-     | var c = paper.circle(50, 50, 40);
-    \*/
-    paperproto.circle = function () {
-        // x, y, r
-        var paper = this,
-            args = arguments,
-            group = lastArgIfGroup(args, true),
-            attrs = serializeArgs(args),
-            out;
-
-        attrs = applyToChild(group, attrs);
-        out = R._engine.circle(paper, attrs, group);
-        out.attr = customElementUpdate;
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
-
-    /*\
-     * Paper.rect
-     [ method ]
-     *
-     * Draws a rectangle.
-     **
-     > Parameters
-     **
-     - x (number) x coordinate of the top left corner
-     - y (number) y coordinate of the top left corner
-     - width (number) width
-     - height (number) height
-     - r (number) #optional radius for rounded corners, default is 0
-     = (object) Raphaël element object with type “rect”
-     **
-     > Usage
-     | // regular rectangle
-     | var c = paper.rect(10, 10, 50, 50);
-     | // rectangle with rounded corners
-     | var c = paper.rect(40, 40, 50, 50, 10);
-    \*/
-    paperproto.rect = function () {
-        var paper = this,
-            args = arguments,
-            group = lastArgIfGroup(args, true),
-            attrs = serializeArgs(args),
-            out;
-
-        attrs = applyToChild(group, attrs);
-        out = R._engine.rect(paper, attrs, group);
-        out.attr = customElementUpdate;
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
-
-    /*\
-     * Paper.ellipse
-     [ method ]
-     **
-     * Draws an ellipse.
-     **
-     > Parameters
-     **
-     - x (number) x coordinate of the centre
-     - y (number) y coordinate of the centre
-     - rx (number) horizontal radius
-     - ry (number) vertical radius
-     = (object) Raphaël element object with type “ellipse”
-     **
-     > Usage
-     | var c = paper.ellipse(50, 50, 40, 20);
-    \*/
-    paperproto.ellipse = function () {
-        var paper = this,
-            args = arguments,
-            group = lastArgIfGroup(args, true),
-            attrs = serializeArgs(args),
-            out;
-
-        attrs = applyToChild(group, attrs);
-        out = R._engine.ellipse(this, attrs, group);
-        out.attr = customElementUpdate;
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
-
-    /*\
-     * Paper.path
-     [ method ]
-     **
-     * Creates a path element by given path data string.
-     > Parameters
-     - pathString (string) #optional path string in SVG format.
-     * Path string consists of one-letter commands, followed by comma seprarated arguments in numercal form. Example:
-     | "M10,20L30,40"
-     * Here we can see two commands: “M”, with arguments `(10, 20)` and “L” with arguments `(30, 40)`. Upper case letter mean command is absolute, lower case—relative.
-     *
-     # <p>Here is short list of commands available, for more details see <a href="http://www.w3.org/TR/SVG/paths.html#PathData" title="Details of a path's data attribute's format are described in the SVG specification.">SVG path string format</a>.</p>
-     # <table><thead><tr><th>Command</th><th>Name</th><th>Parameters</th></tr></thead><tbody>
-     # <tr><td>M</td><td>moveto</td><td>(x y)+</td></tr>
-     # <tr><td>Z</td><td>closepath</td><td>(none)</td></tr>
-     # <tr><td>L</td><td>lineto</td><td>(x y)+</td></tr>
-     # <tr><td>H</td><td>horizontal lineto</td><td>x+</td></tr>
-     # <tr><td>V</td><td>vertical lineto</td><td>y+</td></tr>
-     # <tr><td>C</td><td>curveto</td><td>(x1 y1 x2 y2 x y)+</td></tr>
-     # <tr><td>S</td><td>smooth curveto</td><td>(x2 y2 x y)+</td></tr>
-     # <tr><td>Q</td><td>quadratic Bézier curveto</td><td>(x1 y1 x y)+</td></tr>
-     # <tr><td>T</td><td>smooth quadratic Bézier curveto</td><td>(x y)+</td></tr>
-     # <tr><td>A</td><td>elliptical arc</td><td>(rx ry x-axis-rotation large-arc-flag sweep-flag x y)+</td></tr>
-     # <tr><td>R</td><td><a href="http://en.wikipedia.org/wiki/Catmull–Rom_spline#Catmull.E2.80.93Rom_spline">Catmull-Rom curveto</a>*</td><td>x1 y1 (x y)+</td></tr></tbody></table>
-     * * “Catmull-Rom curveto” is a not standard SVG command and added in 2.0 to make life easier.
-     * Note: there is a special case when path consist of just three commands: “M10,10R…z”. In this case path will smoothly connects to its beginning.
-     > Usage
-     | var c = paper.path("M10 10L90 90");
-     | // draw a diagonal line:
-     | // move to 10,10, line to 90,90
-     * For example of path strings, check out these icons: http://raphaeljs.com/icons/
-    \*/
-    paperproto.path = function () {
-        var paper = this,
-            args = arguments,
-            group = lastArgIfGroup(args, true),
-            paperConfig = paper.config,
-            capStyle = paperConfig && paperConfig["stroke-linecap"] || "butt",
-            attrs = serializeArgs(args),
-            out;
-
-        attrs = applyToChild(group, attrs);
-        out = R._engine.path(paper, attrs, group);
-        out.attr = customElementUpdate;
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
-
-    /*\
-     * Paper.image
-     [ method ]
-     **
-     * Embeds an image into the surface.
-     **
-     > Parameters
-     **
-     - src (string) URI of the source image
-     - x (number) x coordinate position
-     - y (number) y coordinate position
-     - width (number) width of the image
-     - height (number) height of the image
-     = (object) Raphaël element object with type “image”
-     **
-     > Usage
-     | var c = paper.image("apple.png", 10, 10, 80, 80);
-    \*/
-    paperproto.image = function () {
-        var paper = this,
-            args = arguments,
-            group = lastArgIfGroup(args, true),
-            attrs = serializeArgs(args),
-            out;
-
-        attrs = applyToChild(group, attrs);
-        out = R._engine.image(paper, attrs, group);
-        out.attr = customElementUpdate;
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
-
-    /*\
-     * Paper.text
-     [ method ]
-     **
-     * Draws a text string. If you need line breaks, put “\n” in the string.
-     **
-     > Parameters
-     **
-     - x (number) x coordinate position
-     - y (number) y coordinate position
-     - text (string) The text string to draw
-     = (object) Raphaël element object with type “text”
-     **
-     > Usage
-     | var t = paper.text(50, 50, "Raphaël\nkicks\nbutt!");
-    \*/
-    paperproto.text = function () {
-        var paper = this,
-            args = arguments,
-            group = lastArgIfGroup(args, true),
-            attrs = serializeArgs(args),
-            out;
-
-        attrs = applyToChild(group, attrs);
-        out = R._engine.text(paper, attrs, group, args[1]);
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
+    var elproto = R.el;
 
     Element.prototype = elproto;
     elproto.constructor = Element;
@@ -13898,69 +11641,16 @@ if (R.vml) {
         return this;
     };
 
-    /*\
-     * Element.on
-     [ method ]
-     **
-     * Bind handler function for a particular event to Element
-     * @param eventType - Type of event
-     * @param handler - Function to be called on the firing of the event
-    \*/
     elproto.on = function (eventType, handler) {
         if (this.removed) {
             return this;
         }
 
-        if (eventType === 'dragstart') {
-            this.drag(null, handler);
-            return this;
-        } else if (eventType === 'dragmove') {
-            this.drag(handler);
-            return this;
-        } else if (eventType === 'dragend') {
-            this.drag(null, null, handler);
-            return this;
-        }
-        if (this.node.attachEvent) {
-            this.node.attachEvent('on' + eventType, handler);
-        } else {
-            this.node['on' + eventType] = function () {
-                var evt = R._g.win.event;
-                evt.target = evt.srcElement;
-                handler(evt);
-            };
-        }
-        return this;
-    };
-
-    /*\
-     * Element.off
-     [ method ]
-     **
-     * Remove handler function bind to an event of element
-     * @param eventType - Type of event
-     * @param handler - Function to be removed from event
-    \*/
-    elproto.off = function (eventType, handler) {
-        if (this.removed) {
-            return this;
-        }
-
-        if (eventType === 'dragstart') {
-            this.undragstart();
-            return this;
-        } else if (eventType === 'dragmove') {
-            this.undragmove();
-            return this;
-        } else if (eventType === 'dragend') {
-            this.undragend();
-            return this;
-        }
-        if (this.node.attachEvent) {
-            this.node.detachEvent('on' + eventType, handler);
-        } else {
-            this.node['on' + eventType] = null;
-        }
+        this.node['on' + eventType] = function () {
+            var evt = R._g.win.event;
+            evt.target = evt.srcElement;
+            handler(evt);
+        };
         return this;
     };
 
@@ -14297,13 +11987,473 @@ if (R.vml) {
 
 module.exports = R;
 
-},{"./raphael.core":4}],7:[function(require,module,exports){
-(function (global){
-var Raphael = require('./index');
+},{"./raphael.core":3}],7:[function(require,module,exports){
+// Copyright (c) 2017 Adobe Systems Incorporated. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ┌────────────────────────────────────────────────────────────┐ \\
+// │ Eve 0.5.3 - JavaScript Events Library                      │ \\
+// ├────────────────────────────────────────────────────────────┤ \\
+// │ Author Dmitry Baranovskiy (http://dmitry.baranovskiy.com/) │ \\
+// └────────────────────────────────────────────────────────────┘ \\
 
-global.Raphael = Raphael;
+(function (glob) {
+    var version = "0.5.3",
+        has = "hasOwnProperty",
+        separator = /[\.\/]/,
+        comaseparator = /\s*,\s*/,
+        wildcard = "*",
+        fun = function () {},
+        numsort = function (a, b) {
+            return a - b;
+        },
+        current_event,
+        stop,
+        events = {n: {}},
+        firstDefined = function () {
+            for (var i = 0, ii = this.length; i < ii; i++) {
+                if (typeof this[i] != "undefined") {
+                    return this[i];
+                }
+            }
+        },
+        lastDefined = function () {
+            var i = this.length;
+            while (--i) {
+                if (typeof this[i] != "undefined") {
+                    return this[i];
+                }
+            }
+        },
+        objtos = Object.prototype.toString,
+        Str = String,
+        isArray = Array.isArray || function (ar) {
+            return ar instanceof Array || objtos.call(ar) == "[object Array]";
+        };
+    /*\
+     * eve
+     [ method ]
 
-module.exports = Raphael;
+     * Fires event with given `name`, given scope and other parameters.
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./index":2}]},{},[7]);
+     - name (string) name of the *event*, dot (`.`) or slash (`/`) separated
+     - scope (object) context for the event handlers
+     - varargs (...) the rest of arguments will be sent to event handlers
+
+     = (object) array of returned values from the listeners. Array has two methods `.firstDefined()` and `.lastDefined()` to get first or last not `undefined` value.
+    \*/
+        eve = function (name, scope) {
+            var e = events,
+                oldstop = stop,
+                args = Array.prototype.slice.call(arguments, 2),
+                listeners = eve.listeners(name),
+                z = 0,
+                f = false,
+                l,
+                indexed = [],
+                queue = {},
+                out = [],
+                ce = current_event,
+                errors = [];
+            out.firstDefined = firstDefined;
+            out.lastDefined = lastDefined;
+            current_event = name;
+            stop = 0;
+            for (var i = 0, ii = listeners.length; i < ii; i++) if ("zIndex" in listeners[i]) {
+                indexed.push(listeners[i].zIndex);
+                if (listeners[i].zIndex < 0) {
+                    queue[listeners[i].zIndex] = listeners[i];
+                }
+            }
+            indexed.sort(numsort);
+            while (indexed[z] < 0) {
+                l = queue[indexed[z++]];
+                out.push(l.apply(scope, args));
+                if (stop) {
+                    stop = oldstop;
+                    return out;
+                }
+            }
+            for (i = 0; i < ii; i++) {
+                l = listeners[i];
+                if ("zIndex" in l) {
+                    if (l.zIndex == indexed[z]) {
+                        out.push(l.apply(scope, args));
+                        if (stop) {
+                            break;
+                        }
+                        do {
+                            z++;
+                            l = queue[indexed[z]];
+                            l && out.push(l.apply(scope, args));
+                            if (stop) {
+                                break;
+                            }
+                        } while (l)
+                    } else {
+                        queue[l.zIndex] = l;
+                    }
+                } else {
+                    out.push(l.apply(scope, args));
+                    if (stop) {
+                        break;
+                    }
+                }
+            }
+            stop = oldstop;
+            current_event = ce;
+            return out;
+        };
+        // Undocumented. Debug only.
+        eve._events = events;
+    /*\
+     * eve.listeners
+     [ method ]
+
+     * Internal method which gives you array of all event handlers that will be triggered by the given `name`.
+
+     - name (string) name of the event, dot (`.`) or slash (`/`) separated
+
+     = (array) array of event handlers
+    \*/
+    eve.listeners = function (name) {
+        var names = isArray(name) ? name : name.split(separator),
+            e = events,
+            item,
+            items,
+            k,
+            i,
+            ii,
+            j,
+            jj,
+            nes,
+            es = [e],
+            out = [];
+        for (i = 0, ii = names.length; i < ii; i++) {
+            nes = [];
+            for (j = 0, jj = es.length; j < jj; j++) {
+                e = es[j].n;
+                items = [e[names[i]], e[wildcard]];
+                k = 2;
+                while (k--) {
+                    item = items[k];
+                    if (item) {
+                        nes.push(item);
+                        out = out.concat(item.f || []);
+                    }
+                }
+            }
+            es = nes;
+        }
+        return out;
+    };
+    /*\
+     * eve.separator
+     [ method ]
+
+     * If for some reasons you don’t like default separators (`.` or `/`) you can specify yours
+     * here. Be aware that if you pass a string longer than one character it will be treated as
+     * a list of characters.
+
+     - separator (string) new separator. Empty string resets to default: `.` or `/`.
+    \*/
+    eve.separator = function (sep) {
+        if (sep) {
+            sep = Str(sep).replace(/(?=[\.\^\]\[\-])/g, "\\");
+            sep = "[" + sep + "]";
+            separator = new RegExp(sep);
+        } else {
+            separator = /[\.\/]/;
+        }
+    };
+    /*\
+     * eve.on
+     [ method ]
+     **
+     * Binds given event handler with a given name. You can use wildcards “`*`” for the names:
+     | eve.on("*.under.*", f);
+     | eve("mouse.under.floor"); // triggers f
+     * Use @eve to trigger the listener.
+     **
+     - name (string) name of the event, dot (`.`) or slash (`/`) separated, with optional wildcards
+     - f (function) event handler function
+     **
+     - name (array) if you don’t want to use separators, you can use array of strings
+     - f (function) event handler function
+     **
+     = (function) returned function accepts a single numeric parameter that represents z-index of the handler. It is an optional feature and only used when you need to ensure that some subset of handlers will be invoked in a given order, despite of the order of assignment.
+     > Example:
+     | eve.on("mouse", eatIt)(2);
+     | eve.on("mouse", scream);
+     | eve.on("mouse", catchIt)(1);
+     * This will ensure that `catchIt` function will be called before `eatIt`.
+     *
+     * If you want to put your handler before non-indexed handlers, specify a negative value.
+     * Note: I assume most of the time you don’t need to worry about z-index, but it’s nice to have this feature “just in case”.
+    \*/
+    eve.on = function (name, f) {
+        if (typeof f != "function") {
+            return function () {};
+        }
+        var names = isArray(name) ? isArray(name[0]) ? name : [name] : Str(name).split(comaseparator);
+        for (var i = 0, ii = names.length; i < ii; i++) {
+            (function (name) {
+                var names = isArray(name) ? name : Str(name).split(separator),
+                    e = events,
+                    exist;
+                for (var i = 0, ii = names.length; i < ii; i++) {
+                    e = e.n;
+                    e = e.hasOwnProperty(names[i]) && e[names[i]] || (e[names[i]] = {n: {}});
+                }
+                e.f = e.f || [];
+                for (i = 0, ii = e.f.length; i < ii; i++) if (e.f[i] == f) {
+                    exist = true;
+                    break;
+                }
+                !exist && e.f.push(f);
+            }(names[i]));
+        }
+        return function (zIndex) {
+            if (+zIndex == +zIndex) {
+                f.zIndex = +zIndex;
+            }
+        };
+    };
+    /*\
+     * eve.f
+     [ method ]
+     **
+     * Returns function that will fire given event with optional arguments.
+     * Arguments that will be passed to the result function will be also
+     * concated to the list of final arguments.
+     | el.onclick = eve.f("click", 1, 2);
+     | eve.on("click", function (a, b, c) {
+     |     console.log(a, b, c); // 1, 2, [event object]
+     | });
+     - event (string) event name
+     - varargs (…) and any other arguments
+     = (function) possible event handler function
+    \*/
+    eve.f = function (event) {
+        var attrs = [].slice.call(arguments, 1);
+        return function () {
+            eve.apply(null, [event, null].concat(attrs).concat([].slice.call(arguments, 0)));
+        };
+    };
+    /*\
+     * eve.stop
+     [ method ]
+     **
+     * Is used inside an event handler to stop the event, preventing any subsequent listeners from firing.
+    \*/
+    eve.stop = function () {
+        stop = 1;
+    };
+    /*\
+     * eve.nt
+     [ method ]
+     **
+     * Could be used inside event handler to figure out actual name of the event.
+     **
+     - subname (string) #optional subname of the event
+     **
+     = (string) name of the event, if `subname` is not specified
+     * or
+     = (boolean) `true`, if current event’s name contains `subname`
+    \*/
+    eve.nt = function (subname) {
+        var cur = isArray(current_event) ? current_event.join(".") : current_event;
+        if (subname) {
+            return new RegExp("(?:\\.|\\/|^)" + subname + "(?:\\.|\\/|$)").test(cur);
+        }
+        return cur;
+    };
+    /*\
+     * eve.nts
+     [ method ]
+     **
+     * Could be used inside event handler to figure out actual name of the event.
+     **
+     **
+     = (array) names of the event
+    \*/
+    eve.nts = function () {
+        return isArray(current_event) ? current_event : current_event.split(separator);
+    };
+    /*\
+     * eve.off
+     [ method ]
+     **
+     * Removes given function from the list of event listeners assigned to given name.
+     * If no arguments specified all the events will be cleared.
+     **
+     - name (string) name of the event, dot (`.`) or slash (`/`) separated, with optional wildcards
+     - f (function) event handler function
+    \*/
+    /*\
+     * eve.unbind
+     [ method ]
+     **
+     * See @eve.off
+    \*/
+    eve.off = eve.unbind = function (name, f) {
+        if (!name) {
+            eve._events = events = {n: {}};
+            return;
+        }
+        var names = isArray(name) ? isArray(name[0]) ? name : [name] : Str(name).split(comaseparator);
+        if (names.length > 1) {
+            for (var i = 0, ii = names.length; i < ii; i++) {
+                eve.off(names[i], f);
+            }
+            return;
+        }
+        names = isArray(name) ? name : Str(name).split(separator);
+        var e,
+            key,
+            splice,
+            i, ii, j, jj,
+            cur = [events],
+            inodes = [];
+        for (i = 0, ii = names.length; i < ii; i++) {
+            for (j = 0; j < cur.length; j += splice.length - 2) {
+                splice = [j, 1];
+                e = cur[j].n;
+                if (names[i] != wildcard) {
+                    if (e[names[i]]) {
+                        splice.push(e[names[i]]);
+                        inodes.unshift({
+                            n: e,
+                            name: names[i]
+                        });
+                    }
+                } else {
+                    for (key in e) if (e[has](key)) {
+                        splice.push(e[key]);
+                        inodes.unshift({
+                            n: e,
+                            name: key
+                        });
+                    }
+                }
+                cur.splice.apply(cur, splice);
+            }
+        }
+        for (i = 0, ii = cur.length; i < ii; i++) {
+            e = cur[i];
+            while (e.n) {
+                if (f) {
+                    if (e.f) {
+                        for (j = 0, jj = e.f.length; j < jj; j++) if (e.f[j] == f) {
+                            e.f.splice(j, 1);
+                            break;
+                        }
+                        !e.f.length && delete e.f;
+                    }
+                    for (key in e.n) if (e.n[has](key) && e.n[key].f) {
+                        var funcs = e.n[key].f;
+                        for (j = 0, jj = funcs.length; j < jj; j++) if (funcs[j] == f) {
+                            funcs.splice(j, 1);
+                            break;
+                        }
+                        !funcs.length && delete e.n[key].f;
+                    }
+                } else {
+                    delete e.f;
+                    for (key in e.n) if (e.n[has](key) && e.n[key].f) {
+                        delete e.n[key].f;
+                    }
+                }
+                e = e.n;
+            }
+        }
+        // prune inner nodes in path
+        prune: for (i = 0, ii = inodes.length; i < ii; i++) {
+            e = inodes[i];
+            for (key in e.n[e.name].f) {
+                // not empty (has listeners)
+                continue prune;
+            }
+            for (key in e.n[e.name].n) {
+                // not empty (has children)
+                continue prune;
+            }
+            // is empty
+            delete e.n[e.name];
+        }
+    };
+    /*\
+     * eve.once
+     [ method ]
+     **
+     * Binds given event handler with a given name to only run once then unbind itself.
+     | eve.once("login", f);
+     | eve("login"); // triggers f
+     | eve("login"); // no listeners
+     * Use @eve to trigger the listener.
+     **
+     - name (string) name of the event, dot (`.`) or slash (`/`) separated, with optional wildcards
+     - f (function) event handler function
+     **
+     = (function) same return function as @eve.on
+    \*/
+    eve.once = function (name, f) {
+        var f2 = function () {
+            eve.off(name, f2);
+            return f.apply(this, arguments);
+        };
+        return eve.on(name, f2);
+    };
+    /*\
+     * eve.version
+     [ property (string) ]
+     **
+     * Current version of the library.
+    \*/
+    eve.version = version;
+    eve.toString = function () {
+        return "You are running Eve " + version;
+    };
+    glob.eve = eve;
+    typeof module != "undefined" && module.exports ? module.exports = eve : typeof define === "function" && define.amd ? define("eve", [], function() { return eve; }) : glob.eve = eve;
+})(typeof window != "undefined" ? window : this);
+
+},{}],8:[function(require,module,exports){
+var RedRaphael = require('../../lib/raphael');
+var rect;
+
+RedRaphael(10, 10, 600, 400, function () {
+    var paper = window.pap = this;
+
+    // Draw a red rectangle with red fill color.
+    rect = paper.rect({
+        x: 0,
+        y: 0,
+        width: 500,
+        height: 200
+    }).attr({
+        fill: '#FF0000'
+    });
+
+    // Draw text on top of rectangle with white fill color.
+    paper.text({
+        text: ['Use index.html as a template to work on temporary workspace!', '', 'Ensure that your test files are named spec-<somename>.html'],
+        x: 10,
+        y: 20,
+        fill: '#FFFFFF',
+        'text-anchor': 'left',
+        'vertical-align': 'top'
+    });
+});
+
+},{"../../lib/raphael":4}]},{},[8]);

@@ -703,7 +703,7 @@ if (R.vml) {
     paperproto.group = function () { // id
         var paper = this,
             args = arguments,
-            group = lastArgIfGroup(args, true),
+            group = R._lastArgIfGroup(args, true),
             attrs,
             out;
 
@@ -732,7 +732,7 @@ if (R.vml) {
     paperproto.circle = function () { // x, y, r
         var paper = this,
             args = arguments,
-            group = lastArgIfGroup(args, true),
+            group = R._lastArgIfGroup(args, true),
             attrs = serializeArgs(args),
             out;
 
@@ -767,7 +767,7 @@ if (R.vml) {
     paperproto.rect = function () {
         var paper = this,
             args = arguments,
-            group = lastArgIfGroup(args, true),
+            group = R._lastArgIfGroup(args, true),
             attrs = serializeArgs(args),
             out;
 
@@ -797,7 +797,7 @@ if (R.vml) {
     paperproto.ellipse = function () {
         var paper = this,
             args = arguments,
-            group = lastArgIfGroup(args, true),
+            group = R._lastArgIfGroup(args, true),
             attrs = serializeArgs(args),
             out;
 
@@ -842,7 +842,7 @@ if (R.vml) {
     paperproto.path = function () {
         var paper = this,
             args = arguments,
-            group = lastArgIfGroup(args, true),
+            group = R._lastArgIfGroup(args, true),
             paperConfig = paper.config,
             capStyle = (paperConfig && paperConfig["stroke-linecap"]) || "butt",
             attrs = serializeArgs(args),
@@ -875,7 +875,7 @@ if (R.vml) {
     paperproto.image = function () {
         var paper = this,
             args = arguments,
-            group = lastArgIfGroup(args, true),
+            group = R._lastArgIfGroup(args, true),
             attrs = serializeArgs(args),
             out;
 
@@ -904,7 +904,7 @@ if (R.vml) {
     paperproto.text = function() {
         var paper = this,
             args = arguments,
-            group = lastArgIfGroup(args, true),
+            group = R._lastArgIfGroup(args, true),
             attrs = serializeArgs(args),
             out;
 

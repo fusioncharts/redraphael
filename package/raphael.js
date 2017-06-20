@@ -13328,32 +13328,48 @@ if (R.vml) {
      * Function to over-write the default attr() function of group so that the individual properties of group
      * can be applied to its child.
      */
-    customGroupUpdate = function (name, value) {
+    customGroupUpdate = function (attributes) {
         var group = this,
             attr,
-            appliedAttrs;
-        if (typeof name === 'object') {
+            appliedAttrs,
+            childElem,
+            customAttr;
+        if (typeof attributes === 'object') {
             // Storing the group attrs to be applied to the set level
-            group.customAttr = name;
-
+            customAttr = {};
             appliedAttrs = {};
+
             // Checking for the applicable group attrs
-            for (attr in name) {
-                if (name[has](attr) && !notApplicableGroupAttrs[attr]) {
-                    appliedAttrs[attr] = name[attr];
+            for (attr in attributes) {
+                if (attributes[has](attr)) {
+                    if (notApplicableGroupAttrs[attr]) {
+                        customAttr[attr] = attributes[attr];
+                    } else {
+                        appliedAttrs[attr] = attributes[attr];
+                    }
                 }
             }
-        } else {
-            appliedAttrs = name;
+            group.customAttr = customAttr;
         }
-        return elproto.attr.call(group, appliedAttrs, value);
+
+        // Applying the group properties to all its child element
+        childElem = group.bottom;
+        while (childElem) {
+            if (childElem.type === 'group') {
+                customGroupUpdate.call(childElem, attributes);
+            } else {
+                elproto.attr.call(childElem, customAttr);
+            }
+            childElem = childElem.next;
+        }
+        return elproto.attr.call(group, appliedAttrs);
     },
-        customElementUpdate = function (name, value) {
+        customElementUpdate = function (attributes) {
         element = this;
-        if (typeof name === 'object') {
-            name = applyToChild(element.parent, name);
+        if (typeof attributes === 'object') {
+            attributes = applyToChild(element.parent, attributes);
         }
-        return elproto.attr.call(element, name, value);
+        return elproto.attr.call(element, attributes);
     },
 
     /*

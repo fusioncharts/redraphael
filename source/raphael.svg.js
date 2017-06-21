@@ -1158,6 +1158,7 @@ if (R.svg) {
             lineHeight,
             valign,
             direction,
+            valign,
             isIE;
 
         if (!(params[has]("text") || a.text) || !(params[has]("x") || a.x) || !(params[has]("y") || a.y) ||
@@ -1171,7 +1172,7 @@ if (R.svg) {
         fontSize = params['fontSize'] || params['font-size'] || a['font-size'] || (group && group.attrs.fontSize);
         lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading;
         actualValign = a[has]("vertical-align") ? a["vertical-align"] : "middle";
-        direction = params["direction"] || (group && group.attrs.direction) || "initial"
+        direction = params["direction"] || (group && group.attrs.direction) || "initial";
         isIE = /*@cc_on!@*/false || !!document.documentMode;
         fontFamily = params['fontFamily'] || params['font-family'] || a['font-family'] ||
             (group && group.attrs.fontFamily) || 'Verdana,sans';
@@ -1527,6 +1528,7 @@ if (R.svg) {
             randomPos,
             bboxY,
             diff,
+            bbox,
             bboxHeight;
         if (isIE && isText) {
             fn = showRecursively(o);

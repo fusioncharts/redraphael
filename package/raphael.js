@@ -13321,7 +13321,8 @@ if (R.vml) {
         stroke: true,
         'stroke-width': true,
         'stroke-dasharray': true,
-        'stroke-linejoin': true
+        'stroke-linejoin': true,
+        opacity: true
     },
 
     /*

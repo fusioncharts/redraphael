@@ -636,7 +636,8 @@ if (R.vml) {
             stroke: true,
             'stroke-width': true,
             'stroke-dasharray': true,
-            'stroke-linejoin': true
+            'stroke-linejoin': true,
+            opacity : true
         },
         /*
          * Function to over-write the default attr() function of group so that the individual properties of group

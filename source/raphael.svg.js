@@ -38,6 +38,7 @@ _window.Raphael && _window.Raphael.svg && function(R) {
             oval: "M2.5,0A2.5,2.5,0,0,1,2.5,5 2.5,2.5,0,0,1,2.5,0z"
         },
         markerCounter = {},
+        isFireFox = R._g.win.navigator.userAgent.toLowerCase().indexOf('firefox') > -1,
         updateReferenceUrl = function () {
             return R._url = R._g.win.location.href.replace(/#.*?$/, E);
         };
@@ -1274,6 +1275,8 @@ _window.Raphael && _window.Raphael.svg && function(R) {
             availableFontSize,
             info,
             randomPos,
+            paperBBox,
+            bbox,
             bboxY,
             diff,
             bboxHeight;
@@ -1307,7 +1310,19 @@ _window.Raphael && _window.Raphael.svg && function(R) {
                 }
                 txtElem.setAttribute('style', 'font-family :' + fontFamily + '; font-size :' + fontSize);
 
-                bbox = txtElem.getBBox();
+                /**
+                 * In firefox, there is an issue of 'getBBox'
+                 * Refrence - https://bugzilla.mozilla.org/show_bug.cgi?id=612118
+                 * Thus, 'getBoundingClientRect' is exclusively used instead of 'getBBox' for firefox
+                 */
+                if (isFireFox) {
+                    paperBBox = o.paper.canvas.getBoundingClientRect();
+                    bbox = txtElem.getBoundingClientRect();
+                    bbox.x = bbox.left - paperBBox.left;
+                    bbox.y = bbox.top - paperBBox.top;
+                } else {
+                    bbox = txtElem.getBBox();
+                }
                 availableFontFamily[fontSize] = availableFontSize = [];
                 availableFontSize.push(bbox.height);
                 availableFontSize.push(bbox.y);

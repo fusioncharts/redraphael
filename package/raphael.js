@@ -3585,6 +3585,18 @@ pick = R.pick = function () {
     }
     return attrs;
 },
+    checkCyclicRef = function (obj, parentArr) {
+    var i = parentArr.length,
+        bIndex = -1;
+
+    while (i--) {
+        if (obj === parentArr[i]) {
+            bIndex = i;
+            return bIndex;
+        }
+    }
+    return bIndex;
+},
     merge = R.merge = function (obj1, obj2, skipUndef, tgtArr, srcArr) {
     var item, srcVal, tgtVal, str, cRef;
     //check whether obj2 is an array
@@ -13333,60 +13345,109 @@ if (R.vml) {
      */
     customGroupUpdate = function (attributes) {
         var group = this,
-            attr,
-            appliedAttrs,
             childElem,
-            customAttr;
-        if (typeof attributes === 'object') {
-            // Storing the group attrs to be applied to the set level
-            customAttr = {};
-            appliedAttrs = {};
+            ownAttr = group.ownAttr;
 
-            // Checking for the applicable group attrs
-            for (attr in attributes) {
-                if (attributes[has](attr)) {
-                    if (notApplicableGroupAttrs[attr]) {
-                        customAttr[attr] = attributes[attr];
-                    } else {
-                        appliedAttrs[attr] = attributes[attr];
-                    }
-                }
-            }
-            group.customAttr = customAttr;
+        if (attributes) {
+            group.ownAttr = ownAttr ? R.extend(ownAttr, attributes) : attributes;
         }
+        info = getApplicableGroupAttributes(group, attributes);
+        group.customAttr = info.customAttr;
+        group.inheritAttr = info.inheritAttr;
 
         // Applying the group properties to all its child element
         childElem = group.bottom;
         while (childElem) {
-            if (childElem.type === 'group') {
-                customGroupUpdate.call(childElem, attributes);
-            } else {
-                elproto.attr.call(childElem, customAttr);
-            }
+            childElem.attr();
             childElem = childElem.next;
         }
-        return elproto.attr.call(group, appliedAttrs);
+        return attributes && elproto.attr.call(group, attributes);
     },
-        customElementUpdate = function (attributes) {
-        element = this;
-        if (typeof attributes === 'object') {
-            attributes = applyToChild(element.parent, attributes);
+
+
+    /*
+     * Function to over-write the default attr() function of an element so that the individual properties of group
+     * can be applied to the child.
+     */
+    customElementUpdate = function (attributes) {
+        var element = this,
+            parent = element.parent,
+            ownAttr = element.ownAttr;
+
+        if (attributes) {
+            element.ownAttr = ownAttr ? R.extend(ownAttr, attributes) : attributes;
         }
+
+        attributes = getApplicableAttributes(parent, attributes, element);
+
+        element.inheritAttrFromGroup = parent && parent.inheritAttr;
+        element.customAttrFromGroup = parent && parent.customAttr;
+
         return elproto.attr.call(element, attributes);
     },
 
+
     /*
-     * Function to apply the group attrs to its child if not present
+     * Function to manage attributes for group level inheritance
      */
-    applyToChild = function (group, childAttr) {
-        var groupAttrs, attr;
-        if (group) {
-            groupAttrs = group.customAttr;
-            for (attr in groupAttrs) {
-                !childAttr[attr] && (childAttr[attr] = groupAttrs[attr]);
+    getApplicableGroupAttributes = function (group, ownAttr) {
+        var parent = group && group.parent,
+            customAttr = {},
+            inheritAttr = {},
+            attr;
+
+        ownAttr = ownAttr || group && group.ownAttr;
+        // Segregating the custom group attributes
+        if (ownAttr) {
+            for (attr in ownAttr) {
+                if (notApplicableGroupAttrs[attr]) {
+                    customAttr[attr] = ownAttr[attr];
+                }
             }
         }
-        return childAttr;
+
+        // Inhereiting from parent
+        if (parent && parent.type === 'group') {
+            parentCustomAttr = parent.customAttr;
+            parentInheritAttr = parent.inheritAttr;
+
+            // Direct attributes from parent
+            for (attr in parentCustomAttr) {
+                inheritAttr[attr] = parentCustomAttr[attr];
+            }
+
+            // Inherited attributes from parent
+            for (attr in parentInheritAttr) {
+                !inheritAttr[attr] && (inheritAttr[attr] = parentInheritAttr[attr]);
+            }
+        }
+
+        return {
+            customAttr: customAttr,
+            inheritAttr: inheritAttr
+        };
+    },
+
+
+    /*
+     * Function to get the group attrs applicable to its child.
+     */
+    getApplicableAttributes = function (group, elemAttr, elem) {
+        var customAttr, inheritAttr, attr;
+        elemAttr = elemAttr || R.extend({}, elem.ownAttr);
+        if (group) {
+            customAttr = group.customAttr;
+            inheritAttr = group.inheritAttr;
+
+            for (attr in customAttr) {
+                !elemAttr[attr] && (elemAttr[attr] = customAttr[attr]);
+            }
+
+            for (attr in inheritAttr) {
+                !elemAttr[attr] && (elemAttr[attr] = inheritAttr[attr]);
+            }
+        }
+        return elemAttr;
     };
 
     /*\
@@ -13409,11 +13470,16 @@ if (R.vml) {
             args = arguments,
             group = R._lastArgIfGroup(args, true),
             attrs,
+            info,
             out;
 
-        attrs = applyToChild(group, args[0]);
-        out = R._engine.group(paper, attrs, group);
+        info = getApplicableGroupAttributes(group);
+        out = R._engine.group(paper, args[0], group);
+
+        out.customAttr = info.customAttr;
+        out.inheritAttr = info.inheritAttr;
         out.attr = customGroupUpdate;
+
         return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
     };
 
@@ -13441,7 +13507,7 @@ if (R.vml) {
             attrs = serializeArgs(args),
             out;
 
-        attrs = applyToChild(group, attrs);
+        attrs = getApplicableAttributes(group, attrs);
         out = R._engine.circle(paper, attrs, group);
         out.attr = customElementUpdate;
         return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
@@ -13472,12 +13538,18 @@ if (R.vml) {
         var paper = this,
             args = arguments,
             group = R._lastArgIfGroup(args, true),
-            attrs = serializeArgs(args),
+            ownAttr = serializeArgs(args),
+            attrs,
             out;
 
-        attrs = applyToChild(group, attrs);
+        attrs = getApplicableAttributes(group, ownAttr);
         out = R._engine.rect(paper, attrs, group);
+
         out.attr = customElementUpdate;
+        out.ownAttr = ownAttr;
+        out.inheritAttrFromGroup = group.inheritAttr;
+        out.customAttrFromGroup = group.customAttr;
+
         return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
     };
 
@@ -13505,7 +13577,7 @@ if (R.vml) {
             attrs = serializeArgs(args),
             out;
 
-        attrs = applyToChild(group, attrs);
+        attrs = getApplicableAttributes(group, attrs);
         out = R._engine.ellipse(this, attrs, group);
         out.attr = customElementUpdate;
         return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
@@ -13552,7 +13624,7 @@ if (R.vml) {
             attrs = serializeArgs(args),
             out;
 
-        attrs = applyToChild(group, attrs);
+        attrs = getApplicableAttributes(group, attrs);
         out = R._engine.path(paper, attrs, group);
         out.attr = customElementUpdate;
         return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
@@ -13583,7 +13655,7 @@ if (R.vml) {
             attrs = serializeArgs(args),
             out;
 
-        attrs = applyToChild(group, attrs);
+        attrs = getApplicableAttributes(group, attrs);
         out = R._engine.image(paper, attrs, group);
         out.attr = customElementUpdate;
         return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
@@ -13612,7 +13684,7 @@ if (R.vml) {
             attrs = serializeArgs(args),
             out;
 
-        attrs = applyToChild(group, attrs);
+        attrs = getApplicableAttributes(group, attrs);
         out = R._engine.text(paper, attrs, group, args[1]);
         return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
     };

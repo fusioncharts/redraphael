@@ -563,6 +563,19 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             return attrs;
         },
 
+        checkCyclicRef = function (obj, parentArr) {
+            var i = parentArr.length,
+                bIndex = -1;
+
+            while (i--) {
+                if (obj === parentArr[i]) {
+                    bIndex = i;
+                    return bIndex;
+                }
+            }
+            return bIndex;
+        },
+
         merge = R.merge = function (obj1, obj2, skipUndef, tgtArr, srcArr) {
             var item,
                 srcVal,

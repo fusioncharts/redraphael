@@ -9569,7 +9569,7 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
 
                 /**
                  * In firefox, there is an issue of 'getBBox'
-                 * Refrence - https://bugzilla.mozilla.org/show_bug.cgi?id=612118
+                 * Reference - 'https://bugzilla.mozilla.org/show_bug.cgi?id=612118'
                  * Thus, 'getBoundingClientRect' is exclusively used instead of 'getBBox' for firefox
                  */
                 if (isFireFox) {

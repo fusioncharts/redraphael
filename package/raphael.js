@@ -13037,7 +13037,7 @@ if (R.vml) {
         if ("arrow-end" in params) {
             addArrow(res, params["arrow-end"], 1);
         }
-        if (params.opacity != null || params["stroke-width"] != null || params.fill != null || params.src != null || params.stroke != null || params["stroke-width"] != null || params["stroke-opacity"] != null || params["fill-opacity"] != null || params["stroke-dasharray"] != null || params["stroke-miterlimit"] != null || params["stroke-linejoin"] != null || params["stroke-linecap"] != null) {
+        if (!isGroup && (params.opacity != null || params["stroke-width"] != null || params.fill != null || params.src != null || params.stroke != null || params["stroke-width"] != null || params["stroke-opacity"] != null || params["fill-opacity"] != null || params["stroke-dasharray"] != null || params["stroke-miterlimit"] != null || params["stroke-linejoin"] != null || params["stroke-linecap"] != null)) {
             var fill = node.getElementsByTagName(fillString),
                 newfill = false,
                 fillOpacity = -1;
@@ -13336,6 +13336,8 @@ if (R.vml) {
         'stroke-width': true,
         'stroke-dasharray': true,
         'stroke-linejoin': true,
+        'stroke-opacity': true,
+        'fill-opacity': true,
         opacity: true
     },
 
@@ -13351,7 +13353,7 @@ if (R.vml) {
         if (attributes) {
             group.ownAttr = ownAttr ? R.extend(ownAttr, attributes) : attributes;
         }
-        info = getApplicableGroupAttributes(group, attributes);
+        info = getApplicableGroupAttributes(group);
         group.customAttr = info.customAttr;
         group.inheritAttr = info.inheritAttr;
 
@@ -13390,13 +13392,13 @@ if (R.vml) {
     /*
      * Function to manage attributes for group level inheritance
      */
-    getApplicableGroupAttributes = function (group, ownAttr) {
+    getApplicableGroupAttributes = function (group) {
         var parent = group && group.parent,
             customAttr = {},
             inheritAttr = {},
             attr;
 
-        ownAttr = ownAttr || group && group.ownAttr;
+        ownAttr = group && group.ownAttr;
         // Segregating the custom group attributes
         if (ownAttr) {
             for (attr in ownAttr) {
@@ -13473,11 +13475,7 @@ if (R.vml) {
             info,
             out;
 
-        info = getApplicableGroupAttributes(group);
         out = R._engine.group(paper, args[0], group);
-
-        out.customAttr = info.customAttr;
-        out.inheritAttr = info.inheritAttr;
         out.attr = customGroupUpdate;
 
         return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;

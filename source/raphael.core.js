@@ -5155,6 +5155,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             deqArr = [],
             i = 0,
             ll = 0,
+            tmpOpacity,
             animFrameFn;
 
         for (; l < animationElements.length; l++) {

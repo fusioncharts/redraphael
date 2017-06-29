@@ -8089,6 +8089,7 @@ animation = function () {
         deqArr = [],
         i = 0,
         ll = 0,
+        tmpOpacity,
         animFrameFn;
 
     for (; l < animationElements.length; l++) {

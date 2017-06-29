@@ -9,7 +9,7 @@
  * Licensed under the MIT license.
  */
 
-var eve = require('./eve/eve');
+import eve from './eve/eve';
 
 var _win = (typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : null);
 
@@ -7913,4 +7913,4 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
     // Even with AMD, Raphael should be defined globally
     // oldRaphael.was ? (g.win.Raphael = R) : (Raphael = R);
 
-module.exports = R;
+export default R;

@@ -10,7 +10,7 @@
 */
 // Define _window as window object in case of indivual file inclusion.
 
-var R = require('./raphael.core');
+import R from './raphael.core';
 
 if (R.vml) {
     var has = "hasOwnProperty",
@@ -1334,4 +1334,4 @@ if (R.vml) {
         }
 }
 
-module.exports = R;
+export default R

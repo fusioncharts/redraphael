@@ -27,5 +27,4 @@ RedRaphael(10, 10, 600, 400, function () {
         'vertical-align': 'top'
     });
 
-
 });

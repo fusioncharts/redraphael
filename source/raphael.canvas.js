@@ -7,7 +7,7 @@
  * Raphael Canvas Extension
  */
 
-var R = require('./raphael.core');
+import R from './raphael.core';
 
 if (R.canvas) {
     var win = R._g.win,
@@ -2730,4 +2730,4 @@ if (R.canvas) {
     };
 }
 
-module.exports = R;
+export default R

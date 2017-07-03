@@ -4,11 +4,11 @@
     ["transform-es3-property-literals"],
     ["transform-proto-to-assign"],
     ["transform-runtime", {
-      "helpers": true,
+      "helpers": false,
       "polyfill": true,
-      "regenerator": true
+      "regenerator": false
     }],
-    ['add-module-exports']
+    ["add-module-exports"]
   ],
   "presets": [
     ["env", {

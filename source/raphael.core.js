@@ -4362,7 +4362,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                 "x", 0,
                 "y", 0,
                 "width", 0,
-                "height", 0)
+                "height", 0),
             out = R._engine.image(paper, attrs, group);
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };

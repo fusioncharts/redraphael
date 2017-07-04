@@ -72,7 +72,7 @@ function testPath(saveStart) {
     if (saveStart !== 'animateSaved')
     clearBoard();
     // Make current paper instance
-    paper = Raphael(50, 50, 600, 400);
+    paper = RedRaphael(50, 50, 600, 400);
 
 	selectValue = selectValue.split(keySeparator);
     // return if cannot split

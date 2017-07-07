@@ -11243,7 +11243,8 @@ if (_raphael2["default"].svg) {
         var elem = this,
             fn,
             i,
-            l;
+            l,
+            oldEventType;
         if (this.removed) {
             return this;
         }

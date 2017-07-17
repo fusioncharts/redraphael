@@ -30,7 +30,7 @@ RedRaphael(10, 10, 600, 400, function () {
 
 ## Usage
 RedRaphael is a fork of Raphael with a number of added features and slightly changed development philosophy.
-The best place to start is the API and usage docuentation.
+The best place to start is the API and usage documentation.
 
 To learn how to use RedRaphael visit [documentation page](http://fusioncharts.github.io/redraphael/)
 
@@ -51,7 +51,7 @@ var myrect = paper.rect(x, y, width, height, mygroup);
 ```
 
 ```
-NOTE: Irrespective of the number of arguments needed to be passed to the Element construtor,
+NOTE: Irrespective of the number of arguments needed to be passed to the Element constructor,
 passing the group element as the last argument will ensure that the element gets added to the group.
 So the following are all valid ways of adding elements to groups.
 

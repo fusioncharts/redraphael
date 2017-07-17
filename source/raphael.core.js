@@ -147,7 +147,12 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         doc = g.doc,
         win = g.win,
 
-        supportsTouch = R.supportsTouch = "createTouch" in doc,
+        // 'createTouch' is now deprecated and removed from the Web standards. So
+        // we can use Touch and TouchEvent interface for better result.
+        // link: https://developer.mozilla.org/en-US/docs/Web/API/Document/createTouch
+        supportsTouch = R.supportsTouch =  (typeof doc.createTouch === "function" ||
+                                            typeof win.TouchEvent === "function" ||
+                                            typeof win.Touch === "function"),
 
         // The devices which both touch and pointer.
         supportsOnlyTouch = R.supportsOnlyTouch = (supportsTouch &&

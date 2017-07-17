@@ -96,7 +96,7 @@ if (R.svg) {
                     if (key.substring(0, 6) == "xlink:") {
                         el.setAttributeNS(xlink, key.substring(6), Str(attr[key]));
                     } else {
-                        el.setAttribute(key, Str(attr[key]));
+                        el.setAttributeNS(null, key, Str(attr[key]));
                     }
                 }
         } else {

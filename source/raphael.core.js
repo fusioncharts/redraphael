@@ -5361,7 +5361,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             //         runAnimation.apply(null, deqArr[l].params);
             //     };
             // })(l), lib.priorityList.instant);
-            animFrameFn = R.getAnimFrameFn();
+            animFrameFn = R.getInstantAnimFrameFn();
             animFrameFn((function (l) {
                 return function ()  {
                     runAnimation.apply(null, deqArr[l].params);
@@ -5382,6 +5382,17 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
 
     R.getAnimFrameFn = function () {
         return requestAnimFrame = R.requestAnimFrame ||
+        _win.webkitRequestAnimationFrame ||
+        _win.mozRequestAnimationFrame ||
+        _win.oRequestAnimationFrame ||
+        _win.msRequestAnimationFrame ||
+        function(callback) {
+            setTimeout(callback, 16);
+        };
+    };
+
+    R.getInstantAnimFrameFn = function () {
+        return requestAnimFrame = R.instantRequestAnimFrame ||
         _win.webkitRequestAnimationFrame ||
         _win.mozRequestAnimationFrame ||
         _win.oRequestAnimationFrame ||

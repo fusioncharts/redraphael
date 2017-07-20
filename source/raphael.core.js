@@ -5392,7 +5392,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
     };
 
     R.getInstantAnimFrameFn = function () {
-        return requestAnimFrame = R.instantRequestAnimFrame ||
+        return R.instantRequestAnimFrame ||
         _win.webkitRequestAnimationFrame ||
         _win.mozRequestAnimationFrame ||
         _win.oRequestAnimationFrame ||

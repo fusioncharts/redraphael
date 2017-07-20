@@ -5454,7 +5454,7 @@ R.getAnimFrameFn = function () {
 };
 
 R.getInstantAnimFrameFn = function () {
-    return requestAnimFrame = R.instantRequestAnimFrame || _win.webkitRequestAnimationFrame || _win.mozRequestAnimationFrame || _win.oRequestAnimationFrame || _win.msRequestAnimationFrame || function (callback) {
+    return R.instantRequestAnimFrame || _win.webkitRequestAnimationFrame || _win.mozRequestAnimationFrame || _win.oRequestAnimationFrame || _win.msRequestAnimationFrame || function (callback) {
         setTimeout(callback, 16);
     };
 };

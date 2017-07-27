@@ -7016,7 +7016,7 @@ elproto.resume = function (anim, resumeChildAnimation) {
  = (object) original element
 \*/
 elproto.stop = function (anim, stopChildAnimation, jumpToEnd) {
-    var e, i;
+    var e, i, ele;
     if (stopChildAnimation) {
         for (i = animationElements.length - 1; i >= 0; i--) {
             e = animationElements[i];

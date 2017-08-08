@@ -196,7 +196,6 @@ if (R.vml) {
         isOval = ovalTypes[o.type] && (a.cx != params.cx || a.cy != params.cy || a.r != params.r || a.rx != params.rx || a.ry != params.ry),
         isGroup = o.type === 'group',
         res = o;
-
         oriOp = res.oriOp || (res.oriOp = {});
         for (var par in params)
             if (params[has](par)) {
@@ -341,6 +340,7 @@ if (R.vml) {
             if (fill.on == null || params.fill == "none" || params.fill === null) {
                 fill.on = false;
             }
+
             if (fill.on && params.fill) {
                 var isURL = Str(params.fill).match(R._ISURL);
                 if (isURL) {
@@ -370,7 +370,8 @@ if (R.vml) {
                         fill.rotate = false;
                     }
                     else if ("opacity" in color && !("fill-opacity" in params)) {
-                        fillOpacity = color.opacity;
+                        // store oiginal non gradient color opacity
+                        oriOp.nonGradOpacity = fillOpacity = color.opacity;
                     }
                 }
             }
@@ -379,12 +380,14 @@ if (R.vml) {
                 var opacity = ((+a["fill-opacity"] + 1 || 2) - 1) * ((+a.opacity + 1 || 2) - 1) * ((+fillOpacity + 1 || 2) - 1);
                 opacity = mmin(mmax(opacity, 0), 1);
                 oriOp.opacity = opacity;
-
+                // if gradient color opacity is set then opacity (applied through the params)
+                //  should be multiplied with the gradient opacity so that ratio would be remained same
                 if (oriOp.opacity1 !== undefined) {
                     fill.opacity = oriOp.opacity1 * opacity;
                     fill['o:opacity2'] = oriOp.opacity2 * opacity;
                 } else {
-                    fill.opacity = opacity;
+                    // multiply with the original non gradent color opacity with the opacity to preserve the ratio of the opacity
+                    fill.opacity = opacity * (oriOp.nonGradOpacity === undefined ? 1 : oriOp.nonGradOpacity);
                 }
                 if (fill.src) {
                     fill.color = "none";
@@ -579,9 +582,12 @@ if (R.vml) {
             }
             fill.colors = clrs.length ? clrs.join() : "0% " + fill.color;
             //set opacity1 & opacity2
+            // store original gradient color opacity
             oriOp.opacity1 = opacity1;
             oriOp.opacity2 = opacity2;
             oriFOpacity = (oriOp.opacity === undefined) ? 1 : oriOp.opacity;
+            // if gradient color opacity is set then opacity (applied through the params)
+            //  should be multiplied with the gradient opacity so that ratio would be remained same
             fill.opacity = opacity1 * oriFOpacity;
             fill['o:opacity2'] = opacity2 * oriFOpacity;
             if (type == "radial") {

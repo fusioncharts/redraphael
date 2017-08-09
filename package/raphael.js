@@ -5234,6 +5234,7 @@ animation = function animation() {
         i = 0,
         ll = 0,
         tmpOpacity,
+        radial,
         animFrameFn;
 
     for (; l < animationElements.length; l++) {

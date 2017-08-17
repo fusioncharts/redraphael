@@ -191,12 +191,12 @@ if (R.vml) {
         a = o.attrs,
         s = node.style,
         xy,
+        oriOp,
         newpath = pathTypes[o.type] && (params.x != a.x || params.y != a.y || params.width != a.width || params.height != a.height || params.cx != a.cx || params.cy != a.cy || params.rx != a.rx || params.ry != a.ry || params.r != a.r),
         isOval = ovalTypes[o.type] && (a.cx != params.cx || a.cy != params.cy || a.r != params.r || a.rx != params.rx || a.ry != params.ry),
         isGroup = o.type === 'group',
         res = o;
-
-
+        oriOp = res.oriOp || (res.oriOp = {});
         for (var par in params)
             if (params[has](par)) {
                 a[par] = params[par];
@@ -340,6 +340,7 @@ if (R.vml) {
             if (fill.on == null || params.fill == "none" || params.fill === null) {
                 fill.on = false;
             }
+
             if (fill.on && params.fill) {
                 var isURL = Str(params.fill).match(R._ISURL);
                 if (isURL) {
@@ -359,6 +360,7 @@ if (R.vml) {
                     fill.color = color.hex;
                     fill.src = E;
                     fill.type = "solid";
+
                     if (color.error && (res.type in {
                         circle: 1,
                         ellipse: 1
@@ -368,18 +370,30 @@ if (R.vml) {
                         fill.rotate = false;
                     }
                     else if ("opacity" in color && !("fill-opacity" in params)) {
-                        fillOpacity = color.opacity;
+                        // store oiginal non gradient color opacity
+                        oriOp.nonGradOpacity = fillOpacity = color.opacity;
                     }
                 }
             }
+
             if (fillOpacity !== -1 || "fill-opacity" in params || "opacity" in params) {
                 var opacity = ((+a["fill-opacity"] + 1 || 2) - 1) * ((+a.opacity + 1 || 2) - 1) * ((+fillOpacity + 1 || 2) - 1);
                 opacity = mmin(mmax(opacity, 0), 1);
-                fill.opacity = opacity;
+                oriOp.opacity = opacity;
+                // if gradient color opacity is set then opacity (applied through the params)
+                //  should be multiplied with the gradient opacity so that ratio will remain same
+                if (oriOp.opacity1 !== undefined) {
+                    fill.opacity = oriOp.opacity1 * opacity;
+                    fill['o:opacity2'] = oriOp.opacity2 * opacity;
+                } else {
+                    // multiply with the original non gradient color opacity with the opacity to preserve the ratio of the opacity
+                    fill.opacity = opacity * (oriOp.nonGradOpacity === undefined ? 1 : oriOp.nonGradOpacity);
+                }
                 if (fill.src) {
                     fill.color = "none";
                 }
             }
+            oriOp.opacity = undefined;
             node.appendChild(fill);
             var stroke = (node.getElementsByTagName("stroke") && node.getElementsByTagName("stroke")[0]),
                 newstroke = false;
@@ -511,6 +525,8 @@ if (R.vml) {
         o.attrs = o.attrs || {};
         var attrs = o.attrs,
         pow = Math.pow,
+        oriFOpacity,
+        oriOp = o.oriOp,
         opacity,
         oindex,
         type = "linear",
@@ -566,8 +582,14 @@ if (R.vml) {
             }
             fill.colors = clrs.length ? clrs.join() : "0% " + fill.color;
             //set opacity1 & opacity2
-            fill.opacity = opacity1;
-            fill['o:opacity2'] = opacity2;
+            // store original gradient color opacity
+            oriOp.opacity1 = opacity1;
+            oriOp.opacity2 = opacity2;
+            oriFOpacity = (oriOp.opacity === undefined) ? 1 : oriOp.opacity;
+            // if gradient color opacity is set then opacity (applied through the params)
+            // should be multiplied with the gradient opacity so that ratio will remain same
+            fill.opacity = opacity1 * oriFOpacity;
+            fill['o:opacity2'] = opacity2 * oriFOpacity;
             if (type == "radial") {
                 fill.type = "gradientTitle";
                 fill.focus = "100%";

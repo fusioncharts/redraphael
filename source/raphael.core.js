@@ -5156,6 +5156,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             i = 0,
             ll = 0,
             tmpOpacity,
+            radial,
             animFrameFn;
 
         for (; l < animationElements.length; l++) {

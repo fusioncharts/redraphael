@@ -11996,12 +11996,12 @@ if (_raphael2["default"].vml) {
                 opacity = mmin(mmax(opacity, 0), 1);
                 oriOp.opacity = opacity;
                 // if gradient color opacity is set then opacity (applied through the params)
-                //  should be multiplied with the gradient opacity so that ratio would be remained same
+                //  should be multiplied with the gradient opacity so that ratio will remain same
                 if (oriOp.opacity1 !== undefined) {
                     fill.opacity = oriOp.opacity1 * opacity;
                     fill['o:opacity2'] = oriOp.opacity2 * opacity;
                 } else {
-                    // multiply with the original non gradent color opacity with the opacity to preserve the ratio of the opacity
+                    // multiply with the original non gradient color opacity with the opacity to preserve the ratio of the opacity
                     fill.opacity = opacity * (oriOp.nonGradOpacity === undefined ? 1 : oriOp.nonGradOpacity);
                 }
                 if (fill.src) {
@@ -12195,7 +12195,7 @@ if (_raphael2["default"].vml) {
             oriOp.opacity2 = opacity2;
             oriFOpacity = oriOp.opacity === undefined ? 1 : oriOp.opacity;
             // if gradient color opacity is set then opacity (applied through the params)
-            //  should be multiplied with the gradient opacity so that ratio would be remained same
+            // should be multiplied with the gradient opacity so that ratio will remain same
             fill.opacity = opacity1 * oriFOpacity;
             fill['o:opacity2'] = opacity2 * oriFOpacity;
             if (type == "radial") {

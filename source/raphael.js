@@ -9,7 +9,9 @@ import svg from './raphael.svg';
 import vml from './raphael.vml';
 import canvas from './raphael.canvas';
 
-// export {svg, vml, canvas}
+svg(Raphael);
+vml(Raphael);
+canvas(Raphael);
 
 export default Raphael
 

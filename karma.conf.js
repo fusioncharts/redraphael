@@ -9,7 +9,7 @@ module.exports = function (config) {
                 watched: false,
                 included: false,
                 served: true
-            },
+            }
         ],
         exclude: [],
         preprocessors: {

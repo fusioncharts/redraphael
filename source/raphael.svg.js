@@ -1159,6 +1159,8 @@ if (R.svg) {
             valign,
             direction,
             valign,
+            actualValign,
+            fontFamily,
             isIE;
 
         if (!(params[has]("text") || a.text) || !(params[has]("x") || a.x) || !(params[has]("y") || a.y) ||

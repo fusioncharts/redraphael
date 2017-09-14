@@ -10688,6 +10688,8 @@ if (_raphael2["default"].svg) {
             valign,
             direction,
             valign,
+            actualValign,
+            fontFamily,
             isIE;
 
         if (!(params[has]("text") || a.text) || !(params[has]("x") || a.x) || !(params[has]("y") || a.y) || el.type != "text" || !(params[has]("font") || params[has]("font-size") || params[has]("line-height") || params[has]("vertical-align"))) {

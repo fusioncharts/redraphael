@@ -9,7 +9,7 @@
  * Licensed under the MIT license.
  */
 
-var eve = require('./eve/eve');
+import eve from './eve/eve';
 
 var _win = (typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : null);
 
@@ -4931,6 +4931,8 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             deqArr = [],
             i = 0,
             ll = 0,
+            tmpOpacity,
+            radial,
             animFrameFn;
 
         for (; l < animationElements.length; l++) {
@@ -5136,7 +5138,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             //         runAnimation.apply(null, deqArr[l].params);
             //     };
             // })(l), lib.priorityList.instant);
-            animFrameFn = R.getAnimFrameFn();
+            animFrameFn = R.getInstantAnimFrameFn();
             animFrameFn((function (l) {
                 return function ()  {
                     runAnimation.apply(null, deqArr[l].params);
@@ -5157,6 +5159,17 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
 
     R.getAnimFrameFn = function () {
         return requestAnimFrame = R.requestAnimFrame ||
+        _win.webkitRequestAnimationFrame ||
+        _win.mozRequestAnimationFrame ||
+        _win.oRequestAnimationFrame ||
+        _win.msRequestAnimationFrame ||
+        function(callback) {
+            setTimeout(callback, 16);
+        };
+    };
+
+    R.getInstantAnimFrameFn = function () {
+        return R.instantRequestAnimFrame ||
         _win.webkitRequestAnimationFrame ||
         _win.mozRequestAnimationFrame ||
         _win.oRequestAnimationFrame ||
@@ -6745,7 +6758,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
      = (object) original element
     \*/
     elproto.stop = function(anim, stopChildAnimation, jumpToEnd) {
-        var e, i;
+        var e, i, ele;
         if (stopChildAnimation) {
             for (i = animationElements.length - 1; i >= 0; i--) {
                 e = animationElements[i];
@@ -7689,4 +7702,4 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
     // Even with AMD, Raphael should be defined globally
     // oldRaphael.was ? (g.win.Raphael = R) : (Raphael = R);
 
-module.exports = R;
+export default R;

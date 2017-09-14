@@ -10,7 +10,7 @@
 */
 // Define _window as window object in case of indivual file inclusion.
 
-var R = require('./raphael.core');
+import R from './raphael.core';
 
 
 if (R.svg) {
@@ -1833,7 +1833,8 @@ if (R.svg) {
         var elem = this,
         fn,
         i,
-        l;
+        l,
+        oldEventType;
         if (this.removed) {
             return this;
         }
@@ -2154,4 +2155,4 @@ if (R.svg) {
         }
 }
 
-module.exports = R;
+export default R

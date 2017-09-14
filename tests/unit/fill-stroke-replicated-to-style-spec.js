@@ -1,4 +1,4 @@
-var Raphael = require('../../lib/raphael');
+import Raphael from '../../source/raphael';
 
 describe('elproto.attr', function () {
 	var paper,
@@ -13,22 +13,22 @@ describe('elproto.attr', function () {
 	});
 
 	it ('must apply hex fill and copy attribute to element style', function () {
-		shape1.attr('fill', '#ff0000');
+		shape1.attr('fill', 'rgb(255, 0, 0)');
 		expect(shape1.node.getAttribute('fill')).toBe('#ff0000');
-		expect(shape1.node.style.fill).toBe('#ff0000');
+		expect(shape1.node.style.fill).toBe('rgb(255, 0, 0)');
 	});
 
 	it ('must apply hex stroke and copy attribute to element style', function () {
-		shape1.attr('stroke', '#ff0000');
+		shape1.attr('stroke', 'rgb(255, 0, 0)');
 		expect(shape1.node.getAttribute('stroke')).toBe('#ff0000');
-		expect(shape1.node.style.stroke).toBe('#ff0000');
+		expect(shape1.node.style.stroke).toBe('rgb(255, 0, 0)');
 	});
 
 	it ('must apply rgba fill to element', function () {
 		shape1.attr('fill', 'rgba(255,0,255,0.5)');
 
 		expect(shape1.node.getAttribute('fill')).toBe('#ff00ff');
-		expect(shape1.node.style.fill).toBe('#ff00ff');
+		expect(shape1.node.style.fill).toBe('rgb(255, 0, 255)');
 
 		expect(shape1.node.getAttribute('fill-opacity')).toBe('0.5');
 		expect(shape1.node.style.fillOpacity).toBe('0.5');
@@ -38,7 +38,7 @@ describe('elproto.attr', function () {
 		shape1.attr('stroke', 'rgba(255,0,255,0.5)');
 
 		expect(shape1.node.getAttribute('stroke')).toBe('#ff00ff');
-		expect(shape1.node.style.stroke).toBe('#ff00ff');
+		expect(shape1.node.style.stroke).toBe('rgb(255, 0, 255)');
 
 		expect(shape1.node.getAttribute('stroke-opacity')).toBe('0.5');
 		expect(shape1.node.style.strokeOpacity).toBe('0.5');

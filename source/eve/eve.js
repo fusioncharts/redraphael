@@ -17,7 +17,7 @@
 // │ Author Dmitry Baranovskiy (http://dmitry.baranovskiy.com/) │ \\
 // └────────────────────────────────────────────────────────────┘ \\
 
-(function (glob) {
+export default (function (glob) {
     var version = "0.5.3",
         has = "hasOwnProperty",
         separator = /[\.\/]/,
@@ -435,5 +435,6 @@
         return "You are running Eve " + version;
     };
     glob.eve = eve;
-    typeof module != "undefined" && module.exports ? module.exports = eve : typeof define === "function" && define.amd ? define("eve", [], function() { return eve; }) : glob.eve = eve;
-})(typeof window != "undefined" ? window : this);
+    // typeof module != "undefined" && module.exports ? module.exports = eve : typeof define === "function" && define.amd ? define("eve", [], function() { return eve; }) : glob.eve = eve;
+    return eve;
+})(typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : null);

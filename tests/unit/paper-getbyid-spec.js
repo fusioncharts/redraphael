@@ -1,4 +1,4 @@
-var Raphael = require('../../lib/raphael');
+import Raphael from '../../source/raphael';
 
 describe("Paper.getById", function () {
     var elementTypes = {
@@ -6,7 +6,7 @@ describe("Paper.getById", function () {
             rect: [40, 40, 50, 50, 10],
             ellipse: [50, 50, 40, 20],
             path: ["M10 10L90 90"],
-            image: ["fixtures/dude.jpg", 10, 10, 80, 80],
+            image: ["./base/tests/fixtures/dude.jpg", 10, 10, 80, 80],
             text: [50, 50, "Raphaël\nkicks\nbutt!"]
         },
         elementStartId = null,

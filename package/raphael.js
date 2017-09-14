@@ -1,3061 +1,199 @@
-
-/**!
- * RedRaphael 1.1.26 - JavaScript Vector Library
- * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
- *
- * Raphael 2.1.0
- * Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
- * Copyright © 2008-2012 Sencha Labs <http://sencha.com>
- *
- * Licensed under the MIT license.
- */
-
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-// Copyright (c) 2017 Adobe Systems Incorporated. All rights reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-// ┌────────────────────────────────────────────────────────────┐ \\
-// │ Eve 0.5.3 - JavaScript Events Library                      │ \\
-// ├────────────────────────────────────────────────────────────┤ \\
-// │ Author Dmitry Baranovskiy (http://dmitry.baranovskiy.com/) │ \\
-// └────────────────────────────────────────────────────────────┘ \\
-
-(function (glob) {
-    var version = "0.5.3",
-        has = "hasOwnProperty",
-        separator = /[\.\/]/,
-        comaseparator = /\s*,\s*/,
-        wildcard = "*",
-        fun = function () {},
-        numsort = function (a, b) {
-        return a - b;
-    },
-        current_event,
-        stop,
-        events = { n: {} },
-        firstDefined = function () {
-        for (var i = 0, ii = this.length; i < ii; i++) {
-            if (typeof this[i] != "undefined") {
-                return this[i];
-            }
-        }
-    },
-        lastDefined = function () {
-        var i = this.length;
-        while (--i) {
-            if (typeof this[i] != "undefined") {
-                return this[i];
-            }
-        }
-    },
-        objtos = Object.prototype.toString,
-        Str = String,
-        isArray = Array.isArray || function (ar) {
-        return ar instanceof Array || objtos.call(ar) == "[object Array]";
-    },
-
-    /*\
-     * eve
-     [ method ]
-      * Fires event with given `name`, given scope and other parameters.
-      - name (string) name of the *event*, dot (`.`) or slash (`/`) separated
-     - scope (object) context for the event handlers
-     - varargs (...) the rest of arguments will be sent to event handlers
-      = (object) array of returned values from the listeners. Array has two methods `.firstDefined()` and `.lastDefined()` to get first or last not `undefined` value.
-    \*/
-    eve = function (name, scope) {
-        var e = events,
-            oldstop = stop,
-            args = Array.prototype.slice.call(arguments, 2),
-            listeners = eve.listeners(name),
-            z = 0,
-            f = false,
-            l,
-            indexed = [],
-            queue = {},
-            out = [],
-            ce = current_event,
-            errors = [];
-        out.firstDefined = firstDefined;
-        out.lastDefined = lastDefined;
-        current_event = name;
-        stop = 0;
-        for (var i = 0, ii = listeners.length; i < ii; i++) if ("zIndex" in listeners[i]) {
-            indexed.push(listeners[i].zIndex);
-            if (listeners[i].zIndex < 0) {
-                queue[listeners[i].zIndex] = listeners[i];
-            }
-        }
-        indexed.sort(numsort);
-        while (indexed[z] < 0) {
-            l = queue[indexed[z++]];
-            out.push(l.apply(scope, args));
-            if (stop) {
-                stop = oldstop;
-                return out;
-            }
-        }
-        for (i = 0; i < ii; i++) {
-            l = listeners[i];
-            if ("zIndex" in l) {
-                if (l.zIndex == indexed[z]) {
-                    out.push(l.apply(scope, args));
-                    if (stop) {
-                        break;
-                    }
-                    do {
-                        z++;
-                        l = queue[indexed[z]];
-                        l && out.push(l.apply(scope, args));
-                        if (stop) {
-                            break;
-                        }
-                    } while (l);
-                } else {
-                    queue[l.zIndex] = l;
-                }
-            } else {
-                out.push(l.apply(scope, args));
-                if (stop) {
-                    break;
-                }
-            }
-        }
-        stop = oldstop;
-        current_event = ce;
-        return out;
-    };
-    // Undocumented. Debug only.
-    eve._events = events;
-    /*\
-     * eve.listeners
-     [ method ]
-      * Internal method which gives you array of all event handlers that will be triggered by the given `name`.
-      - name (string) name of the event, dot (`.`) or slash (`/`) separated
-      = (array) array of event handlers
-    \*/
-    eve.listeners = function (name) {
-        var names = isArray(name) ? name : name.split(separator),
-            e = events,
-            item,
-            items,
-            k,
-            i,
-            ii,
-            j,
-            jj,
-            nes,
-            es = [e],
-            out = [];
-        for (i = 0, ii = names.length; i < ii; i++) {
-            nes = [];
-            for (j = 0, jj = es.length; j < jj; j++) {
-                e = es[j].n;
-                items = [e[names[i]], e[wildcard]];
-                k = 2;
-                while (k--) {
-                    item = items[k];
-                    if (item) {
-                        nes.push(item);
-                        out = out.concat(item.f || []);
-                    }
-                }
-            }
-            es = nes;
-        }
-        return out;
-    };
-    /*\
-     * eve.separator
-     [ method ]
-      * If for some reasons you don’t like default separators (`.` or `/`) you can specify yours
-     * here. Be aware that if you pass a string longer than one character it will be treated as
-     * a list of characters.
-      - separator (string) new separator. Empty string resets to default: `.` or `/`.
-    \*/
-    eve.separator = function (sep) {
-        if (sep) {
-            sep = Str(sep).replace(/(?=[\.\^\]\[\-])/g, "\\");
-            sep = "[" + sep + "]";
-            separator = new RegExp(sep);
-        } else {
-            separator = /[\.\/]/;
-        }
-    };
-    /*\
-     * eve.on
-     [ method ]
-     **
-     * Binds given event handler with a given name. You can use wildcards “`*`” for the names:
-     | eve.on("*.under.*", f);
-     | eve("mouse.under.floor"); // triggers f
-     * Use @eve to trigger the listener.
-     **
-     - name (string) name of the event, dot (`.`) or slash (`/`) separated, with optional wildcards
-     - f (function) event handler function
-     **
-     - name (array) if you don’t want to use separators, you can use array of strings
-     - f (function) event handler function
-     **
-     = (function) returned function accepts a single numeric parameter that represents z-index of the handler. It is an optional feature and only used when you need to ensure that some subset of handlers will be invoked in a given order, despite of the order of assignment.
-     > Example:
-     | eve.on("mouse", eatIt)(2);
-     | eve.on("mouse", scream);
-     | eve.on("mouse", catchIt)(1);
-     * This will ensure that `catchIt` function will be called before `eatIt`.
-     *
-     * If you want to put your handler before non-indexed handlers, specify a negative value.
-     * Note: I assume most of the time you don’t need to worry about z-index, but it’s nice to have this feature “just in case”.
-    \*/
-    eve.on = function (name, f) {
-        if (typeof f != "function") {
-            return function () {};
-        }
-        var names = isArray(name) ? isArray(name[0]) ? name : [name] : Str(name).split(comaseparator);
-        for (var i = 0, ii = names.length; i < ii; i++) {
-            (function (name) {
-                var names = isArray(name) ? name : Str(name).split(separator),
-                    e = events,
-                    exist;
-                for (var i = 0, ii = names.length; i < ii; i++) {
-                    e = e.n;
-                    e = e.hasOwnProperty(names[i]) && e[names[i]] || (e[names[i]] = { n: {} });
-                }
-                e.f = e.f || [];
-                for (i = 0, ii = e.f.length; i < ii; i++) if (e.f[i] == f) {
-                    exist = true;
-                    break;
-                }
-                !exist && e.f.push(f);
-            })(names[i]);
-        }
-        return function (zIndex) {
-            if (+zIndex == +zIndex) {
-                f.zIndex = +zIndex;
-            }
-        };
-    };
-    /*\
-     * eve.f
-     [ method ]
-     **
-     * Returns function that will fire given event with optional arguments.
-     * Arguments that will be passed to the result function will be also
-     * concated to the list of final arguments.
-     | el.onclick = eve.f("click", 1, 2);
-     | eve.on("click", function (a, b, c) {
-     |     console.log(a, b, c); // 1, 2, [event object]
-     | });
-     - event (string) event name
-     - varargs (…) and any other arguments
-     = (function) possible event handler function
-    \*/
-    eve.f = function (event) {
-        var attrs = [].slice.call(arguments, 1);
-        return function () {
-            eve.apply(null, [event, null].concat(attrs).concat([].slice.call(arguments, 0)));
-        };
-    };
-    /*\
-     * eve.stop
-     [ method ]
-     **
-     * Is used inside an event handler to stop the event, preventing any subsequent listeners from firing.
-    \*/
-    eve.stop = function () {
-        stop = 1;
-    };
-    /*\
-     * eve.nt
-     [ method ]
-     **
-     * Could be used inside event handler to figure out actual name of the event.
-     **
-     - subname (string) #optional subname of the event
-     **
-     = (string) name of the event, if `subname` is not specified
-     * or
-     = (boolean) `true`, if current event’s name contains `subname`
-    \*/
-    eve.nt = function (subname) {
-        var cur = isArray(current_event) ? current_event.join(".") : current_event;
-        if (subname) {
-            return new RegExp("(?:\\.|\\/|^)" + subname + "(?:\\.|\\/|$)").test(cur);
-        }
-        return cur;
-    };
-    /*\
-     * eve.nts
-     [ method ]
-     **
-     * Could be used inside event handler to figure out actual name of the event.
-     **
-     **
-     = (array) names of the event
-    \*/
-    eve.nts = function () {
-        return isArray(current_event) ? current_event : current_event.split(separator);
-    };
-    /*\
-     * eve.off
-     [ method ]
-     **
-     * Removes given function from the list of event listeners assigned to given name.
-     * If no arguments specified all the events will be cleared.
-     **
-     - name (string) name of the event, dot (`.`) or slash (`/`) separated, with optional wildcards
-     - f (function) event handler function
-    \*/
-    /*\
-     * eve.unbind
-     [ method ]
-     **
-     * See @eve.off
-    \*/
-    eve.off = eve.unbind = function (name, f) {
-        if (!name) {
-            eve._events = events = { n: {} };
-            return;
-        }
-        var names = isArray(name) ? isArray(name[0]) ? name : [name] : Str(name).split(comaseparator);
-        if (names.length > 1) {
-            for (var i = 0, ii = names.length; i < ii; i++) {
-                eve.off(names[i], f);
-            }
-            return;
-        }
-        names = isArray(name) ? name : Str(name).split(separator);
-        var e,
-            key,
-            splice,
-            i,
-            ii,
-            j,
-            jj,
-            cur = [events],
-            inodes = [];
-        for (i = 0, ii = names.length; i < ii; i++) {
-            for (j = 0; j < cur.length; j += splice.length - 2) {
-                splice = [j, 1];
-                e = cur[j].n;
-                if (names[i] != wildcard) {
-                    if (e[names[i]]) {
-                        splice.push(e[names[i]]);
-                        inodes.unshift({
-                            n: e,
-                            name: names[i]
-                        });
-                    }
-                } else {
-                    for (key in e) if (e[has](key)) {
-                        splice.push(e[key]);
-                        inodes.unshift({
-                            n: e,
-                            name: key
-                        });
-                    }
-                }
-                cur.splice.apply(cur, splice);
-            }
-        }
-        for (i = 0, ii = cur.length; i < ii; i++) {
-            e = cur[i];
-            while (e.n) {
-                if (f) {
-                    if (e.f) {
-                        for (j = 0, jj = e.f.length; j < jj; j++) if (e.f[j] == f) {
-                            e.f.splice(j, 1);
-                            break;
-                        }
-                        !e.f.length && delete e.f;
-                    }
-                    for (key in e.n) if (e.n[has](key) && e.n[key].f) {
-                        var funcs = e.n[key].f;
-                        for (j = 0, jj = funcs.length; j < jj; j++) if (funcs[j] == f) {
-                            funcs.splice(j, 1);
-                            break;
-                        }
-                        !funcs.length && delete e.n[key].f;
-                    }
-                } else {
-                    delete e.f;
-                    for (key in e.n) if (e.n[has](key) && e.n[key].f) {
-                        delete e.n[key].f;
-                    }
-                }
-                e = e.n;
-            }
-        }
-        // prune inner nodes in path
-        prune: for (i = 0, ii = inodes.length; i < ii; i++) {
-            e = inodes[i];
-            for (key in e.n[e.name].f) {
-                // not empty (has listeners)
-                continue prune;
-            }
-            for (key in e.n[e.name].n) {
-                // not empty (has children)
-                continue prune;
-            }
-            // is empty
-            delete e.n[e.name];
-        }
-    };
-    /*\
-     * eve.once
-     [ method ]
-     **
-     * Binds given event handler with a given name to only run once then unbind itself.
-     | eve.once("login", f);
-     | eve("login"); // triggers f
-     | eve("login"); // no listeners
-     * Use @eve to trigger the listener.
-     **
-     - name (string) name of the event, dot (`.`) or slash (`/`) separated, with optional wildcards
-     - f (function) event handler function
-     **
-     = (function) same return function as @eve.on
-    \*/
-    eve.once = function (name, f) {
-        var f2 = function () {
-            eve.off(name, f2);
-            return f.apply(this, arguments);
-        };
-        return eve.on(name, f2);
-    };
-    /*\
-     * eve.version
-     [ property (string) ]
-     **
-     * Current version of the library.
-    \*/
-    eve.version = version;
-    eve.toString = function () {
-        return "You are running Eve " + version;
-    };
-    glob.eve = eve;
-    typeof module != "undefined" && module.exports ? module.exports = eve : typeof define === "function" && define.amd ? define("eve", [], function () {
-        return eve;
-    }) : glob.eve = eve;
-})(typeof window != "undefined" ? window : this);
-
-},{}],2:[function(require,module,exports){
-var Raphael = require('./raphael.core');
-
-var svg = require('./raphael.svg');
-var vml = require('./raphael.vml');
-var canvas = require('./raphael.canvas');
-
-module.exports = Raphael;
-
-},{"./raphael.canvas":3,"./raphael.core":4,"./raphael.svg":5,"./raphael.vml":6}],3:[function(require,module,exports){
-/*jslint forin: true, regexp: true, todo: true, white: false, browser: true,
- sloppy: true, white: true, eqeq: false, newcap: true, nomen: true */
-
-/*global FusionCharts */
-
-/**
- * Raphael Canvas Extension
- */
-
-var R = require('./raphael.core');
-
-if (R.canvas) {
-    var win = R._g.win,
-        doc = R._g.doc,
-        g = R._g,
-        STRING = 'string',
-        PX = 'px',
-        separator = /[, ]+/,
-        Str = win.String,
-        toInt = win.parseInt,
-        toFloat = win.parseFloat,
-        math = win.Math,
-        mmax = math.max,
-        mmin = math.min,
-        pi = math.PI,
-        mathFloor = math.floor,
-        eve = R.eve,
-        paperproto = R.fn,
-        elproto = R.el,
-        setproto = R.st,
-        clone = R.clone,
-        deg2rad = pi / 180,
-        rad2deg = 180 / pi,
-        DEFAULT_FILL = "#fff",
-        DEFAULT_STROKE = "#000",
-        has = "hasOwnProperty",
-        S = " ",
-
-    /** @todo: detect touch */
-    supportsTouch = 'ontouchstart' in win || navigator.msMaxTouchPoints > 0,
-        events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchstart touchmove touchend touchcancel".split(S),
-        noHandle = false,
-        $,
-        FauxNode,
-        Element,
-        draggable = [],
-        drag = [],
-        dragMove = function (e) {
-        var x = e.clientX,
-            y = e.clientY,
-            scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
-            scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
-            dragi,
-            j = drag.length;
-        while (j--) {
-            dragi = drag[j];
-            if (supportsTouch) {
-                var i = e.touches.length,
-                    touch;
-                while (i--) {
-                    touch = e.touches[i];
-                    if (touch.identifier == dragi.el._drag.id) {
-                        x = touch.clientX;
-                        y = touch.clientY;
-                        (e.originalEvent ? e.originalEvent : e).preventDefault();
-                        break;
-                    }
-                }
-            } else {
-                e.preventDefault();
-            }
-
-            //var node = dragi.el.node;
-            //o,
-            //next = node.nextSibling,
-            //parent = node.parentNode,
-            //display = node.style.display;
-
-            /** @todo: implement raphael.drag.over */
-
-            //g.win.opera && parent.removeChild(node);
-            //node.style.display = "none";
-            //o = dragi.el.paper.getElementByPoint(x, y);
-            //node.style.display = display;
-            //g.win.opera && (next ? parent.insertBefore(node, next) : parent.appendChild(node));
-            //o && eve("raphael.drag.over." + dragi.el.id, dragi.el, o);
-            x += scrollX;
-            y += scrollY;
-            eve("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, x - dragi.el._drag.x, y - dragi.el._drag.y, x, y, e);
-        }
-    },
-        dragUp = function (e) {
-        R.unmousemove(dragMove).unmouseup(dragUp);
-        var i = drag.length,
-            dragi;
-        while (i--) {
-            dragi = drag[i];
-            dragi.el._drag = {};
-            dragi.onendHandler && eve("raphael.drag.end." + dragi.el.id, dragi.end_scope || dragi.start_scope || dragi.move_scope || dragi.el, e);
-        }
-        drag = [];
-    };
-
-    $ = R._createNode = function (el, attr) {
-        if (attr) {
-            if (typeof el === STRING) {
-                el = $(el);
-            }
-            for (var key in attr) if (attr.hasOwnProperty(key)) {
-                el.setAttribute(key, Str(attr[key]));
-            }
-        } else {
-            el = doc.createElement(el);
-        }
-        return el;
-    };
-
-    R._getConnectedNodes = function (node) {
-        return {
-            above: [],
-            below: []
-        };
-    };
-
-    R._getTargetNode = function (coords) {
-        var x = coords[0],
-            y = coords[1];
-    };
-
-    R._containerEventHandler = function (event) {
-        event = event || win.event;
-
-        if (noHandle) {
-            return;
-        }
-
-        /** @todo: do not use offsetX and offsetY */
-        var x = event.offsetX,
-            //mathFloor(event.pageX || (event.clientX + doc.body.scrollLeft + doc.documentElement.scrollLeft) || 0),
-        y = event.offsetY,
-            //mathFloor(event.pageY || (event.clientY + doc.body.scrollTop + doc.documentElement.scrollTop) || 0),
-        type = event.type,
-            node = R._getTargetNode([x, y]);
-
-        //console.log(type + ":: x: " + x + " y: " + y);
-
-        /*
-        if (typeof node.listeners[type] === 'function') {
-            node.listeners[type].call(node, e);
-        }*/
-    };
-
-    FauxNode = function (parent) {
-        this.type = "basic";
-
-        this.owner = parent;
-
-        // Element reference needed to get attrs so that there is no need to
-        // maintain a redundant copy.
-        this._rElement = null;
-
-        // False if this element does not need mouse interactivity.
-        this.mouseInteractions = false;
-        this.matrix = null;
-
-        // An outline path that will be the outline of the shape or in case of
-        // text the rect that bounds the text.
-        this.outlinePath = null;
-
-        this.conf = {};
-    };
-
-    FauxNode.prototype = {
-
-        constructor: FauxNode,
-
-        /**
-         * This method does the complete rendering of the element, including
-         * (re)setting the bbox and image map.
-         *
-         * @returns {_L10.FauxNode.prototype}
-         */
-        render: function () {
-
-            var o = this;
-
-            o.draw();
-            o.setBBox();
-
-            return o;
-        },
-
-        /**
-         * Applies the transforms and clipping to the context and draws the
-         * element.
-         *
-         * @returns {undefined}
-         */
-        draw: function () {
-            var o = this,
-                ctx = o.context,
-                el = o._rElement,
-                m = el.matrix,
-                isClipped = o.isClipped,
-                attrs = o.validateAttrs(),
-                cr,
-                end;
-
-            // After the validation the attributes need to be set to the element
-            // as validateAttrs works on a copy of the attrs object.
-            el.attrs = attrs;
-
-            ctx.save();
-
-            ctx.fillStyle = attrs.fill;
-            ctx.strokeStyle = attrs.stroke;
-            ctx.lineWidth = attrs['stroke-width'];
-
-            // Applying the clip before the context is transformed as is the case
-            // in case of SVG.
-            if (cr = attrs['clip-rect']) {
-                cr = cr.split(" ");
-                ctx.rect(cr[0], cr[1], cr[2], cr[3]);
-                ctx.clip();
-                isClipped = o.isClipped = true;
-            }
-
-            o.applyTransform(m);
-
-            o.paint();
-
-            ctx.restore();
-        },
-
-        /**
-         * Parse the attributes provided to paint the element shape using the
-         * canvas context.
-         *
-         * Overridden by individual derived FauxNodes
-         */
-        paint: function () {},
-
-        /**
-         * The redraw of the FauxNodes is to be handled by the CanvasObjectModel
-         * instance as it involves redrawing all the elements corresponsing to
-         * that canvas in the proper order.
-         */
-        redraw: function () {
-            this.COMInstance.redraw(this);
-        },
-
-        /**
-         * Clears the rectangle corresponding to the bounding box of the node.
-         */
-        clear: function () {
-            var o = this,
-                ctx = o.context,
-                bbox = o._bbox;
-
-            /** @todo: while clearing the stroke-width also needs to be accounted for. */
-            if (bbox) {
-                ctx.clearRect(bbox.x, bbox.y, bbox.width, bbox.height);
-            }
-        },
-
-        /**
-         * Creates the area node in the image map so that mouse interactivity
-         * can be emulated using it.
-         */
-        addMouseInteractivity: function () {
-            var o = this,
-                attrs = o._rElement.attrs,
-                bbox = o._bbox,
-                map = o.owner.wrapper._map,
-                shape = o.type === 'circle' ? 'circle' : 'rect',
-                coords = shape === 'circle' ? [attrs.cx, attrs.cy, attrs.r].join(",") : [bbox.x, bbox.y, bbox.x2, bbox.y2].join(","),
-                area,
-                end;
-
-            area = $('area', { shape: shape, coords: coords });
-            if (map.firstChild) {
-                map.insertBefore(area, map.firstChild);
-            } else {
-                map.appendChild(area);
-            }
-
-            /** @todo: should be put this check here */
-            o._mouseArea = area;
-
-            // Needed for paths.
-            o.eventListeners = {};
-        },
-
-        /**
-         * Update the coords of the area node (image map) corresponding to the FauxNode
-         * after it has been modified by changing attributes.
-         */
-        updateMapAreaCoords: function () {
-            var o = this,
-                oArea = o._mouseArea,
-                bbox = o._bbox;
-
-            if (oArea) {
-                //o.context.strokeRect(bbox.x, bbox.y, bbox.width, bbox.height);
-                if (o instanceof CircleFauxNode) {
-                    var r = bbox.width / 2;
-                    oArea.setAttribute('coords', [bbox.x + r, bbox.y + r, r].join(","));
-                } else {
-                    oArea.setAttribute('coords', [bbox.x, bbox.y, bbox.x2, bbox.y2].join(","));
-                }
-            }
-        },
-
-        /**
-         * Applies the transform given the transformation matrix to the context.
-         *
-         * @param {type} matrix
-         * @param {type} bbox
-         * @param {type} dontsetbbox
-         *
-         * @returns {_L10.FauxNode.prototype.transformBBox.tbox}
-         */
-        applyTransform: function (m) {
-            var o = this,
-                ctx = o.context,
-                split;
-
-            if (m) {
-                split = m.split();
-                ctx.translate(split.dx, split.dy);
-                !split.noRotation && ctx.rotate(deg2rad * split.rotate);
-                ctx.scale(split.scalex, split.scaley);
-            }
-        },
-
-        /**
-         *
-         */
-        setBBox: function () {
-            var o = this,
-                el = o._rElement,
-                m = el.matrix,
-                parent = o.owner,
-                pm = parent.getTransformMatrix && parent.getTransformMatrix();
-
-            if (pm) {
-                pm = pm.clone();
-                pm.add(m);
-                m = pm;
-            }
-
-            if (o.outlinePath) {
-                o._bbox = R.pathBBox(R.transformPath(o.outlinePath, m.toTransformString()).toString());
-            } else {
-                o.setShapeBBox(m);
-            }
-
-            o._mouseArea && o.updateMapAreaCoords();
-        },
-
-        getBBox: function () {
-            return this._bbox;
-        },
-
-        drawPath: function (path) {
-            var o = this,
-                ctx = o.context,
-                len = path && path.length || 0,
-                pp = PathParser,
-                i = 0,
-                command,
-                x,
-                y,
-                end;
-
-            // The PathParser object has been borrowed from canvg. All 3rd party attributions implied.
-            pp.reset();
-            pp.setTokens(path);
-
-            //var bb = new BoundingBox();
-            if (ctx != null) {
-                ctx.beginPath();
-            }
-
-            while (!pp.isEnd()) {
-                pp.nextCommand();
-                switch (pp.command) {
-                    case 'M':
-                    case 'm':
-                        var p = pp.getAsCurrentPoint();
-                        pp.addMarker(p);
-                        //bb.addPoint(p.x, p.y);
-                        if (ctx != null) {
-                            ctx.moveTo(p.x, p.y);
-                        }
-                        pp.start = pp.current;
-                        while (!pp.isCommandOrEnd()) {
-                            var p = pp.getAsCurrentPoint();
-                            pp.addMarker(p, pp.start);
-                            //bb.addPoint(p.x, p.y);
-                            if (ctx != null) {
-                                ctx.lineTo(p.x, p.y);
-                            }
-                        }
-                        break;
-                    case 'L':
-                    case 'l':
-                        while (!pp.isCommandOrEnd()) {
-                            var c = pp.current;
-                            var p = pp.getAsCurrentPoint();
-                            pp.addMarker(p, c);
-                            //bb.addPoint(p.x, p.y);
-                            if (ctx != null) {
-                                ctx.lineTo(p.x, p.y);
-                            }
-                        }
-                        break;
-                    case 'H':
-                    case 'h':
-                        while (!pp.isCommandOrEnd()) {
-                            var newP = new Point((pp.isRelativeCommand() ? pp.current.x : 0) + pp.getScalar(), pp.current.y);
-                            pp.addMarker(newP, pp.current);
-                            pp.current = newP;
-                            //bb.addPoint(pp.current.x, pp.current.y);
-                            if (ctx != null) {
-                                ctx.lineTo(pp.current.x, pp.current.y);
-                            }
-                        }
-                        break;
-                    case 'V':
-                    case 'v':
-                        while (!pp.isCommandOrEnd()) {
-                            var newP = new Point(pp.current.x, (pp.isRelativeCommand() ? pp.current.y : 0) + pp.getScalar());
-                            pp.addMarker(newP, pp.current);
-                            pp.current = newP;
-                            //bb.addPoint(pp.current.x, pp.current.y);
-                            if (ctx != null) {
-                                ctx.lineTo(pp.current.x, pp.current.y);
-                            }
-                        }
-                        break;
-                    case 'C':
-                    case 'c':
-                        while (!pp.isCommandOrEnd()) {
-                            var curr = pp.current;
-                            var p1 = pp.getPoint();
-                            var cntrl = pp.getAsControlPoint();
-                            var cp = pp.getAsCurrentPoint();
-                            pp.addMarker(cp, cntrl, p1);
-                            //bb.addBezierCurve(curr.x, curr.y, p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
-                            if (ctx != null) {
-                                ctx.bezierCurveTo(p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
-                            }
-                        }
-                        break;
-                    case 'S':
-                    case 's':
-                        while (!pp.isCommandOrEnd()) {
-                            var curr = pp.current;
-                            var p1 = pp.getReflectedControlPoint();
-                            var cntrl = pp.getAsControlPoint();
-                            var cp = pp.getAsCurrentPoint();
-                            pp.addMarker(cp, cntrl, p1);
-                            //bb.addBezierCurve(curr.x, curr.y, p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
-                            if (ctx != null) {
-                                ctx.bezierCurveTo(p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
-                            }
-                        }
-                        break;
-                    case 'Q':
-                    case 'q':
-                        while (!pp.isCommandOrEnd()) {
-                            var curr = pp.current;
-                            var cntrl = pp.getAsControlPoint();
-                            var cp = pp.getAsCurrentPoint();
-                            pp.addMarker(cp, cntrl, cntrl);
-                            //bb.addQuadraticCurve(curr.x, curr.y, cntrl.x, cntrl.y, cp.x, cp.y);
-                            if (ctx != null) ctx.quadraticCurveTo(cntrl.x, cntrl.y, cp.x, cp.y);
-                        }
-                        break;
-                    case 'T':
-                    case 't':
-                        while (!pp.isCommandOrEnd()) {
-                            var curr = pp.current;
-                            var cntrl = pp.getReflectedControlPoint();
-                            pp.control = cntrl;
-                            var cp = pp.getAsCurrentPoint();
-                            pp.addMarker(cp, cntrl, cntrl);
-                            //bb.addQuadraticCurve(curr.x, curr.y, cntrl.x, cntrl.y, cp.x, cp.y);
-                            if (ctx != null) ctx.quadraticCurveTo(cntrl.x, cntrl.y, cp.x, cp.y);
-                        }
-                        break;
-                    case 'A':
-                    case 'a':
-                        while (!pp.isCommandOrEnd()) {
-                            var curr = pp.current;
-                            var rx = pp.getScalar();
-                            var ry = pp.getScalar();
-                            var xAxisRotation = pp.getScalar() * (Math.PI / 180.0);
-                            var largeArcFlag = pp.getScalar();
-                            var sweepFlag = pp.getScalar();
-                            var cp = pp.getAsCurrentPoint();
-
-                            // Conversion from endpoint to center parameterization
-                            // http://www.w3.org/TR/SVG11/implnote.html#ArcImplementationNotes
-                            // x1', y1'
-                            var currp = new Point(Math.cos(xAxisRotation) * (curr.x - cp.x) / 2.0 + Math.sin(xAxisRotation) * (curr.y - cp.y) / 2.0, -Math.sin(xAxisRotation) * (curr.x - cp.x) / 2.0 + Math.cos(xAxisRotation) * (curr.y - cp.y) / 2.0);
-                            // adjust radii
-                            var l = Math.pow(currp.x, 2) / Math.pow(rx, 2) + Math.pow(currp.y, 2) / Math.pow(ry, 2);
-                            if (l > 1) {
-                                rx *= Math.sqrt(l);
-                                ry *= Math.sqrt(l);
-                            }
-                            // cx', cy'
-                            var s = (largeArcFlag == sweepFlag ? -1 : 1) * Math.sqrt((Math.pow(rx, 2) * Math.pow(ry, 2) - Math.pow(rx, 2) * Math.pow(currp.y, 2) - Math.pow(ry, 2) * Math.pow(currp.x, 2)) / (Math.pow(rx, 2) * Math.pow(currp.y, 2) + Math.pow(ry, 2) * Math.pow(currp.x, 2)));
-                            if (isNaN(s)) s = 0;
-                            var cpp = new Point(s * rx * currp.y / ry, s * -ry * currp.x / rx);
-                            // cx, cy
-                            var centp = new Point((curr.x + cp.x) / 2.0 + Math.cos(xAxisRotation) * cpp.x - Math.sin(xAxisRotation) * cpp.y, (curr.y + cp.y) / 2.0 + Math.sin(xAxisRotation) * cpp.x + Math.cos(xAxisRotation) * cpp.y);
-                            // vector magnitude
-                            var m = function (v) {
-                                return Math.sqrt(Math.pow(v[0], 2) + Math.pow(v[1], 2));
-                            };
-                            // ratio between two vectors
-                            var r = function (u, v) {
-                                return (u[0] * v[0] + u[1] * v[1]) / (m(u) * m(v));
-                            };
-                            // angle between two vectors
-                            var a = function (u, v) {
-                                return (u[0] * v[1] < u[1] * v[0] ? -1 : 1) * Math.acos(r(u, v));
-                            };
-                            // initial angle
-                            var a1 = a([1, 0], [(currp.x - cpp.x) / rx, (currp.y - cpp.y) / ry]);
-                            // angle delta
-                            var u = [(currp.x - cpp.x) / rx, (currp.y - cpp.y) / ry];
-                            var v = [(-currp.x - cpp.x) / rx, (-currp.y - cpp.y) / ry];
-                            var ad = a(u, v);
-                            if (r(u, v) <= -1) ad = Math.PI;
-                            if (r(u, v) >= 1) ad = 0;
-
-                            // for markers
-                            var dir = 1 - sweepFlag ? 1.0 : -1.0;
-                            var ah = a1 + dir * (ad / 2.0);
-                            var halfWay = new Point(centp.x + rx * Math.cos(ah), centp.y + ry * Math.sin(ah));
-                            pp.addMarkerAngle(halfWay, ah - dir * Math.PI / 2);
-                            pp.addMarkerAngle(cp, ah - dir * Math.PI);
-
-                            //bb.addPoint(cp.x, cp.y); // TODO: this is too naive, make it better
-                            if (ctx != null) {
-                                var r = rx > ry ? rx : ry;
-                                var sx = rx > ry ? 1 : rx / ry;
-                                var sy = rx > ry ? ry / rx : 1;
-
-                                ctx.translate(centp.x, centp.y);
-                                ctx.rotate(xAxisRotation);
-                                ctx.scale(sx, sy);
-                                ctx.arc(0, 0, r, a1, a1 + ad, 1 - sweepFlag);
-                                ctx.scale(1 / sx, 1 / sy);
-                                ctx.rotate(-xAxisRotation);
-                                ctx.translate(-centp.x, -centp.y);
-                            }
-                        }
-                        break;
-                    case 'Z':
-                    case 'z':
-                        if (ctx != null) ctx.closePath();
-                        pp.current = pp.start;
-                }
-            }
-
-            o.outlinePath = path;
-
-            return o;
-        },
-
-        /**
-         * Methods to add and remove event listeners emulating the DOM of
-         * standard browsers (and also the non-standard one).
-         */
-        addEventListener: function () {
-            var o = this,
-                args = arguments,
-                eventName = args && args[0],
-                handler = args && args[1],
-                area,
-                checkPathHandler,
-                end;
-
-            if (!o._mouseArea) {
-                o.addMouseInteractivity();
-            }
-
-            area = o._mouseArea;
-
-            if (typeof eventName === 'string' && typeof handler === 'function') {
-                /*
-                 * If the shape has an associated path then we need to check if
-                 * the mouse is within the co-ordinates of the path.
-                 */
-                if (o._path) {
-
-                    /*
-                     * If the event being listened to is mouseover, mouseout or
-                     * mousemove then the mouse position has to be constantly
-                     * monitored and the event handler called explicitly when
-                     * appropriate.
-                     */
-                    if (eventName === 'mouseover' || eventName === 'mouseout' || eventName === 'mousemove') {
-
-                        if (!o._mousemoveAdded) {
-                            var startListening = function (node) {
-
-                                var isInside = false,
-                                    isOutside = true,
-                                    transition = false;
-
-                                return function (event) {
-                                    /** @todo: replace layerX and layerY with
-                                     * standard ways of determining mouse position.
-                                     */
-                                    var x = event.layerX,
-                                        y = event.layerY;
-
-                                    transition = false;
-                                    /*
-                                     * Check if the current position of the mouse
-                                     * pointer lies within the path or not.
-                                     */
-                                    if (R.isPointInsidePath(node._transformPath, x, y)) {
-                                        /*
-                                         * @todo: fix isPointInsidePath to return the
-                                         * proper result when the mouse pointer is on
-                                         * the same horizontal/vertical lines as one
-                                         * of the vertices of the path.
-                                         */
-                                        isInside = true;
-                                        if (isOutside) {
-                                            isOutside = false;
-                                            transition = true;
-                                        }
-                                    } else {
-                                        isOutside = true;
-                                        if (isInside) {
-                                            isInside = false;
-                                            transition = true;
-                                        }
-                                    }
-
-                                    // Based on the state of the flags, fire the
-                                    // appropriate event handlers.
-                                    if (isOutside && transition && node.eventListeners['mouseout']) {
-                                        node.eventListeners['mouseout'].apply(this, arguments);
-                                    }
-                                    if (isInside) {
-                                        if (transition && node.eventListeners['mouseover']) {
-                                            node.eventListeners['mouseover'].apply(this, arguments);
-                                        }
-                                        if (node.eventListeners['mousemove']) {
-                                            node.eventListeners['mousemove'].apply(this, arguments);
-                                        }
-                                    }
-                                };
-                            }(o);
-
-                            area.addEventListener('mousemove', startListening, false);
-                            o._mousemoveAdded = true;
-                        }
-
-                        o.eventListeners[eventName] = handler;
-                    } else {
-                        var checkPathHandler = function (node, handler) {
-                            return function (event) {
-                                if (R.isPointInsidePath(node._path, event.layerX, event.layerY)) {
-                                    handler.apply(this, arguments);
-                                }
-                            };
-                        }(o, handler);
-
-                        area.addEventListener(eventName, checkPathHandler, false);
-                    }
-                } else {
-                    area.addEventListener(eventName, handler, false);
-                }
-            }
-        },
-
-        removeEventListener: function () {
-            var o = this,
-                args = arguments,
-                eventName = args && args[0],
-                handler = args && args[1],
-                area,
-                end;
-
-            if (!o._mouseArea) {
-                return;
-            }
-            area = o._mouseArea;
-
-            if (typeof eventName === 'string' && typeof handler === 'function') {
-                area.removeEventListener(eventName, handler);
-            }
-        },
-
-        attachEvent: function () {},
-
-        detachEvent: function () {},
-
-        validateAttrs: function (attrs) {
-
-            var o = this,
-                elAttrs = clone(o._rElement.attrs),
-                attr,
-                val;
-
-            if (attrs === null) {
-                if (o._isValid) {
-                    return elAttrs;
-                } else {
-                    o._isValid = true;
-                }
-            }
-
-            attrs = attrs || elAttrs;
-
-            for (attr in attrs) {
-                val = attrs[attr];
-
-                switch (attr) {
-
-                    default:
-                        continue;
-                }
-            }
-
-            return attrs;
-        },
-
-        attrs: function () {}
-    };
-
-    var NodeListItem = function (node) {
-        this.node = node;
-        this.next = null;
-        this.prev = null;
-    },
-        NodeList = function () {
-        this.top = null;
-        this.bottom = null;
-    };
-
-    NodeList.prototype = {
-
-        constructor: NodeList,
-
-        add: function (node) {
-
-            node = new NodeListItem(node);
-
-            if (!this.bottom) {
-                this.bottom = node;
-            }
-            if (this.top) {
-                this.top.next = node;
-            }
-            node.next = null;
-            node.prev = this.top;
-
-            this.top = node;
-        },
-
-        addList: function (list) {
-            if (!this.bottom) {
-                this.bottom = list.bottom;
-            }
-
-            if (this.top) {
-                this.top.next = list.bottom;
-                list.bottom.prev = this.top;
-            }
-
-            this.top = list.top;
-        },
-
-        toFront: function (node) {
-            if (this.top === node) {
-                return false;
-            }
-
-            if (this.bottom === node) {
-                this.bottom = node.next;
-            }
-
-            //var map = node.node.canvas._map,
-            //    area = node.node._mouseArea;
-
-            node.prev && (node.prev.next = node.next);
-            node.next && (node.next.prev = node.prev);
-
-            this.top.next = node;
-            node.prev = this.top;
-            node.next = null;
-
-            this.top = node;
-
-            /*if (map.firstChild) {
-                map.insertBefore(area, map.firstChild);
-            }
-            else {
-                map.appendChild(area);
-            }
-             node.redraw();*/
-        },
-
-        toBack: function (node) {
-            if (this.bottom === node) {
-                return false;
-            }
-
-            if (this.top === node) {
-                this.top = node.prev;
-            }
-
-            //var map = node.canvas._map,
-            //    area = node._mouseArea;
-
-            node.prev && (node.prev.next = node.next);
-            node.next && (node.next.prev = node.prev);
-
-            this.bottom.prev = node;
-            node.prev = null;
-            node.next = this.bottom;
-
-            this.bottom = node;
-
-            /*map.appendChild(area);
-             node.redraw();*/
-        },
-
-        insertBefore: function () {},
-
-        insertAfter: function () {},
-
-        each: function (fn, args) {
-            var item = this.bottom;
-
-            while (item) {
-                fn.apply(item.node, args);
-                item = item.next;
-            }
-        },
-
-        iterate: function (fn, args) {
-            var item = this.bottom,
-                retVal = true;
-
-            while (item) {
-                retVal = fn.apply(item.node, args);
-
-                if (retVal === false) {
-                    break;
-                }
-
-                item = item.next;
-            }
-        },
-
-        dispose: function () {
-
-            this.each(function () {
-                this.node.dispose && this.node.dispose();
-            });
-
-            this.top = null;
-            this.bottom = null;
-        }
-    };
-
-    /**
-     *
-        ncowner, a NodeCollection that corresponds to the collection of which
-        the layer neing created  is a part
-         above, a NodeCollection iterator, that indicated the collection the layer has to be rendered. If
-        not provided then this is the first layer of ncowner.
-     */
-    var CanvasLayer = function (ncowner, canvas) {
-        this.items = new NodeList();
-
-        this.owner = ncowner;
-        //this.above = above;
-        this.element = null;
-
-        if (canvas) {
-            this.element = canvas;
-        } else {
-            this.init();
-        }
-    };
-
-    CanvasLayer.prototype = {
-        constructor: CanvasLayer,
-
-        appendChild: function () {
-            var o = this,
-                ownerWrapper = o.owner.wrapper,
-                ele = this.element;
-
-            if (ownerWrapper._image) {
-                ownerWrapper.insertBefore(ele, ownerWrapper._image);
-            } else {
-                ownerWrapper.appendChild(ele);
-            }
-        },
-
-        insertBefore: function () {},
-
-        insertAfter: function () {},
-
-        init: function () {
-            this.element = $("canvas");
-            // CHECKPOINT: width and height in %?
-            $(this.element, {
-                width: this.owner.wrapper.offsetWidth,
-                height: this.owner.wrapper.offsetHeight
-            });
-
-            this.element.style.cssText = "position:absolute;left:0;top:0;";
-
-            this.appendChild();
-        },
-
-        getCanvas: function () {
-            return this.element;
-        },
-
-        getContext: function () {
-            return this.element.getContext('2d');
-        },
-
-        addToLayer: function (node) {
-            this.items.add(node);
-        },
-
-        mergeWithLayerOnTop: function (layerObj) {
-            this.items.addList(layerObj.items);
-            layerObj.dispose(true);
-        },
-
-        mergeWithLayerOnBottom: function (layerObj) {
-            layerObj.items.addList(this.items);
-            this.items = layerObj.items;
-            layerObj.dispose(true);
-        },
-
-        dispose: function (softDispose) {
-
-            if (!softDispose) {
-                this.items.each(function () {
-                    this.dispose();
-                });
-            }
-
-            this.items = null;
-            this.owner = null;
-
-            this.element.parentNode.removeChild(this.element);
-            this.element = null;
-        }
-    };
-
-    var NodeCollection = function (parent, wrapper, canvas) {
-
-        this.nodeItems = new NodeList();
-        this.collectionItems = new NodeList();
-        this.layerItems = new NodeList();
-
-        this.owner = this.parent = parent;
-        this.layerOnTop = null;
-
-        this.currentLayer = null;
-        this.baseLayer = null;
-
-        if (wrapper) {
-            this.wrapper = wrapper;
-            this.currentLayer = this.baseLayer = new CanvasLayer(this, canvas);
-        } else {
-            this.init();
-        }
-    };
-
-    NodeCollection.prototype = {
-        constructor: NodeCollection,
-
-        init: function () {
-
-            var o = this,
-                parent = o.parent,
-                imageMap = parent.wrapper._image,
-                wrapper = $("div");
-
-            // Hacky but need a refernce to the image map to addEventListeners.
-            wrapper.style.cssText = "width:100%;height:100%;position:absolute;left:0;top:0;";
-
-            wrapper._map = parent.wrapper._map;
-
-            if (imageMap) {
-                parent.wrapper.insertBefore(wrapper, imageMap);
-            } else {
-                parent.wrapper.appendChild(wrapper);
-            }
-
-            o.wrapper = wrapper;
-            o.currentLayer = o.baseLayer = new CanvasLayer(o);
-        },
-
-        getCurrentContext: function () {
-            return this.currentLayer.getContext();
-        },
-
-        setLayerOnTop: function (layerObj) {
-            this.layerOnTop = layerObj;
-        },
-
-        getCurrentCanvas: function () {
-            return this.currentLayer.getCanvas();
-        },
-
-        addNode: function (node) {
-            this.nodeItems.add(node);
-
-            if (node.type === "group") {
-                this.addCollection(node);
-            } else {
-                this.currentLayer.addToLayer(node);
-            }
-        },
-
-        addCollection: function (collectionNode) {
-
-            collectionNode = collectionNode || new NodeCollection(this);
-
-            this.collectionItems.add(collectionNode);
-            this.currentLayer = new CanvasLayer(this);
-            this.layerItems.add(this.currentLayer);
-            collectionNode.setLayerOnTop(this.currentLayer);
-        },
-
-        dispose: function () {
-            this.nodeItems.dispose();
-            this.collectionItems.dispose();
-            this.layerItems.dispose();
-            this.owner = this.parent = null;
-
-            this.ownerLayer = null;
-            this.currentLayer = null;
-            this.baseLayer = null;
-        }
-    };
-
-    /**
-     * The CanvasObjectModel will be a layer of abstraction above the individual
-     * FauxNodes created to emulate the DOM in case of canvas rendering.
-     * The engine will be the point of contact for Raphael._engine that will be
-     * the direct consumer of the FauxNodes.
-     */
-    var CanvasObjectModel = function (cnvs, wrpr, width, height) {
-
-        var com = this,
-            root = new NodeCollection(null, wrpr, cnvs);
-
-        //root.set
-
-        com.width = width;
-        com.height = height;
-
-        com.createNode = function (type, parent) {
-
-            parent = parent || root;
-
-            var node,
-                nodeItems = parent.nodeItems,
-                layer = parent.currentLayer,
-                canvasEle = layer.getCanvas();
-
-            switch (type) {
-                case 'rect':
-                    node = new RectFauxNode(parent);
-                    break;
-
-                case 'circle':
-                    node = new CircleFauxNode(parent);
-                    break;
-
-                case 'path':
-                    node = new PathFauxNode(parent);
-                    break;
-
-                case 'text':
-                    node = new TextFauxNode(parent);
-                    break;
-
-                case 'group':
-                    node = new GroupFauxNode(parent);
-                    parent.addCollection(node);
-                    break;
-
-                default:
-                    node = new FauxNode(canvasEle);
-            }
-
-            node.COMInstance = this;
-            nodeItems.add(node);
-            layer.addToLayer(node);
-
-            return node;
-        };
-
-        /**
-         * This method is needed to redraw a node. Redraw is to be handled at the
-         * COM level as redrawing one node needs all the (connected) nodes to be
-         * redrawn in the right order.
-         *
-         * @param {type} node The node that needs to be redrawn.
-         *
-         * @returns {undefined}
-         */
-        com.redraw = function (node) {
-
-            // Check if node is a group or a shape.
-            var nodeList, childNode, layer;
-
-            if (node.type === "group") {
-                nodeList = node.nodeItems;
-                node.render();
-            } else {
-
-                layer = node.layer;
-                nodeList = layer.items;
-                childNode = nodeList.bottom;
-
-                // Clear the canvas.
-                layer.element.width = layer.element.width;
-
-                while (childNode) {
-                    fNode = childNode.node;
-                    fNode.type !== "group" && fNode.render();
-                    childNode = childNode.next;
-                }
-            }
-        };
-
-        com.insertBefore = function (node) {};
-
-        com.insertAfter = function (node) {};
-
-        com.removeNode = function (node) {};
-
-        com.refreshNode = function (node) {};
-
-        com.refreshAll = function () {};
-    };
-
-    Point = function (x, y) {
-        this.x = x;
-        this.y = y;
-    };
-
-    Point.prototype.angleTo = function (p) {
-        return Math.atan2(p.y - this.y, p.x - this.x);
-    };
-
-    Point.prototype.applyTransform = function (v) {
-        var xp = this.x * v[0] + this.y * v[2] + v[4];
-        var yp = this.x * v[1] + this.y * v[3] + v[5];
-        this.x = xp;
-        this.y = yp;
-    };
-
-    PathParser = new function () {
-
-        this.tokens = null;
-
-        this.setTokens = function (d) {
-            if (typeof d === 'string') {
-                this.tokens = d.split(' ');
-            } else {
-                this.tokens = d;
-            }
-        };
-
-        this.reset = function () {
-            this.i = -1;
-            this.command = '';
-            this.previousCommand = '';
-            this.start = new Point(0, 0);
-            this.control = new Point(0, 0);
-            this.current = new Point(0, 0);
-            this.points = [];
-            this.angles = [];
-        };
-
-        this.isEnd = function () {
-            return this.i >= this.tokens.length - 1;
-        };
-
-        this.isCommandOrEnd = function () {
-            if (this.isEnd()) {
-                return true;
-            }
-
-            return this.tokens[this.i + 1].toString().match(/^[A-Za-z]$/) != null;
-        };
-
-        this.isRelativeCommand = function () {
-            switch (this.command) {
-                case 'm':
-                case 'l':
-                case 'h':
-                case 'v':
-                case 'c':
-                case 's':
-                case 'q':
-                case 't':
-                case 'a':
-                case 'z':
-                    return true;
-                    break;
-            }
-            return false;
-        };
-
-        this.getToken = function () {
-            this.i++;
-            return this.tokens[this.i];
-        };
-
-        this.getScalar = function () {
-            return parseFloat(this.getToken());
-        };
-
-        this.nextCommand = function () {
-            this.previousCommand = this.command;
-            this.command = this.getToken();
-        };
-
-        this.getPoint = function () {
-            var p = new Point(this.getScalar(), this.getScalar());
-            return this.makeAbsolute(p);
-        };
-
-        this.getAsControlPoint = function () {
-            var p = this.getPoint();
-            this.control = p;
-            return p;
-        };
-
-        this.getAsCurrentPoint = function () {
-            var p = this.getPoint();
-            this.current = p;
-            return p;
-        };
-
-        this.getReflectedControlPoint = function () {
-            if (this.previousCommand.toLowerCase() != 'c' && this.previousCommand.toLowerCase() != 's' && this.previousCommand.toLowerCase() != 'q' && this.previousCommand.toLowerCase() != 't') {
-                return this.current;
-            }
-
-            // reflect point
-            var p = new Point(2 * this.current.x - this.control.x, 2 * this.current.y - this.control.y);
-            return p;
-        };
-
-        this.makeAbsolute = function (p) {
-            if (this.isRelativeCommand()) {
-                p.x += this.current.x;
-                p.y += this.current.y;
-            }
-            return p;
-        };
-
-        this.addMarker = function (p, from, priorTo) {
-            // if the last angle isn't filled in because we didn't have this point yet ...
-            if (priorTo != null && this.angles.length > 0 && this.angles[this.angles.length - 1] == null) {
-                this.angles[this.angles.length - 1] = this.points[this.points.length - 1].angleTo(priorTo);
-            }
-            this.addMarkerAngle(p, from == null ? null : from.angleTo(p));
-        };
-
-        this.addMarkerAngle = function (p, a) {
-            this.points.push(p);
-            this.angles.push(a);
-        };
-
-        this.getMarkerPoints = function () {
-            return this.points;
-        };
-
-        this.getMarkerAngles = function () {
-            for (var i = 0; i < this.angles.length; i++) {
-                if (this.angles[i] == null) {
-                    for (var j = i + 1; j < this.angles.length; j++) {
-                        if (this.angles[j] != null) {
-                            this.angles[i] = this.angles[j];
-                            break;
-                        }
-                    }
-                }
-            }
-            return this.angles;
-        };
-    }();
-
-    /**
-     * The FauxNode is the adapter written to give DOM node like handling to the
-     * shapes that are create using canvas object model.
-     */
-
-    RectFauxNode = function (parentObj) {
-        this.type = "rect";
-        this._isValid = false;
-
-        this.parent = this.owner = parentObj;
-        this.context = parentObj.getCurrentContext();
-        this.layer = parentObj.currentLayer;
-    };
-
-    RectFauxNode.prototype = R.extend(new FauxNode(), {
-
-        constructor: RectFauxNode,
-
-        paint: function () {
-
-            var o = this,
-                ctx = o.context,
-
-            // CHECKPOINT 3. Rename validateAttrs to getValidAttrs?
-            attrs = o.validateAttrs(),
-                x = attrs.x,
-                y = attrs.y,
-                w = attrs.width,
-                h = attrs.height,
-                r = attrs.r,
-
-            /** @todo: provide support for rx, ry */
-            rx = r || attrs.rx,
-                ry = r || attrs.ry;
-
-            if (attrs.r) {
-                path = ["M", x + rx, y, "L", x + w - rx, y].concat(["A", rx, ry, 0, 0, 1, x + w, y + ry]).concat(["L", x + w, y + h - ry]).concat(["A", rx, ry, 0, 0, 1, x + w - rx, y + h]).concat(["L", x + rx, y + h]).concat(["A", rx, ry, 0, 0, 1, x, y + h - ry]).concat(["L", x, y + ry]).concat(["A", rx, ry, 0, 0, 1, x + rx, y, "Z"]);
-            } else {
-                path = ["M", x, y, "H", x + w, "V", y + h, "H", x, "V", y, "Z"];
-            }
-
-            o.drawPath(path);
-
-            if (attrs['stroke-width']) {
-                var strokeAlpha = attrs['stroke-opacity'] === undefined ? attrs['opacity'] : attrs['stroke-opacity'];
-                if (strokeAlpha !== undefined) {
-                    ctx.globalAlpha = strokeAlpha;
-                }
-                ctx.stroke();
-            }
-            var fillAlpha = attrs['fill-opacity'] === undefined ? attrs['opacity'] : attrs['fill-opacity'];
-            if (fillAlpha !== undefined) {
-                ctx.globalAlpha = fillAlpha;
-            }
-            ctx.fill();
-
-            return;
-        },
-
-        validateAttrs: function (attrs) {
-            var o = this,
-                elAttrs = clone(o._rElement.attrs),
-                attr,
-                val;
-
-            if (attrs === null) {
-                if (o._isValid) {
-                    return elAttrs;
-                } else {
-                    o._isValid = true;
-                }
-            }
-
-            attrs = attrs || elAttrs;
-
-            for (attr in attrs) {
-                val = attrs[attr];
-
-                switch (attr) {
-                    case "r":
-                        var w = elAttrs.width,
-                            h = elAttrs.height,
-                            maxR = mmin(w, h) / 2;
-
-                        if (val > maxR) {
-                            attrs.r = maxR;
-                        }
-
-                        if (val < 0) {
-                            attrs.r = 0;
-                        }
-                        break;
-
-                    case "width":
-                    case "height":
-                        if (val < 0) {
-                            attrs[attr] = 0;
-                        };
-                        break;
-
-                    default:
-                        continue;
-                }
-            }
-
-            return attrs;
-        },
-
-        setShapeBBox: function (m) {
-            var o = this,
-                el = o._rElement,
-                attrs = el.attrs,
-                sX = m.get(0),
-                sY = m.get(3),
-                tX = m.get(4),
-                tY = m.get(5),
-                strokeW = attrs['stroke-width'];
-
-            o._bbox = {
-                x: attrs.x * sX + tX - strokeW,
-                y: attrs.y * sY + tY - strokeW,
-                width: attrs.width * sX + 2 * strokeW,
-                height: attrs.height * sY + 2 * strokeW
-            };
-
-            o._bbox.x2 = o._bbox.x + o._bbox.width;
-            o._bbox.y2 = o._bbox.y + o._bbox.height;
-
-            o.X = o._bbox.x;
-            o.Y = o._bbox.y;
-            o.W = o._bbox.width;
-            o.H = o._bbox.height;
-        }
-    });
-
-    var CircleFauxNode = function (parentObj) {
-        this.type = "circle";
-        this._isValid = false;
-
-        this.parent = this.owner = parentObj;
-        this.context = parentObj.getCurrentContext();
-        this.layer = parentObj.currentLayer;
-    },
-        PathFauxNode = function (parentObj) {
-        this.type = "path";
-        this._isValid = false;
-
-        this.parent = this.owner = parentObj;
-        this.context = parentObj.getCurrentContext();
-        this.layer = parentObj.currentLayer;
-    },
-        TextFauxNode = function (parentObj) {
-        this.type = "text";
-        this._isValid = false;
-
-        this.parent = this.owner = parentObj;
-        this.context = parentObj.getCurrentContext();
-        this.layer = parentObj.currentLayer;
-    },
-        GroupFauxNode = function (parent, width, height) {
-
-        this.type = "group";
-
-        this.nodeItems = new NodeList();
-        this.collectionItems = new NodeList();
-        this.layerItems = new NodeList();
-
-        this.owner = this.parent = parent;
-        this.layerOnTop = parent.currentLayer;
-
-        this.currentLayer = null;
-        this.baseLayer = null;
-
-        this.init();
-    };
-
-    CircleFauxNode.prototype = R.extend(new FauxNode(), {
-
-        constructor: CircleFauxNode,
-
-        paint: function () {
-            var o = this,
-                ctx = o.context,
-                attrs = o.validateAttrs(),
-                x = attrs.cx,
-                y = attrs.cy,
-                r = attrs.r,
-
-            /** @todo: provide support for rx, ry */
-            rx = r || attrs.rx,
-                ry = r || attrs.ry;
-
-            if (attrs.r) {
-
-                o.drawPath(["M", x + r, y, "A", rx, ry, 0, 1, 0, x - r, y, "A", rx, ry, 0, 1, 0, x + r, y, "Z"]);
-
-                if (attrs['stroke-width']) {
-                    var strokeAlpha = attrs['stroke-opacity'] === undefined ? attrs['opacity'] : attrs['stroke-opacity'];
-                    if (strokeAlpha !== undefined) {
-                        ctx.globalAlpha = strokeAlpha;
-                    }
-                    ctx.stroke();
-                }
-                var fillAlpha = attrs['fill-opacity'] === undefined ? attrs['opacity'] : attrs['fill-opacity'];
-                if (fillAlpha !== undefined) {
-                    ctx.globalAlpha = fillAlpha;
-                }
-                ctx.fill();
-            }
-
-            return;
-        },
-
-        setShapeBBox: function (m) {
-            var o = this,
-                el = o._rElement,
-                attrs = el.attrs,
-                sX = m.get(0),
-                sY = m.get(3),
-                tX = m.get(4),
-                tY = m.get(5),
-                strokeW = attrs['stroke-width'];
-
-            o._bbox = {
-                x: tX + (attrs.cx - attrs.r) * sX - strokeW,
-                y: tY + (attrs.cy - attrs.r) * sY - strokeW,
-                width: 2 * (strokeW + attrs.r * sX),
-                height: 2 * (attrs.r * sY + strokeW)
-            };
-
-            o._bbox.x2 = o._bbox.x + o._bbox.width;
-            o._bbox.y2 = o._bbox.y + o._bbox.height;
-
-            o.X = o._bbox.x;
-            o.Y = o._bbox.y;
-            o.W = o._bbox.width;
-            o.H = o._bbox.height;
-        }
-    });
-
-    PathFauxNode.prototype = R.extend(new FauxNode(), {
-
-        constructor: PathFauxNode,
-
-        paint: function () {
-            var o = this,
-                el = o._rElement,
-                attrs = el.attrs,
-                path = el.attr('path'),
-                m = el.matrix,
-                ctx = o.context;
-
-            // 1. Get the path from the path attribute
-            // 2. Accept paths in different array formats.
-            // 3. Optimize as this can potentially be a huge pain-point.
-            // 4. Draw path mapping M,L,H,V etc to canvas APIs
-            o.drawPath(path);
-            o._transformPath = R.transformPath(path, m.toTransformString());
-
-            var strokeAlpha = attrs['stroke-opacity'] === undefined ? attrs['opacity'] : attrs['stroke-opacity'];
-            if (strokeAlpha !== undefined) {
-                ctx.globalAlpha = strokeAlpha;
-            }
-            ctx.stroke();
-            var fillAlpha = attrs['fill-opacity'] === undefined ? attrs['opacity'] : attrs['fill-opacity'];
-            if (fillAlpha !== undefined) {
-                ctx.globalAlpha = fillAlpha;
-            }
-            ctx.fill();
-
-            return;
-        }
-    });
-
-    TextFauxNode.prototype = R.extend(new FauxNode(), {
-
-        constructor: TextFauxNode,
-
-        paint: function () {
-            var o = this,
-                el = o._rElement,
-                attrs = el.attr(),
-                text = attrs['text'],
-                stroke = attrs['stroke'],
-                valign = attrs['vertical-align'],
-                halign = attrs['text-anchor'],
-                x = attrs['x'],
-                y = attrs['y'],
-                m = el.matrix,
-                ctx = o.context,
-                path;
-
-            // apply the font styles, if any
-
-            // find the dimensions of the text using the given styles.
-            // All the dimensions should be present in the attrs user provided OR default.
-            var fontSize = attrs['font-size'] || 10,
-                lineHeight = attrs['line-height'] || toInt(fontSize, 10) * 1.2,
-                fontArr = ["normal", fontSize, attrs['font']];
-
-            // draw the text.
-            ctx.fillStyle = stroke;
-            ctx.font = fontArr.join(" ");
-
-            if (text) {
-                var texts = Str(text).split(/\n|<br\s*?\/?>/ig),
-                    totalHeight = texts.length * lineHeight,
-                    totalWidth = -Infinity,
-                    startX = Infinity,
-                    startY,
-                    width,
-                    textX,
-                    textY;
-
-                if (valign === "top") {
-                    startY = y + lineHeight;
-                } else if (valign === "middle") {
-                    startY = y - totalHeight / 2 + lineHeight / 2;
-                } else {
-                    // valign is bottom.
-                    startY = y - totalHeight + lineHeight;
-                }
-
-                for (var i = 0, ii = texts.length; i < ii; i += 1) {
-
-                    text = texts[i];
-                    textY = startY + lineHeight * i;
-                    width = ctx.measureText(text).width;
-
-                    if (halign === "start") {
-                        textX = x;
-                    } else if (halign === "middle") {
-                        textX = x - width / 2;
-                    } else {
-                        textX = x - width;
-                    }
-
-                    totalWidth = mmax(totalWidth, width);
-                    startX = mmin(startX, textX);
-
-                    ctx.fillText(text, textX, textY);
-                }
-
-                el._textdirty = false;
-            }
-
-            o.outlinePath = ["M", startX, startY - lineHeight / 1.4, "H", startX + totalWidth, "V", startY - lineHeight + totalHeight, "H", startX, "V", startY - lineHeight / 1.4];
-
-            return;
-        }
-    });
-
-    GroupFauxNode.prototype = R.extend(R.extend(new FauxNode(), NodeCollection.prototype), {
-
-        constructor: GroupFauxNode,
-
-        draw: function () {
-
-            // Clear the group canvas first.
-            this.layerItems.each(function () {
-                this.element.width = this.element.width;
-            });
-
-            FauxNode.prototype.draw.apply(this, arguments);
-        },
-
-        /**
-         * This method does the complete rendering of the element, including
-         * (re)setting the bbox and image map.
-         *
-         * @returns {_L10.FauxNode.prototype}
-         */
-        render: function () {
-
-            var o = this;
-
-            o.draw();
-            o.setBBox();
-
-            return o;
-        },
-
-        paint: function () {
-            var o = this,
-                list = o.nodeList,
-                el = o._rElement,
-                canvas = o.canvas,
-                attrs = el.attrs,
-                childNode = list.bottom;
-
-            /** @todo: Clean this up */
-            if (attrs.opacity !== undefined) {
-                this.layerItems.each(function () {
-                    this.getContext().globalAlpha = attrs.opacity;
-                });
-            }
-
-            while (childNode) {
-                childNode.render();
-                childNode = childNode.next;
-            }
-        },
-
-        setBBox: function () {},
-
-        addMouseInteractivity: function () {},
-
-        applyTransform: function (m) {
-            var o = this,
-                parent = o.parent,
-                parentMatrix = parent.getTransformMatrix && parent.getTransformMatrix();
-
-            // Parent is a group element with a transformation applied to it.
-            if (parentMatrix) {
-                o.matrixApplied = parentMatrix.clone();
-                o.matrixApplied.add(m.a, m.b, m.c, m.d, m.e, m.f);
-            } else {
-                o.matrixApplied = m;
-            }
-
-            this.layerItems.each(function () {
-                FauxNode.prototype.applyTransform.apply(this, [o.matrixApplied]);
-            });
-        },
-
-        getTransformMatrix: function () {
-            return this.matrixApplied;
-        }
-    });
-
-    Element = function (node, paper, group) {
-        var o = this,
-            parent = group || paper;
-
-        o.node = o[0] = node;
-        node.raphael = true;
-        node.raphaelid = o.id = R._oid++;
-        node._rElement = o;
-
-        o.X = 0;
-        o.Y = 0;
-
-        o.attrs = o.attrs || {};
-        o.styles = o.styles || {};
-        o.followers = o.followers || [];
-
-        o.paper = paper;
-        o.com = parent.com;
-
-        o.ca = o.customAttributes = o.customAttributes || new paper._CustomAttributes();
-
-        o.matrix = R.matrix();
-        o._ = {
-            transform: [],
-            sx: 1,
-            sy: 1,
-            dx: 0,
-            dy: 0,
-            deg: 0
-        };
-
-        o.parent = parent;
-        !parent.bottom && (parent.bottom = o);
-
-        o.prev = parent.top || null;
-        parent.top && (parent.top.next = o);
-        parent.top = o;
-        o.next = null;
-    };
-
-    Element.prototype = elproto;
-    elproto.constructor = Element;
-
-    var repaint = function (el, finalAttrs, positionChanged, dimensionChanged) {
-
-        var node = getNode(el),
-            preC = R._getConnectedNodes(node),
-            attrs = el.attrs,
-            elAbove = preC.above,
-            elBelow = preC.below,
-            len,
-            attr,
-            i;
-
-        for (attr in finalAttrs) {
-            attrs[attr] = finalAttrs[attr];
-        }
-
-        node.redraw();
-    },
-        setFillAndStroke = function (el, params) {
-
-        var attrs = el.attrs,
-            node = el.node,
-            finalAttrs = {},
-            att,
-            val,
-            needsRepaint = false,
-            positionChanged = false,
-            dimensionChanged = false,
-            i;
-
-        for (att in params) {
-            if (params[has](att)) {
-                if (!R._availableAttrs[has](att)) {
-                    continue;
-                }
-                val = params[att];
-
-                switch (att) {
-
-                    case 'fill-opacity':
-                    case 'opacity':
-                    case 'stroke-opcaity':
-                    case 'stroke':
-                    case 'fill':
-                        finalAttrs[att] = val;
-                        needsRepaint = true;
-                        break;
-
-                    case 'stroke-width':
-                    case "cx":
-                    case "cy":
-                    case "x":
-                    case "y":
-                        finalAttrs[att] = val;
-                        positionChanged = true;
-                        break;
-
-                    case "width":
-                    case "height":
-                        finalAttrs[att] = val;
-                        dimensionChanged = true;
-                        break;
-
-                    case "clip-rect":
-                        finalAttrs[att] = val;
-                        needsRepaint = true;
-                        break;
-
-                    case "font-size":
-                    case "font":
-                    case "vertical-align":
-                    case "text-anchor":
-                        finalAttrs[att] = val;
-                        needsRepaint = true;
-
-                    default:
-                        continue;
-                }
-            }
-        }
-
-        tuneText(el, params, finalAttrs);
-
-        finalAttrs = node.validateAttrs(finalAttrs);
-
-        if (needsRepaint || positionChanged || dimensionChanged) {
-            repaint(el, finalAttrs, positionChanged, dimensionChanged);
-        }
-    },
-        leading = 1.2,
-        tuneText = function (el, params, finalAttrs) {
-        if (el.type != "text" || !(params[has]("text") || params[has]("font") || params[has]("font-size") || params[has]("x") || params[has]("y") || params[has]("line-height") || params[has]("vertical-align"))) {
-            return;
-        }
-
-        var a = el.attr(),
-            fontSize = params['font-size'] || a['font-size'] || 10,
-            lineHeight = toFloat(params['line-height'] || a['line-height']) || toInt(fontSize, 10) * leading,
-            valign = params["vertical-align"] || a["vertical-align"] || "middle";
-
-        if (isNaN(lineHeight)) {
-            lineHeight = fontSize * leading;
-        }
-
-        finalAttrs['font-size'] = toInt(fontSize, 10) + "px";
-        finalAttrs['font'] = params['font'] || a['font'] || 'Verdana';
-        finalAttrs['vertical-align'] = valign;
-        finalAttrs['x'] = params['x'] || a['x'] || 0;
-        finalAttrs['y'] = params['y'] || a['y'] || 0;
-        finalAttrs['line-height'] = toInt(lineHeight, 10);
-        finalAttrs['text-anchor'] = params['text-anchor'] || a['text-anchor'] || 'middle';
-    };
-
-    R._engine.initWin = function (win) {
-        win = win;
-        doc = win.document;
-    };
-
-    R._engine.setSize = function (w, h) {
-        var paper = this,
-            cs = paper.canvas.style;
-
-        cs.width = (paper.width = +w || paper.width) + PX;
-        cs.height = (paper.height = +h || paper.height) + PX;
-        /** @todo call setViewBox from setSize() */
-        return paper;
-    };
-    /** @todo implement setViewBox() */
-    R._engine.create = function () {
-        var con = R._getContainer.apply(0, arguments) || {},
-            container = con.container,
-            x = con.x,
-            y = con.y,
-            width = con.width,
-            height = con.height,
-
-        //handler = R._containerEventHandler,
-        wrapper,
-            cssText,
-            image,
-            mmap,
-            i,
-            paper,
-            canvas;
-
-        if (!container) {
-            throw new Error("Canvas container not found.");
-        }
-
-        paper = new R._Paper();
-        paper.canvas = wrapper = $("div");
-
-        x = x || 0;
-        y = y || 0;
-        paper.width = width = width || 512;
-        paper.height = height = height || 342;
-        paper.left = paper.top = 0;
-
-        if (container == 1) {
-            wrapper.style.cssText = cssText + R.format(";width:100%;height:100%;position:absolute;left:{0}px;top:{1}px;", [x, y]);
-            doc.body.appendChild(wrapper);
-        } else {
-            wrapper.style.cssText = cssText + ";width:100%;height:100%;position:absolute";
-            if (container.firstChild) {
-                container.insertBefore(wrapper, container.firstChild);
-            } else {
-                container.appendChild(wrapper);
-            }
-        }
-
-        cssText = "overflow:hidden;-webkit-tap-highlight-color:rgba(0,0,0,0);" + "-webkit-user-select:none;-moz-user-select:-moz-none;" + "-khtml-user-select:none;-ms-user-select:none;user-select:none;" + "-o-user-select:none;cursor:default;" + R.format("width:{0}px;height:{1}px;", [width, height]);
-
-        // Create the canvas element and set it to occupy full space. Retain a
-        // reference to its context.
-        canvas = $("canvas");
-        canvas.style.cssText = "position:absolute;left:0;top:0";
-        canvas.setAttribute('width', paper.width);
-        canvas.setAttribute('height', paper.height);
-
-        paper.com = new CanvasObjectModel(canvas, wrapper, paper.width, paper.height);
-
-        wrapper.appendChild(canvas);
-
-        image = $("img");
-
-        // Easter egg idea! :)
-        image.src = "image1.png";
-
-        image.style.cssText = "opacity: 0;z-index: 100;background: transparent;position: absolute;left: 0;top: 0;width: " + width + "px;height: " + height + "px";
-        wrapper.appendChild(image);
-
-        mmap = $("map");
-
-        mmap.setAttribute("name", "mousemap");
-        mmap.setAttribute("id", "mousemap"); // Needed for FF.
-
-        wrapper.appendChild(mmap);
-
-        image.setAttribute("usemap", "#mousemap");
-        wrapper._image = image;
-        wrapper._map = mmap;
-
-        return paper;
-    };
-
-    var getNode = R._engine.getNode = function (el) {
-        return el.node || el[0].node;
-    };
-
-    R._engine.getLastNode = function (el) {
-        return el.node || el[el.length - 1].node;
-    };
-
-    R._engine.rect = function (paper, x, y, w, h, r, group) {
-
-        var node = paper.com.createNode('rect', group && group.node),
-            el = new Element(node, paper, group),
-            attrs = el.attrs;
-
-        attrs.x = x;
-        attrs.y = y;
-        attrs.width = w;
-        attrs.height = h;
-        attrs.fill = "#fff";
-        attrs.stroke = "#000";
-        attrs['stroke-width'] = 1;
-        attrs.r = r || 0;
-        attrs.rx = r || 0;
-        attrs.ry = r || 0;
-
-        el.type = "rect";
-
-        node.render();
-        return el;
-    };
-
-    R._engine.circle = function (paper, x, y, r, group) {
-        var node = paper.com.createNode('circle', group && group.node),
-            el = new Element(node, paper, group),
-            attrs = el.attrs;
-
-        attrs.cx = x;
-        attrs.cy = y;
-        attrs.r = r;
-        attrs.fill = 'none';
-        attrs.stroke = '#000';
-        attrs['stroke-width'] = 1;
-
-        el.type = "circle";
-
-        node.render();
-        return el;
-    };
-
-    R._engine.ellipse = function (paper, x, y, rx, ry, group) {
-        var node = new FauxNode(),
-            el = new Element(node, paper, group);
-
-        el.type = "ellipse";
-        return el;
-    };
-
-    R._engine.image = function (paper, src, x, y, w, h, group) {
-        var node = new FauxNode(),
-            el = new Element(node, paper, group);
-
-        el.type = "image";
-        return el;
-    };
-
-    R._engine.text = function (paper, x, y, text, group) {
-        var node = paper.com.createNode('text', group && group.node),
-            el = new Element(node, paper, group),
-            attrs = el.attrs;
-
-        attrs.x = x;
-        attrs.y = y;
-        attrs.text = text;
-        attrs.fill = 'none';
-        attrs.stroke = '#000';
-        attrs.font = 'Verdana';
-        attrs['font-size'] = '12px';
-        attrs['vertical-align'] = 'middle';
-        attrs['text-anchor'] = 'middle';
-
-        el.type = "text";
-        node.render();
-        return el;
-    };
-
-    R._engine.path = function (pathString, paper, group) {
-        var node = paper.com.createNode('path', group && group.node),
-            el = new Element(node, paper, group),
-            attrs = el.attrs;
-
-        attrs.path = pathString;
-        attrs.fill = "#fff";
-        attrs.stroke = "#000";
-        attrs['stroke-width'] = 1;
-
-        el.type = "path";
-
-        node.render();
-
-        return el;
-    };
-
-    R._engine.group = function (paper, id, group) {
-
-        var node = paper.com.createNode('group', group && group.node),
-            el = new Element(node, paper, group),
-            wrapper = node.wrapper;
-
-        id && wrapper.setAttribute('class', ['red', id].join('-'));
-
-        el.canvas = wrapper;
-
-        //(group && group.canvas.appendChild(wrapper)) || paper.canvas.appendChild(wrapper);
-
-        el.type = "group";
-        return el;
-    };
-
-    elproto._getBBox = function () {
-        if (this.removed) {
-            return {};
-        }
-
-        return {
-            x: this.X + (this.bbx || 0) - this.W / 2,
-            y: this.Y + (this.bby || 0) - this.H / 2,
-            width: this.W,
-            height: this.H
-        };
-    };
-
-    /***** ELEMENT REORDERING / RESTRUCTING *****/
-
-    elproto.toFront = function () {
-        if (this.removed) {
-            return this;
-        }
-
-        var o = this,
-            thisNode = o.node,
-            parent = o.parent,
-            parentNode = thisNode.owner,
-            followers = o.followers,
-            follower,
-            i,
-            ii;
-
-        if (R._tofront(o, parent)) {
-            if (elproto.type === "group") {
-                parent.canvas.appendChild(thisNode);
-            } else {
-                parentNode.nodeList.tofront(thisNode);
-            }
-        }
-
-        for (i = 0, ii = followers.length; i < ii; i++) {
-            (follower = followers[i]).stalk && follower.el[follower.stalk](o);
-        }
-
-        return o;
-    };
-
-    elproto.toBack = function () {
-        if (this.removed) {
-            return this;
-        }
-
-        var o = this,
-            thisNode = o.node,
-            parent = o.parent,
-            parentNode = thisNode.owner,
-            followers = o.followers,
-            follower,
-            i,
-            ii;
-
-        if (R._toback(o, parent)) {
-            if (elproto.type === "group") {
-                parent.canvas.appendChild(thisNode);
-            } else {
-                parentNode.nodeList.toback(thisNode);
-            }
-        }
-
-        for (i = 0, ii = followers.length; i < ii; i++) {
-            (follower = followers[i]).stalk && follower.el[follower.stalk](o);
-        }
-
-        return o;
-    };
-
-    elproto.insertAfter = function (element) {
-        if (this.removed) {
-            return this;
-        }
-
-        var o = this,
-            thisNode = o.node,
-            thatNode = element.node,
-            parentNode = thatNode.owner,
-            followers = o.followers,
-            follower,
-            i,
-            ii;
-
-        if (thatNode.next) {
-            parentNode.nodeList.insertBefore(thisNode, thatNode.next);
-        } else {
-            parentNode.appendChild(thisNode);
-        }
-
-        R._insertafter(o, element, o.parent, element.parent);
-
-        for (i = 0, ii = followers.length; i < ii; i++) {
-            (follower = followers[i]).stalk && follower.el[follower.stalk](element);
-        }
-
-        return o;
-    };
-
-    elproto.insertBefore = function (element) {
-        if (this.removed) {
-            return this;
-        }
-
-        var o = this,
-            thisNode = o.node,
-            thatNode = element.node,
-            parentNode = thatNode.owner,
-            followers = o.followers,
-            follower,
-            i,
-            ii;
-
-        if (thatNode) {
-            parentNode.nodeList.insertBefore(thisNode, thatNode);
-        } else {
-            parentNode.appendChild(thisNode);
-        }
-
-        R._insertafter(o, element, o.parent, element.parent);
-
-        for (i = 0, ii = followers.length; i < ii; i++) {
-            (follower = followers[i]).stalk && follower.el[follower.stalk](element);
-        }
-
-        return o;
-    };
-
-    elproto.appendChild = function (element) {
-        return this;
-    };
-
-    elproto.removeChild = function (element) {
-        return this;
-    };
-
-    /***** ELEMENT REORDERING / RESTRUCTING *****/
-
-    elproto.attr = function (name, value) {
-        if (this.removed) {
-            return this;
-        }
-
-        var o = this,
-            attrs = o.attrs,
-            ca = o.ca,
-            names,
-            params,
-            par,
-            res,
-            key,
-            out,
-            subkey,
-            delkeys,
-            follower,
-            ii,
-            i;
-
-        // fetch a copy of all attributes
-        if (name == null) {
-            res = {};
-            for (key in attrs) if (attrs.hasOwnProperty(key)) {
-                res[key] = attrs[key];
-            }
-            res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
-            res.transform = o._.transform;
-            /** @todo res.visibility = o.node.style.display === "none" ? "hidden" : "visible"; */
-            return res;
-        }
-
-        // fetch a single value
-        if (value == null && R.is(name, "string")) {
-            if (name == "fill" && attrs.fill == "none" && attrs.gradient) {
-                return attrs.gradient;
-            }
-            if (name == "transform") {
-                return o._.transform;
-            }
-            /** @todo if (name == "visibility") {
-                return this.node.style.display === "none" ? "hidden" : "visible";
-            }*/
-
-            names = name.split(separator), out = {};
-
-            for (i = 0, ii = names.length; i < ii; i++) {
-                name = names[i];
-                if (name in attrs) {
-                    out[name] = attrs[name];
-                } else if (R.is(ca[name], "function")) {
-                    out[name] = ca[name].def;
-                } else {
-                    out[name] = R._availableAttrs[name];
-                }
-            }
-            return ii - 1 ? out : out[names[0]];
-        }
-
-        // fetch specific attributes
-        if (value == null && R.is(name, "array")) {
-            out = {};
-            for (i = 0, ii = name.length; i < ii; i++) {
-                out[name[i]] = o.attr(name[i]);
-            }
-            return out;
-        }
-
-        // prepare setter params
-        if (value != null) {
-            params = {};
-            params[name] = value;
-        } else if (name != null && R.is(name, "object")) {
-            params = name;
-        }
-
-        if (R.stopEvent !== false) {
-            for (key in params) {
-                eve("raphael.attr." + key + "." + o.id, o, params[key], key);
-            }
-        }
-
-        delkeys = {};
-        for (key in ca) {
-
-            if (ca[key] && params.hasOwnProperty(key) && R.is(ca[key], "function") && !ca['_invoked' + key]) {
-
-                ca['_invoked' + key] = true; // prevent recursion
-                par = ca[key].apply(o, [].concat(params[key]));
-                delete ca['_invoked' + key];
-
-                for (subkey in par) {
-                    if (par.hasOwnProperty(subkey)) {
-                        params[subkey] = par[subkey];
-                    }
-                }
-                attrs[key] = params[key];
-                if (par === false) {
-                    delkeys[key] = params[key];
-                    delete params[key];
-                }
-            }
-        }
-
-        setFillAndStroke(this, params);
-
-        for (i = 0, ii = o.followers.length; i < ii; i++) {
-            follower = o.followers[i];
-            follower.cb && !follower.cb.call(follower.el, params, o) || follower.el.attr(params);
-        }
-
-        for (subkey in delkeys) {
-            params[subkey] = delkeys[subkey];
-        }
-        return this;
-    };
-
-    /**************** Drag *********************/
-    elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_scope) {
-
-        function start(e) {
-            (e.originalEvent || e).preventDefault();
-            var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
-                scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft;
-            this._drag.x = e.clientX + scrollX;
-            this._drag.y = e.clientY + scrollY;
-            this._drag.id = e.identifier;
-            !drag.length && R.mousemove(dragMove).mouseup(dragUp);
-            drag.push({
-                el: this,
-                move_scope: move_scope,
-                start_scope: start_scope,
-                end_scope: end_scope,
-                onmoveHandler: onmove,
-                onstartHandler: onstart,
-                onendHandler: onend
-            });
-            onstart && eve.on("raphael.drag.start." + this.id, onstart);
-            onmove && eve.on("raphael.drag.move." + this.id, onmove);
-            onend && eve.on("raphael.drag.end." + this.id, onend);
-            onstart && eve("raphael.drag.start." + this.id, start_scope || move_scope || this, e.clientX + scrollX, e.clientY + scrollY, e);
-        }
-        this._drag = {};
-        draggable.push({
-            el: this,
-            start: start
-        });
-        this.mousedown(start);
-        return this;
-    };
-
-    elproto.undrag = function () {
-        var i = draggable.length;
-        while (i--) if (draggable[i].el == this) {
-            this.unmousedown(draggable[i].start);
-            draggable.splice(i, 1);
-            eve.unbind("raphael.drag.*." + this.id);
-        }
-        !draggable.length && R.unmousemove(dragMove).unmouseup(dragUp);
-    };
-
-    /***************** Drag *****************/
-    /************ TRANSFORMATIONS *************/
-
-    elproto.rotate = function (deg, cx, cy) {
-
-        var o = this,
-            bbox;
-        if (o.removed) {
-            return o;
-        }
-        deg = Str(deg).split(separator);
-        if (deg.length - 1) {
-            cx = toFloat(deg[1]);
-            cy = toFloat(deg[2]);
-        }
-        deg = toFloat(deg[0]);
-        cy == null && (cx = cy);
-        if (cx == null || cy == null) {
-            bbox = o.getBBox(1);
-            cx = bbox.x + bbox.width / 2;
-            cy = bbox.y + bbox.height / 2;
-        }
-        o.transform(o._.transform.concat([["r", deg, cx, cy]]));
-        return o;
-    };
-
-    elproto.scale = function (sx, sy, cx, cy) {
-        var o = this,
-            bbox;
-        if (o.removed) {
-            return o;
-        }
-        sx = Str(sx).split(separator);
-        if (sx.length - 1) {
-            sy = toFloat(sx[1]);
-            cx = toFloat(sx[2]);
-            cy = toFloat(sx[3]);
-        }
-        sx = toFloat(sx[0]);
-        sy == null && (sy = sx);
-        cy == null && (cx = cy);
-        if (cx == null || cy == null) {
-            bbox = o.getBBox(1);
-        }
-        cx = cx == null ? bbox.x + bbox.width / 2 : cx;
-        cy = cy == null ? bbox.y + bbox.height / 2 : cy;
-        o.transform(o._.transform.concat([["s", sx, sy, cx, cy]]));
-
-        return o;
-    };
-
-    elproto.translate = function (dx, dy) {
-        var o = this;
-        if (o.removed) {
-            return o;
-        }
-        dx = Str(dx).split(separator);
-        if (dx.length - 1) {
-            dy = toFloat(dx[1]);
-        }
-        dx = toFloat(dx[0]) || 0;
-        dy = +dy || 0;
-        o.transform(o._.transform.concat([["t", dx, dy]]));
-
-        return o;
-    };
-
-    elproto.transform = function (tstr) {
-
-        var o = this,
-            _ = o._,
-            sw;
-
-        if (tstr === null) {
-            return _.transform;
-        }
-
-        R._extractTransform(o, tstr);
-
-        /** @todo: what changes to be made here in the context of canvas */
-        /*o.clip && !_.clipispath && $(o.clip, {
-            transform: o.matrix.invert()
-        });
-        o.pattern && updatePosition(o); */
-        if (_.sx != 1 || _.sy != 1) {
-            sw = o.attrs[has]("stroke-width") ? o.attrs["stroke-width"] : 1;
-            o.attr({
-                "stroke-width": sw
-            });
-        }
-
-        o.node && o.node.redraw();
-
-        return o;
-    };
-
-    /************ TRANSFORMATIONS *************/
-
-    elproto.hide = function () {
-        return this;
-    };
-
-    elproto.show = function () {
-        return this;
-    };
-
-    elproto.blur = function (size) {
-        return this;
-    };
-
-    elproto.on = function (eventType, handler) {
-        var el = this,
-            listeners = el.listeners;
-
-        if (!listeners) {
-            listeners = el.listeners = {};
-        }
-
-        if (!listeners[eventType]) {
-            listeners[eventType] = [];
-        }
-
-        listeners[eventType].push(handler);
-    };
-
-    elproto.remove = function () {
-        return this;
-    };
-
-    paperproto.clear = function () {
-        eve("raphael.clear", this);
-        return this;
-    };
-
-    paperproto.remove = function () {
-        if (this.removed) {
-            return;
-        }
-
-        var paper = this,
-            canvas = paper.canvas,
-            pn = canvas.parentNode,
-            i;
-
-        eve("raphael.remove", paper);
-        pn.removeChild(canvas);
-
-        for (i in paper) {
-            paper[i] = typeof paper[i] == "function" ? R._removedFactory(i) : null;
-        }
-
-        this.removed = true;
-    };
-
-    R.toString = function () {
-        return "Your browser supports canvas.\nYou are running RedRaphael " + R.version;
-    };
-
-    for (var method in elproto) {
-        if (elproto.hasOwnProperty(method) && !setproto.hasOwnProperty(method)) {
-            setproto[method] = function (methodname) {
-                return function () {
-                    var arg = arguments;
-                    return this.forEach(function (el) {
-                        el[methodname].apply(el, arg);
-                    });
-                };
-            }(method);
-        }
-    };
-}
-
-module.exports = R;
-
-},{"./raphael.core":4}],4:[function(require,module,exports){
-(function (global){
-/**!
- * RedRaphael 1.0.0 - JavaScript Vector Library
- * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
- *
- * Raphael 2.1.0
- * Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
- * Copyright © 2008-2012 Sencha Labs <http://sencha.com>
- *
- * Licensed under the MIT license.
- */
-
-var eve = require('./eve/eve');
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define("RedRaphael", [], factory);
+	else if(typeof exports === 'object')
+		exports["RedRaphael"] = factory();
+	else
+		root["RedRaphael"] = factory();
+})(this, function() {
+return /******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 40);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ (function(module, exports) {
+
+// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
+var global = module.exports = typeof window != 'undefined' && window.Math == Math
+  ? window : typeof self != 'undefined' && self.Math == Math ? self : Function('return this')();
+if(typeof __g == 'number')__g = global; // eslint-disable-line no-undef
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports) {
+
+var hasOwnProperty = {}.hasOwnProperty;
+module.exports = function(it, key){
+  return hasOwnProperty.call(it, key);
+};
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// to indexed object, toObject with fallback for non-array-like ES3 strings
+var IObject = __webpack_require__(49)
+  , defined = __webpack_require__(15);
+module.exports = function(it){
+  return IObject(defined(it));
+};
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var dP         = __webpack_require__(4)
+  , createDesc = __webpack_require__(11);
+module.exports = __webpack_require__(5) ? function(object, key, value){
+  return dP.f(object, key, createDesc(1, value));
+} : function(object, key, value){
+  object[key] = value;
+  return object;
+};
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var anObject       = __webpack_require__(8)
+  , IE8_DOM_DEFINE = __webpack_require__(31)
+  , toPrimitive    = __webpack_require__(18)
+  , dP             = Object.defineProperty;
+
+exports.f = __webpack_require__(5) ? Object.defineProperty : function defineProperty(O, P, Attributes){
+  anObject(O);
+  P = toPrimitive(P, true);
+  anObject(Attributes);
+  if(IE8_DOM_DEFINE)try {
+    return dP(O, P, Attributes);
+  } catch(e){ /* empty */ }
+  if('get' in Attributes || 'set' in Attributes)throw TypeError('Accessors not supported!');
+  if('value' in Attributes)O[P] = Attributes.value;
+  return O;
+};
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// Thank's IE8 for his funny defineProperty
+module.exports = !__webpack_require__(10)(function(){
+  return Object.defineProperty({}, 'a', {get: function(){ return 7; }}).a != 7;
+});
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var store      = __webpack_require__(21)('wks')
+  , uid        = __webpack_require__(13)
+  , Symbol     = __webpack_require__(0).Symbol
+  , USE_SYMBOL = typeof Symbol == 'function';
+
+var $exports = module.exports = function(name){
+  return store[name] || (store[name] =
+    USE_SYMBOL && Symbol[name] || (USE_SYMBOL ? Symbol : uid)('Symbol.' + name));
+};
+
+$exports.store = store;
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {
+
+exports.__esModule = true;
+
+var _iterator = __webpack_require__(28);
+
+var _iterator2 = _interopRequireDefault(_iterator);
+
+var _symbol = __webpack_require__(37);
+
+var _symbol2 = _interopRequireDefault(_symbol);
+
+var _typeof = typeof _symbol2["default"] === "function" && typeof _iterator2["default"] === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof _symbol2["default"] === "function" && obj.constructor === _symbol2["default"] && obj !== _symbol2["default"].prototype ? "symbol" : typeof obj; }; /**!
+                                                                                                                                                                                                                                                                                                                                         * RedRaphael 1.0.0 - JavaScript Vector Library
+                                                                                                                                                                                                                                                                                                                                         * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
+                                                                                                                                                                                                                                                                                                                                         *
+                                                                                                                                                                                                                                                                                                                                         * Raphael 2.1.0
+                                                                                                                                                                                                                                                                                                                                         * Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
+                                                                                                                                                                                                                                                                                                                                         * Copyright © 2008-2012 Sencha Labs <http://sencha.com>
+                                                                                                                                                                                                                                                                                                                                         *
+                                                                                                                                                                                                                                                                                                                                         * Licensed under the MIT license.
+                                                                                                                                                                                                                                                                                                                                         */
+
+var _eve = __webpack_require__(71);
+
+var _eve2 = _interopRequireDefault(_eve);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 var _win = typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : null;
 
@@ -3125,14 +263,14 @@ function R(first) {
     }
 
     if (R.is(first, "function")) {
-        return loaded ? first() : eve.on("raphael.DOMload", first);
+        return loaded ? first() : _eve2["default"].on("raphael.DOMload", first);
     } else if (R.is(first, array)) {
         return R._engine.create[apply](R, first.splice(0, 3 + R.is(first[0], nu))).add(first);
     } else {
         args = Array.prototype.slice.call(arguments, 0);
         if (R.is(args[args.length - 1], "function")) {
             f = args.pop();
-            return loaded ? f.call(R._engine.create[apply](R, args)) : eve.on("raphael.DOMload", function () {
+            return loaded ? f.call(R._engine.create[apply](R, args)) : _eve2["default"].on("raphael.DOMload", function () {
                 f.call(R._engine.create[apply](R, args));
             });
         } else {
@@ -3143,7 +281,7 @@ function R(first) {
 
 R.upgrade = "1.0.0";
 R.version = "2.1.0";
-R.eve = eve;
+R.eve = _eve2["default"];
 // RedRaphael = R;
 
 var loaded,
@@ -3176,7 +314,7 @@ var loaded,
     arrayShift = Array.prototype.shift,
     arrayPop = Array.prototype.pop,
     hasPrototypeBug = function () {
-    var a = function () {};
+    var a = function a() {};
     return a.hasOwnProperty("prototype");
 }(),
     g = {
@@ -3194,7 +332,7 @@ var loaded,
 
 // The devices which both touch and pointer.
 supportsOnlyTouch = R.supportsOnlyTouch = supportsTouch && !(win.navigator.maxTouchPoints || win.navigator.msMaxTouchPoints),
-    CustomAttributes = function () {
+    CustomAttributes = function CustomAttributes() {
     /*\
      * Raphael.ca
      [ property (object) ]
@@ -3229,7 +367,7 @@ supportsOnlyTouch = R.supportsOnlyTouch = supportsTouch && !(win.navigator.maxTo
      | c.animate({hsb: [1, 0, 0.5]}, 1e3);
     \*/
 },
-    pluck = function (checkWith) {
+    pluck = function pluck(checkWith) {
     var i = 1,
         ii = arguments.length;
     for (; i < ii; ++i) {
@@ -3239,7 +377,7 @@ supportsOnlyTouch = R.supportsOnlyTouch = supportsTouch && !(win.navigator.maxTo
     }
 },
     caproto = R.ca = R.customAttributes = CustomAttributes.prototype,
-    Paper = function () {
+    Paper = function Paper() {
     /*\
      * Paper.ca
      [ property (object) ]
@@ -3277,7 +415,7 @@ supportsOnlyTouch = R.supportsOnlyTouch = supportsTouch && !(win.navigator.maxTo
     this._CustomAttributes.prototype = this.ca;
     this._elementsById = {};
     this.id = R._oid++;
-    eve('raphael.new', this);
+    (0, _eve2["default"])('raphael.new', this);
 },
 
 
@@ -3445,14 +583,14 @@ events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchsta
     alpha: nu
 },
     eldata = {},
-    sortByKey = function (a, b) {
+    sortByKey = function sortByKey(a, b) {
     return a.key - b.key;
 },
-    sortByNumber = function (a, b) {
+    sortByNumber = function sortByNumber(a, b) {
     return toFloat(a) - toFloat(b);
 },
-    fun = function () {},
-    pipe = function (x) {
+    fun = function fun() {},
+    pipe = function pipe(x) {
     return x;
 },
     rectPath = R._rectPath = function (x, y, w, h, r) {
@@ -3461,36 +599,36 @@ events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchsta
     }
     return [["M", x, y], ["l", w, 0], ["l", 0, h], ["l", -w, 0], ["z"]];
 },
-    ellipsePath = function (x, y, rx, ry) {
+    ellipsePath = function ellipsePath(x, y, rx, ry) {
     if (ry == null) {
         ry = rx;
     }
     return [["M", x, y], ["m", 0, -ry], ["a", rx, ry, 0, 1, 1, 0, 2 * ry], ["a", rx, ry, 0, 1, 1, 0, -2 * ry], ["z"]];
 },
     getPath = R._getPath = {
-    group: function () {
+    group: function group() {
         return false;
     },
-    path: function (el) {
+    path: function path(el) {
         return el.attr("path");
     },
-    circle: function (el) {
+    circle: function circle(el) {
         var a = el.attrs;
         return ellipsePath(a.cx, a.cy, a.r);
     },
-    ellipse: function (el) {
+    ellipse: function ellipse(el) {
         var a = el.attrs;
         return ellipsePath(a.cx, a.cy, a.rx, a.ry);
     },
-    rect: function (el) {
+    rect: function rect(el) {
         var a = el.attrs;
         return rectPath(a.x, a.y, a.width, a.height, a.r);
     },
-    image: function (el) {
+    image: function image(el) {
         var a = el.attrs;
         return rectPath(a.x, a.y, a.width, a.height);
     },
-    text: function (el) {
+    text: function text(el) {
         var bbox = el._getBBox();
         return rectPath(bbox.x, bbox.y, bbox.width, bbox.height);
     }
@@ -3585,7 +723,7 @@ pick = R.pick = function () {
     }
     return attrs;
 },
-    checkCyclicRef = function (obj, parentArr) {
+    checkCyclicRef = function checkCyclicRef(obj, parentArr) {
     var i = parentArr.length,
         bIndex = -1;
 
@@ -3620,12 +758,12 @@ pick = R.pick = function () {
                 continue;
             }
 
-            if (typeof tgtVal !== OBJECTSTRING) {
+            if ((typeof tgtVal === "undefined" ? "undefined" : _typeof(tgtVal)) !== OBJECTSTRING) {
                 if (!(skipUndef && tgtVal === undefined)) {
                     obj1[item] = tgtVal;
                 }
             } else {
-                if (srcVal === null || typeof srcVal !== OBJECTSTRING) {
+                if (srcVal === null || (typeof srcVal === "undefined" ? "undefined" : _typeof(srcVal)) !== OBJECTSTRING) {
                     srcVal = obj1[item] = tgtVal instanceof Array ? [] : {};
                 }
                 cRef = checkCyclicRef(tgtVal, srcArr);
@@ -3645,14 +783,14 @@ pick = R.pick = function () {
                 continue;
             }
 
-            if (tgtVal !== null && typeof tgtVal === OBJECTSTRING) {
+            if (tgtVal !== null && (typeof tgtVal === "undefined" ? "undefined" : _typeof(tgtVal)) === OBJECTSTRING) {
                 // Fix for issue BUG: FWXT-602
                 // IE < 9 Object.prototype.toString.call(null) gives
                 // "[object Object]" instead of "[object Null]"
                 // that's why null value becomes Object in IE < 9
                 str = objectToString.call(tgtVal);
                 if (str === objectToStr) {
-                    if (srcVal === null || typeof srcVal !== OBJECTSTRING) {
+                    if (srcVal === null || (typeof srcVal === "undefined" ? "undefined" : _typeof(srcVal)) !== OBJECTSTRING) {
                         srcVal = obj1[item] = {};
                     }
                     cRef = checkCyclicRef(tgtVal, srcArr);
@@ -3682,16 +820,16 @@ pick = R.pick = function () {
     return obj1;
 },
     extend = R.extend = function (obj1, obj2, skipUndef) {
-    if (typeof obj1 !== OBJECTSTRING && typeof obj2 !== OBJECTSTRING) {
+    if ((typeof obj1 === "undefined" ? "undefined" : _typeof(obj1)) !== OBJECTSTRING && (typeof obj2 === "undefined" ? "undefined" : _typeof(obj2)) !== OBJECTSTRING) {
         //if none of the arguments are object then return back
         return null;
     }
 
-    if (typeof obj2 !== OBJECTSTRING || obj2 === null) {
+    if ((typeof obj2 === "undefined" ? "undefined" : _typeof(obj2)) !== OBJECTSTRING || obj2 === null) {
         return obj1;
     }
 
-    if (typeof obj1 !== OBJECTSTRING) {
+    if ((typeof obj1 === "undefined" ? "undefined" : _typeof(obj1)) !== OBJECTSTRING) {
         obj1 = obj2 instanceof Array ? [] : {};
     }
     merge(obj1, obj2, skipUndef);
@@ -3721,7 +859,7 @@ is = R.is = function (o, type) {
     if (type === 'object' && (o === undef || o === null)) {
         return false;
     }
-    return type == "null" && o === null || type == typeof o && o !== null || type == object && o === Object(o) || type == "array" && Array.isArray && Array.isArray(o) || objectToString.call(o).slice(8, -1).toLowerCase() == type;
+    return type == "null" && o === null || type == (typeof o === "undefined" ? "undefined" : _typeof(o)) && o !== null || type == object && o === Object(o) || type == "array" && Array.isArray && Array.isArray(o) || objectToString.call(o).slice(8, -1).toLowerCase() == type;
 },
 
 /*\
@@ -3763,19 +901,21 @@ clone = R.clone = hasPrototypeBug ? function (obj) {
         return obj;
     }
     var res = new obj.constructor();
-    for (var key in obj) if (key !== "prototype" && obj[has](key)) {
-        res[key] = clone(obj[key]);
-    }
-    return res;
+    for (var key in obj) {
+        if (key !== "prototype" && obj[has](key)) {
+            res[key] = clone(obj[key]);
+        }
+    }return res;
 } : function (obj) {
     if (Object(obj) !== obj) {
         return obj;
     }
     var res = new obj.constructor();
-    for (var key in obj) if (obj[has](key)) {
-        res[key] = clone(obj[key]);
-    }
-    return res;
+    for (var key in obj) {
+        if (obj[has](key)) {
+            res[key] = clone(obj[key]);
+        }
+    }return res;
 },
     Node = _win.Node;
 //Adding pollyfill for IE11
@@ -3883,7 +1023,7 @@ if (R.type == "VML") {
     d.innerHTML = '<v:shape adj="1"/>';
     b = d.firstChild;
     b.style.behavior = "url(#default#VML)";
-    if (!(b && typeof b.adj == object)) {
+    if (!(b && _typeof(b.adj) == object)) {
         R.type = E;
         // return (R.type = E);
     }
@@ -4009,7 +1149,7 @@ R.snapTo = function (values, value, tolerance) {
  - newwin (window) new window object
 \*/
 R.setWindow = function (newwin) {
-    eve("raphael.setWindow", R, g.win, newwin);
+    (0, _eve2["default"])("raphael.setWindow", R, g.win, newwin);
     win = g.win = newwin;
     doc = g.doc = g.win.document;
     if (R._engine.initWin) {
@@ -4017,7 +1157,7 @@ R.setWindow = function (newwin) {
     }
 };
 
-var toHex = function (color) {
+var _toHex = function toHex(color) {
     if (R.vml) {
         // http://dean.edwards.name/weblog/2009/10/convert-any-colour-value-to-hex-in-msie/
         var trim = /^\s+|\s+$/g;
@@ -4031,7 +1171,7 @@ var toHex = function (color) {
             bod = createPopup().document.body;
         }
         var range = bod.createTextRange();
-        toHex = cacher(function (color) {
+        _toHex = cacher(function (color) {
             try {
                 bod.style.color = Str(color).replace(trim, E);
                 var value = range.queryCommandValue("ForeColor");
@@ -4046,23 +1186,23 @@ var toHex = function (color) {
         i.title = "Rapha\xebl Colour Picker";
         i.style.display = none;
         g.doc.body.appendChild(i);
-        toHex = cacher(function (color) {
+        _toHex = cacher(function (color) {
             i.style.color = color;
             return g.doc.defaultView.getComputedStyle(i, E).getPropertyValue("color");
         });
     }
-    return toHex(color);
+    return _toHex(color);
 },
-    hsbtoString = function () {
+    hsbtoString = function hsbtoString() {
     return "hsb(" + [this.h, this.s, this.b] + ")";
 },
-    hsltoString = function () {
+    hsltoString = function hsltoString() {
     return "hsl(" + [this.h, this.s, this.l] + ")";
 },
-    rgbtoString = function () {
+    rgbtoString = function rgbtoString() {
     return this.hex;
 },
-    prepareRGB = function (r, g, b) {
+    prepareRGB = function prepareRGB(r, g, b) {
     if (g == null && is(r, object) && "r" in r && "g" in r && "b" in r) {
         b = r.b;
         g = r.g;
@@ -4082,7 +1222,7 @@ var toHex = function (color) {
 
     return [r, g, b];
 },
-    packageRGB = function (r, g, b, o) {
+    packageRGB = function packageRGB(r, g, b, o) {
     var rgb = {
         r: r *= 255,
         g: g *= 255,
@@ -4403,7 +1543,7 @@ R.getRGB = cacher(function (colour) {
             toString: clrToString
         };
     }
-    !(hsrg[has](colour.toLowerCase().substring(0, 2)) || colour.charAt() === "#") && (colour = toHex(colour));
+    !(hsrg[has](colour.toLowerCase().substring(0, 2)) || colour.charAt() === "#") && (colour = _toHex(colour));
 
     if (rgb = colour.match(colourRegExp)) {
         if (rgb[2]) {
@@ -4742,7 +1882,7 @@ R.parseTransformString = cacher(function (TString) {
     return data;
 });
 // PATHS
-var paths = function (ps) {
+var paths = function paths(ps) {
     var p = paths.ps = paths.ps || {};
     if (p[ps]) {
         p[ps].sleep = 100;
@@ -4752,9 +1892,11 @@ var paths = function (ps) {
         };
     }
     setTimeout(function () {
-        for (var key in p) if (p[has](key) && key != ps) {
-            p[key].sleep--;
-            !p[key].sleep && delete p[key];
+        for (var key in p) {
+            if (p[has](key) && key != ps) {
+                p[key].sleep--;
+                !p[key].sleep && delete p[key];
+            }
         }
     });
     return p[ps];
@@ -5174,7 +2316,7 @@ R.isPointInsidePath = function (path, x, y) {
 };
 R._removedFactory = function (methodname) {
     return function () {
-        eve("raphael.log", null, "Rapha\xebl: you are calling to method \u201c" + methodname + "\u201d of removed object", methodname);
+        (0, _eve2["default"])("raphael.log", null, "Rapha\xEBl: you are calling to method \u201C" + methodname + "\u201D of removed object", methodname);
     };
 };
 
@@ -5247,7 +2389,7 @@ var pathDimensions = R.pathBBox = function (path) {
     pth.bbox = clone(bb);
     return bb;
 },
-    pathClone = function (pathArray) {
+    pathClone = function pathClone(pathArray) {
     var res = clone(pathArray);
     res.toString = R._path2string;
     return res;
@@ -5433,15 +2575,15 @@ var pathDimensions = R.pathBBox = function (path) {
     pth.abs = pathClone(res);
     return res;
 },
-    l2c = function (x1, y1, x2, y2) {
+    l2c = function l2c(x1, y1, x2, y2) {
     return [x1, y1, x2, y2, x2, y2];
 },
-    q2c = function (x1, y1, ax, ay, x2, y2) {
+    q2c = function q2c(x1, y1, ax, ay, x2, y2) {
     var _13 = 1 / 3,
         _23 = 2 / 3;
     return [_13 * x1 + _23 * ax, _13 * y1 + _23 * ay, _13 * x2 + _23 * ax, _13 * y2 + _23 * ay, x2, y2];
 },
-    a2c = function (x1, y1, rx, ry, angle, large_arc_flag, sweep_flag, x2, y2, recursive) {
+    a2c = function a2c(x1, y1, rx, ry, angle, large_arc_flag, sweep_flag, x2, y2, recursive) {
     // for more information of where this math came from visit:
     // http://www.w3.org/TR/SVG11/implnote.html#ArcImplementationNotes
     var _120 = PI * 120 / 180,
@@ -5532,7 +2674,7 @@ var pathDimensions = R.pathBBox = function (path) {
         return newres;
     }
 },
-    findDotAtSegment = function (p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t) {
+    findDotAtSegment = function findDotAtSegment(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, t) {
     var t1 = 1 - t;
     return {
         x: pow(t1, 3) * p1x + pow(t1, 2) * 3 * t * c1x + t1 * 3 * t * t * c2x + pow(t, 3) * p2x,
@@ -5615,7 +2757,7 @@ var pathDimensions = R.pathBBox = function (path) {
         qx: null,
         qy: null
     },
-        processPath = function (path, d) {
+        processPath = function processPath(path, d) {
         var nx, ny;
         if (!path) {
             return ["C", d.x, d.y, d.x, d.y, d.x, d.y];
@@ -5662,7 +2804,7 @@ var pathDimensions = R.pathBBox = function (path) {
         }
         return path;
     },
-        fixArc = function (pp, i) {
+        fixArc = function fixArc(pp, i) {
         if (pp[i].length > 7) {
             pp[i].shift();
             var pi = pp[i];
@@ -5673,7 +2815,7 @@ var pathDimensions = R.pathBBox = function (path) {
             ii = mmax(p.length, p2 && p2.length || 0);
         }
     },
-        fixM = function (path1, path2, a1, a2, i) {
+        fixM = function fixM(path1, path2, a1, a2, i) {
         if (path1 && path2 && path1[i][0] == "M" && path2[i][0] != "M" && !i) {
             path2.splice(i, 0, ["M", a2.x, a2.y]);
             a1.bx = 0;
@@ -5813,7 +2955,7 @@ toMatrix = R.toMatrix = function (path, transform) {
         _: {
             transform: E
         },
-        getBBox: function () {
+        getBBox: function getBBox() {
             return bb;
         }
     };
@@ -5934,7 +3076,7 @@ transformPath = R.transformPath = function (path, transform) {
         _.dirtyT = 1;
     }
 },
-    getEmpty = function (item) {
+    getEmpty = function getEmpty(item) {
     var l = item[0];
     switch (l.toLowerCase()) {
         case "t":
@@ -6351,16 +3493,16 @@ if (navigator.vendor == "Apple Computer, Inc." && (version && version[1] < 4 || 
     paperproto.safari = fun;
 }
 
-var preventDefault = function () {
+var preventDefault = function preventDefault() {
     this.returnValue = false;
 },
-    preventTouch = function () {
+    preventTouch = function preventTouch() {
     return this.originalEvent.preventDefault();
 },
-    stopPropagation = function () {
+    stopPropagation = function stopPropagation() {
     this.cancelBubble = true;
 },
-    stopTouch = function () {
+    stopTouch = function stopTouch() {
     return this.originalEvent.stopPropagation();
 },
     addEvent = R.addEvent = function () {
@@ -6371,7 +3513,7 @@ var preventDefault = function () {
 
             touchMap[dragEventMap[type]] && (realName = touchMap[dragEventMap[type]]);
 
-            f = function (e) {
+            f = function f(e) {
                 var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
                     scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
                     target;
@@ -6398,7 +3540,7 @@ var preventDefault = function () {
         };
     } else if (g.doc.attachEvent) {
         return function (obj, type, fn, element) {
-            var f = function (e) {
+            var f = function f(e) {
                 e = e || g.win.event;
                 var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
                     scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
@@ -6409,7 +3551,7 @@ var preventDefault = function () {
                 return fn.call(element, e, x, y);
             };
             obj.attachEvent("on" + type, f);
-            var detacher = function () {
+            var detacher = function detacher() {
                 obj.detachEvent("on" + type, f);
                 return true;
             };
@@ -6418,7 +3560,7 @@ var preventDefault = function () {
     }
 }(),
     drag = [],
-    dragMove = function (e) {
+    dragMove = function dragMove(e) {
     var x = e.clientX,
         y = e.clientY,
         scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
@@ -6463,7 +3605,7 @@ var preventDefault = function () {
         o = dragi.el.paper.getElementByPoint(x, y);
         node.style.display = display;
         g.win.opera && (next ? parent.insertBefore(node, next) : parent.appendChild(node));
-        o && eve("raphael.drag.over." + dragi.el.id, dragi.el, o);
+        o && (0, _eve2["default"])("raphael.drag.over." + dragi.el.id, dragi.el, o);
         x += scrollX;
         y += scrollY;
         for (key in e) {
@@ -6474,10 +3616,10 @@ var preventDefault = function () {
             }
         }
         data = dummyEve.data = [x - dragi.el._drag.x, y - dragi.el._drag.y, x, y];
-        eve("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, dummyEve, data);
+        (0, _eve2["default"])("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, dummyEve, data);
     }
 },
-    dragUp = function (e) {
+    dragUp = function dragUp(e) {
     R.undragmove(dragMove).undragend(dragUp);
     R.unmousemove(dragMove).unmouseup(dragUp);
     var i = drag.length,
@@ -6486,7 +3628,7 @@ var preventDefault = function () {
     while (i--) {
         dragi = drag[i];
         dragi.el._drag = {};
-        eve("raphael.drag.end." + dragi.el.id, dragi.end_scope || dragi.start_scope || dragi.move_scope || dragi.el, e);
+        (0, _eve2["default"])("raphael.drag.end." + dragi.el.id, dragi.end_scope || dragi.start_scope || dragi.move_scope || dragi.el, e);
     }
     drag = [];
 },
@@ -6732,13 +3874,14 @@ for (var i = events.length; i--;) {
         R["un" + eventName] = elproto["un" + eventName] = function (fn) {
             var events = this.events || [],
                 l = events.length;
-            while (l--) if (events[l].name == eventName && events[l].f == fn) {
-                events[l].unbind();
-                events.splice(l, 1);
-                !events.length && delete this.events;
-                return this;
-            }
-            return this;
+            while (l--) {
+                if (events[l].name == eventName && events[l].f == fn) {
+                    events[l].unbind();
+                    events.splice(l, 1);
+                    !events.length && delete this.events;
+                    return this;
+                }
+            }return this;
         };
     })(events[i]);
 }
@@ -6770,16 +3913,17 @@ elproto.data = function (key, value) {
     var data = eldata[this.id] = eldata[this.id] || {};
     if (arguments.length == 1) {
         if (R.is(key, object)) {
-            for (var i in key) if (key[has](i)) {
-                this.data(i, key[i]);
-            }
-            return this;
+            for (var i in key) {
+                if (key[has](i)) {
+                    this.data(i, key[i]);
+                }
+            }return this;
         }
-        eve("raphael.data.get." + this.id, this, data[key], key);
+        (0, _eve2["default"])("raphael.data.get." + this.id, this, data[key], key);
         return data[key];
     }
     data[key] = value;
-    eve("raphael.data.set." + this.id, this, value, key);
+    (0, _eve2["default"])("raphael.data.set." + this.id, this, value, key);
     return this;
 };
 
@@ -6814,10 +3958,10 @@ elproto.getData = function () {
 };
 
 var downables = [],
-    mouseDown = function () {
+    mouseDown = function mouseDown() {
     this.untrack = addEvent(g.doc, 'mouseup', mouseUp, this);
 },
-    mouseUp = function () {
+    mouseUp = function mouseUp() {
     this.untrack();
     this.untrack = null;
     return this.fn && this.fn.apply(this.scope || this.el, arguments);
@@ -6945,8 +4089,8 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
         data = dummyEve.data = [e.clientX + scrollX, e.clientY + scrollY];
         onstart && onstart.call(start_scope || move_scope || this, dummyEve, data);
         // onstart && eve.on("raphael.drag.start." + this.id, onstart);
-        onmove && eve.on("raphael.drag.move." + this.id, onmove);
-        onend && eve.on("raphael.drag.end." + this.id, onend);
+        onmove && _eve2["default"].on("raphael.drag.move." + this.id, onmove);
+        onend && _eve2["default"].on("raphael.drag.end." + this.id, onend);
         // onstart && eve("raphael.drag.start." + this.id, start_scope || move_scope || this, e.clientX + scrollX, e.clientY + scrollY, e);
     }
     this._drag = {};
@@ -6975,7 +4119,7 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
  - f (function) handler for event, first argument would be the element you are dragging over
 \*/
 elproto.onDragOver = function (f) {
-    f ? eve.on("raphael.drag.over." + this.id, f) : eve.unbind("raphael.drag.over." + this.id);
+    f ? _eve2["default"].on("raphael.drag.over." + this.id, f) : _eve2["default"].unbind("raphael.drag.over." + this.id);
 };
 
 /*\
@@ -6990,7 +4134,7 @@ elproto.undrag = function () {
         if (draggable[i].el == this) {
             this.unmousedown(draggable[i].start);
             draggable.splice(i, 1);
-            eve.unbind("raphael.drag.*." + this.id);
+            _eve2["default"].unbind("raphael.drag.*." + this.id);
         }
     }
 
@@ -7010,7 +4154,7 @@ elproto.undragmove = function () {
         if (draggable[i].el == this && draggable[i].onmove) {
             this.unmousedown(draggable[i].start);
             draggable.splice(i, 1);
-            eve.unbind("raphael.drag.move." + this.id);
+            _eve2["default"].unbind("raphael.drag.move." + this.id);
         }
     }
 
@@ -7029,7 +4173,7 @@ elproto.undragend = function () {
         if (draggable[i].el == this && draggable[i].onend) {
             this.unmousedown(draggable[i].start);
             draggable.splice(i, 1);
-            eve.unbind("raphael.drag.end." + this.id);
+            _eve2["default"].unbind("raphael.drag.end." + this.id);
         }
     }
 
@@ -7048,7 +4192,7 @@ elproto.undragstart = function () {
         if (draggable[i].el == this && draggable[i].onstart) {
             this.unmousedown(draggable[i].start);
             draggable.splice(i, 1);
-            eve.unbind("raphael.drag.start." + this.id);
+            _eve2["default"].unbind("raphael.drag.start." + this.id);
             this._dragstart = false;
         }
     }
@@ -7229,7 +4373,7 @@ paperproto.setDimension = function (paramsObj, height) {
     var paper = this,
         width;
     // Check if the first argument is an object or not
-    if (typeof paramsObj === 'object') {
+    if ((typeof paramsObj === "undefined" ? "undefined" : _typeof(paramsObj)) === 'object') {
         width = paramsObj.width;
         height = paramsObj.height;
         paper.setSize(paramsObj.width, paramsObj.height);
@@ -7326,7 +4470,7 @@ paperproto.top = paperproto.bottom = null;
 \*/
 paperproto.raphael = R;
 
-var getOffset = function (elem) {
+var getOffset = function getOffset(elem) {
     var box = elem.getBoundingClientRect(),
         doc = elem.ownerDocument,
         body = doc.body,
@@ -7595,14 +4739,14 @@ elproto.glow = function (glow) {
     return out.insertBefore(this).translate(s.offsetx, s.offsety);
 };
 var curveslengths = {},
-    getPointAtSegmentLength = function (p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, length) {
+    getPointAtSegmentLength = function getPointAtSegmentLength(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, length) {
     if (length == null) {
         return bezlen(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y);
     } else {
         return R.findDotsAtSegment(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, getTatLen(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, length));
     }
 },
-    getLengthFactory = function (istotal, subpath) {
+    getLengthFactory = function getLengthFactory(istotal, subpath) {
     return function (path, length, onlystart) {
         path = path2curve(path);
         var x,
@@ -7761,16 +4905,16 @@ elproto.getSubpath = function (from, to) {
  # <p>See also <a href="http://raphaeljs.com/easing.html">Easing demo</a>.</p>
 \*/
 var ef = R.easing_formulas = {
-    linear: function (n) {
+    linear: function linear(n) {
         return n;
     },
-    "<": function (n) {
+    "<": function _(n) {
         return pow(n, 1.7);
     },
-    ">": function (n) {
+    ">": function _(n) {
         return pow(n, .48);
     },
-    "<>": function (n) {
+    "<>": function _(n) {
         var q = .48 - n / 1.04,
             Q = mathSqrt(.1734 + q * q),
             x = Q - q,
@@ -7780,22 +4924,22 @@ var ef = R.easing_formulas = {
             t = X + Y + .5;
         return (1 - t) * 3 * t * t + t * t * t;
     },
-    backIn: function (n) {
+    backIn: function backIn(n) {
         var s = 1.70158;
         return n * n * ((s + 1) * n - s);
     },
-    backOut: function (n) {
+    backOut: function backOut(n) {
         n = n - 1;
         var s = 1.70158;
         return n * n * ((s + 1) * n + s) + 1;
     },
-    elastic: function (n) {
+    elastic: function elastic(n) {
         if (n == !!n) {
             return n;
         }
         return pow(2, -10 * n) * mathSin((n - .075) * (2 * PI) / .3) + 1;
     },
-    bounce: function (n) {
+    bounce: function bounce(n) {
         var s = 7.5625,
             p = 2.75,
             l;
@@ -7818,7 +4962,7 @@ var ef = R.easing_formulas = {
         return l;
     },
     // used in line chart anchor animation
-    oneBounceOut: function (n) {
+    oneBounceOut: function oneBounceOut(n) {
         var top = 120;
         if (n <= 0.9) {
             return ef.easeIn(n) * 1.33;
@@ -7826,7 +4970,7 @@ var ef = R.easing_formulas = {
         return 1.2 - n / 5;
     },
     // Used in translating bubble plots
-    elasticOnce: function (n) {
+    elasticOnce: function elasticOnce(n) {
         var p = 0.9;
         if (n == !!n) {
             return n;
@@ -7834,51 +4978,51 @@ var ef = R.easing_formulas = {
         return Math.pow(2, -10 * n) * Math.sin((n - p / 4) * (2 * Math.PI) / p) + 1;
     },
     // accelerating from zero velocity
-    easeInQuad: function (t) {
+    easeInQuad: function easeInQuad(t) {
         return t * t;
     },
     // decelerating to zero velocity
-    easeOutQuad: function (t) {
+    easeOutQuad: function easeOutQuad(t) {
         return t * (2 - t);
     },
     // acceleration until halfway, then deceleration
-    easeInOutQuad: function (t) {
+    easeInOutQuad: function easeInOutQuad(t) {
         return t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
     },
     // accelerating from zero velocity
-    easeInCubic: function (t) {
+    easeInCubic: function easeInCubic(t) {
         return t * t * t;
     },
     // decelerating to zero velocity
-    easeOutCubic: function (t) {
+    easeOutCubic: function easeOutCubic(t) {
         return --t * t * t + 1;
     },
     // acceleration until halfway, then deceleration
-    easeInOutCubic: function (t) {
+    easeInOutCubic: function easeInOutCubic(t) {
         return t < .5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
     },
     // accelerating from zero velocity
-    easeInQuart: function (t) {
+    easeInQuart: function easeInQuart(t) {
         return t * t * t * t;
     },
     // decelerating to zero velocity
-    easeOutQuart: function (t) {
+    easeOutQuart: function easeOutQuart(t) {
         return 1 - --t * t * t * t;
     },
     // acceleration until halfway, then deceleration
-    easeInOutQuart: function (t) {
+    easeInOutQuart: function easeInOutQuart(t) {
         return t < .5 ? 8 * t * t * t * t : 1 - 8 * --t * t * t * t;
     },
     // accelerating from zero velocity
-    easeInQuint: function (t) {
+    easeInQuint: function easeInQuint(t) {
         return t * t * t * t * t;
     },
     // decelerating to zero velocity
-    easeOutQuint: function (t) {
+    easeOutQuint: function easeOutQuint(t) {
         return 1 + --t * t * t * t * t;
     },
     // acceleration until halfway, then deceleration
-    easeInOutQuint: function (t) {
+    easeInOutQuint: function easeInOutQuint(t) {
         return t < .5 ? 16 * t * t * t * t * t : 1 + 16 * --t * t * t * t * t;
     }
 };
@@ -7892,12 +5036,14 @@ var animationElements = [],
     requestAnimFrame,
 
 // This a temporary fix so that animation can be handled from the scheduler module.
-animation = function () {
+animation = function animation() {
     var Now = +new Date(),
         l = 0,
         deqArr = [],
         i = 0,
         ll = 0,
+        tmpOpacity,
+        radial,
         animFrameFn;
 
     for (; l < animationElements.length; l++) {
@@ -7951,117 +5097,118 @@ animation = function () {
         if (time < ms) {
             var pos = easing(time / ms);
             ms = origms;
-            for (var attr in from) if (from[has](attr)) {
-                switch (availableAnimAttrs[attr]) {
-                    case nu:
-                        now = +from[attr] + pos * ms * diff[attr];
-                        break;
-                    case "colour":
-                        if (!diff[attr].length) {
-                            tmpOpacity = from[attr].opacity + pos * ms * diff[attr].opacity;
-                            if (isNaN(tmpOpacity)) {
-                                tmpOpacity = 1;
-                            }
-                            now = "rgba(" + [upto255(round(from[attr].r + pos * ms * diff[attr].r)), upto255(round(from[attr].g + pos * ms * diff[attr].g)), upto255(round(from[attr].b + pos * ms * diff[attr].b)), tmpOpacity].join(",") + ")";
-                        } else {
-                            now = [];
-                            for (i = 0, ii = from[attr].length; i < ii; ++i) {
-                                if (i === 0) {
-                                    if (from[attr].isRadial || diff[attr].isRadial) {
-                                        radial = "xr(";
-                                        radial += from[attr][0].f1 * (1 - pos) + diff[attr][0].f1 * pos || '';
-                                        radial += ',';
-                                        radial += from[attr][0].f2 * (1 - pos) + diff[attr][0].f2 * pos || '';
-                                        radial += ',';
-                                        radial += (from[attr][0].f3 * (1 - pos) + diff[attr][0].f3 * pos) * 100 || '';
-                                        radial += '%,';
-                                        radial += from[attr][0].f4 * (1 - pos) + diff[attr][0].f4 * pos || '';
-                                        radial += ',';
-                                        radial += from[attr][0].f5 * (1 - pos) + diff[attr][0].f5 * pos;
-                                        radial += ',';
-                                        radial += from[attr][0].f6;
-                                        radial += ')';
-                                        now.push(radial);
-                                    } else {
-                                        now.push(from[attr][i] * (1 - pos) + pos * diff[attr][i]);
-                                        if (now[0] <= 0) {
-                                            now[0] += 360;
+            for (var attr in from) {
+                if (from[has](attr)) {
+                    switch (availableAnimAttrs[attr]) {
+                        case nu:
+                            now = +from[attr] + pos * ms * diff[attr];
+                            break;
+                        case "colour":
+                            if (!diff[attr].length) {
+                                tmpOpacity = from[attr].opacity + pos * ms * diff[attr].opacity;
+                                if (isNaN(tmpOpacity)) {
+                                    tmpOpacity = 1;
+                                }
+                                now = "rgba(" + [upto255(round(from[attr].r + pos * ms * diff[attr].r)), upto255(round(from[attr].g + pos * ms * diff[attr].g)), upto255(round(from[attr].b + pos * ms * diff[attr].b)), tmpOpacity].join(",") + ")";
+                            } else {
+                                now = [];
+                                for (i = 0, ii = from[attr].length; i < ii; ++i) {
+                                    if (i === 0) {
+                                        if (from[attr].isRadial || diff[attr].isRadial) {
+                                            radial = "xr(";
+                                            radial += from[attr][0].f1 * (1 - pos) + diff[attr][0].f1 * pos || '';
+                                            radial += ',';
+                                            radial += from[attr][0].f2 * (1 - pos) + diff[attr][0].f2 * pos || '';
+                                            radial += ',';
+                                            radial += (from[attr][0].f3 * (1 - pos) + diff[attr][0].f3 * pos) * 100 || '';
+                                            radial += '%,';
+                                            radial += from[attr][0].f4 * (1 - pos) + diff[attr][0].f4 * pos || '';
+                                            radial += ',';
+                                            radial += from[attr][0].f5 * (1 - pos) + diff[attr][0].f5 * pos;
+                                            radial += ',';
+                                            radial += from[attr][0].f6;
+                                            radial += ')';
+                                            now.push(radial);
+                                        } else {
+                                            now.push(from[attr][i] * (1 - pos) + pos * diff[attr][i]);
+                                            if (now[0] <= 0) {
+                                                now[0] += 360;
+                                            }
                                         }
+                                    } else {
+                                        now.push("rgba(" + [upto255(round(from[attr][i].r + pos * ms * diff[attr][i].r)), upto255(round(from[attr][i].g + pos * ms * diff[attr][i].g)), upto255(round(from[attr][i].b + pos * ms * diff[attr][i].b)), from[attr][i].opacity + pos * ms * diff[attr][i].opacity].join(",") + "):" + from[attr][i].position);
                                     }
-                                } else {
-                                    now.push("rgba(" + [upto255(round(from[attr][i].r + pos * ms * diff[attr][i].r)), upto255(round(from[attr][i].g + pos * ms * diff[attr][i].g)), upto255(round(from[attr][i].b + pos * ms * diff[attr][i].b)), from[attr][i].opacity + pos * ms * diff[attr][i].opacity].join(",") + "):" + from[attr][i].position);
+                                }
+                                now = now.join("-");
+                                // If radial focus doesnt have a separator
+                                if (from[attr].isRadial || diff[attr].isRadial) {
+                                    now = now.replace('-', '');
                                 }
                             }
-                            now = now.join("-");
-                            // If radial focus doesnt have a separator
-                            if (from[attr].isRadial || diff[attr].isRadial) {
-                                now = now.replace('-', '');
-                            }
-                        }
-                        break;
-                    case "path":
-                        now = [];
-                        for (var i = 0, ii = from[attr].length; i < ii; i++) {
-                            now[i] = [from[attr][i][0]];
-                            var jj;
-                            jj = from[attr][i] ? from[attr][i].length : 0;
-                            for (var j = 1; j < jj; j++) {
-                                now[i][j] = (+from[attr][i][j] + pos * ms * diff[attr][i][j]).toFixed(4);
-                            }
-                            now[i] = now[i].join(S);
-                        }
-                        now = now.join(S);
-                        break;
-                    case "transform":
-                        if (diff[attr].real) {
+                            break;
+                        case "path":
                             now = [];
-                            for (i = 0, ii = from[attr].length; i < ii; i++) {
+                            for (var i = 0, ii = from[attr].length; i < ii; i++) {
                                 now[i] = [from[attr][i][0]];
-                                for (j = 1, jj = from[attr][i].length; j < jj; j++) {
-                                    now[i][j] = from[attr][i][j] + pos * ms * diff[attr][i][j];
+                                var jj;
+                                jj = from[attr][i] ? from[attr][i].length : 0;
+                                for (var j = 1; j < jj; j++) {
+                                    now[i][j] = (+from[attr][i][j] + pos * ms * diff[attr][i][j]).toFixed(4);
+                                }
+                                now[i] = now[i].join(S);
+                            }
+                            now = now.join(S);
+                            break;
+                        case "transform":
+                            if (diff[attr].real) {
+                                now = [];
+                                for (i = 0, ii = from[attr].length; i < ii; i++) {
+                                    now[i] = [from[attr][i][0]];
+                                    for (j = 1, jj = from[attr][i].length; j < jj; j++) {
+                                        now[i][j] = from[attr][i][j] + pos * ms * diff[attr][i][j];
+                                    }
+                                }
+                            } else {
+                                var get = function get(i) {
+                                    return +from[attr][i] + pos * ms * diff[attr][i];
+                                };
+                                // now = [["r", get(2), 0, 0], ["t", get(3), get(4)], ["s", get(0), get(1), 0, 0]];
+                                now = [["m", get(0), get(1), get(2), get(3), get(4), get(5)]];
+                            }
+                            break;
+                        case "csv":
+                            if (attr == "clip-rect") {
+                                now = [];
+                                i = 4;
+                                while (i--) {
+                                    now[i] = +from[attr][i] + pos * ms * diff[attr][i];
                                 }
                             }
-                        } else {
-                            var get = function (i) {
-                                return +from[attr][i] + pos * ms * diff[attr][i];
-                            };
-                            // now = [["r", get(2), 0, 0], ["t", get(3), get(4)], ["s", get(0), get(1), 0, 0]];
-                            now = [["m", get(0), get(1), get(2), get(3), get(4), get(5)]];
-                        }
-                        break;
-                    case "csv":
-                        if (attr == "clip-rect") {
+                            break;
+                        default:
+                            var from2 = [][concat](from[attr]);
                             now = [];
-                            i = 4;
+                            i = that.ca[attr].length;
                             while (i--) {
-                                now[i] = +from[attr][i] + pos * ms * diff[attr][i];
+                                now[i] = +from2[i] + pos * ms * diff[attr][i];
                             }
-                        }
-                        break;
-                    default:
-                        var from2 = [][concat](from[attr]);
-                        now = [];
-                        i = that.ca[attr].length;
-                        while (i--) {
-                            now[i] = +from2[i] + pos * ms * diff[attr][i];
-                        }
-                        break;
+                            break;
+                    }
+                    set[attr] = now;
                 }
-                set[attr] = now;
-            }
-            that.attr(set);
+            }that.attr(set);
             if (executeEvent) {
                 (function (id, that, anim) {
                     setTimeout(function () {
-                        eve("raphael.anim.frame." + id, that, anim);
+                        (0, _eve2["default"])("raphael.anim.frame." + id, that, anim);
                     });
                 })(that.id, that, e.anim);
             }
         } else {
             (function (f, el, a) {
                 setTimeout(function () {
-                    executeEvent && eve("raphael.anim.frame." + el.id, el, a);
-                    executeEvent && eve("raphael.anim.finish." + el.id, el, a);
+                    executeEvent && (0, _eve2["default"])("raphael.anim.frame." + el.id, el, a);
+                    executeEvent && (0, _eve2["default"])("raphael.anim.finish." + el.id, el, a);
                     R.is(f, "function") && f.call(el);
                 });
             })(e.callback, that, e.anim);
@@ -8070,10 +5217,11 @@ animation = function () {
             delete e.el;
             animationElements.splice(l--, 1);
             if (e.repeat > 1 && !e.next) {
-                for (key in to) if (to[has](key)) {
-                    init[key] = e.totalOrigin[key];
-                }
-                e.el.attr(init);
+                for (key in to) {
+                    if (to[has](key)) {
+                        init[key] = e.totalOrigin[key];
+                    }
+                }e.el.attr(init);
                 runAnimation(e.anim, e.el, e.anim.percents[0], null, e.totalOrigin, e.repeat - 1);
             }
             if (e.next && !e.stop) {
@@ -8090,7 +5238,7 @@ animation = function () {
         //         runAnimation.apply(null, deqArr[l].params);
         //     };
         // })(l), lib.priorityList.instant);
-        animFrameFn = R.getAnimFrameFn();
+        animFrameFn = R.getInstantAnimFrameFn();
         animFrameFn(function (l) {
             return function () {
                 runAnimation.apply(null, deqArr[l].params);
@@ -8100,10 +5248,10 @@ animation = function () {
 
     animationElements.length && (requestAnimFrame || R.getAnimFrameFn())(animation);
 },
-    upto255 = function (color) {
+    upto255 = function upto255(color) {
     return color > 255 ? 255 : color < 0 ? 0 : color;
 },
-    checkPercentage = function (num) {
+    checkPercentage = function checkPercentage(num) {
     num > 1 && (num = 1);
     num < 0 && (num = 0);
     return num;
@@ -8111,6 +5259,12 @@ animation = function () {
 
 R.getAnimFrameFn = function () {
     return requestAnimFrame = R.requestAnimFrame || _win.webkitRequestAnimationFrame || _win.mozRequestAnimationFrame || _win.oRequestAnimationFrame || _win.msRequestAnimationFrame || function (callback) {
+        setTimeout(callback, 16);
+    };
+};
+
+R.getInstantAnimFrameFn = function () {
+    return R.instantRequestAnimFrame || _win.webkitRequestAnimationFrame || _win.mozRequestAnimationFrame || _win.oRequestAnimationFrame || _win.msRequestAnimationFrame || function (callback) {
         setTimeout(callback, 16);
     };
 };
@@ -8261,7 +5415,7 @@ function CubicBezierAtTime(t, p1x, p1y, p2x, p2y, duration) {
     return solve(t, 1 / (200 * duration));
 }
 elproto.onAnimation = function (f) {
-    f ? eve.on("raphael.anim.frame." + this.id, f) : eve.unbind("raphael.anim.frame." + this.id);
+    f ? _eve2["default"].on("raphael.anim.frame." + this.id, f) : _eve2["default"].unbind("raphael.anim.frame." + this.id);
     return this;
 };
 function Animation(anim, ms) {
@@ -8270,11 +5424,12 @@ function Animation(anim, ms) {
     this.ms = ms;
     this.times = 1;
     if (anim) {
-        for (var attr in anim) if (anim[has](attr)) {
-            newAnim[toFloat(attr)] = anim[attr];
-            percents.push(toFloat(attr));
-        }
-        percents.sort(sortByNumber);
+        for (var attr in anim) {
+            if (anim[has](attr)) {
+                newAnim[toFloat(attr)] = anim[attr];
+                percents.push(toFloat(attr));
+            }
+        }percents.sort(sortByNumber);
     }
     this.anim = newAnim;
     this.top = percents[percents.length - 1];
@@ -9220,181 +6375,182 @@ function runAnimation(anim, element, percent, status, totalOrigin, times, parent
         return;
     }
     if (!isInAnim) {
-        for (var attr in params) if (params[has](attr)) {
-            if (availableAnimAttrs[has](attr) || element.ca[attr]) {
-                from[attr] = configObject.from[attr] || element.attr(attr);
-                from[attr] == null && (from[attr] = availableAttrs[attr]);
-                to[attr] = params[attr];
-                change = false;
-                switch (availableAnimAttrs[attr]) {
-                    case nu:
-                        tempDiff = to[attr] - from[attr];
-                        (tempDiff || isNaN(tempDiff)) && (change = true);
-                        diff[attr] = tempDiff / ms;
-                        break;
-                    case "colour":
-                        if (from[attr] === to[attr]) {
+        for (var attr in params) {
+            if (params[has](attr)) {
+                if (availableAnimAttrs[has](attr) || element.ca[attr]) {
+                    from[attr] = configObject.from[attr] || element.attr(attr);
+                    from[attr] == null && (from[attr] = availableAttrs[attr]);
+                    to[attr] = params[attr];
+                    change = false;
+                    switch (availableAnimAttrs[attr]) {
+                        case nu:
+                            tempDiff = to[attr] - from[attr];
+                            (tempDiff || isNaN(tempDiff)) && (change = true);
+                            diff[attr] = tempDiff / ms;
                             break;
-                        } else {
-                            change = true;
-                        }
-                        var colorsNormalized = colorNormalizer(from[attr], to[attr], R.getRGB);
-                        from[attr] = colorsNormalized[0];
-                        var toColour = colorsNormalized[1];
-                        if (typeof toColour === "string") {
-                            if (from[attr].toLowerCase() !== "none") {
-                                from[attr] = R.getRGB(from[attr]);
-                                if (!from[attr].opacity) {
-                                    from[attr].opacity = 1;
-                                }
+                        case "colour":
+                            if (from[attr] === to[attr]) {
+                                break;
                             } else {
-                                from[attr] = {
-                                    r: 0,
-                                    g: 0,
-                                    b: 0,
-                                    opacity: 0
-                                };
+                                change = true;
                             }
-                            if (to[attr].toLowerCase() !== "none") {
-                                toColour = R.getRGB(to[attr]);
-                                if (!toColour.opacity) {
-                                    toColour.opacity = 1;
-                                }
-                            } else {
-                                toColour = {
-                                    r: 0,
-                                    g: 0,
-                                    b: 0,
-                                    opacity: 0
-                                };
-                            }
-                            diff[attr] = {
-                                r: (toColour.r - from[attr].r) / ms,
-                                g: (toColour.g - from[attr].g) / ms,
-                                b: (toColour.b - from[attr].b) / ms,
-                                opacity: (toColour.opacity - from[attr].opacity) / ms
-                            };
-                        } else {
-                            diff[attr] = [];
-                            for (i = 0, ii = from[attr].length; i < ii; ++i) {
-                                if (i === 0) {
-                                    diff[attr].push(toColour[0]);
+                            var colorsNormalized = colorNormalizer(from[attr], to[attr], R.getRGB);
+                            from[attr] = colorsNormalized[0];
+                            var toColour = colorsNormalized[1];
+                            if (typeof toColour === "string") {
+                                if (from[attr].toLowerCase() !== "none") {
+                                    from[attr] = R.getRGB(from[attr]);
+                                    if (!from[attr].opacity) {
+                                        from[attr].opacity = 1;
+                                    }
                                 } else {
-                                    diff[attr].push({
-                                        r: (toColour[i].r - from[attr][i].r) / ms,
-                                        g: (toColour[i].g - from[attr][i].g) / ms,
-                                        b: (toColour[i].b - from[attr][i].b) / ms,
-                                        opacity: (toColour[i].opacity - from[attr][i].opacity) / ms
-                                    });
+                                    from[attr] = {
+                                        r: 0,
+                                        g: 0,
+                                        b: 0,
+                                        opacity: 0
+                                    };
+                                }
+                                if (to[attr].toLowerCase() !== "none") {
+                                    toColour = R.getRGB(to[attr]);
+                                    if (!toColour.opacity) {
+                                        toColour.opacity = 1;
+                                    }
+                                } else {
+                                    toColour = {
+                                        r: 0,
+                                        g: 0,
+                                        b: 0,
+                                        opacity: 0
+                                    };
+                                }
+                                diff[attr] = {
+                                    r: (toColour.r - from[attr].r) / ms,
+                                    g: (toColour.g - from[attr].g) / ms,
+                                    b: (toColour.b - from[attr].b) / ms,
+                                    opacity: (toColour.opacity - from[attr].opacity) / ms
+                                };
+                            } else {
+                                diff[attr] = [];
+                                for (i = 0, ii = from[attr].length; i < ii; ++i) {
+                                    if (i === 0) {
+                                        diff[attr].push(toColour[0]);
+                                    } else {
+                                        diff[attr].push({
+                                            r: (toColour[i].r - from[attr][i].r) / ms,
+                                            g: (toColour[i].g - from[attr][i].g) / ms,
+                                            b: (toColour[i].b - from[attr][i].b) / ms,
+                                            opacity: (toColour[i].opacity - from[attr][i].opacity) / ms
+                                        });
+                                    }
                                 }
                             }
-                        }
-                        break;
-                    case "path":
-                        var toPath,
-                            pathes = path2curve(from[attr], to[attr]);
-                        if (configObject.smartMorph) {
-                            pathes = pathNormalizer(pathes[0], pathes[1], configObject);
-                        }
-                        toPath = pathes[1];
-                        from[attr] = pathes[0];
-                        diff[attr] = [];
-                        for (i = 0, ii = from[attr].length; i < ii; i++) {
-                            diff[attr][i] = [0];
-                            var jj;
-                            jj = from[attr][i] ? from[attr][i].length : 0;
-                            for (var j = 1; j < jj; j++) {
-                                diff[attr][i][j] = (toPath[i][j] - from[attr][i][j]) / ms;
-                                !change && diff[attr][i][j] && (change = true);
+                            break;
+                        case "path":
+                            var toPath,
+                                pathes = path2curve(from[attr], to[attr]);
+                            if (configObject.smartMorph) {
+                                pathes = pathNormalizer(pathes[0], pathes[1], configObject);
                             }
-                        }
-                        break;
-                    case "transform":
-                        var _ = element._,
-                            eq = equaliseTransform(_[attr], to[attr]);
-                        change = true;
-                        if (eq) {
-                            from[attr] = eq.from;
-                            to[attr] = eq.to;
+                            toPath = pathes[1];
+                            from[attr] = pathes[0];
                             diff[attr] = [];
-                            diff[attr].real = true;
                             for (i = 0, ii = from[attr].length; i < ii; i++) {
-                                diff[attr][i] = [from[attr][i][0]];
-                                for (j = 1, jj = from[attr][i].length; j < jj; j++) {
-                                    diff[attr][i][j] = (to[attr][i][j] - from[attr][i][j]) / ms;
+                                diff[attr][i] = [0];
+                                var jj;
+                                jj = from[attr][i] ? from[attr][i].length : 0;
+                                for (var j = 1; j < jj; j++) {
+                                    diff[attr][i][j] = (toPath[i][j] - from[attr][i][j]) / ms;
+                                    !change && diff[attr][i][j] && (change = true);
                                 }
                             }
-                        } else {
-                            var m = element.matrix || new Matrix(),
-                                to2 = {
-                                _: {
-                                    transform: _.transform
-                                },
-                                getBBox: function () {
-                                    return element.getBBox(1);
+                            break;
+                        case "transform":
+                            var _ = element._,
+                                eq = equaliseTransform(_[attr], to[attr]);
+                            change = true;
+                            if (eq) {
+                                from[attr] = eq.from;
+                                to[attr] = eq.to;
+                                diff[attr] = [];
+                                diff[attr].real = true;
+                                for (i = 0, ii = from[attr].length; i < ii; i++) {
+                                    diff[attr][i] = [from[attr][i][0]];
+                                    for (j = 1, jj = from[attr][i].length; j < jj; j++) {
+                                        diff[attr][i][j] = (to[attr][i][j] - from[attr][i][j]) / ms;
+                                    }
                                 }
-                            };
-                            from[attr] = [m.a, m.b, m.c, m.d, m.e, m.f];
-                            extractTransform(to2, to[attr]);
-                            to[attr] = to2._.transform;
-                            diff[attr] = [(to2.matrix.a - m.a) / ms, (to2.matrix.b - m.b) / ms, (to2.matrix.c - m.c) / ms, (to2.matrix.d - m.d) / ms, (to2.matrix.e - m.e) / ms, (to2.matrix.f - m.f) / ms];
-                            // from[attr] = [_.sx, _.sy, _.deg, _.dx, _.dy];
-                            // var to2 = {_:{}, getBBox: function () { return element.getBBox(); }};
-                            // extractTransform(to2, to[attr]);
-                            // diff[attr] = [
-                            //     (to2._.sx - _.sx) / ms,
-                            //     (to2._.sy - _.sy) / ms,
-                            //     (to2._.deg - _.deg) / ms,
-                            //     (to2._.dx - _.dx) / ms,
-                            //     (to2._.dy - _.dy) / ms
-                            // ];
-                        }
-                        break;
-                    case "csv":
-                        var values = Str(params[attr])[split](separator),
-                            from2 = Str(from[attr])[split](separator);
-                        if (attr == "clip-rect") {
-                            from[attr] = from2;
+                            } else {
+                                var m = element.matrix || new Matrix(),
+                                    to2 = {
+                                    _: {
+                                        transform: _.transform
+                                    },
+                                    getBBox: function getBBox() {
+                                        return element.getBBox(1);
+                                    }
+                                };
+                                from[attr] = [m.a, m.b, m.c, m.d, m.e, m.f];
+                                extractTransform(to2, to[attr]);
+                                to[attr] = to2._.transform;
+                                diff[attr] = [(to2.matrix.a - m.a) / ms, (to2.matrix.b - m.b) / ms, (to2.matrix.c - m.c) / ms, (to2.matrix.d - m.d) / ms, (to2.matrix.e - m.e) / ms, (to2.matrix.f - m.f) / ms];
+                                // from[attr] = [_.sx, _.sy, _.deg, _.dx, _.dy];
+                                // var to2 = {_:{}, getBBox: function () { return element.getBBox(); }};
+                                // extractTransform(to2, to[attr]);
+                                // diff[attr] = [
+                                //     (to2._.sx - _.sx) / ms,
+                                //     (to2._.sy - _.sy) / ms,
+                                //     (to2._.deg - _.deg) / ms,
+                                //     (to2._.dx - _.dx) / ms,
+                                //     (to2._.dy - _.dy) / ms
+                                // ];
+                            }
+                            break;
+                        case "csv":
+                            var values = Str(params[attr])[split](separator),
+                                from2 = Str(from[attr])[split](separator);
+                            if (attr == "clip-rect") {
+                                from[attr] = from2;
+                                diff[attr] = [];
+                                i = from2.length;
+                                while (i--) {
+                                    tempDiff = values[i] - from[attr][i];
+                                    (tempDiff || isNaN(tempDiff)) && (change = true);
+                                    diff[attr][i] = tempDiff / ms;
+                                }
+                            }
+                            to[attr] = values;
+                            break;
+                        default:
+                            values = [][concat](params[attr]);
+                            from2 = [][concat](from[attr]);
                             diff[attr] = [];
-                            i = from2.length;
+                            i = element.ca[attr].length;
                             while (i--) {
-                                tempDiff = values[i] - from[attr][i];
+                                tempDiff = (values[i] || 0) - (from2[i] || 0);
                                 (tempDiff || isNaN(tempDiff)) && (change = true);
                                 diff[attr][i] = tempDiff / ms;
                             }
-                        }
-                        to[attr] = values;
-                        break;
-                    default:
-                        values = [][concat](params[attr]);
-                        from2 = [][concat](from[attr]);
-                        diff[attr] = [];
-                        i = element.ca[attr].length;
-                        while (i--) {
-                            tempDiff = (values[i] || 0) - (from2[i] || 0);
-                            (tempDiff || isNaN(tempDiff)) && (change = true);
-                            diff[attr][i] = tempDiff / ms;
-                        }
-                        break;
-                }
-                if (!change) {
-                    delete from[attr];
-                    delete to[attr];
+                            break;
+                    }
+                    if (!change) {
+                        delete from[attr];
+                        delete to[attr];
+                        delete params[attr];
+                        delete diff[attr];
+                    }
+                } else if (R._availableAttrs[has](attr) || attr === 'text' || element.ca[attr]) {
+                    element.attr(attr, params[attr]);
                     delete params[attr];
-                    delete diff[attr];
                 }
-            } else if (R._availableAttrs[has](attr) || attr === 'text' || element.ca[attr]) {
-                element.attr(attr, params[attr]);
-                delete params[attr];
             }
-        }
-        var easing = params.easing,
+        }var easing = params.easing,
             easyeasy = R.easing_formulas[easing];
         if (!easyeasy) {
             easyeasy = Str(easing).match(bezierrg);
             if (easyeasy && easyeasy.length == 5) {
                 var curve = easyeasy;
-                easyeasy = function (t) {
+                easyeasy = function easyeasy(t) {
                     return CubicBezierAtTime(t, +curve[1], +curve[2], +curve[3], +curve[4], ms);
                 };
             } else {
@@ -9443,7 +6599,7 @@ function runAnimation(anim, element, percent, status, totalOrigin, times, parent
         isInAnim.initstatus = status;
         isInAnim.start = new Date() - isInAnim.ms * status;
     }
-    R.stopEvent !== false && eve("raphael.anim.start." + element.id, element, anim);
+    R.stopEvent !== false && (0, _eve2["default"])("raphael.anim.start." + element.id, element, anim);
 }
 
 /*\
@@ -9476,11 +6632,12 @@ R.animation = function (params, ms, easing, callback, event) {
     var p = {},
         json,
         attr;
-    for (attr in params) if (params[has](attr) && toFloat(attr) != attr && toFloat(attr) + "%" != attr) {
-        json = true;
-        p[attr] = params[attr];
-    }
-    if (!json) {
+    for (attr in params) {
+        if (params[has](attr) && toFloat(attr) != attr && toFloat(attr) + "%" != attr) {
+            json = true;
+            p[attr] = params[attr];
+        }
+    }if (!json) {
         return new Animation(params, ms);
     } else {
         easing && (p.easing = easing);
@@ -9613,7 +6770,7 @@ elproto.pause = function (anim, pauseChildAnimation) {
         e = animationElements[i];
         // @todo - need a scope to implement the logic for nested animations.
         if ((e.el.id === this.id || pauseChildAnimation && e.parentEl && e.parentEl.e.el && e.parentEl.e.el.id === this.id) && (!anim || e.anim == anim)) {
-            if (eve("raphael.anim.pause." + this.id, this, e.anim) !== false) {
+            if ((0, _eve2["default"])("raphael.anim.pause." + this.id, this, e.anim) !== false) {
                 e.paused = true;
                 e.pauseStart = now;
             }
@@ -9643,7 +6800,7 @@ elproto.resume = function (anim, resumeChildAnimation) {
         e = animationElements[i];
         // @todo - need a scope to implement the logic for nested animations.
         if ((e.el.id === this.id || resumeChildAnimation && e.parentEl && e.parentEl.e.el && e.parentEl.e.el.id === this.id) && (!anim || e.anim == anim)) {
-            if (eve("raphael.anim.resume." + this.id, this, e.anim) !== false) {
+            if ((0, _eve2["default"])("raphael.anim.resume." + this.id, this, e.anim) !== false) {
                 delete e.paused;
                 e.el.status(e.anim, e.status);
                 e.pauseEnd = now;
@@ -9669,7 +6826,7 @@ elproto.resume = function (anim, resumeChildAnimation) {
  = (object) original element
 \*/
 elproto.stop = function (anim, stopChildAnimation, jumpToEnd) {
-    var e, i;
+    var e, i, ele;
     if (stopChildAnimation) {
         for (i = animationElements.length - 1; i >= 0; i--) {
             e = animationElements[i];
@@ -9687,7 +6844,7 @@ elproto.stop = function (anim, stopChildAnimation, jumpToEnd) {
         for (var i = 0; i < animationElements.length; i++) {
             e = animationElements[i];
             if (e.el.id === this.id && (!anim || e.anim === anim)) {
-                if (eve("raphael.anim.stop." + this.id, this, e.anim) !== false) {
+                if ((0, _eve2["default"])("raphael.anim.stop." + this.id, this, e.anim) !== false) {
                     animationElements.splice(i--, 1);
                 }
             }
@@ -9713,14 +6870,16 @@ function executeAnimQueue(queue) {
 }
 
 function stopAnimation(paper) {
-    for (var i = 0; i < animationElements.length; i++) if (animationElements[i].el.paper == paper) {
-        animationElements.splice(i--, 1);
+    for (var i = 0; i < animationElements.length; i++) {
+        if (animationElements[i].el.paper == paper) {
+            animationElements.splice(i--, 1);
+        }
     }
 }
-eve.on("raphael.remove", stopAnimation);
-eve.on("raphael.clear", stopAnimation);
+_eve2["default"].on("raphael.remove", stopAnimation);
+_eve2["default"].on("raphael.clear", stopAnimation);
 elproto.toString = function () {
-    return "Rapha\xebl\u2019s object";
+    return "Rapha\xEBl\u2019s object";
 };
 
 elproto.toFront = function () {
@@ -9882,7 +7041,7 @@ elproto.removeChild = function (element) {
 };
 
 // Set
-var Set = function (items) {
+var Set = function Set(items) {
     this.items = [];
     this.length = 0;
     this.type = "set";
@@ -9951,17 +7110,18 @@ setproto.forEach = function (callback, thisArg) {
     }
     return this;
 };
-for (var method in elproto) if (elproto[has](method)) {
-    setproto[method] = function (methodname) {
-        return function () {
-            var arg = arguments;
-            return this.forEach(function (el) {
-                el[methodname][apply](el, arg);
-            });
-        };
-    }(method);
-}
-setproto.attr = function (name, value) {
+for (var method in elproto) {
+    if (elproto[has](method)) {
+        setproto[method] = function (methodname) {
+            return function () {
+                var arg = arguments;
+                return this.forEach(function (el) {
+                    el[methodname][apply](el, arg);
+                });
+            };
+        }(method);
+    }
+}setproto.attr = function (name, value) {
     if (name && R.is(name, array) && R.is(name[0], object)) {
         for (var j = 0, jj = name.length; j < jj; j++) {
             this.items[j].attr(name[j]);
@@ -10038,9 +7198,11 @@ setproto.splice = function (index, count, insertion) {
  = (boolean) `true` if object was found & removed from the set
 \*/
 setproto.exclude = function (el) {
-    for (var i = 0, ii = this.length; i < ii; i++) if (this[i] == el) {
-        this.splice(i, 1);
-        return true;
+    for (var i = 0, ii = this.length; i < ii; i++) {
+        if (this[i] == el) {
+            this.splice(i, 1);
+            return true;
+        }
     }
 };
 setproto.animate = function (params, ms, easing, callback) {
@@ -10053,7 +7215,7 @@ setproto.animate = function (params, ms, easing, callback) {
     if (!len) {
         return this;
     }
-    callback && (collector = function () {
+    callback && (collector = function collector() {
         ! --len && callback.call(set);
     });
     easing = R.is(easing, string) ? easing : collector;
@@ -10076,14 +7238,15 @@ setproto.getBBox = function () {
         y = [],
         x2 = [],
         y2 = [];
-    for (var i = this.items.length; i--;) if (!this.items[i].removed) {
-        var box = this.items[i].getBBox();
-        x.push(box.x);
-        y.push(box.y);
-        x2.push(box.x + box.width);
-        y2.push(box.y + box.height);
-    }
-    x = mmin[apply](0, x);
+    for (var i = this.items.length; i--;) {
+        if (!this.items[i].removed) {
+            var box = this.items[i].getBBox();
+            x.push(box.x);
+            y.push(box.y);
+            x2.push(box.x + box.width);
+            y2.push(box.y + box.height);
+        }
+    }x = mmin[apply](0, x);
     y = mmin[apply](0, y);
     x2 = mmax[apply](0, x2);
     y2 = mmax[apply](0, y2);
@@ -10104,7 +7267,7 @@ setproto.clone = function (s) {
     return s;
 };
 setproto.toString = function () {
-    return "Rapha\xebl\u2018s set";
+    return "Rapha\xEBl\u2018s set";
 };
 
 setproto.glow = function (glowConfig) {
@@ -10146,35 +7309,40 @@ R.registerFont = function (font) {
         glyphs: {}
     },
         family = font.face["font-family"];
-    for (var prop in font.face) if (font.face[has](prop)) {
-        fontcopy.face[prop] = font.face[prop];
-    }
-    if (this.fonts[family]) {
+    for (var prop in font.face) {
+        if (font.face[has](prop)) {
+            fontcopy.face[prop] = font.face[prop];
+        }
+    }if (this.fonts[family]) {
         this.fonts[family].push(fontcopy);
     } else {
         this.fonts[family] = [fontcopy];
     }
     if (!font.svg) {
         fontcopy.face["units-per-em"] = toInt(font.face["units-per-em"], 10);
-        for (var glyph in font.glyphs) if (font.glyphs[has](glyph)) {
-            var path = font.glyphs[glyph];
-            fontcopy.glyphs[glyph] = {
-                w: path.w,
-                k: {},
-                d: path.d && "M" + path.d.replace(/[mlcxtrv]/g, function (command) {
-                    return {
-                        l: "L",
-                        c: "C",
-                        x: "z",
-                        t: "m",
-                        r: "l",
-                        v: "c"
-                    }[command] || "M";
-                }) + "z"
-            };
-            if (path.k) {
-                for (var k in path.k) if (path[has](k)) {
-                    fontcopy.glyphs[glyph].k[k] = path.k[k];
+        for (var glyph in font.glyphs) {
+            if (font.glyphs[has](glyph)) {
+                var path = font.glyphs[glyph];
+                fontcopy.glyphs[glyph] = {
+                    w: path.w,
+                    k: {},
+                    d: path.d && "M" + path.d.replace(/[mlcxtrv]/g, function (command) {
+                        return {
+                            l: "L",
+                            c: "C",
+                            x: "z",
+                            t: "m",
+                            r: "l",
+                            v: "c"
+                        }[command] || "M";
+                    }) + "z"
+                };
+                if (path.k) {
+                    for (var k in path.k) {
+                        if (path[has](k)) {
+                            fontcopy.glyphs[glyph].k[k] = path.k[k];
+                        }
+                    }
                 }
             }
         }
@@ -10213,10 +7381,12 @@ paperproto.getFont = function (family, weight, style, stretch) {
     var font = R.fonts[family];
     if (!font) {
         var name = new RegExp("(^|\\s)" + family.replace(/[^\w\d\s+!~.:_-]/g, E) + "(\\s|$)", "i");
-        for (var fontName in R.fonts) if (R.fonts[has](fontName)) {
-            if (name.test(fontName)) {
-                font = R.fonts[fontName];
-                break;
+        for (var fontName in R.fonts) {
+            if (R.fonts[has](fontName)) {
+                if (name.test(fontName)) {
+                    font = R.fonts[fontName];
+                    break;
+                }
             }
         }
     }
@@ -10387,7 +7557,7 @@ R.fullfill = function () {
     var tokenRegex = /\{([^\}]+)\}/g,
         objNotationRegex = /(?:(?:^|\.)(.+?)(?=\[|\.|$|\()|\[('|")(.+?)\2\])(\(\))?/g,
         // matches .xxxxx or ["xxxxx"] to run over object properties
-    replacer = function (all, key, obj) {
+    replacer = function replacer(all, key, obj) {
         var res = obj;
         key.replace(objNotationRegex, function (all, name, quote, quotedName, isFunc) {
             name = name || quotedName;
@@ -10578,10 +7748,10 @@ R.define = function (name, init, ca, fn, e, data) {
     return R.fn[name];
 };
 // Firefox <3.6 fix: http://webreflection.blogspot.com/2009/11/195-chars-to-help-lazy-loading.html
-(function (doc, loaded, f) {
+(function (doc, loaded, _f) {
     if (doc.readyState == null && doc.addEventListener) {
-        doc.addEventListener(loaded, f = function () {
-            doc.removeEventListener(loaded, f, false);
+        doc.addEventListener(loaded, _f = function f() {
+            doc.removeEventListener(loaded, _f, false);
             doc.readyState = "complete";
         }, false);
         doc.readyState = "loading";
@@ -10592,7 +7762,7 @@ R.define = function (name, init, ca, fn, e, data) {
     isLoaded();
 })(doc, "DOMContentLoaded");
 
-eve.on("raphael.DOMload", function () {
+_eve2["default"].on("raphael.DOMload", function () {
     loaded = true;
 });
 
@@ -10601,25 +7771,1789 @@ eve.on("raphael.DOMload", function () {
 // Even with AMD, Raphael should be defined globally
 // oldRaphael.was ? (g.win.Raphael = R) : (Raphael = R);
 
-module.exports = R;
+exports["default"] = R;
+module.exports = exports["default"];
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(27)))
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./eve/eve":1}],5:[function(require,module,exports){
-/**!
-* RedRaphael 1.0.0 - JavaScript Vector Library SVG Module
-* Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
-*
-* Raphael 2.1.0 - JavaScript Vector Library SVG Module
-* Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
-* Copyright © 2008-2012 Sencha Labs <http://sencha.com>
-*
-* Licensed under the MIT license.
-*/
-// Define _window as window object in case of indivual file inclusion.
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
 
-var R = require('./raphael.core');
+var isObject = __webpack_require__(9);
+module.exports = function(it){
+  if(!isObject(it))throw TypeError(it + ' is not an object!');
+  return it;
+};
 
-if (R.svg) {
+/***/ }),
+/* 9 */
+/***/ (function(module, exports) {
+
+module.exports = function(it){
+  return typeof it === 'object' ? it !== null : typeof it === 'function';
+};
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports) {
+
+module.exports = function(exec){
+  try {
+    return !!exec();
+  } catch(e){
+    return true;
+  }
+};
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports) {
+
+module.exports = function(bitmap, value){
+  return {
+    enumerable  : !(bitmap & 1),
+    configurable: !(bitmap & 2),
+    writable    : !(bitmap & 4),
+    value       : value
+  };
+};
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// 19.1.2.14 / 15.2.3.14 Object.keys(O)
+var $keys       = __webpack_require__(35)
+  , enumBugKeys = __webpack_require__(22);
+
+module.exports = Object.keys || function keys(O){
+  return $keys(O, enumBugKeys);
+};
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports) {
+
+var id = 0
+  , px = Math.random();
+module.exports = function(key){
+  return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + px).toString(36));
+};
+
+/***/ }),
+/* 14 */
+/***/ (function(module, exports) {
+
+// 7.1.4 ToInteger
+var ceil  = Math.ceil
+  , floor = Math.floor;
+module.exports = function(it){
+  return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
+};
+
+/***/ }),
+/* 15 */
+/***/ (function(module, exports) {
+
+// 7.2.1 RequireObjectCoercible(argument)
+module.exports = function(it){
+  if(it == undefined)throw TypeError("Can't call method on  " + it);
+  return it;
+};
+
+/***/ }),
+/* 16 */
+/***/ (function(module, exports) {
+
+module.exports = true;
+
+/***/ }),
+/* 17 */
+/***/ (function(module, exports) {
+
+var core = module.exports = {version: '2.4.0'};
+if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// 7.1.1 ToPrimitive(input [, PreferredType])
+var isObject = __webpack_require__(9);
+// instead of the ES6 spec version, we didn't implement @@toPrimitive case
+// and the second argument - flag - preferred type is a string
+module.exports = function(it, S){
+  if(!isObject(it))return it;
+  var fn, val;
+  if(S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it)))return val;
+  if(typeof (fn = it.valueOf) == 'function' && !isObject(val = fn.call(it)))return val;
+  if(!S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it)))return val;
+  throw TypeError("Can't convert object to primitive value");
+};
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports) {
+
+module.exports = {};
+
+/***/ }),
+/* 20 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var shared = __webpack_require__(21)('keys')
+  , uid    = __webpack_require__(13);
+module.exports = function(key){
+  return shared[key] || (shared[key] = uid(key));
+};
+
+/***/ }),
+/* 21 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var global = __webpack_require__(0)
+  , SHARED = '__core-js_shared__'
+  , store  = global[SHARED] || (global[SHARED] = {});
+module.exports = function(key){
+  return store[key] || (store[key] = {});
+};
+
+/***/ }),
+/* 22 */
+/***/ (function(module, exports) {
+
+// IE 8- don't enum bug keys
+module.exports = (
+  'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'
+).split(',');
+
+/***/ }),
+/* 23 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var def = __webpack_require__(4).f
+  , has = __webpack_require__(1)
+  , TAG = __webpack_require__(6)('toStringTag');
+
+module.exports = function(it, tag, stat){
+  if(it && !has(it = stat ? it : it.prototype, TAG))def(it, TAG, {configurable: true, value: tag});
+};
+
+/***/ }),
+/* 24 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports.f = __webpack_require__(6);
+
+/***/ }),
+/* 25 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var global         = __webpack_require__(0)
+  , core           = __webpack_require__(17)
+  , LIBRARY        = __webpack_require__(16)
+  , wksExt         = __webpack_require__(24)
+  , defineProperty = __webpack_require__(4).f;
+module.exports = function(name){
+  var $Symbol = core.Symbol || (core.Symbol = LIBRARY ? {} : global.Symbol || {});
+  if(name.charAt(0) != '_' && !(name in $Symbol))defineProperty($Symbol, name, {value: wksExt.f(name)});
+};
+
+/***/ }),
+/* 26 */
+/***/ (function(module, exports) {
+
+exports.f = {}.propertyIsEnumerable;
+
+/***/ }),
+/* 27 */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1,eval)("this");
+} catch(e) {
+	// This works if the window reference is available
+	if(typeof window === "object")
+		g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+/* 28 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = { "default": __webpack_require__(42), __esModule: true };
+
+/***/ }),
+/* 29 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var LIBRARY        = __webpack_require__(16)
+  , $export        = __webpack_require__(30)
+  , redefine       = __webpack_require__(33)
+  , hide           = __webpack_require__(3)
+  , has            = __webpack_require__(1)
+  , Iterators      = __webpack_require__(19)
+  , $iterCreate    = __webpack_require__(47)
+  , setToStringTag = __webpack_require__(23)
+  , getPrototypeOf = __webpack_require__(54)
+  , ITERATOR       = __webpack_require__(6)('iterator')
+  , BUGGY          = !([].keys && 'next' in [].keys()) // Safari has buggy iterators w/o `next`
+  , FF_ITERATOR    = '@@iterator'
+  , KEYS           = 'keys'
+  , VALUES         = 'values';
+
+var returnThis = function(){ return this; };
+
+module.exports = function(Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCED){
+  $iterCreate(Constructor, NAME, next);
+  var getMethod = function(kind){
+    if(!BUGGY && kind in proto)return proto[kind];
+    switch(kind){
+      case KEYS: return function keys(){ return new Constructor(this, kind); };
+      case VALUES: return function values(){ return new Constructor(this, kind); };
+    } return function entries(){ return new Constructor(this, kind); };
+  };
+  var TAG        = NAME + ' Iterator'
+    , DEF_VALUES = DEFAULT == VALUES
+    , VALUES_BUG = false
+    , proto      = Base.prototype
+    , $native    = proto[ITERATOR] || proto[FF_ITERATOR] || DEFAULT && proto[DEFAULT]
+    , $default   = $native || getMethod(DEFAULT)
+    , $entries   = DEFAULT ? !DEF_VALUES ? $default : getMethod('entries') : undefined
+    , $anyNative = NAME == 'Array' ? proto.entries || $native : $native
+    , methods, key, IteratorPrototype;
+  // Fix native
+  if($anyNative){
+    IteratorPrototype = getPrototypeOf($anyNative.call(new Base));
+    if(IteratorPrototype !== Object.prototype){
+      // Set @@toStringTag to native iterators
+      setToStringTag(IteratorPrototype, TAG, true);
+      // fix for some old engines
+      if(!LIBRARY && !has(IteratorPrototype, ITERATOR))hide(IteratorPrototype, ITERATOR, returnThis);
+    }
+  }
+  // fix Array#{values, @@iterator}.name in V8 / FF
+  if(DEF_VALUES && $native && $native.name !== VALUES){
+    VALUES_BUG = true;
+    $default = function values(){ return $native.call(this); };
+  }
+  // Define iterator
+  if((!LIBRARY || FORCED) && (BUGGY || VALUES_BUG || !proto[ITERATOR])){
+    hide(proto, ITERATOR, $default);
+  }
+  // Plug for library
+  Iterators[NAME] = $default;
+  Iterators[TAG]  = returnThis;
+  if(DEFAULT){
+    methods = {
+      values:  DEF_VALUES ? $default : getMethod(VALUES),
+      keys:    IS_SET     ? $default : getMethod(KEYS),
+      entries: $entries
+    };
+    if(FORCED)for(key in methods){
+      if(!(key in proto))redefine(proto, key, methods[key]);
+    } else $export($export.P + $export.F * (BUGGY || VALUES_BUG), NAME, methods);
+  }
+  return methods;
+};
+
+/***/ }),
+/* 30 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var global    = __webpack_require__(0)
+  , core      = __webpack_require__(17)
+  , ctx       = __webpack_require__(45)
+  , hide      = __webpack_require__(3)
+  , PROTOTYPE = 'prototype';
+
+var $export = function(type, name, source){
+  var IS_FORCED = type & $export.F
+    , IS_GLOBAL = type & $export.G
+    , IS_STATIC = type & $export.S
+    , IS_PROTO  = type & $export.P
+    , IS_BIND   = type & $export.B
+    , IS_WRAP   = type & $export.W
+    , exports   = IS_GLOBAL ? core : core[name] || (core[name] = {})
+    , expProto  = exports[PROTOTYPE]
+    , target    = IS_GLOBAL ? global : IS_STATIC ? global[name] : (global[name] || {})[PROTOTYPE]
+    , key, own, out;
+  if(IS_GLOBAL)source = name;
+  for(key in source){
+    // contains in native
+    own = !IS_FORCED && target && target[key] !== undefined;
+    if(own && key in exports)continue;
+    // export native or passed
+    out = own ? target[key] : source[key];
+    // prevent global pollution for namespaces
+    exports[key] = IS_GLOBAL && typeof target[key] != 'function' ? source[key]
+    // bind timers to global for call from export context
+    : IS_BIND && own ? ctx(out, global)
+    // wrap global constructors for prevent change them in library
+    : IS_WRAP && target[key] == out ? (function(C){
+      var F = function(a, b, c){
+        if(this instanceof C){
+          switch(arguments.length){
+            case 0: return new C;
+            case 1: return new C(a);
+            case 2: return new C(a, b);
+          } return new C(a, b, c);
+        } return C.apply(this, arguments);
+      };
+      F[PROTOTYPE] = C[PROTOTYPE];
+      return F;
+    // make static versions for prototype methods
+    })(out) : IS_PROTO && typeof out == 'function' ? ctx(Function.call, out) : out;
+    // export proto methods to core.%CONSTRUCTOR%.methods.%NAME%
+    if(IS_PROTO){
+      (exports.virtual || (exports.virtual = {}))[key] = out;
+      // export proto methods to core.%CONSTRUCTOR%.prototype.%NAME%
+      if(type & $export.R && expProto && !expProto[key])hide(expProto, key, out);
+    }
+  }
+};
+// type bitmap
+$export.F = 1;   // forced
+$export.G = 2;   // global
+$export.S = 4;   // static
+$export.P = 8;   // proto
+$export.B = 16;  // bind
+$export.W = 32;  // wrap
+$export.U = 64;  // safe
+$export.R = 128; // real proto method for `library` 
+module.exports = $export;
+
+/***/ }),
+/* 31 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = !__webpack_require__(5) && !__webpack_require__(10)(function(){
+  return Object.defineProperty(__webpack_require__(32)('div'), 'a', {get: function(){ return 7; }}).a != 7;
+});
+
+/***/ }),
+/* 32 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var isObject = __webpack_require__(9)
+  , document = __webpack_require__(0).document
+  // in old IE typeof document.createElement is 'object'
+  , is = isObject(document) && isObject(document.createElement);
+module.exports = function(it){
+  return is ? document.createElement(it) : {};
+};
+
+/***/ }),
+/* 33 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(3);
+
+/***/ }),
+/* 34 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
+var anObject    = __webpack_require__(8)
+  , dPs         = __webpack_require__(48)
+  , enumBugKeys = __webpack_require__(22)
+  , IE_PROTO    = __webpack_require__(20)('IE_PROTO')
+  , Empty       = function(){ /* empty */ }
+  , PROTOTYPE   = 'prototype';
+
+// Create object with fake `null` prototype: use iframe Object with cleared prototype
+var createDict = function(){
+  // Thrash, waste and sodomy: IE GC bug
+  var iframe = __webpack_require__(32)('iframe')
+    , i      = enumBugKeys.length
+    , lt     = '<'
+    , gt     = '>'
+    , iframeDocument;
+  iframe.style.display = 'none';
+  __webpack_require__(53).appendChild(iframe);
+  iframe.src = 'javascript:'; // eslint-disable-line no-script-url
+  // createDict = iframe.contentWindow.Object;
+  // html.removeChild(iframe);
+  iframeDocument = iframe.contentWindow.document;
+  iframeDocument.open();
+  iframeDocument.write(lt + 'script' + gt + 'document.F=Object' + lt + '/script' + gt);
+  iframeDocument.close();
+  createDict = iframeDocument.F;
+  while(i--)delete createDict[PROTOTYPE][enumBugKeys[i]];
+  return createDict();
+};
+
+module.exports = Object.create || function create(O, Properties){
+  var result;
+  if(O !== null){
+    Empty[PROTOTYPE] = anObject(O);
+    result = new Empty;
+    Empty[PROTOTYPE] = null;
+    // add "__proto__" for Object.getPrototypeOf polyfill
+    result[IE_PROTO] = O;
+  } else result = createDict();
+  return Properties === undefined ? result : dPs(result, Properties);
+};
+
+
+/***/ }),
+/* 35 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var has          = __webpack_require__(1)
+  , toIObject    = __webpack_require__(2)
+  , arrayIndexOf = __webpack_require__(50)(false)
+  , IE_PROTO     = __webpack_require__(20)('IE_PROTO');
+
+module.exports = function(object, names){
+  var O      = toIObject(object)
+    , i      = 0
+    , result = []
+    , key;
+  for(key in O)if(key != IE_PROTO)has(O, key) && result.push(key);
+  // Don't enum bug & hidden keys
+  while(names.length > i)if(has(O, key = names[i++])){
+    ~arrayIndexOf(result, key) || result.push(key);
+  }
+  return result;
+};
+
+/***/ }),
+/* 36 */
+/***/ (function(module, exports) {
+
+var toString = {}.toString;
+
+module.exports = function(it){
+  return toString.call(it).slice(8, -1);
+};
+
+/***/ }),
+/* 37 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = { "default": __webpack_require__(60), __esModule: true };
+
+/***/ }),
+/* 38 */
+/***/ (function(module, exports) {
+
+exports.f = Object.getOwnPropertySymbols;
+
+/***/ }),
+/* 39 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
+var $keys      = __webpack_require__(35)
+  , hiddenKeys = __webpack_require__(22).concat('length', 'prototype');
+
+exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O){
+  return $keys(O, hiddenKeys);
+};
+
+/***/ }),
+/* 40 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(41);
+
+
+/***/ }),
+/* 41 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+exports.__esModule = true;
+
+var _raphael = __webpack_require__(7);
+
+var _raphael2 = _interopRequireDefault(_raphael);
+
+var _raphael3 = __webpack_require__(72);
+
+var _raphael4 = _interopRequireDefault(_raphael3);
+
+var _raphael5 = __webpack_require__(73);
+
+var _raphael6 = _interopRequireDefault(_raphael5);
+
+var _raphael7 = __webpack_require__(74);
+
+var _raphael8 = _interopRequireDefault(_raphael7);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+// export {svg, vml, canvas}
+
+// import Raphael from './index';
+
+// export default Raphael
+
+
+exports['default'] = _raphael2['default'];
+module.exports = exports['default'];
+
+/***/ }),
+/* 42 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(43);
+__webpack_require__(56);
+module.exports = __webpack_require__(24).f('iterator');
+
+/***/ }),
+/* 43 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var $at  = __webpack_require__(44)(true);
+
+// 21.1.3.27 String.prototype[@@iterator]()
+__webpack_require__(29)(String, 'String', function(iterated){
+  this._t = String(iterated); // target
+  this._i = 0;                // next index
+// 21.1.5.2.1 %StringIteratorPrototype%.next()
+}, function(){
+  var O     = this._t
+    , index = this._i
+    , point;
+  if(index >= O.length)return {value: undefined, done: true};
+  point = $at(O, index);
+  this._i += point.length;
+  return {value: point, done: false};
+});
+
+/***/ }),
+/* 44 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var toInteger = __webpack_require__(14)
+  , defined   = __webpack_require__(15);
+// true  -> String#at
+// false -> String#codePointAt
+module.exports = function(TO_STRING){
+  return function(that, pos){
+    var s = String(defined(that))
+      , i = toInteger(pos)
+      , l = s.length
+      , a, b;
+    if(i < 0 || i >= l)return TO_STRING ? '' : undefined;
+    a = s.charCodeAt(i);
+    return a < 0xd800 || a > 0xdbff || i + 1 === l || (b = s.charCodeAt(i + 1)) < 0xdc00 || b > 0xdfff
+      ? TO_STRING ? s.charAt(i) : a
+      : TO_STRING ? s.slice(i, i + 2) : (a - 0xd800 << 10) + (b - 0xdc00) + 0x10000;
+  };
+};
+
+/***/ }),
+/* 45 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// optional / simple context binding
+var aFunction = __webpack_require__(46);
+module.exports = function(fn, that, length){
+  aFunction(fn);
+  if(that === undefined)return fn;
+  switch(length){
+    case 1: return function(a){
+      return fn.call(that, a);
+    };
+    case 2: return function(a, b){
+      return fn.call(that, a, b);
+    };
+    case 3: return function(a, b, c){
+      return fn.call(that, a, b, c);
+    };
+  }
+  return function(/* ...args */){
+    return fn.apply(that, arguments);
+  };
+};
+
+/***/ }),
+/* 46 */
+/***/ (function(module, exports) {
+
+module.exports = function(it){
+  if(typeof it != 'function')throw TypeError(it + ' is not a function!');
+  return it;
+};
+
+/***/ }),
+/* 47 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var create         = __webpack_require__(34)
+  , descriptor     = __webpack_require__(11)
+  , setToStringTag = __webpack_require__(23)
+  , IteratorPrototype = {};
+
+// 25.1.2.1.1 %IteratorPrototype%[@@iterator]()
+__webpack_require__(3)(IteratorPrototype, __webpack_require__(6)('iterator'), function(){ return this; });
+
+module.exports = function(Constructor, NAME, next){
+  Constructor.prototype = create(IteratorPrototype, {next: descriptor(1, next)});
+  setToStringTag(Constructor, NAME + ' Iterator');
+};
+
+/***/ }),
+/* 48 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var dP       = __webpack_require__(4)
+  , anObject = __webpack_require__(8)
+  , getKeys  = __webpack_require__(12);
+
+module.exports = __webpack_require__(5) ? Object.defineProperties : function defineProperties(O, Properties){
+  anObject(O);
+  var keys   = getKeys(Properties)
+    , length = keys.length
+    , i = 0
+    , P;
+  while(length > i)dP.f(O, P = keys[i++], Properties[P]);
+  return O;
+};
+
+/***/ }),
+/* 49 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// fallback for non-array-like ES3 and non-enumerable old V8 strings
+var cof = __webpack_require__(36);
+module.exports = Object('z').propertyIsEnumerable(0) ? Object : function(it){
+  return cof(it) == 'String' ? it.split('') : Object(it);
+};
+
+/***/ }),
+/* 50 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// false -> Array#indexOf
+// true  -> Array#includes
+var toIObject = __webpack_require__(2)
+  , toLength  = __webpack_require__(51)
+  , toIndex   = __webpack_require__(52);
+module.exports = function(IS_INCLUDES){
+  return function($this, el, fromIndex){
+    var O      = toIObject($this)
+      , length = toLength(O.length)
+      , index  = toIndex(fromIndex, length)
+      , value;
+    // Array#includes uses SameValueZero equality algorithm
+    if(IS_INCLUDES && el != el)while(length > index){
+      value = O[index++];
+      if(value != value)return true;
+    // Array#toIndex ignores holes, Array#includes - not
+    } else for(;length > index; index++)if(IS_INCLUDES || index in O){
+      if(O[index] === el)return IS_INCLUDES || index || 0;
+    } return !IS_INCLUDES && -1;
+  };
+};
+
+/***/ }),
+/* 51 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// 7.1.15 ToLength
+var toInteger = __webpack_require__(14)
+  , min       = Math.min;
+module.exports = function(it){
+  return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
+};
+
+/***/ }),
+/* 52 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var toInteger = __webpack_require__(14)
+  , max       = Math.max
+  , min       = Math.min;
+module.exports = function(index, length){
+  index = toInteger(index);
+  return index < 0 ? max(index + length, 0) : min(index, length);
+};
+
+/***/ }),
+/* 53 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(0).document && document.documentElement;
+
+/***/ }),
+/* 54 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
+var has         = __webpack_require__(1)
+  , toObject    = __webpack_require__(55)
+  , IE_PROTO    = __webpack_require__(20)('IE_PROTO')
+  , ObjectProto = Object.prototype;
+
+module.exports = Object.getPrototypeOf || function(O){
+  O = toObject(O);
+  if(has(O, IE_PROTO))return O[IE_PROTO];
+  if(typeof O.constructor == 'function' && O instanceof O.constructor){
+    return O.constructor.prototype;
+  } return O instanceof Object ? ObjectProto : null;
+};
+
+/***/ }),
+/* 55 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// 7.1.13 ToObject(argument)
+var defined = __webpack_require__(15);
+module.exports = function(it){
+  return Object(defined(it));
+};
+
+/***/ }),
+/* 56 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(57);
+var global        = __webpack_require__(0)
+  , hide          = __webpack_require__(3)
+  , Iterators     = __webpack_require__(19)
+  , TO_STRING_TAG = __webpack_require__(6)('toStringTag');
+
+for(var collections = ['NodeList', 'DOMTokenList', 'MediaList', 'StyleSheetList', 'CSSRuleList'], i = 0; i < 5; i++){
+  var NAME       = collections[i]
+    , Collection = global[NAME]
+    , proto      = Collection && Collection.prototype;
+  if(proto && !proto[TO_STRING_TAG])hide(proto, TO_STRING_TAG, NAME);
+  Iterators[NAME] = Iterators.Array;
+}
+
+/***/ }),
+/* 57 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var addToUnscopables = __webpack_require__(58)
+  , step             = __webpack_require__(59)
+  , Iterators        = __webpack_require__(19)
+  , toIObject        = __webpack_require__(2);
+
+// 22.1.3.4 Array.prototype.entries()
+// 22.1.3.13 Array.prototype.keys()
+// 22.1.3.29 Array.prototype.values()
+// 22.1.3.30 Array.prototype[@@iterator]()
+module.exports = __webpack_require__(29)(Array, 'Array', function(iterated, kind){
+  this._t = toIObject(iterated); // target
+  this._i = 0;                   // next index
+  this._k = kind;                // kind
+// 22.1.5.2.1 %ArrayIteratorPrototype%.next()
+}, function(){
+  var O     = this._t
+    , kind  = this._k
+    , index = this._i++;
+  if(!O || index >= O.length){
+    this._t = undefined;
+    return step(1);
+  }
+  if(kind == 'keys'  )return step(0, index);
+  if(kind == 'values')return step(0, O[index]);
+  return step(0, [index, O[index]]);
+}, 'values');
+
+// argumentsList[@@iterator] is %ArrayProto_values% (9.4.4.6, 9.4.4.7)
+Iterators.Arguments = Iterators.Array;
+
+addToUnscopables('keys');
+addToUnscopables('values');
+addToUnscopables('entries');
+
+/***/ }),
+/* 58 */
+/***/ (function(module, exports) {
+
+module.exports = function(){ /* empty */ };
+
+/***/ }),
+/* 59 */
+/***/ (function(module, exports) {
+
+module.exports = function(done, value){
+  return {value: value, done: !!done};
+};
+
+/***/ }),
+/* 60 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(61);
+__webpack_require__(68);
+__webpack_require__(69);
+__webpack_require__(70);
+module.exports = __webpack_require__(17).Symbol;
+
+/***/ }),
+/* 61 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+// ECMAScript 6 symbols shim
+var global         = __webpack_require__(0)
+  , has            = __webpack_require__(1)
+  , DESCRIPTORS    = __webpack_require__(5)
+  , $export        = __webpack_require__(30)
+  , redefine       = __webpack_require__(33)
+  , META           = __webpack_require__(62).KEY
+  , $fails         = __webpack_require__(10)
+  , shared         = __webpack_require__(21)
+  , setToStringTag = __webpack_require__(23)
+  , uid            = __webpack_require__(13)
+  , wks            = __webpack_require__(6)
+  , wksExt         = __webpack_require__(24)
+  , wksDefine      = __webpack_require__(25)
+  , keyOf          = __webpack_require__(63)
+  , enumKeys       = __webpack_require__(64)
+  , isArray        = __webpack_require__(65)
+  , anObject       = __webpack_require__(8)
+  , toIObject      = __webpack_require__(2)
+  , toPrimitive    = __webpack_require__(18)
+  , createDesc     = __webpack_require__(11)
+  , _create        = __webpack_require__(34)
+  , gOPNExt        = __webpack_require__(66)
+  , $GOPD          = __webpack_require__(67)
+  , $DP            = __webpack_require__(4)
+  , $keys          = __webpack_require__(12)
+  , gOPD           = $GOPD.f
+  , dP             = $DP.f
+  , gOPN           = gOPNExt.f
+  , $Symbol        = global.Symbol
+  , $JSON          = global.JSON
+  , _stringify     = $JSON && $JSON.stringify
+  , PROTOTYPE      = 'prototype'
+  , HIDDEN         = wks('_hidden')
+  , TO_PRIMITIVE   = wks('toPrimitive')
+  , isEnum         = {}.propertyIsEnumerable
+  , SymbolRegistry = shared('symbol-registry')
+  , AllSymbols     = shared('symbols')
+  , OPSymbols      = shared('op-symbols')
+  , ObjectProto    = Object[PROTOTYPE]
+  , USE_NATIVE     = typeof $Symbol == 'function'
+  , QObject        = global.QObject;
+// Don't use setters in Qt Script, https://github.com/zloirock/core-js/issues/173
+var setter = !QObject || !QObject[PROTOTYPE] || !QObject[PROTOTYPE].findChild;
+
+// fallback for old Android, https://code.google.com/p/v8/issues/detail?id=687
+var setSymbolDesc = DESCRIPTORS && $fails(function(){
+  return _create(dP({}, 'a', {
+    get: function(){ return dP(this, 'a', {value: 7}).a; }
+  })).a != 7;
+}) ? function(it, key, D){
+  var protoDesc = gOPD(ObjectProto, key);
+  if(protoDesc)delete ObjectProto[key];
+  dP(it, key, D);
+  if(protoDesc && it !== ObjectProto)dP(ObjectProto, key, protoDesc);
+} : dP;
+
+var wrap = function(tag){
+  var sym = AllSymbols[tag] = _create($Symbol[PROTOTYPE]);
+  sym._k = tag;
+  return sym;
+};
+
+var isSymbol = USE_NATIVE && typeof $Symbol.iterator == 'symbol' ? function(it){
+  return typeof it == 'symbol';
+} : function(it){
+  return it instanceof $Symbol;
+};
+
+var $defineProperty = function defineProperty(it, key, D){
+  if(it === ObjectProto)$defineProperty(OPSymbols, key, D);
+  anObject(it);
+  key = toPrimitive(key, true);
+  anObject(D);
+  if(has(AllSymbols, key)){
+    if(!D.enumerable){
+      if(!has(it, HIDDEN))dP(it, HIDDEN, createDesc(1, {}));
+      it[HIDDEN][key] = true;
+    } else {
+      if(has(it, HIDDEN) && it[HIDDEN][key])it[HIDDEN][key] = false;
+      D = _create(D, {enumerable: createDesc(0, false)});
+    } return setSymbolDesc(it, key, D);
+  } return dP(it, key, D);
+};
+var $defineProperties = function defineProperties(it, P){
+  anObject(it);
+  var keys = enumKeys(P = toIObject(P))
+    , i    = 0
+    , l = keys.length
+    , key;
+  while(l > i)$defineProperty(it, key = keys[i++], P[key]);
+  return it;
+};
+var $create = function create(it, P){
+  return P === undefined ? _create(it) : $defineProperties(_create(it), P);
+};
+var $propertyIsEnumerable = function propertyIsEnumerable(key){
+  var E = isEnum.call(this, key = toPrimitive(key, true));
+  if(this === ObjectProto && has(AllSymbols, key) && !has(OPSymbols, key))return false;
+  return E || !has(this, key) || !has(AllSymbols, key) || has(this, HIDDEN) && this[HIDDEN][key] ? E : true;
+};
+var $getOwnPropertyDescriptor = function getOwnPropertyDescriptor(it, key){
+  it  = toIObject(it);
+  key = toPrimitive(key, true);
+  if(it === ObjectProto && has(AllSymbols, key) && !has(OPSymbols, key))return;
+  var D = gOPD(it, key);
+  if(D && has(AllSymbols, key) && !(has(it, HIDDEN) && it[HIDDEN][key]))D.enumerable = true;
+  return D;
+};
+var $getOwnPropertyNames = function getOwnPropertyNames(it){
+  var names  = gOPN(toIObject(it))
+    , result = []
+    , i      = 0
+    , key;
+  while(names.length > i){
+    if(!has(AllSymbols, key = names[i++]) && key != HIDDEN && key != META)result.push(key);
+  } return result;
+};
+var $getOwnPropertySymbols = function getOwnPropertySymbols(it){
+  var IS_OP  = it === ObjectProto
+    , names  = gOPN(IS_OP ? OPSymbols : toIObject(it))
+    , result = []
+    , i      = 0
+    , key;
+  while(names.length > i){
+    if(has(AllSymbols, key = names[i++]) && (IS_OP ? has(ObjectProto, key) : true))result.push(AllSymbols[key]);
+  } return result;
+};
+
+// 19.4.1.1 Symbol([description])
+if(!USE_NATIVE){
+  $Symbol = function Symbol(){
+    if(this instanceof $Symbol)throw TypeError('Symbol is not a constructor!');
+    var tag = uid(arguments.length > 0 ? arguments[0] : undefined);
+    var $set = function(value){
+      if(this === ObjectProto)$set.call(OPSymbols, value);
+      if(has(this, HIDDEN) && has(this[HIDDEN], tag))this[HIDDEN][tag] = false;
+      setSymbolDesc(this, tag, createDesc(1, value));
+    };
+    if(DESCRIPTORS && setter)setSymbolDesc(ObjectProto, tag, {configurable: true, set: $set});
+    return wrap(tag);
+  };
+  redefine($Symbol[PROTOTYPE], 'toString', function toString(){
+    return this._k;
+  });
+
+  $GOPD.f = $getOwnPropertyDescriptor;
+  $DP.f   = $defineProperty;
+  __webpack_require__(39).f = gOPNExt.f = $getOwnPropertyNames;
+  __webpack_require__(26).f  = $propertyIsEnumerable;
+  __webpack_require__(38).f = $getOwnPropertySymbols;
+
+  if(DESCRIPTORS && !__webpack_require__(16)){
+    redefine(ObjectProto, 'propertyIsEnumerable', $propertyIsEnumerable, true);
+  }
+
+  wksExt.f = function(name){
+    return wrap(wks(name));
+  }
+}
+
+$export($export.G + $export.W + $export.F * !USE_NATIVE, {Symbol: $Symbol});
+
+for(var symbols = (
+  // 19.4.2.2, 19.4.2.3, 19.4.2.4, 19.4.2.6, 19.4.2.8, 19.4.2.9, 19.4.2.10, 19.4.2.11, 19.4.2.12, 19.4.2.13, 19.4.2.14
+  'hasInstance,isConcatSpreadable,iterator,match,replace,search,species,split,toPrimitive,toStringTag,unscopables'
+).split(','), i = 0; symbols.length > i; )wks(symbols[i++]);
+
+for(var symbols = $keys(wks.store), i = 0; symbols.length > i; )wksDefine(symbols[i++]);
+
+$export($export.S + $export.F * !USE_NATIVE, 'Symbol', {
+  // 19.4.2.1 Symbol.for(key)
+  'for': function(key){
+    return has(SymbolRegistry, key += '')
+      ? SymbolRegistry[key]
+      : SymbolRegistry[key] = $Symbol(key);
+  },
+  // 19.4.2.5 Symbol.keyFor(sym)
+  keyFor: function keyFor(key){
+    if(isSymbol(key))return keyOf(SymbolRegistry, key);
+    throw TypeError(key + ' is not a symbol!');
+  },
+  useSetter: function(){ setter = true; },
+  useSimple: function(){ setter = false; }
+});
+
+$export($export.S + $export.F * !USE_NATIVE, 'Object', {
+  // 19.1.2.2 Object.create(O [, Properties])
+  create: $create,
+  // 19.1.2.4 Object.defineProperty(O, P, Attributes)
+  defineProperty: $defineProperty,
+  // 19.1.2.3 Object.defineProperties(O, Properties)
+  defineProperties: $defineProperties,
+  // 19.1.2.6 Object.getOwnPropertyDescriptor(O, P)
+  getOwnPropertyDescriptor: $getOwnPropertyDescriptor,
+  // 19.1.2.7 Object.getOwnPropertyNames(O)
+  getOwnPropertyNames: $getOwnPropertyNames,
+  // 19.1.2.8 Object.getOwnPropertySymbols(O)
+  getOwnPropertySymbols: $getOwnPropertySymbols
+});
+
+// 24.3.2 JSON.stringify(value [, replacer [, space]])
+$JSON && $export($export.S + $export.F * (!USE_NATIVE || $fails(function(){
+  var S = $Symbol();
+  // MS Edge converts symbol values to JSON as {}
+  // WebKit converts symbol values to JSON as null
+  // V8 throws on boxed symbols
+  return _stringify([S]) != '[null]' || _stringify({a: S}) != '{}' || _stringify(Object(S)) != '{}';
+})), 'JSON', {
+  stringify: function stringify(it){
+    if(it === undefined || isSymbol(it))return; // IE8 returns string on undefined
+    var args = [it]
+      , i    = 1
+      , replacer, $replacer;
+    while(arguments.length > i)args.push(arguments[i++]);
+    replacer = args[1];
+    if(typeof replacer == 'function')$replacer = replacer;
+    if($replacer || !isArray(replacer))replacer = function(key, value){
+      if($replacer)value = $replacer.call(this, key, value);
+      if(!isSymbol(value))return value;
+    };
+    args[1] = replacer;
+    return _stringify.apply($JSON, args);
+  }
+});
+
+// 19.4.3.4 Symbol.prototype[@@toPrimitive](hint)
+$Symbol[PROTOTYPE][TO_PRIMITIVE] || __webpack_require__(3)($Symbol[PROTOTYPE], TO_PRIMITIVE, $Symbol[PROTOTYPE].valueOf);
+// 19.4.3.5 Symbol.prototype[@@toStringTag]
+setToStringTag($Symbol, 'Symbol');
+// 20.2.1.9 Math[@@toStringTag]
+setToStringTag(Math, 'Math', true);
+// 24.3.3 JSON[@@toStringTag]
+setToStringTag(global.JSON, 'JSON', true);
+
+/***/ }),
+/* 62 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var META     = __webpack_require__(13)('meta')
+  , isObject = __webpack_require__(9)
+  , has      = __webpack_require__(1)
+  , setDesc  = __webpack_require__(4).f
+  , id       = 0;
+var isExtensible = Object.isExtensible || function(){
+  return true;
+};
+var FREEZE = !__webpack_require__(10)(function(){
+  return isExtensible(Object.preventExtensions({}));
+});
+var setMeta = function(it){
+  setDesc(it, META, {value: {
+    i: 'O' + ++id, // object ID
+    w: {}          // weak collections IDs
+  }});
+};
+var fastKey = function(it, create){
+  // return primitive with prefix
+  if(!isObject(it))return typeof it == 'symbol' ? it : (typeof it == 'string' ? 'S' : 'P') + it;
+  if(!has(it, META)){
+    // can't set metadata to uncaught frozen object
+    if(!isExtensible(it))return 'F';
+    // not necessary to add metadata
+    if(!create)return 'E';
+    // add missing metadata
+    setMeta(it);
+  // return object ID
+  } return it[META].i;
+};
+var getWeak = function(it, create){
+  if(!has(it, META)){
+    // can't set metadata to uncaught frozen object
+    if(!isExtensible(it))return true;
+    // not necessary to add metadata
+    if(!create)return false;
+    // add missing metadata
+    setMeta(it);
+  // return hash weak collections IDs
+  } return it[META].w;
+};
+// add metadata on freeze-family methods calling
+var onFreeze = function(it){
+  if(FREEZE && meta.NEED && isExtensible(it) && !has(it, META))setMeta(it);
+  return it;
+};
+var meta = module.exports = {
+  KEY:      META,
+  NEED:     false,
+  fastKey:  fastKey,
+  getWeak:  getWeak,
+  onFreeze: onFreeze
+};
+
+/***/ }),
+/* 63 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var getKeys   = __webpack_require__(12)
+  , toIObject = __webpack_require__(2);
+module.exports = function(object, el){
+  var O      = toIObject(object)
+    , keys   = getKeys(O)
+    , length = keys.length
+    , index  = 0
+    , key;
+  while(length > index)if(O[key = keys[index++]] === el)return key;
+};
+
+/***/ }),
+/* 64 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// all enumerable object keys, includes symbols
+var getKeys = __webpack_require__(12)
+  , gOPS    = __webpack_require__(38)
+  , pIE     = __webpack_require__(26);
+module.exports = function(it){
+  var result     = getKeys(it)
+    , getSymbols = gOPS.f;
+  if(getSymbols){
+    var symbols = getSymbols(it)
+      , isEnum  = pIE.f
+      , i       = 0
+      , key;
+    while(symbols.length > i)if(isEnum.call(it, key = symbols[i++]))result.push(key);
+  } return result;
+};
+
+/***/ }),
+/* 65 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// 7.2.2 IsArray(argument)
+var cof = __webpack_require__(36);
+module.exports = Array.isArray || function isArray(arg){
+  return cof(arg) == 'Array';
+};
+
+/***/ }),
+/* 66 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// fallback for IE11 buggy Object.getOwnPropertyNames with iframe and window
+var toIObject = __webpack_require__(2)
+  , gOPN      = __webpack_require__(39).f
+  , toString  = {}.toString;
+
+var windowNames = typeof window == 'object' && window && Object.getOwnPropertyNames
+  ? Object.getOwnPropertyNames(window) : [];
+
+var getWindowNames = function(it){
+  try {
+    return gOPN(it);
+  } catch(e){
+    return windowNames.slice();
+  }
+};
+
+module.exports.f = function getOwnPropertyNames(it){
+  return windowNames && toString.call(it) == '[object Window]' ? getWindowNames(it) : gOPN(toIObject(it));
+};
+
+
+/***/ }),
+/* 67 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var pIE            = __webpack_require__(26)
+  , createDesc     = __webpack_require__(11)
+  , toIObject      = __webpack_require__(2)
+  , toPrimitive    = __webpack_require__(18)
+  , has            = __webpack_require__(1)
+  , IE8_DOM_DEFINE = __webpack_require__(31)
+  , gOPD           = Object.getOwnPropertyDescriptor;
+
+exports.f = __webpack_require__(5) ? gOPD : function getOwnPropertyDescriptor(O, P){
+  O = toIObject(O);
+  P = toPrimitive(P, true);
+  if(IE8_DOM_DEFINE)try {
+    return gOPD(O, P);
+  } catch(e){ /* empty */ }
+  if(has(O, P))return createDesc(!pIE.f.call(O, P), O[P]);
+};
+
+/***/ }),
+/* 68 */
+/***/ (function(module, exports) {
+
+
+
+/***/ }),
+/* 69 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(25)('asyncIterator');
+
+/***/ }),
+/* 70 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(25)('observable');
+
+/***/ }),
+/* 71 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {
+
+exports.__esModule = true;
+
+// Copyright (c) 2017 Adobe Systems Incorporated. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ┌────────────────────────────────────────────────────────────┐ \\
+// │ Eve 0.5.3 - JavaScript Events Library                      │ \\
+// ├────────────────────────────────────────────────────────────┤ \\
+// │ Author Dmitry Baranovskiy (http://dmitry.baranovskiy.com/) │ \\
+// └────────────────────────────────────────────────────────────┘ \\
+
+exports["default"] = function (glob) {
+    var version = "0.5.3",
+        has = "hasOwnProperty",
+        separator = /[\.\/]/,
+        comaseparator = /\s*,\s*/,
+        wildcard = "*",
+        fun = function fun() {},
+        numsort = function numsort(a, b) {
+        return a - b;
+    },
+        current_event,
+        stop,
+        events = { n: {} },
+        firstDefined = function firstDefined() {
+        for (var i = 0, ii = this.length; i < ii; i++) {
+            if (typeof this[i] != "undefined") {
+                return this[i];
+            }
+        }
+    },
+        lastDefined = function lastDefined() {
+        var i = this.length;
+        while (--i) {
+            if (typeof this[i] != "undefined") {
+                return this[i];
+            }
+        }
+    },
+        objtos = Object.prototype.toString,
+        Str = String,
+        isArray = Array.isArray || function (ar) {
+        return ar instanceof Array || objtos.call(ar) == "[object Array]";
+    },
+
+    /*\
+     * eve
+     [ method ]
+      * Fires event with given `name`, given scope and other parameters.
+      - name (string) name of the *event*, dot (`.`) or slash (`/`) separated
+     - scope (object) context for the event handlers
+     - varargs (...) the rest of arguments will be sent to event handlers
+      = (object) array of returned values from the listeners. Array has two methods `.firstDefined()` and `.lastDefined()` to get first or last not `undefined` value.
+    \*/
+    eve = function eve(name, scope) {
+        var e = events,
+            oldstop = stop,
+            args = Array.prototype.slice.call(arguments, 2),
+            listeners = eve.listeners(name),
+            z = 0,
+            f = false,
+            l,
+            indexed = [],
+            queue = {},
+            out = [],
+            ce = current_event,
+            errors = [];
+        out.firstDefined = firstDefined;
+        out.lastDefined = lastDefined;
+        current_event = name;
+        stop = 0;
+        for (var i = 0, ii = listeners.length; i < ii; i++) {
+            if ("zIndex" in listeners[i]) {
+                indexed.push(listeners[i].zIndex);
+                if (listeners[i].zIndex < 0) {
+                    queue[listeners[i].zIndex] = listeners[i];
+                }
+            }
+        }indexed.sort(numsort);
+        while (indexed[z] < 0) {
+            l = queue[indexed[z++]];
+            out.push(l.apply(scope, args));
+            if (stop) {
+                stop = oldstop;
+                return out;
+            }
+        }
+        for (i = 0; i < ii; i++) {
+            l = listeners[i];
+            if ("zIndex" in l) {
+                if (l.zIndex == indexed[z]) {
+                    out.push(l.apply(scope, args));
+                    if (stop) {
+                        break;
+                    }
+                    do {
+                        z++;
+                        l = queue[indexed[z]];
+                        l && out.push(l.apply(scope, args));
+                        if (stop) {
+                            break;
+                        }
+                    } while (l);
+                } else {
+                    queue[l.zIndex] = l;
+                }
+            } else {
+                out.push(l.apply(scope, args));
+                if (stop) {
+                    break;
+                }
+            }
+        }
+        stop = oldstop;
+        current_event = ce;
+        return out;
+    };
+    // Undocumented. Debug only.
+    eve._events = events;
+    /*\
+     * eve.listeners
+     [ method ]
+      * Internal method which gives you array of all event handlers that will be triggered by the given `name`.
+      - name (string) name of the event, dot (`.`) or slash (`/`) separated
+      = (array) array of event handlers
+    \*/
+    eve.listeners = function (name) {
+        var names = isArray(name) ? name : name.split(separator),
+            e = events,
+            item,
+            items,
+            k,
+            i,
+            ii,
+            j,
+            jj,
+            nes,
+            es = [e],
+            out = [];
+        for (i = 0, ii = names.length; i < ii; i++) {
+            nes = [];
+            for (j = 0, jj = es.length; j < jj; j++) {
+                e = es[j].n;
+                items = [e[names[i]], e[wildcard]];
+                k = 2;
+                while (k--) {
+                    item = items[k];
+                    if (item) {
+                        nes.push(item);
+                        out = out.concat(item.f || []);
+                    }
+                }
+            }
+            es = nes;
+        }
+        return out;
+    };
+    /*\
+     * eve.separator
+     [ method ]
+      * If for some reasons you don’t like default separators (`.` or `/`) you can specify yours
+     * here. Be aware that if you pass a string longer than one character it will be treated as
+     * a list of characters.
+      - separator (string) new separator. Empty string resets to default: `.` or `/`.
+    \*/
+    eve.separator = function (sep) {
+        if (sep) {
+            sep = Str(sep).replace(/(?=[\.\^\]\[\-])/g, "\\");
+            sep = "[" + sep + "]";
+            separator = new RegExp(sep);
+        } else {
+            separator = /[\.\/]/;
+        }
+    };
+    /*\
+     * eve.on
+     [ method ]
+     **
+     * Binds given event handler with a given name. You can use wildcards “`*`” for the names:
+     | eve.on("*.under.*", f);
+     | eve("mouse.under.floor"); // triggers f
+     * Use @eve to trigger the listener.
+     **
+     - name (string) name of the event, dot (`.`) or slash (`/`) separated, with optional wildcards
+     - f (function) event handler function
+     **
+     - name (array) if you don’t want to use separators, you can use array of strings
+     - f (function) event handler function
+     **
+     = (function) returned function accepts a single numeric parameter that represents z-index of the handler. It is an optional feature and only used when you need to ensure that some subset of handlers will be invoked in a given order, despite of the order of assignment.
+     > Example:
+     | eve.on("mouse", eatIt)(2);
+     | eve.on("mouse", scream);
+     | eve.on("mouse", catchIt)(1);
+     * This will ensure that `catchIt` function will be called before `eatIt`.
+     *
+     * If you want to put your handler before non-indexed handlers, specify a negative value.
+     * Note: I assume most of the time you don’t need to worry about z-index, but it’s nice to have this feature “just in case”.
+    \*/
+    eve.on = function (name, f) {
+        if (typeof f != "function") {
+            return function () {};
+        }
+        var names = isArray(name) ? isArray(name[0]) ? name : [name] : Str(name).split(comaseparator);
+        for (var i = 0, ii = names.length; i < ii; i++) {
+            (function (name) {
+                var names = isArray(name) ? name : Str(name).split(separator),
+                    e = events,
+                    exist;
+                for (var i = 0, ii = names.length; i < ii; i++) {
+                    e = e.n;
+                    e = e.hasOwnProperty(names[i]) && e[names[i]] || (e[names[i]] = { n: {} });
+                }
+                e.f = e.f || [];
+                for (i = 0, ii = e.f.length; i < ii; i++) {
+                    if (e.f[i] == f) {
+                        exist = true;
+                        break;
+                    }
+                }!exist && e.f.push(f);
+            })(names[i]);
+        }
+        return function (zIndex) {
+            if (+zIndex == +zIndex) {
+                f.zIndex = +zIndex;
+            }
+        };
+    };
+    /*\
+     * eve.f
+     [ method ]
+     **
+     * Returns function that will fire given event with optional arguments.
+     * Arguments that will be passed to the result function will be also
+     * concated to the list of final arguments.
+     | el.onclick = eve.f("click", 1, 2);
+     | eve.on("click", function (a, b, c) {
+     |     console.log(a, b, c); // 1, 2, [event object]
+     | });
+     - event (string) event name
+     - varargs (…) and any other arguments
+     = (function) possible event handler function
+    \*/
+    eve.f = function (event) {
+        var attrs = [].slice.call(arguments, 1);
+        return function () {
+            eve.apply(null, [event, null].concat(attrs).concat([].slice.call(arguments, 0)));
+        };
+    };
+    /*\
+     * eve.stop
+     [ method ]
+     **
+     * Is used inside an event handler to stop the event, preventing any subsequent listeners from firing.
+    \*/
+    eve.stop = function () {
+        stop = 1;
+    };
+    /*\
+     * eve.nt
+     [ method ]
+     **
+     * Could be used inside event handler to figure out actual name of the event.
+     **
+     - subname (string) #optional subname of the event
+     **
+     = (string) name of the event, if `subname` is not specified
+     * or
+     = (boolean) `true`, if current event’s name contains `subname`
+    \*/
+    eve.nt = function (subname) {
+        var cur = isArray(current_event) ? current_event.join(".") : current_event;
+        if (subname) {
+            return new RegExp("(?:\\.|\\/|^)" + subname + "(?:\\.|\\/|$)").test(cur);
+        }
+        return cur;
+    };
+    /*\
+     * eve.nts
+     [ method ]
+     **
+     * Could be used inside event handler to figure out actual name of the event.
+     **
+     **
+     = (array) names of the event
+    \*/
+    eve.nts = function () {
+        return isArray(current_event) ? current_event : current_event.split(separator);
+    };
+    /*\
+     * eve.off
+     [ method ]
+     **
+     * Removes given function from the list of event listeners assigned to given name.
+     * If no arguments specified all the events will be cleared.
+     **
+     - name (string) name of the event, dot (`.`) or slash (`/`) separated, with optional wildcards
+     - f (function) event handler function
+    \*/
+    /*\
+     * eve.unbind
+     [ method ]
+     **
+     * See @eve.off
+    \*/
+    eve.off = eve.unbind = function (name, f) {
+        if (!name) {
+            eve._events = events = { n: {} };
+            return;
+        }
+        var names = isArray(name) ? isArray(name[0]) ? name : [name] : Str(name).split(comaseparator);
+        if (names.length > 1) {
+            for (var i = 0, ii = names.length; i < ii; i++) {
+                eve.off(names[i], f);
+            }
+            return;
+        }
+        names = isArray(name) ? name : Str(name).split(separator);
+        var e,
+            key,
+            splice,
+            i,
+            ii,
+            j,
+            jj,
+            cur = [events],
+            inodes = [];
+        for (i = 0, ii = names.length; i < ii; i++) {
+            for (j = 0; j < cur.length; j += splice.length - 2) {
+                splice = [j, 1];
+                e = cur[j].n;
+                if (names[i] != wildcard) {
+                    if (e[names[i]]) {
+                        splice.push(e[names[i]]);
+                        inodes.unshift({
+                            n: e,
+                            name: names[i]
+                        });
+                    }
+                } else {
+                    for (key in e) {
+                        if (e[has](key)) {
+                            splice.push(e[key]);
+                            inodes.unshift({
+                                n: e,
+                                name: key
+                            });
+                        }
+                    }
+                }
+                cur.splice.apply(cur, splice);
+            }
+        }
+        for (i = 0, ii = cur.length; i < ii; i++) {
+            e = cur[i];
+            while (e.n) {
+                if (f) {
+                    if (e.f) {
+                        for (j = 0, jj = e.f.length; j < jj; j++) {
+                            if (e.f[j] == f) {
+                                e.f.splice(j, 1);
+                                break;
+                            }
+                        }!e.f.length && delete e.f;
+                    }
+                    for (key in e.n) {
+                        if (e.n[has](key) && e.n[key].f) {
+                            var funcs = e.n[key].f;
+                            for (j = 0, jj = funcs.length; j < jj; j++) {
+                                if (funcs[j] == f) {
+                                    funcs.splice(j, 1);
+                                    break;
+                                }
+                            }!funcs.length && delete e.n[key].f;
+                        }
+                    }
+                } else {
+                    delete e.f;
+                    for (key in e.n) {
+                        if (e.n[has](key) && e.n[key].f) {
+                            delete e.n[key].f;
+                        }
+                    }
+                }
+                e = e.n;
+            }
+        }
+        // prune inner nodes in path
+        prune: for (i = 0, ii = inodes.length; i < ii; i++) {
+            e = inodes[i];
+            for (key in e.n[e.name].f) {
+                // not empty (has listeners)
+                continue prune;
+            }
+            for (key in e.n[e.name].n) {
+                // not empty (has children)
+                continue prune;
+            }
+            // is empty
+            delete e.n[e.name];
+        }
+    };
+    /*\
+     * eve.once
+     [ method ]
+     **
+     * Binds given event handler with a given name to only run once then unbind itself.
+     | eve.once("login", f);
+     | eve("login"); // triggers f
+     | eve("login"); // no listeners
+     * Use @eve to trigger the listener.
+     **
+     - name (string) name of the event, dot (`.`) or slash (`/`) separated, with optional wildcards
+     - f (function) event handler function
+     **
+     = (function) same return function as @eve.on
+    \*/
+    eve.once = function (name, f) {
+        var f2 = function f2() {
+            eve.off(name, f2);
+            return f.apply(this, arguments);
+        };
+        return eve.on(name, f2);
+    };
+    /*\
+     * eve.version
+     [ property (string) ]
+     **
+     * Current version of the library.
+    \*/
+    eve.version = version;
+    eve.toString = function () {
+        return "You are running Eve " + version;
+    };
+    glob.eve = eve;
+    // typeof module != "undefined" && module.exports ? module.exports = eve : typeof define === "function" && define.amd ? define("eve", [], function() { return eve; }) : glob.eve = eve;
+    return eve;
+}(typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : null);
+
+module.exports = exports["default"];
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(27)))
+
+/***/ }),
+/* 72 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+exports.__esModule = true;
+
+var _raphael = __webpack_require__(7);
+
+var _raphael2 = _interopRequireDefault(_raphael);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+if (_raphael2["default"].svg) {
+    /*
+     * Recursively shows the element and stores the visibilties of its parents
+     * in a tree structure for future restoration.
+     * @param el - Element which is to shown recursively
+     * @return Function - Function to restore the old visibility state.
+    */
+    var showRecursively = function showRecursively(el) {
+        var origAttrTree = {},
+            currentEl = el,
+            currentNode = origAttrTree,
+            fn = function fn() {
+            var localEl = el,
+                localNode = origAttrTree;
+            while (localEl) {
+                if (localNode._doHide) {
+                    localEl.hide();
+                }
+                localEl = localEl.parent;
+                localNode = localNode.parent;
+            }
+        };
+        while (currentEl) {
+            if (currentEl.node && currentEl.node.style && currentEl.node.style.display === "none") {
+                currentEl.show();
+                currentNode._doHide = true;
+            }
+            currentEl = currentEl.parent;
+            currentNode.parent = {};
+            currentNode = currentNode.parent;
+        }
+        return fn;
+    };
+
+    var LoadRefImage = function LoadRefImage(element, attrs) {
+        var src = attrs.src,
+            parent = element._.group,
+            node = element.node,
+            RefImg = element._.RefImg;
+
+        if (!RefImg) {
+            RefImg = element._.RefImg = new Image();
+        }
+
+        if (attrs.src !== undefined) {
+            RefImg.src = src;
+            RefImg.onload = function () {
+                element.attr({
+                    width: element.attrs.width || RefImg.width,
+                    height: element.attrs.height || RefImg.height
+                });
+                // parent.canvas && parent.canvas.appendChild(node);
+            };
+            RefImg.onerror = function (e) {
+                node.onerror && node.onerror(e);
+            };
+            element._.RefImg = RefImg;
+        }
+    };
+
     var has = "hasOwnProperty",
         Str = String,
         toFloat = parseFloat,
@@ -10631,8 +9565,8 @@ if (R.svg) {
         sqrt = math.sqrt,
         separator = /[, ]+/,
         arrayShift = Array.prototype.shift,
-        zeroStrokeFix = !!(/AppleWebKit/.test(R._g.win.navigator.userAgent) && (!/Chrome/.test(R._g.win.navigator.userAgent) || R._g.win.navigator.appVersion.match(/Chrome\/(\d+)\./)[1] < 29)),
-        eve = R.eve,
+        zeroStrokeFix = !!(/AppleWebKit/.test(_raphael2["default"]._g.win.navigator.userAgent) && (!/Chrome/.test(_raphael2["default"]._g.win.navigator.userAgent) || _raphael2["default"]._g.win.navigator.appVersion.match(/Chrome\/(\d+)\./)[1] < 29)),
+        eve = _raphael2["default"].eve,
         E = "",
         S = " ",
         xlink = "http://www.w3.org/1999/xlink",
@@ -10644,11 +9578,11 @@ if (R.svg) {
         oval: "M2.5,0A2.5,2.5,0,0,1,2.5,5 2.5,2.5,0,0,1,2.5,0z"
     },
         markerCounter = {},
-        updateReferenceUrl = function () {
-        return R._url = R._g.win.location.href.replace(/#.*?$/, E);
+        updateReferenceUrl = function updateReferenceUrl() {
+        return _raphael2["default"]._url = _raphael2["default"]._g.win.location.href.replace(/#.*?$/, E);
     },
-        paperproto = R.fn,
-        serializeArgs = R._serializeArgs;
+        paperproto = _raphael2["default"].fn,
+        serializeArgs = _raphael2["default"]._serializeArgs;
 
     /*\
      * Paper.group
@@ -10668,8 +9602,8 @@ if (R.svg) {
         // id
         var paper = this,
             args = arguments,
-            group = R._lastArgIfGroup(args, true),
-            out = R._engine.group(paper, args[0], group);
+            group = _raphael2["default"]._lastArgIfGroup(args, true),
+            out = _raphael2["default"]._engine.group(paper, args[0], group);
         return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
     };
 
@@ -10693,7 +9627,7 @@ if (R.svg) {
         // x, y, r
         var paper = this,
             args = arguments,
-            group = R._lastArgIfGroup(args, true),
+            group = _raphael2["default"]._lastArgIfGroup(args, true),
             attrs = serializeArgs(args),
 
         // "cx", 0,
@@ -10701,7 +9635,7 @@ if (R.svg) {
         // "r", 0,
         // "fill", none,
         // "stroke", black),
-        out = R._engine.circle(paper, attrs, group);
+        out = _raphael2["default"]._engine.circle(paper, attrs, group);
 
         return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
     };
@@ -10730,7 +9664,7 @@ if (R.svg) {
     paperproto.rect = function () {
         var paper = this,
             args = arguments,
-            group = R._lastArgIfGroup(args, true),
+            group = _raphael2["default"]._lastArgIfGroup(args, true),
             attrs = serializeArgs(args),
 
         // "x", 0,
@@ -10740,7 +9674,7 @@ if (R.svg) {
         // "r", 0,
         // "fill", none,
         // "stroke", black),
-        out = R._engine.rect(paper, attrs, group);
+        out = _raphael2["default"]._engine.rect(paper, attrs, group);
 
         return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
     };
@@ -10765,7 +9699,7 @@ if (R.svg) {
     paperproto.ellipse = function () {
         var paper = this,
             args = arguments,
-            group = R._lastArgIfGroup(args, true),
+            group = _raphael2["default"]._lastArgIfGroup(args, true),
             attrs = serializeArgs(args),
 
         // "x", 0,
@@ -10774,7 +9708,7 @@ if (R.svg) {
         // "ry", 0,
         // "fill", none,
         // "stroke", black),
-        out = R._engine.ellipse(this, attrs, group);
+        out = _raphael2["default"]._engine.ellipse(this, attrs, group);
 
         return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
     };
@@ -10814,7 +9748,7 @@ if (R.svg) {
     paperproto.path = function () {
         var paper = this,
             args = arguments,
-            group = R._lastArgIfGroup(args, true),
+            group = _raphael2["default"]._lastArgIfGroup(args, true),
             paperConfig = paper.config,
             capStyle = paperConfig && paperConfig["stroke-linecap"] || "butt",
             attrs = serializeArgs(args),
@@ -10823,7 +9757,7 @@ if (R.svg) {
         // "fill", none,
         // "stroke", black,
         // "stroke-linecap", capStyle),
-        out = R._engine.path(paper, attrs, group);
+        out = _raphael2["default"]._engine.path(paper, attrs, group);
         return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
     };
 
@@ -10848,7 +9782,7 @@ if (R.svg) {
     paperproto.image = function () {
         var paper = this,
             args = arguments,
-            group = R._lastArgIfGroup(args, true),
+            group = _raphael2["default"]._lastArgIfGroup(args, true),
             attrs = serializeArgs(args),
 
         // "src", "",
@@ -10856,7 +9790,7 @@ if (R.svg) {
         // "y", 0,
         // "width", 0,
         // "height", 0)
-        out = R._engine.image(paper, attrs, group);
+        out = _raphael2["default"]._engine.image(paper, attrs, group);
         return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
     };
 
@@ -10879,7 +9813,7 @@ if (R.svg) {
     paperproto.text = function () {
         var paper = this,
             args = arguments,
-            group = R._lastArgIfGroup(args, true),
+            group = _raphael2["default"]._lastArgIfGroup(args, true),
             attrs = serializeArgs(args),
 
         // "x", 0,
@@ -10890,13 +9824,13 @@ if (R.svg) {
         // "text-anchor", "middle",
         // "vertical-align", "middle"),
 
-        out = R._engine.text(paper, attrs, group, args[1]);
+        out = _raphael2["default"]._engine.text(paper, attrs, group, args[1]);
         return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
     };
 
-    R.cachedFontHeight = {};
+    _raphael2["default"].cachedFontHeight = {};
 
-    R.toString = function () {
+    _raphael2["default"].toString = function () {
         return "Your browser supports SVG.\nYou are running Rapha\xebl " + this.version;
     };
 
@@ -10915,9 +9849,9 @@ if (R.svg) {
     //     }());
     //     R._g.win.addEventListener("popstate", updateReferenceUrl, false);
     // }
-    R._url = E;
+    _raphael2["default"]._url = E;
 
-    var updateGradientReference = function (element, newGradient) {
+    var updateGradientReference = function updateGradientReference(element, newGradient) {
         var gradient = element.gradient;
 
         if (gradient) {
@@ -10939,20 +9873,22 @@ if (R.svg) {
         }
     };
 
-    var $ = R._createNode = function (el, attr) {
+    var $ = _raphael2["default"]._createNode = function (el, attr) {
         if (attr) {
             if (typeof el == "string") {
                 el = $(el);
             }
-            for (var key in attr) if (attr[has](key)) {
-                if (key.substring(0, 6) == "xlink:") {
-                    el.setAttributeNS(xlink, key.substring(6), Str(attr[key]));
-                } else {
-                    el.setAttribute(key, Str(attr[key]));
+            for (var key in attr) {
+                if (attr[has](key)) {
+                    if (key.substring(0, 6) == "xlink:") {
+                        el.setAttributeNS(xlink, key.substring(6), Str(attr[key]));
+                    } else {
+                        el.setAttribute(key, Str(attr[key]));
+                    }
                 }
             }
         } else {
-            el = R._g.doc.createElementNS("http://www.w3.org/2000/svg", el);
+            el = _raphael2["default"]._g.doc.createElementNS("http://www.w3.org/2000/svg", el);
         }
         return el;
     },
@@ -10965,14 +9901,14 @@ if (R.svg) {
         redlect: 'reflect',
         repeat: 'repeat'
     },
-        addGradientFill = function (element, gradient) {
+        addGradientFill = function addGradientFill(element, gradient) {
         if (!element.paper || !element.paper.defs) {
             return 0;
         }
 
         var type = "linear",
             SVG = element.paper,
-            id = R.getElementID((SVG.id + '-' + gradient).replace(/[\(\)\s%:,\xb0#]/g, "_")),
+            id = _raphael2["default"].getElementID((SVG.id + '-' + gradient).replace(/[\(\)\s%:,\xb0#]/g, "_")),
             fx = .5,
             fy = .5,
             r,
@@ -10982,10 +9918,10 @@ if (R.svg) {
             spread,
             o = element.node,
             s = o.style,
-            el = R._g.doc.getElementById(id);
+            el = _raphael2["default"]._g.doc.getElementById(id);
 
         if (!el) {
-            gradient = Str(gradient).replace(R._radial_gradient, function (all, opts) {
+            gradient = Str(gradient).replace(_raphael2["default"]._radial_gradient, function (all, opts) {
                 type = "radial";
                 opts = opts && opts.split(',') || [];
                 units = opts[5];
@@ -11065,7 +10001,7 @@ if (R.svg) {
                     /** @todo apply angle rotation and validation */
                     vector = [specs[0] || "0%", specs[1] || "0%", specs[2] || "100%", specs[3] || "0%"];
                 } else {
-                    vector = [0, 0, math.cos(R.rad(angle)), math.sin(R.rad(angle))];
+                    vector = [0, 0, math.cos(_raphael2["default"].rad(angle)), math.sin(_raphael2["default"].rad(angle))];
                     max = 1 / (mmax(abs(vector[2]), abs(vector[3])) || 1);
                     vector[2] *= max;
                     vector[3] *= max;
@@ -11079,7 +10015,7 @@ if (R.svg) {
                     }
                 }
             }
-            var dots = R._parseDots(gradient);
+            var dots = _raphael2["default"]._parseDots(gradient);
             if (!dots) {
                 return null;
             }
@@ -11122,7 +10058,7 @@ if (R.svg) {
         updateGradientReference(element, el);
 
         $(o, {
-            fill: "url('" + R._url + "#" + id + "')",
+            fill: "url('" + _raphael2["default"]._url + "#" + id + "')",
             "fill-opacity": 1
         });
 
@@ -11130,13 +10066,13 @@ if (R.svg) {
         s.fillOpacity = 1;
         return 1;
     },
-        updatePosition = function (o) {
+        updatePosition = function updatePosition(o) {
         var bbox = o.getBBox(1);
         $(o.pattern, {
             patternTransform: o.matrix.invert() + " translate(" + bbox.x + "," + bbox.y + ")"
         });
     },
-        addArrow = function (o, value, isEnd) {
+        addArrow = function addArrow(o, value, isEnd) {
         if (o.type == "path") {
             var values = Str(value).toLowerCase().split("-"),
                 p = o.paper,
@@ -11209,7 +10145,7 @@ if (R.svg) {
             if (type != "none") {
                 var pathId = "raphael-marker-" + type,
                     markerId = "raphael-marker-" + se + type + w + h + "-obj" + o.id;
-                if (!R._g.doc.getElementById(pathId)) {
+                if (!_raphael2["default"]._g.doc.getElementById(pathId)) {
                     p.defs.appendChild($($("path"), {
                         "stroke-linecap": "round",
                         d: markers[type],
@@ -11219,7 +10155,7 @@ if (R.svg) {
                 } else {
                     markerCounter[pathId]++;
                 }
-                var marker = R._g.doc.getElementById(markerId),
+                var marker = _raphael2["default"]._g.doc.getElementById(markerId),
                     use;
                 if (!marker) {
                     marker = $($("marker"), {
@@ -11246,15 +10182,15 @@ if (R.svg) {
                 var delta = dx * (type != "diamond" && type != "oval");
                 if (isEnd) {
                     from = o._.arrows.startdx * stroke || 0;
-                    to = R.getTotalLength(attrs.path) - delta * stroke;
+                    to = _raphael2["default"].getTotalLength(attrs.path) - delta * stroke;
                 } else {
                     from = delta * stroke;
-                    to = R.getTotalLength(attrs.path) - (o._.arrows.enddx * stroke || 0);
+                    to = _raphael2["default"].getTotalLength(attrs.path) - (o._.arrows.enddx * stroke || 0);
                 }
                 attr = {};
-                attr["marker-" + se] = "url('" + R._url + "#" + markerId + "')";
+                attr["marker-" + se] = "url('" + _raphael2["default"]._url + "#" + markerId + "')";
                 if (to || from) {
-                    attr.d = R.getSubpath(attrs.path, from, to);
+                    attr.d = _raphael2["default"].getSubpath(attrs.path, from, to);
                 }
                 $(node, attr);
                 o._.arrows[se + "Path"] = pathId;
@@ -11265,13 +10201,13 @@ if (R.svg) {
             } else {
                 if (isEnd) {
                     from = o._.arrows.startdx * stroke || 0;
-                    to = R.getTotalLength(attrs.path) - from;
+                    to = _raphael2["default"].getTotalLength(attrs.path) - from;
                 } else {
                     from = 0;
-                    to = R.getTotalLength(attrs.path) - (o._.arrows.enddx * stroke || 0);
+                    to = _raphael2["default"].getTotalLength(attrs.path) - (o._.arrows.enddx * stroke || 0);
                 }
                 o._.arrows[se + "Path"] && $(node, {
-                    d: R.getSubpath(attrs.path, from, to)
+                    d: _raphael2["default"].getSubpath(attrs.path, from, to)
                 });
                 delete o._.arrows[se + "Path"];
                 delete o._.arrows[se + "Marker"];
@@ -11279,9 +10215,11 @@ if (R.svg) {
                 delete o._.arrows[se + "Type"];
                 delete o._.arrows[se + "String"];
             }
-            for (attr in markerCounter) if (markerCounter[has](attr) && !markerCounter[attr]) {
-                var item = R._g.doc.getElementById(attr);
-                item && item.parentNode.removeChild(item);
+            for (attr in markerCounter) {
+                if (markerCounter[has](attr) && !markerCounter[attr]) {
+                    var item = _raphael2["default"]._g.doc.getElementById(attr);
+                    item && item.parentNode.removeChild(item);
+                }
             }
         }
     },
@@ -11304,7 +10242,7 @@ if (R.svg) {
         "--.": [8, 3, 1, 3],
         "--..": [8, 3, 1, 3, 1, 3]
     },
-        addDashes = function (o, value, params) {
+        addDashes = function addDashes(o, value, params) {
         var predefValue = dasharray[Str(value).toLowerCase()],
             calculatedValues,
             width,
@@ -11338,20 +10276,20 @@ if (R.svg) {
                 }
             }
 
-            if (R.is(value, 'array')) {
+            if (_raphael2["default"].is(value, 'array')) {
                 $(o.node, {
                     "stroke-dasharray": calculatedValues.join(",")
                 });
             }
         }
     },
-        applyCustomAttributes = function (o, attrs) {
+        applyCustomAttributes = function applyCustomAttributes(o, attrs) {
         for (var key in attrs) {
             eve("raphael.attr." + key + "." + o.id, o, attrs[key], key);
             o.ca[key] && o.attr(key, attrs[key]);
         }
     },
-        setFillAndStroke = R._setFillAndStroke = function (o, params, group) {
+        setFillAndStroke = _raphael2["default"]._setFillAndStroke = function (o, params, group) {
         if (!o.paper.canvas) {
             return;
         }
@@ -11373,7 +10311,7 @@ if (R.svg) {
         }
         for (var att in params) {
             if (params[has](att)) {
-                if (!R._availableAttrs[has](att)) {
+                if (!_raphael2["default"]._availableAttrs[has](att)) {
                     continue;
                 }
                 var value = params[att];
@@ -11411,7 +10349,7 @@ if (R.svg) {
                         o.transform(value);
                         break;
                     case "rotation":
-                        if (R.is(value, "array")) {
+                        if (_raphael2["default"].is(value, "array")) {
                             o.rotate.apply(o, value);
                         } else {
                             o.rotate(value);
@@ -11432,9 +10370,9 @@ if (R.svg) {
                             o.clip && o.clip.parentNode.parentNode.removeChild(o.clip.parentNode);
                             var el = $("clipPath"),
                                 rc = $(pathClip ? "path" : "rect");
-                            el.id = R.getElementID(R.createUUID());
+                            el.id = _raphael2["default"].getElementID(_raphael2["default"].createUUID());
                             $(rc, pathClip ? {
-                                d: value ? attrs['clip-path'] = R._pathToAbsolute(value) : R._availableAttrs.path,
+                                d: value ? attrs['clip-path'] = _raphael2["default"]._pathToAbsolute(value) : _raphael2["default"]._availableAttrs.path,
                                 fill: 'none'
                             } : {
                                 x: rect[0],
@@ -11446,14 +10384,14 @@ if (R.svg) {
                             el.appendChild(rc);
                             paper.defs.appendChild(el);
                             $(node, {
-                                "clip-path": "url('" + R._url + "#" + el.id + "')"
+                                "clip-path": "url('" + _raphael2["default"]._url + "#" + el.id + "')"
                             });
                             o.clip = rc;
                         }
                         if (!value) {
                             var path = node.getAttribute("clip-path");
                             if (path) {
-                                var clip = R._g.doc.getElementById(path.replace(/(^url\(#|\)$)/g, E));
+                                var clip = _raphael2["default"]._g.doc.getElementById(path.replace(/(^url\(#|\)$)/g, E));
                                 clip && clip.parentNode.removeChild(clip);
                                 $(node, {
                                     "clip-path": E
@@ -11466,7 +10404,7 @@ if (R.svg) {
                     case "path":
                         if (o.type == "path") {
                             $(node, {
-                                d: value ? attrs.path = R._pathToAbsolute(value) : R._availableAttrs.path
+                                d: value ? attrs.path = _raphael2["default"]._pathToAbsolute(value) : _raphael2["default"]._availableAttrs.path
                             });
                             o._.dirty = 1;
                             if (o._.arrows) {
@@ -11558,11 +10496,11 @@ if (R.svg) {
                         addDashes(o, value, params);
                         break;
                     case "fill":
-                        var isURL = Str(value).match(R._ISURL);
+                        var isURL = Str(value).match(_raphael2["default"]._ISURL);
                         if (isURL) {
                             el = $("pattern");
                             var ig = $("image");
-                            el.id = R.getElementID(R.createUUID());
+                            el.id = _raphael2["default"].getElementID(_raphael2["default"].createUUID());
                             $(el, {
                                 x: 0,
                                 y: 0,
@@ -11578,7 +10516,7 @@ if (R.svg) {
                             el.appendChild(ig);
 
                             (function (el) {
-                                R._preload(isURL[1], function () {
+                                _raphael2["default"]._preload(isURL[1], function () {
                                     var w = this.offsetWidth,
                                         h = this.offsetHeight;
                                     $(el, {
@@ -11593,7 +10531,7 @@ if (R.svg) {
                                 });
                             })(el);
                             paper.defs.appendChild(el);
-                            s.fill = "url('" + R._url + "#" + el.id + "')";
+                            s.fill = "url('" + _raphael2["default"]._url + "#" + el.id + "')";
                             $(node, {
                                 fill: s.fill
                             });
@@ -11602,7 +10540,7 @@ if (R.svg) {
                             o.pattern && updatePosition(o);
                             break;
                         }
-                        var clr = R.getRGB(value);
+                        var clr = _raphael2["default"].getRGB(value);
                         if (!clr.error) {
                             delete params.gradient;
                             delete attrs.gradient;
@@ -11611,13 +10549,13 @@ if (R.svg) {
                             //     $(node, {
                             //         opacity: attrs.opacity
                             //     });
-                            !R.is(attrs["fill-opacity"], "undefined") && R.is(params["fill-opacity"], "undefined") && $(node, {
+                            !_raphael2["default"].is(attrs["fill-opacity"], "undefined") && _raphael2["default"].is(params["fill-opacity"], "undefined") && $(node, {
                                 "fill-opacity": attrs["fill-opacity"]
                             });
                             o.gradient && updateGradientReference(o);
                         } else if ((o.type == "circle" || o.type == "ellipse" || Str(value).charAt() != "r") && addGradientFill(o, value)) {
                             if ("opacity" in attrs || "fill-opacity" in attrs) {
-                                var gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\(#|\)$/g, E));
+                                var gradient = _raphael2["default"]._g.doc.getElementById(node.getAttribute("fill").replace(/^url\(#|\)$/g, E));
                                 if (gradient) {
                                     var stops = gradient.getElementsByTagName("stop");
                                     $(stops[stops.length - 1], {
@@ -11635,13 +10573,13 @@ if (R.svg) {
                                 "fill-opacity": s.fillOpacity = clr.opacity > 1 ? clr.opacity / 100 : clr.opacity
                             });
                             o._.fillOpacityDirty = true;
-                        } else if (o._.fillOpacityDirty && R.is(attrs['fill-opacity'], "undefined") && R.is(params["fill-opacity"], "undefined")) {
+                        } else if (o._.fillOpacityDirty && _raphael2["default"].is(attrs['fill-opacity'], "undefined") && _raphael2["default"].is(params["fill-opacity"], "undefined")) {
                             node.removeAttribute('fill-opacity');
                             s.fillOpacity = E;
                             delete o._.fillOpacityDirty;
                         }
                     case "stroke":
-                        clr = R.getRGB(value);
+                        clr = _raphael2["default"].getRGB(value);
                         node.setAttribute(att, clr.hex);
                         s[att] = clr.hex;
                         if (att == "stroke") {
@@ -11651,7 +10589,7 @@ if (R.svg) {
                                     "stroke-opacity": s.strokeOpacity = clr.opacity > 1 ? clr.opacity / 100 : clr.opacity
                                 });
                                 o._.strokeOpacityDirty = true;
-                            } else if (o._.strokeOpacityDirty && R.is(attrs['stroke-opacity'], "undefined") && R.is(params["stroke-opacity"], "undefined")) {
+                            } else if (o._.strokeOpacityDirty && _raphael2["default"].is(attrs['stroke-opacity'], "undefined") && _raphael2["default"].is(params["stroke-opacity"], "undefined")) {
                                 node.removeAttribute('stroke-opacity');
                                 s.strokeOpacity = E;
                                 delete o._.strokeOpacityDirty;
@@ -11728,7 +10666,7 @@ if (R.svg) {
      * The callBack is invoked for indivual follower Element with the rest of
      arguments.
     */
-    updateFollowers = R._updateFollowers = function () {
+    updateFollowers = _raphael2["default"]._updateFollowers = function () {
         var i,
             ii,
             followerElem,
@@ -11741,7 +10679,7 @@ if (R.svg) {
         }
     },
         leading = 1.2,
-        tuneText = function (el, params, group) {
+        tuneText = function tuneText(el, params, group) {
         var a = el.attrs,
             node,
             computedStyle,
@@ -11757,7 +10695,7 @@ if (R.svg) {
         }
 
         node = el.node;
-        computedStyle = node.firstChild && R._g.doc.defaultView.getComputedStyle(node.firstChild, E);
+        computedStyle = node.firstChild && _raphael2["default"]._g.doc.defaultView.getComputedStyle(node.firstChild, E);
         fontSize = params['fontSize'] || params['font-size'] || a['font-size'] || group && group.attrs.fontSize;
         lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading;
         actualValign = a[has]("vertical-align") ? a["vertical-align"] : "middle";
@@ -11771,7 +10709,7 @@ if (R.svg) {
             lineHeight = fontSize * leading;
         }
 
-        if (R.is(params.text, 'array')) {
+        if (_raphael2["default"].is(params.text, 'array')) {
             params.text = params.text.join('<br>');
         }
 
@@ -11803,7 +10741,7 @@ if (R.svg) {
                     tspan.setAttributeNS("http://www.w3.org/XML/1998/namespace", "xml:space", "preserve");
                     texts[i] = " ";
                 }
-                tspan.appendChild(R._g.doc.createTextNode(texts[i]));
+                tspan.appendChild(_raphael2["default"]._g.doc.createTextNode(texts[i]));
                 node.appendChild(tspan);
                 tspans[i] = tspan;
 
@@ -11813,7 +10751,7 @@ if (R.svg) {
                         visibility: "hidden",
                         "font-size": "0px"
                     });
-                    tspan.appendChild(R._g.doc.createTextNode("i"));
+                    tspan.appendChild(_raphael2["default"]._g.doc.createTextNode("i"));
                     node.appendChild(tspan);
                 }
             }
@@ -11857,11 +10795,11 @@ if (R.svg) {
         var bb = el._getCustomBBox(fontFamily, fontSize + 'px', actualValign, i),
             dif = bb.diff;
 
-        dif && R.is(dif, "finite") && tspans[0] && $(tspans[0], {
+        dif && _raphael2["default"].is(dif, "finite") && tspans[0] && $(tspans[0], {
             dy: dif
         });
     },
-        Element = function (node, svg, group /*, dontAppend*/) {
+        Element = function Element(node, svg, group /*, dontAppend*/) {
         var o = this,
             parent = group || svg;
 
@@ -11869,9 +10807,9 @@ if (R.svg) {
 
         o.node = o[0] = node;
         node.raphael = true;
-        node.raphaelid = o.id = R._oid++;
+        node.raphaelid = o.id = _raphael2["default"]._oid++;
 
-        o.matrix = R.matrix();
+        o.matrix = _raphael2["default"].matrix();
         o.realPath = null;
 
         o.attrs = o.attrs || {};
@@ -11898,16 +10836,16 @@ if (R.svg) {
         parent.top = o;
         o.next = null;
     },
-        elproto = R.el;
+        elproto = _raphael2["default"].el;
 
     Element.prototype = elproto;
     elproto.constructor = Element;
 
-    R._engine.getNode = function (el) {
+    _raphael2["default"]._engine.getNode = function (el) {
         var node = el.node || el[0].node;
         return node.titleNode || node;
     };
-    R._engine.getLastNode = function (el) {
+    _raphael2["default"]._engine.getLastNode = function (el) {
         var node = el.node || el[el.length - 1].node;
         return node.titleNode || node;
     };
@@ -11984,7 +10922,7 @@ if (R.svg) {
         if (tstr == null) {
             return _.transform;
         }
-        R._extractTransform(o, tstr);
+        _raphael2["default"]._extractTransform(o, tstr);
 
         o.clip && !_.clipispath && $(o.clip, {
             transform: o.matrix.invert()
@@ -12022,7 +10960,7 @@ if (R.svg) {
         }
 
         var o = this,
-            node = R._engine.getNode(o),
+            node = _raphael2["default"]._engine.getNode(o),
             paper = o.paper,
             defs = paper.defs,
             i;
@@ -12053,46 +10991,14 @@ if (R.svg) {
         o.parent.canvas.contains(node) && o.parent.canvas.removeChild(node);
         o.removeData();
         delete paper._elementsById[o.id]; // remove from lookup hash
-        R._tear(o, o.parent);
+        _raphael2["default"]._tear(o, o.parent);
 
         for (i in o) {
-            o[i] = typeof o[i] === "function" ? R._removedFactory(i) : null;
+            o[i] = typeof o[i] === "function" ? _raphael2["default"]._removedFactory(i) : null;
         }
 
         o.removed = true;
-    };
-    /*
-     * Recursively shows the element and stores the visibilties of its parents
-     * in a tree structure for future restoration.
-     * @param el - Element which is to shown recursively
-     * @return Function - Function to restore the old visibility state.
-    */
-    function showRecursively(el) {
-        var origAttrTree = {},
-            currentEl = el,
-            currentNode = origAttrTree,
-            fn = function () {
-            var localEl = el,
-                localNode = origAttrTree;
-            while (localEl) {
-                if (localNode._doHide) {
-                    localEl.hide();
-                }
-                localEl = localEl.parent;
-                localNode = localNode.parent;
-            }
-        };
-        while (currentEl) {
-            if (currentEl.node && currentEl.node.style && currentEl.node.style.display === "none") {
-                currentEl.show();
-                currentNode._doHide = true;
-            }
-            currentEl = currentEl.parent;
-            currentNode.parent = {};
-            currentNode = currentNode.parent;
-        }
-        return fn;
-    };
+    };;
 
     elproto._getCustomBBox = function (fontFamily, fontSize, valign, lines) {
         var fn,
@@ -12123,7 +11029,7 @@ if (R.svg) {
         }
 
         if (isText) {
-            cachedFontHeight = R.cachedFontHeight;
+            cachedFontHeight = _raphael2["default"].cachedFontHeight;
             txtElem = cachedFontHeight.txtElem;
             availableFontFamily = cachedFontHeight[fontFamily] || (cachedFontHeight[fontFamily] = {});
             availableFontSize = availableFontFamily[fontSize];
@@ -12225,15 +11131,16 @@ if (R.svg) {
         }
         if (name == null) {
             var res = {};
-            for (var a in this.attrs) if (this.attrs[has](a)) {
-                res[a] = this.attrs[a];
-            }
-            res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
+            for (var a in this.attrs) {
+                if (this.attrs[has](a)) {
+                    res[a] = this.attrs[a];
+                }
+            }res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
             res.transform = this._.transform;
             res.visibility = this.node.style.display === "none" ? "hidden" : "visible";
             return res;
         }
-        if (value == null && R.is(name, "string")) {
+        if (value == null && _raphael2["default"].is(name, "string")) {
             if (name == "fill" && this.attrs.fill == "none" && this.attrs.gradient) {
                 return this.attrs.gradient;
             }
@@ -12249,15 +11156,15 @@ if (R.svg) {
                 name = names[i];
                 if (name in this.attrs) {
                     out[name] = this.attrs[name];
-                } else if (R.is(this.ca[name], "function")) {
+                } else if (_raphael2["default"].is(this.ca[name], "function")) {
                     out[name] = this.ca[name].def;
                 } else {
-                    out[name] = R._availableAttrs[name];
+                    out[name] = _raphael2["default"]._availableAttrs[name];
                 }
             }
             return ii - 1 ? out : out[names[0]];
         }
-        if (value == null && R.is(name, "array")) {
+        if (value == null && _raphael2["default"].is(name, "array")) {
             out = {};
             for (i = 0, ii = name.length; i < ii; i++) {
                 out[name[i]] = this.attr(name[i]);
@@ -12267,17 +11174,17 @@ if (R.svg) {
         if (value != null) {
             var params = {};
             params[name] = value;
-        } else if (name != null && R.is(name, "object")) {
+        } else if (name != null && _raphael2["default"].is(name, "object")) {
             params = name;
         }
-        if (R.stopEvent !== false) {
+        if (_raphael2["default"].stopEvent !== false) {
             for (var key in params) {
                 eve("raphael.attr." + key + "." + this.id, this, params[key], key);
             }
         }
         var todel = {};
         for (key in this.ca) {
-            if (this.ca[key] && params[has](key) && R.is(this.ca[key], "function") && !this.ca['_invoked' + key]) {
+            if (this.ca[key] && params[has](key) && _raphael2["default"].is(this.ca[key], "function") && !this.ca['_invoked' + key]) {
 
                 this.ca['_invoked' + key] = true; // prevent recursion
                 var par = this.ca[key].apply(this, [].concat(params[key]));
@@ -12317,7 +11224,7 @@ if (R.svg) {
             var fltr = $("filter"),
                 blur = $("feGaussianBlur");
             t.attrs.blur = size;
-            fltr.id = R.getElementID(R.createUUID());
+            fltr.id = _raphael2["default"].getElementID(_raphael2["default"].createUUID());
             $(blur, {
                 stdDeviation: +size || 1.5
             });
@@ -12325,7 +11232,7 @@ if (R.svg) {
             t.paper.defs.appendChild(fltr);
             t._blur = fltr;
             $(t.node, {
-                filter: "url('" + R._url + "#" + fltr.id + "')"
+                filter: "url('" + _raphael2["default"]._url + "#" + fltr.id + "')"
             });
         } else {
             if (t._blur) {
@@ -12366,8 +11273,8 @@ if (R.svg) {
 
         fn = handler;
         oldEventType = eventType;
-        if (R.supportsTouch) {
-            eventType = R._touchMap[eventType] || eventType === 'click' && 'touchstart' || eventType;
+        if (_raphael2["default"].supportsTouch) {
+            eventType = _raphael2["default"]._touchMap[eventType] || eventType === 'click' && 'touchstart' || eventType;
             if (eventType !== oldEventType) {
                 // store the new listeners for removeEventListener
                 if (!elem._tempTouchListeners) {
@@ -12376,7 +11283,7 @@ if (R.svg) {
                 if (!elem._tempTouchListeners[oldEventType]) {
                     elem._tempTouchListeners[oldEventType] = [];
                 }
-                fn = function (e) {
+                fn = function fn(e) {
                     e.preventDefault();
                     handler(e);
                 };
@@ -12407,7 +11314,8 @@ if (R.svg) {
         var elem = this,
             fn,
             i,
-            l;
+            l,
+            oldEventType;
         if (this.removed) {
             return this;
         }
@@ -12426,7 +11334,7 @@ if (R.svg) {
         fn = handler;
         oldEventType = eventType;
 
-        if (R.supportsTouch && elem._tempTouchListeners && elem._tempTouchListeners[oldEventType]) {
+        if (_raphael2["default"].supportsTouch && elem._tempTouchListeners && elem._tempTouchListeners[oldEventType]) {
             l = elem._tempTouchListeners[oldEventType].length;
             for (i = 0; i < l && oldEventType === eventType; i += 1) {
                 if (elem._tempTouchListeners[oldEventType][i] && elem._tempTouchListeners[oldEventType][i].oldFn === fn) {
@@ -12444,7 +11352,7 @@ if (R.svg) {
         return this;
     };
 
-    R._engine.path = function (svg, attrs, group) {
+    _raphael2["default"]._engine.path = function (svg, attrs, group) {
         var el = $("path"),
             res = new Element(el, svg, group);
 
@@ -12454,7 +11362,7 @@ if (R.svg) {
         return res;
     };
 
-    R._engine.group = function (svg, id, group) {
+    _raphael2["default"]._engine.group = function (svg, id, group) {
         var el = $("g"),
             res = new Element(el, svg, group);
 
@@ -12466,7 +11374,7 @@ if (R.svg) {
         return res;
     };
 
-    R._engine.circle = function (svg, attrs, group) {
+    _raphael2["default"]._engine.circle = function (svg, attrs, group) {
         var el = $("circle"),
             res = new Element(el, svg, group);
 
@@ -12475,7 +11383,7 @@ if (R.svg) {
         applyCustomAttributes(res, attrs);
         return res;
     };
-    R._engine.rect = function (svg, attrs, group) {
+    _raphael2["default"]._engine.rect = function (svg, attrs, group) {
         var el = $("rect"),
             res = new Element(el, svg, group);
 
@@ -12485,7 +11393,7 @@ if (R.svg) {
         applyCustomAttributes(res, attrs);
         return res;
     };
-    R._engine.ellipse = function (svg, attrs, group) {
+    _raphael2["default"]._engine.ellipse = function (svg, attrs, group) {
         var el = $("ellipse"),
             res = new Element(el, svg, group);
 
@@ -12494,32 +11402,8 @@ if (R.svg) {
         applyCustomAttributes(res, attrs);
         return res;
     };
-    function LoadRefImage(element, attrs) {
-        var src = attrs.src,
-            parent = element._.group,
-            node = element.node,
-            RefImg = element._.RefImg;
-
-        if (!RefImg) {
-            RefImg = element._.RefImg = new Image();
-        }
-
-        if (attrs.src !== undefined) {
-            RefImg.src = src;
-            RefImg.onload = function () {
-                element.attr({
-                    width: element.attrs.width || RefImg.width,
-                    height: element.attrs.height || RefImg.height
-                });
-                // parent.canvas && parent.canvas.appendChild(node);
-            };
-            RefImg.onerror = function (e) {
-                node.onerror && node.onerror(e);
-            };
-            element._.RefImg = RefImg;
-        }
-    };
-    R._engine.image = function (svg, attrs, group) {
+    ;
+    _raphael2["default"]._engine.image = function (svg, attrs, group) {
         var el = $("image"),
             src = attrs.src,
             res = new Element(el, svg, group, true);
@@ -12531,7 +11415,7 @@ if (R.svg) {
         applyCustomAttributes(res, attrs);
         return res;
     };
-    R._engine.text = function (svg, attrs, group, css) {
+    _raphael2["default"]._engine.text = function (svg, attrs, group, css) {
         var el = $("text"),
             res = new Element(el, svg, group);
         res.type = "text";
@@ -12544,7 +11428,7 @@ if (R.svg) {
         return res;
     };
 
-    R._engine.setSize = function (width, height) {
+    _raphael2["default"]._engine.setSize = function (width, height) {
         this.width = width || this.width;
         this.height = height || this.height;
         this.canvas.setAttribute("width", this.width);
@@ -12554,8 +11438,8 @@ if (R.svg) {
         }
         return this;
     };
-    R._engine.create = function () {
-        var con = R._getContainer.apply(0, arguments),
+    _raphael2["default"]._engine.create = function () {
+        var con = _raphael2["default"]._getContainer.apply(0, arguments),
             container = con && con.container,
             x = con.x,
             y = con.y,
@@ -12580,7 +11464,7 @@ if (R.svg) {
         });
         if (container == 1) {
             cnvs.style.cssText = css + "position:absolute;left:" + x + "px;top:" + y + "px";
-            R._g.doc.body.appendChild(cnvs);
+            _raphael2["default"]._g.doc.body.appendChild(cnvs);
             isFloating = 1;
         } else {
             cnvs.style.cssText = css + "position:relative";
@@ -12590,7 +11474,7 @@ if (R.svg) {
                 container.appendChild(cnvs);
             }
         }
-        container = new R._Paper();
+        container = new _raphael2["default"]._Paper();
         container.width = width;
         container.height = height;
         container.canvas = cnvs;
@@ -12603,7 +11487,7 @@ if (R.svg) {
         container.renderfix();
         return container;
     };
-    R._engine.setViewBox = function (x, y, w, h, fit) {
+    _raphael2["default"]._engine.setViewBox = function (x, y, w, h, fit) {
         eve("raphael.setViewBox", this, this._viewBox, [x, y, w, h, fit]);
         var size = mmax(w / this.width, h / this.height),
             top = this.top,
@@ -12637,7 +11521,7 @@ if (R.svg) {
         return this;
     };
 
-    R.prototype.renderfix = function () {
+    _raphael2["default"].prototype.renderfix = function () {
         var cnvs = this.canvas,
             s = cnvs.style,
             pos;
@@ -12660,7 +11544,7 @@ if (R.svg) {
         }
     };
 
-    R.prototype._desc = function (txt) {
+    _raphael2["default"].prototype._desc = function (txt) {
         var desc = this.desc;
 
         if (!desc) {
@@ -12671,10 +11555,10 @@ if (R.svg) {
                 desc.removeChild(desc.firstChild);
             }
         }
-        desc.appendChild(R._g.doc.createTextNode(R.is(txt, "string") ? txt : "Created with Red Rapha\xebl " + R.version));
+        desc.appendChild(_raphael2["default"]._g.doc.createTextNode(_raphael2["default"].is(txt, "string") ? txt : "Created with Red Rapha\xebl " + _raphael2["default"].version));
     };
 
-    R.prototype.clear = function () {
+    _raphael2["default"].prototype.clear = function () {
         var c;
         eve("raphael.clear", this);
 
@@ -12691,7 +11575,7 @@ if (R.svg) {
         c.appendChild(this.defs = $("defs"));
     };
 
-    R.prototype.remove = function () {
+    _raphael2["default"].prototype.remove = function () {
         var i;
         eve("raphael.remove", this);
 
@@ -12703,41 +11587,54 @@ if (R.svg) {
         this.desc && this.desc.parentNode.removeChild(this.desc);
         this.canvas.parentNode && this.canvas.parentNode.removeChild(this.canvas);
         for (i in this) {
-            this[i] = typeof this[i] == "function" ? R._removedFactory(i) : null;
+            this[i] = typeof this[i] == "function" ? _raphael2["default"]._removedFactory(i) : null;
         }
         this.removed = true;
     };
-    var setproto = R.st;
-    for (var method in elproto) if (elproto[has](method) && !setproto[has](method)) {
-        setproto[method] = function (methodname) {
-            return function () {
-                var arg = arguments;
-                return this.forEach(function (el) {
-                    el[methodname].apply(el, arg);
-                });
-            };
-        }(method);
+    var setproto = _raphael2["default"].st;
+    for (var method in elproto) {
+        if (elproto[has](method) && !setproto[has](method)) {
+            setproto[method] = function (methodname) {
+                return function () {
+                    var arg = arguments;
+                    return this.forEach(function (el) {
+                        el[methodname].apply(el, arg);
+                    });
+                };
+            }(method);
+        }
     }
-}
-
-module.exports = R;
-
-},{"./raphael.core":4}],6:[function(require,module,exports){
-/**!
-* RedRaphael 1.0.0 - JavaScript Vector Library VML Module
-* Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
-*
-* Raphael 2.1.0 - JavaScript Vector Library VML Module
-* Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
-* Copyright © 2008-2012 Sencha Labs <http://sencha.com>
-*
-* Licensed under the MIT license.
-*/
+} /**!
+  * RedRaphael 1.0.0 - JavaScript Vector Library SVG Module
+  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
+  *
+  * Raphael 2.1.0 - JavaScript Vector Library SVG Module
+  * Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
+  * Copyright © 2008-2012 Sencha Labs <http://sencha.com>
+  *
+  * Licensed under the MIT license.
+  */
 // Define _window as window object in case of indivual file inclusion.
 
-var R = require('./raphael.core');
+exports["default"] = _raphael2["default"];
+module.exports = exports["default"];
 
-if (R.vml) {
+/***/ }),
+/* 73 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+exports.__esModule = true;
+
+var _raphael = __webpack_require__(7);
+
+var _raphael2 = _interopRequireDefault(_raphael);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+if (_raphael2["default"].vml) {
     var has = "hasOwnProperty",
         Str = String,
         toFloat = parseFloat,
@@ -12749,9 +11646,9 @@ if (R.vml) {
         abs = math.abs,
         fillString = "fill",
         separator = /[, ]+/,
-        eve = R.eve,
-        paperproto = R.fn,
-        serializeArgs = R._serializeArgs,
+        eve = _raphael2["default"].eve,
+        paperproto = _raphael2["default"].fn,
+        serializeArgs = _raphael2["default"]._serializeArgs,
         ms = " progid:DXImageTransform.Microsoft",
         arrayShift = Array.prototype.shift,
         S = " ",
@@ -12780,12 +11677,12 @@ if (R.vml) {
         circle: 1,
         ellipse: 1
     },
-        path2vml = function (path) {
+        path2vml = function path2vml(path) {
         var total = /[ahqstv]/ig,
-            command = R._pathToAbsolute;
-        Str(path).match(total) && (command = R._path2curve);
+            command = _raphael2["default"]._pathToAbsolute;
+        Str(path).match(total) && (command = _raphael2["default"]._path2curve);
         total = /[clmz]/g;
-        if (command == R._pathToAbsolute && !Str(path).match(total)) {
+        if (command == _raphael2["default"]._pathToAbsolute && !Str(path).match(total)) {
             var res = Str(path).replace(bites, function (all, command, args) {
                 var vals = [],
                     isMove = command.toLowerCase() == "m",
@@ -12817,15 +11714,15 @@ if (R.vml) {
         }
         return res.length ? res.join(S) : 'm0,0';
     },
-        compensation = function (deg, dx, dy) {
-        var m = R.matrix();
+        compensation = function compensation(deg, dx, dy) {
+        var m = _raphael2["default"].matrix();
         m.rotate(-deg, .5, .5);
         return {
             dx: m.x(dx, dy),
             dy: m.y(dx, dy)
         };
     },
-        setCoords = function (p, sx, sy, dx, dy, deg) {
+        setCoords = function setCoords(p, sx, sy, dx, dy, deg) {
         var _ = p._,
             m = p.matrix,
             fillpos = _.fillpos,
@@ -12868,11 +11765,11 @@ if (R.vml) {
         }
         s.visibility = "visible";
     };
-    R._url = E;
-    R.toString = function () {
-        return "Your browser doesn\u2019t support SVG. Falling down to VML.\nYou are running Rapha\xebl " + this.version;
+    _raphael2["default"]._url = E;
+    _raphael2["default"].toString = function () {
+        return "Your browser doesn\u2019t support SVG. Falling down to VML.\nYou are running Rapha\xEBl " + this.version;
     };
-    var addArrow = function (o, value, isEnd) {
+    var addArrow = function addArrow(o, value, isEnd) {
         var values = Str(value).toLowerCase().split("-"),
             se = isEnd ? "end" : "start",
             i = values.length,
@@ -12904,13 +11801,13 @@ if (R.vml) {
         stroke[se + "arrowlength"] = w;
         stroke[se + "arrowwidth"] = h;
     },
-        applyCustomAttributes = function (o, attrs) {
+        applyCustomAttributes = function applyCustomAttributes(o, attrs) {
         for (var key in attrs) {
             eve("raphael.attr." + key + "." + o.id, o, attrs[key], key);
             o.ca[key] && o.attr(key, attrs[key]);
         }
     },
-        setFillAndStroke = R._setFillAndStroke = function (o, params) {
+        setFillAndStroke = _raphael2["default"]._setFillAndStroke = function (o, params) {
         if (!o.paper.canvas) return;
         // o.paper.canvas.style.display = "none";
         o.attrs = o.attrs || {};
@@ -12918,16 +11815,18 @@ if (R.vml) {
             a = o.attrs,
             s = node.style,
             xy,
+            oriOp,
             newpath = pathTypes[o.type] && (params.x != a.x || params.y != a.y || params.width != a.width || params.height != a.height || params.cx != a.cx || params.cy != a.cy || params.rx != a.rx || params.ry != a.ry || params.r != a.r),
             isOval = ovalTypes[o.type] && (a.cx != params.cx || a.cy != params.cy || a.r != params.r || a.rx != params.rx || a.ry != params.ry),
             isGroup = o.type === 'group',
             res = o;
-
-        for (var par in params) if (params[has](par)) {
-            a[par] = params[par];
-        }
-        if (newpath) {
-            a.path = R._getPath[o.type](o);
+        oriOp = res.oriOp || (res.oriOp = {});
+        for (var par in params) {
+            if (params[has](par)) {
+                a[par] = params[par];
+            }
+        }if (newpath) {
+            a.path = _raphael2["default"]._getPath[o.type](o);
             o._.dirty = 1;
         }
         params.href && (node.href = params.href);
@@ -12937,7 +11836,7 @@ if (R.vml) {
         "blur" in params && o.blur(params.blur);
 
         if (params.path && o.type == "path" || newpath) {
-            node.path = path2vml(~Str(a.path).toLowerCase().indexOf("r") ? R._pathToAbsolute(a.path) : a.path);
+            node.path = path2vml(~Str(a.path).toLowerCase().indexOf("r") ? _raphael2["default"]._pathToAbsolute(a.path) : a.path);
             if (o.type == "image") {
                 o._.fillpos = [a.x, a.y];
                 o._.fillsize = [a.width, a.height];
@@ -12947,7 +11846,7 @@ if (R.vml) {
         "transform" in params && o.transform(params.transform);
         if ("rotation" in params) {
             var rotation = params.rotation;
-            if (R.is(rotation, "array")) {
+            if (_raphael2["default"].is(rotation, "array")) {
                 o.rotate.apply(o, rotation);
             } else {
                 o.rotate(rotation);
@@ -12961,7 +11860,7 @@ if (R.vml) {
                 cy = +a.cy,
                 rx = +a.rx || +a.r || 0,
                 ry = +a.ry || +a.r || 0;
-            node.path = R.format("ar{0},{1},{2},{3},{4},{1},{4},{1}x", round((cx - rx) * zoom), round((cy - ry) * zoom), round((cx + rx) * zoom), round((cy + ry) * zoom), round(cx * zoom));
+            node.path = _raphael2["default"].format("ar{0},{1},{2},{3},{4},{1},{4},{1}x", round((cx - rx) * zoom), round((cy - ry) * zoom), round((cx + rx) * zoom), round((cy + ry) * zoom), round(cx * zoom));
         }
         if ("clip-rect" in params) {
             var rect = Str(params["clip-rect"]).split(separator);
@@ -12974,7 +11873,7 @@ if (R.vml) {
 
                 /** @todo create separate element for group clip-rect to
                  * avoid unclipping issue */
-                var div = isGroup ? node : node.clipRect || R._g.doc.createElement("div"),
+                var div = isGroup ? node : node.clipRect || _raphael2["default"]._g.doc.createElement("div"),
                     offset,
                     dstyle = div.style;
 
@@ -13011,7 +11910,7 @@ if (R.vml) {
                     node.clipRect = div;
                 }
                 dstyle.position = "absolute";
-                dstyle.clip = R.format("rect({1}px {2}px {3}px {0}px)", rect);
+                dstyle.clip = _raphael2["default"].format("rect({1}px {2}px {3}px {0}px)", rect);
             }
             if (!params["clip-rect"]) {
                 if (isGroup && o.clip) {
@@ -13050,8 +11949,9 @@ if (R.vml) {
             if (fill.on == null || params.fill == "none" || params.fill === null) {
                 fill.on = false;
             }
+
             if (fill.on && params.fill) {
-                var isURL = Str(params.fill).match(R._ISURL);
+                var isURL = Str(params.fill).match(_raphael2["default"]._ISURL);
                 if (isURL) {
                     fill.parentNode == node && node.removeChild(fill);
                     fill.rotate = true;
@@ -13061,14 +11961,15 @@ if (R.vml) {
                     fill.position = bbox.x + S + bbox.y;
                     o._.fillpos = [bbox.x, bbox.y];
 
-                    R._preload(isURL[1], function () {
+                    _raphael2["default"]._preload(isURL[1], function () {
                         o._.fillsize = [this.offsetWidth, this.offsetHeight];
                     });
                 } else {
-                    var color = R.getRGB(params.fill);
+                    var color = _raphael2["default"].getRGB(params.fill);
                     fill.color = color.hex;
                     fill.src = E;
                     fill.type = "solid";
+
                     if (color.error && (res.type in {
                         circle: 1,
                         ellipse: 1
@@ -13077,18 +11978,30 @@ if (R.vml) {
                         a.gradient = params.fill;
                         fill.rotate = false;
                     } else if ("opacity" in color && !("fill-opacity" in params)) {
-                        fillOpacity = color.opacity;
+                        // store oiginal non gradient color opacity
+                        oriOp.nonGradOpacity = fillOpacity = color.opacity;
                     }
                 }
             }
+
             if (fillOpacity !== -1 || "fill-opacity" in params || "opacity" in params) {
                 var opacity = ((+a["fill-opacity"] + 1 || 2) - 1) * ((+a.opacity + 1 || 2) - 1) * ((+fillOpacity + 1 || 2) - 1);
                 opacity = mmin(mmax(opacity, 0), 1);
-                fill.opacity = opacity;
+                oriOp.opacity = opacity;
+                // if gradient color opacity is set then opacity (applied through the params)
+                //  should be multiplied with the gradient opacity so that ratio will remain same
+                if (oriOp.opacity1 !== undefined) {
+                    fill.opacity = oriOp.opacity1 * opacity;
+                    fill['o:opacity2'] = oriOp.opacity2 * opacity;
+                } else {
+                    // multiply with the original non gradient color opacity with the opacity to preserve the ratio of the opacity
+                    fill.opacity = opacity * (oriOp.nonGradOpacity === undefined ? 1 : oriOp.nonGradOpacity);
+                }
                 if (fill.src) {
                     fill.color = "none";
                 }
             }
+            oriOp.opacity = undefined;
             node.appendChild(fill);
             var stroke = node.getElementsByTagName("stroke") && node.getElementsByTagName("stroke")[0],
                 newstroke = false;
@@ -13097,7 +12010,7 @@ if (R.vml) {
                 stroke.on = true;
             }
             (params.stroke == "none" || params.stroke === null || stroke.on == null || params.stroke == 0 || params["stroke-width"] == 0) && (stroke.on = false);
-            var strokeColor = R.getRGB('stroke' in params ? params.stroke : a.stroke);
+            var strokeColor = _raphael2["default"].getRGB('stroke' in params ? params.stroke : a.stroke);
             stroke.on && params.stroke && (stroke.color = strokeColor.hex);
             opacity = ((+a["stroke-opacity"] + 1 || 2) - 1) * ((+a.opacity + 1 || 2) - 1) * ((+strokeColor.opacity + 1 || 2) - 1);
             var width = (toFloat(params["stroke-width"]) || 1) * .75;
@@ -13142,7 +12055,7 @@ if (R.vml) {
             s.fontSize = fontSize * m + "px";
             lineHeight = toFloat(a["line-height"] || lineHeight && lineHeight[0]) || 12;
             a["line-height"] && (s.lineHeight = lineHeight * m + 'px');
-            R.is(params.text, 'array') && (params.text = res.textpath.string = params.text.join('\n').replace(/<br\s*?\/?>/ig, '\n'));
+            _raphael2["default"].is(params.text, 'array') && (params.text = res.textpath.string = params.text.join('\n').replace(/<br\s*?\/?>/ig, '\n'));
             res.textpath.string && (span.innerHTML = Str(res.textpath.string).replace(/</g, "&#60;").replace(/&/g, "&#38;").replace(/\n/g, "<br>"));
             var brect = span.getBoundingClientRect();
             res.W = a.w = (brect.right - brect.left) / m;
@@ -13163,14 +12076,14 @@ if (R.vml) {
                     res.bby = 0;
             }
 
-            ("x" in params || "y" in params || res.bby !== undefined) && (res.path.v = R.format("m{0},{1}l{2},{1}", round(a.x * zoom), round((a.y + (res.bby || 0)) * zoom), round(a.x * zoom) + 1));
+            ("x" in params || "y" in params || res.bby !== undefined) && (res.path.v = _raphael2["default"].format("m{0},{1}l{2},{1}", round(a.x * zoom), round((a.y + (res.bby || 0)) * zoom), round(a.x * zoom) + 1));
             var dirtyattrs = ["x", "y", "text", "font", "font-family", "font-weight", "font-style", "font-size", "line-height"];
-            for (var d = 0, dd = dirtyattrs.length; d < dd; d++) if (dirtyattrs[d] in params) {
-                res._.dirty = 1;
-                break;
-            }
-
-            // text-anchor emulation
+            for (var d = 0, dd = dirtyattrs.length; d < dd; d++) {
+                if (dirtyattrs[d] in params) {
+                    res._.dirty = 1;
+                    break;
+                }
+            } // text-anchor emulation
             switch (a["text-anchor"]) {
                 case "start":
                     res.textpath.style["v-text-align"] = "left";
@@ -13197,7 +12110,7 @@ if (R.vml) {
      * The callBack is invoked for indivual follower Element with the rest of
      arguments.
     */
-    updateFollowers = R._updateFollowers = function () {
+    updateFollowers = _raphael2["default"]._updateFollowers = function () {
         var i,
             ii,
             followerElem,
@@ -13209,16 +12122,18 @@ if (R.vml) {
             followerElem[fnName].apply(followerElem, args);
         }
     },
-        addGradientFill = function (o, gradient, fill) {
+        addGradientFill = function addGradientFill(o, gradient, fill) {
         o.attrs = o.attrs || {};
         var attrs = o.attrs,
             pow = Math.pow,
+            oriFOpacity,
+            oriOp = o.oriOp,
             opacity,
             oindex,
             type = "linear",
             fxfy = ".5 .5";
         o.attrs.gradient = gradient;
-        gradient = Str(gradient).replace(R._radial_gradient, function (all, opts) {
+        gradient = Str(gradient).replace(_raphael2["default"]._radial_gradient, function (all, opts) {
             type = "radial";
             opts = opts && opts.split(',') || [];
 
@@ -13245,7 +12160,7 @@ if (R.vml) {
                 return null;
             }
         }
-        var dots = R._parseDots(gradient);
+        var dots = _raphael2["default"]._parseDots(gradient);
         if (!dots) {
             return null;
         }
@@ -13268,8 +12183,14 @@ if (R.vml) {
             }
             fill.colors = clrs.length ? clrs.join() : "0% " + fill.color;
             //set opacity1 & opacity2
-            fill.opacity = opacity1;
-            fill['o:opacity2'] = opacity2;
+            // store original gradient color opacity
+            oriOp.opacity1 = opacity1;
+            oriOp.opacity2 = opacity2;
+            oriFOpacity = oriOp.opacity === undefined ? 1 : oriOp.opacity;
+            // if gradient color opacity is set then opacity (applied through the params)
+            // should be multiplied with the gradient opacity so that ratio will remain same
+            fill.opacity = opacity1 * oriFOpacity;
+            fill['o:opacity2'] = opacity2 * oriFOpacity;
             if (type == "radial") {
                 fill.type = "gradientTitle";
                 fill.focus = "100%";
@@ -13285,7 +12206,7 @@ if (R.vml) {
         }
         return 1;
     },
-        Element = function (node, vml, group /*, dontAppend*/) {
+        Element = function Element(node, vml, group /*, dontAppend*/) {
         var o = this,
             parent = group || vml,
             skew;
@@ -13298,7 +12219,7 @@ if (R.vml) {
 
         o.node = o[0] = node;
         node.raphael = true;
-        node.raphaelid = o.id = R._oid++;
+        node.raphaelid = o.id = _raphael2["default"]._oid++;
 
         o.X = 0;
         o.Y = 0;
@@ -13309,7 +12230,7 @@ if (R.vml) {
         o.paper = vml;
         o.ca = o.customAttributes = o.customAttributes || new vml._CustomAttributes();
 
-        o.matrix = R.matrix();
+        o.matrix = _raphael2["default"].matrix();
         o._ = {
             transform: [],
             sx: 1,
@@ -13329,7 +12250,7 @@ if (R.vml) {
         parent.top = o;
         o.next = null;
     };
-    var elproto = R.el,
+    var elproto = _raphael2["default"].el,
         notApplicableGroupAttrs = {
         fill: true,
         stroke: true,
@@ -13345,13 +12266,13 @@ if (R.vml) {
      * Function to over-write the default attr() function of group so that the individual properties of group
      * can be applied to its child.
      */
-    customGroupUpdate = function (attributes) {
+    customGroupUpdate = function customGroupUpdate(attributes) {
         var group = this,
             childElem,
             ownAttr = group.ownAttr;
 
         if (attributes) {
-            group.ownAttr = ownAttr ? R.extend(ownAttr, attributes) : attributes;
+            group.ownAttr = ownAttr ? _raphael2["default"].extend(ownAttr, attributes) : attributes;
         }
         info = getApplicableGroupAttributes(group);
         group.customAttr = info.customAttr;
@@ -13371,13 +12292,13 @@ if (R.vml) {
      * Function to over-write the default attr() function of an element so that the individual properties of group
      * can be applied to the child.
      */
-    customElementUpdate = function (attributes) {
+    customElementUpdate = function customElementUpdate(attributes) {
         var element = this,
             parent = element.parent,
             ownAttr = element.ownAttr;
 
         if (attributes) {
-            element.ownAttr = ownAttr ? R.extend(ownAttr, attributes) : attributes;
+            element.ownAttr = ownAttr ? _raphael2["default"].extend(ownAttr, attributes) : attributes;
         }
 
         attributes = getApplicableAttributes(parent, attributes, element);
@@ -13392,7 +12313,7 @@ if (R.vml) {
     /*
      * Function to manage attributes for group level inheritance
      */
-    getApplicableGroupAttributes = function (group) {
+    getApplicableGroupAttributes = function getApplicableGroupAttributes(group) {
         var parent = group && group.parent,
             customAttr = {},
             inheritAttr = {},
@@ -13434,9 +12355,9 @@ if (R.vml) {
     /*
      * Function to get the group attrs applicable to its child.
      */
-    getApplicableAttributes = function (group, elemAttr, elem) {
+    getApplicableAttributes = function getApplicableAttributes(group, elemAttr, elem) {
         var customAttr, inheritAttr, attr;
-        elemAttr = elemAttr || R.extend({}, elem.ownAttr);
+        elemAttr = elemAttr || _raphael2["default"].extend({}, elem.ownAttr);
         if (group) {
             customAttr = group.customAttr;
             inheritAttr = group.inheritAttr;
@@ -13470,12 +12391,12 @@ if (R.vml) {
         // id
         var paper = this,
             args = arguments,
-            group = R._lastArgIfGroup(args, true),
+            group = _raphael2["default"]._lastArgIfGroup(args, true),
             attrs,
             info,
             out;
 
-        out = R._engine.group(paper, args[0], group);
+        out = _raphael2["default"]._engine.group(paper, args[0], group);
         out.attr = customGroupUpdate;
 
         return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
@@ -13501,12 +12422,12 @@ if (R.vml) {
         // x, y, r
         var paper = this,
             args = arguments,
-            group = R._lastArgIfGroup(args, true),
+            group = _raphael2["default"]._lastArgIfGroup(args, true),
             attrs = serializeArgs(args),
             out;
 
         attrs = getApplicableAttributes(group, attrs);
-        out = R._engine.circle(paper, attrs, group);
+        out = _raphael2["default"]._engine.circle(paper, attrs, group);
         out.attr = customElementUpdate;
         return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
     };
@@ -13535,13 +12456,13 @@ if (R.vml) {
     paperproto.rect = function () {
         var paper = this,
             args = arguments,
-            group = R._lastArgIfGroup(args, true),
+            group = _raphael2["default"]._lastArgIfGroup(args, true),
             ownAttr = serializeArgs(args),
             attrs,
             out;
 
         attrs = getApplicableAttributes(group, ownAttr);
-        out = R._engine.rect(paper, attrs, group);
+        out = _raphael2["default"]._engine.rect(paper, attrs, group);
 
         out.attr = customElementUpdate;
         out.ownAttr = ownAttr;
@@ -13571,12 +12492,12 @@ if (R.vml) {
     paperproto.ellipse = function () {
         var paper = this,
             args = arguments,
-            group = R._lastArgIfGroup(args, true),
+            group = _raphael2["default"]._lastArgIfGroup(args, true),
             attrs = serializeArgs(args),
             out;
 
         attrs = getApplicableAttributes(group, attrs);
-        out = R._engine.ellipse(this, attrs, group);
+        out = _raphael2["default"]._engine.ellipse(this, attrs, group);
         out.attr = customElementUpdate;
         return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
     };
@@ -13616,14 +12537,14 @@ if (R.vml) {
     paperproto.path = function () {
         var paper = this,
             args = arguments,
-            group = R._lastArgIfGroup(args, true),
+            group = _raphael2["default"]._lastArgIfGroup(args, true),
             paperConfig = paper.config,
             capStyle = paperConfig && paperConfig["stroke-linecap"] || "butt",
             attrs = serializeArgs(args),
             out;
 
         attrs = getApplicableAttributes(group, attrs);
-        out = R._engine.path(paper, attrs, group);
+        out = _raphael2["default"]._engine.path(paper, attrs, group);
         out.attr = customElementUpdate;
         return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
     };
@@ -13649,12 +12570,12 @@ if (R.vml) {
     paperproto.image = function () {
         var paper = this,
             args = arguments,
-            group = R._lastArgIfGroup(args, true),
+            group = _raphael2["default"]._lastArgIfGroup(args, true),
             attrs = serializeArgs(args),
             out;
 
         attrs = getApplicableAttributes(group, attrs);
-        out = R._engine.image(paper, attrs, group);
+        out = _raphael2["default"]._engine.image(paper, attrs, group);
         out.attr = customElementUpdate;
         return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
     };
@@ -13678,12 +12599,12 @@ if (R.vml) {
     paperproto.text = function () {
         var paper = this,
             args = arguments,
-            group = R._lastArgIfGroup(args, true),
+            group = _raphael2["default"]._lastArgIfGroup(args, true),
             attrs = serializeArgs(args),
             out;
 
         attrs = getApplicableAttributes(group, attrs);
-        out = R._engine.text(paper, attrs, group, args[1]);
+        out = _raphael2["default"]._engine.text(paper, attrs, group, args[1]);
         return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
     };
 
@@ -13702,7 +12623,7 @@ if (R.vml) {
             oldt = tstr = Str(tstr).replace(/\.{3}|\u2026/g, this._.transform || E);
         }
 
-        R._extractTransform(this, vbt + tstr);
+        _raphael2["default"]._extractTransform(this, vbt + tstr);
 
         var matrix = this.matrix.clone(),
             skew = this.skew,
@@ -13840,7 +12761,7 @@ if (R.vml) {
         }
 
         var o = this,
-            node = R._engine.getNode(o),
+            node = _raphael2["default"]._engine.getNode(o),
             paper = o.paper,
             shape = o.shape,
             i;
@@ -13870,10 +12791,10 @@ if (R.vml) {
 
         o.removeData();
         delete paper._elementsById[o.id];
-        R._tear(o, o.parent);
+        _raphael2["default"]._tear(o, o.parent);
 
         for (var i in o) {
-            o[i] = typeof o[i] === "function" ? R._removedFactory(i) : null;
+            o[i] = typeof o[i] === "function" ? _raphael2["default"]._removedFactory(i) : null;
         }
         o.removed = true;
     };
@@ -13884,15 +12805,16 @@ if (R.vml) {
         }
         if (name == null) {
             var res = {};
-            for (var a in this.attrs) if (this.attrs[has](a)) {
-                res[a] = this.attrs[a];
-            }
-            res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
+            for (var a in this.attrs) {
+                if (this.attrs[has](a)) {
+                    res[a] = this.attrs[a];
+                }
+            }res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
             res.transform = this._.transform;
             res.visibility = this.node.style.display === "none" ? "hidden" : "visible";
             return res;
         }
-        if (value == null && R.is(name, "string")) {
+        if (value == null && _raphael2["default"].is(name, "string")) {
             if (name == fillString && this.attrs.fill == "none" && this.attrs.gradient) {
                 return this.attrs.gradient;
             }
@@ -13905,15 +12827,15 @@ if (R.vml) {
                 name = names[i];
                 if (name in this.attrs) {
                     out[name] = this.attrs[name];
-                } else if (R.is(this.ca[name], "function")) {
+                } else if (_raphael2["default"].is(this.ca[name], "function")) {
                     out[name] = this.ca[name].def;
                 } else {
-                    out[name] = R._availableAttrs[name];
+                    out[name] = _raphael2["default"]._availableAttrs[name];
                 }
             }
             return ii - 1 ? out : out[names[0]];
         }
-        if (this.attrs && value == null && R.is(name, "array")) {
+        if (this.attrs && value == null && _raphael2["default"].is(name, "array")) {
             out = {};
             for (i = 0, ii = name.length; i < ii; i++) {
                 out[name[i]] = this.attr(name[i]);
@@ -13925,8 +12847,8 @@ if (R.vml) {
             params = {};
             params[name] = value;
         }
-        value == null && R.is(name, "object") && (params = name);
-        if (R.stopEvent !== false) {
+        value == null && _raphael2["default"].is(name, "object") && (params = name);
+        if (_raphael2["default"].stopEvent !== false) {
             for (var key in params) {
                 eve("raphael.attr." + key + "." + this.id, this, params[key], key);
             }
@@ -13934,7 +12856,7 @@ if (R.vml) {
         if (params) {
             var todel = {};
             for (key in this.ca) {
-                if (this.ca[key] && params[has](key) && R.is(this.ca[key], "function") && !this.ca['_invoked' + key]) {
+                if (this.ca[key] && params[has](key) && _raphael2["default"].is(this.ca[key], "function") && !this.ca['_invoked' + key]) {
                     this.ca['_invoked' + key] = true; // prevent recursion
                     var par = this.ca[key].apply(this, [].concat(params[key]));
                     delete this.ca['_invoked' + key];
@@ -13954,7 +12876,7 @@ if (R.vml) {
 
             // this.paper.canvas.style.display = "none";
             if ('text' in params && this.type == "text") {
-                R.is(params.text, 'array') && (params.text = params.text.join('\n'));
+                _raphael2["default"].is(params.text, 'array') && (params.text = params.text.join('\n'));
                 this.textpath.string = params.text.replace(/<br\s*?\/?>/ig, '\n');
             }
             setFillAndStroke(this, params);
@@ -13978,7 +12900,7 @@ if (R.vml) {
         if (+size !== 0) {
             this.attrs.blur = size;
             s.filter = f + S + ms + ".Blur(pixelradius=" + (+size || 1.5) + ")";
-            s.margin = R.format("-{0}px 0 0 -{0}px", round(+size || 1.5));
+            s.margin = _raphael2["default"].format("-{0}px 0 0 -{0}px", round(+size || 1.5));
         } else {
             s.filter = f;
             s.margin = 0;
@@ -14014,7 +12936,7 @@ if (R.vml) {
             this.node.attachEvent('on' + eventType, handler);
         } else {
             this.node['on' + eventType] = function () {
-                var evt = R._g.win.event;
+                var evt = _raphael2["default"]._g.win.event;
                 evt.target = evt.srcElement;
                 handler(evt);
             };
@@ -14053,17 +12975,17 @@ if (R.vml) {
         return this;
     };
 
-    R._engine.getNode = function (el) {
+    _raphael2["default"]._engine.getNode = function (el) {
         var node = el.node || el[0].node;
         return node.clipRect || node;
     };
-    R._engine.getLastNode = function (el) {
+    _raphael2["default"]._engine.getLastNode = function (el) {
         var node = el.node || el[el.length - 1].node;
         return node.clipRect || node;
     };
 
-    R._engine.group = function (vml, id, group) {
-        var el = R._g.doc.createElement("div"),
+    _raphael2["default"]._engine.group = function (vml, id, group) {
+        var el = _raphael2["default"]._g.doc.createElement("div"),
             p = new Element(el, vml, group);
 
         el.style.cssText = cssDot;
@@ -14073,14 +12995,14 @@ if (R.vml) {
 
         p.type = 'group';
         p.canvas = p.node;
-        p.transform = R._engine.group.transform;
+        p.transform = _raphael2["default"]._engine.group.transform;
         p.top = null;
         p.bottom = null;
 
         return p;
     };
 
-    R._engine.group.transform = function (tstr) {
+    _raphael2["default"]._engine.group.transform = function (tstr) {
         if (tstr == null) {
             return this._.transform;
         }
@@ -14099,7 +13021,7 @@ if (R.vml) {
         if (vbs) {
             oldt = tstr = Str(tstr).replace(/\.{3}|\u2026/g, o._.transform || E);
         }
-        R._extractTransform(o, vbt + tstr);
+        _raphael2["default"]._extractTransform(o, vbt + tstr);
         matrix = o.matrix;
         offset = matrix.offset();
         tx = toFloat(offset[0]) || 0;
@@ -14111,12 +13033,12 @@ if (R.vml) {
 
         /** @todo try perform relative group transform, thus avoiding
          * transform on clipping */
-        c && (s.clip = R.format("rect({1}px {2}px {3}px {0}px)", [c[0] - tx, c[1] - ty, c[2] - tx, c[3] - ty]));
+        c && (s.clip = _raphael2["default"].format("rect({1}px {2}px {3}px {0}px)", [c[0] - tx, c[1] - ty, c[2] - tx, c[3] - ty]));
 
         return o;
     };
 
-    R._engine.path = function (vml, attrs, group) {
+    _raphael2["default"]._engine.path = function (vml, attrs, group) {
         var el = createNode("shape");
         el.style.cssText = cssDot;
         el.coordsize = zoom + S + zoom;
@@ -14133,8 +13055,8 @@ if (R.vml) {
         return p;
     };
 
-    R._engine.rect = function (vml, attrs, group) {
-        var path = R._rectPath(attrs.x, attrs.y, attrs.w, attrs.h, attrs.r);
+    _raphael2["default"]._engine.rect = function (vml, attrs, group) {
+        var path = _raphael2["default"]._rectPath(attrs.x, attrs.y, attrs.w, attrs.h, attrs.r);
 
         attrs.path = path;
         attrs.type = "rect";
@@ -14149,7 +13071,7 @@ if (R.vml) {
 
         return res;
     };
-    R._engine.ellipse = function (vml, attrs, group) {
+    _raphael2["default"]._engine.ellipse = function (vml, attrs, group) {
         attrs.type = "ellipse";
 
         var res = vml.path(attrs, group),
@@ -14161,7 +13083,7 @@ if (R.vml) {
 
         return res;
     };
-    R._engine.circle = function (vml, attrs, group) {
+    _raphael2["default"]._engine.circle = function (vml, attrs, group) {
         attrs.type = "circle";
 
         var res = vml.path(attrs, group),
@@ -14172,8 +13094,8 @@ if (R.vml) {
         res.W = res.H = a.r * 2;
         return res;
     };
-    R._engine.image = function (vml, attrs, group) {
-        var path = R._rectPath(attrs.x, attrs.y, attrs.w, attrs.h);
+    _raphael2["default"]._engine.image = function (vml, attrs, group) {
+        var path = _raphael2["default"]._rectPath(attrs.x, attrs.y, attrs.w, attrs.h);
 
         attrs.path = path;
         attrs.type = "image";
@@ -14199,14 +13121,14 @@ if (R.vml) {
         setCoords(res, 1, 1, 0, 0, 0);
         return res;
     };
-    R._engine.text = function (vml, attrs, group, css) {
+    _raphael2["default"]._engine.text = function (vml, attrs, group, css) {
         var el = createNode("shape"),
             path = createNode("path"),
             o = createNode("textpath");
         x = attrs.x || 0;
         y = attrs.y || 0;
         text = attrs.text;
-        path.v = R.format("m{0},{1}l{2},{1}", round(attrs.x * zoom), round(attrs.y * zoom), round(attrs.x * zoom) + 1);
+        path.v = _raphael2["default"].format("m{0},{1}l{2},{1}", round(attrs.x * zoom), round(attrs.y * zoom), round(attrs.x * zoom) + 1);
         path.textpathok = true;
         o.string = Str(attrs.text).replace(/<br\s*?\/?>/ig, '\n');
         o.on = true;
@@ -14234,7 +13156,7 @@ if (R.vml) {
         return p;
     };
 
-    R._engine.setSize = function (width, height) {
+    _raphael2["default"]._engine.setSize = function (width, height) {
         var cs = this.canvas.style;
         this.width = width;
         this.height = height;
@@ -14244,11 +13166,11 @@ if (R.vml) {
         height && (cs.height = height);
         cs.clip = "rect(0 " + cs.width + " " + cs.height + " 0)";
         if (this._viewBox) {
-            R._engine.setViewBox.apply(this, this._viewBox);
+            _raphael2["default"]._engine.setViewBox.apply(this, this._viewBox);
         }
         return this;
     };
-    R._engine.setViewBox = function (x, y, w, h, fit) {
+    _raphael2["default"]._engine.setViewBox = function (x, y, w, h, fit) {
         eve("raphael.setViewBox", this, this._viewBox, [x, y, w, h, fit]);
         var width = this.width,
             height = this.height,
@@ -14277,12 +13199,12 @@ if (R.vml) {
         return this;
     };
     var createNode;
-    R._engine.initWin = function (win) {
+    _raphael2["default"]._engine.initWin = function (win) {
         var doc = win.document;
         doc.createStyleSheet().addRule(".rvml", "behavior:url(#default#VML)");
         try {
             !doc.namespaces.rvml && doc.namespaces.add("rvml", "urn:schemas-microsoft-com:vml");
-            createNode = R._createNode = function (tagName, attrs) {
+            createNode = _raphael2["default"]._createNode = function (tagName, attrs) {
                 var el = doc.createElement('<rvml:' + tagName + ' class="rvml">'),
                     prop;
                 for (prop in attrs) {
@@ -14291,7 +13213,7 @@ if (R.vml) {
                 return el;
             };
         } catch (e) {
-            createNode = R._createNode = function (tagName, attrs) {
+            createNode = _raphael2["default"]._createNode = function (tagName, attrs) {
                 var el = doc.createElement('<' + tagName + ' xmlns="urn:schemas-microsoft.com:vml" class="rvml">'),
                     prop;
                 for (prop in attrs) {
@@ -14301,9 +13223,9 @@ if (R.vml) {
             };
         }
     };
-    R._engine.initWin(R._g.win);
-    R._engine.create = function () {
-        var con = R._getContainer.apply(0, arguments),
+    _raphael2["default"]._engine.initWin(_raphael2["default"]._g.win);
+    _raphael2["default"]._engine.create = function () {
+        var con = _raphael2["default"]._getContainer.apply(0, arguments),
             container = con.container,
             height = con.height,
             s,
@@ -14313,8 +13235,8 @@ if (R.vml) {
         if (!container) {
             throw new Error("VML container not found.");
         }
-        var res = new R._Paper(),
-            c = res.canvas = R._g.doc.createElement("div"),
+        var res = new _raphael2["default"]._Paper(),
+            c = res.canvas = _raphael2["default"]._g.doc.createElement("div"),
             cs = c.style;
         x = x || 0;
         y = y || 0;
@@ -14327,12 +13249,12 @@ if (R.vml) {
         res.coordsize = zoom * 1e3 + S + zoom * 1e3;
         res.coordorigin = "0 0";
         c.id = "raphael-paper-" + res.id;
-        res.span = R._g.doc.createElement("span");
+        res.span = _raphael2["default"]._g.doc.createElement("span");
         res.span.style.cssText = "position:absolute;left:-9999em;top:-9999em;padding:0;margin:0;line-height:1;";
         c.appendChild(res.span);
-        cs.cssText = R.format("top:0;left:0;width:{0};height:{1};display:inline-block;cursor:default;position:relative;clip:rect(0 {0} {1} 0);overflow:hidden", width, height);
+        cs.cssText = _raphael2["default"].format("top:0;left:0;width:{0};height:{1};display:inline-block;cursor:default;position:relative;clip:rect(0 {0} {1} 0);overflow:hidden", width, height);
         if (container == 1) {
-            R._g.doc.body.appendChild(c);
+            _raphael2["default"]._g.doc.body.appendChild(c);
             cs.left = x + "px";
             cs.top = y + "px";
             cs.position = "absolute";
@@ -14346,19 +13268,19 @@ if (R.vml) {
         res.renderfix = function () {};
         return res;
     };
-    R.prototype.clear = function () {
+    _raphael2["default"].prototype.clear = function () {
         var c;
         eve("raphael.clear", this);
         while (c = this.bottom) {
             c.remove();
         }
         this.canvas.innerHTML = E;
-        this.span = R._g.doc.createElement("span");
+        this.span = _raphael2["default"]._g.doc.createElement("span");
         this.span.style.cssText = "position:absolute;left:-9999em;top:-9999em;padding:0;margin:0;line-height:1;display:inline;";
         this.canvas.appendChild(this.span);
         this.bottom = this.top = null;
     };
-    R.prototype.remove = function () {
+    _raphael2["default"].prototype.remove = function () {
         var i;
         eve("raphael.remove", this);
         while (i = this.bottom) {
@@ -14366,33 +13288,2649 @@ if (R.vml) {
         }
         this.canvas.parentNode.removeChild(this.canvas);
         for (i in this) {
-            this[i] = typeof this[i] == "function" ? R._removedFactory(i) : null;
+            this[i] = typeof this[i] == "function" ? _raphael2["default"]._removedFactory(i) : null;
         }
         return true;
     };
 
-    var setproto = R.st;
-    for (var method in elproto) if (elproto[has](method) && !setproto[has](method)) {
-        setproto[method] = function (methodname) {
-            return function () {
-                var arg = arguments;
-                return this.forEach(function (el) {
-                    el[methodname].apply(el, arg);
-                });
-            };
-        }(method);
+    var setproto = _raphael2["default"].st;
+    for (var method in elproto) {
+        if (elproto[has](method) && !setproto[has](method)) {
+            setproto[method] = function (methodname) {
+                return function () {
+                    var arg = arguments;
+                    return this.forEach(function (el) {
+                        el[methodname].apply(el, arg);
+                    });
+                };
+            }(method);
+        }
     }
+} /**!
+  * RedRaphael 1.0.0 - JavaScript Vector Library VML Module
+  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
+  *
+  * Raphael 2.1.0 - JavaScript Vector Library VML Module
+  * Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
+  * Copyright © 2008-2012 Sencha Labs <http://sencha.com>
+  *
+  * Licensed under the MIT license.
+  */
+// Define _window as window object in case of indivual file inclusion.
+
+exports["default"] = _raphael2["default"];
+module.exports = exports["default"];
+
+/***/ }),
+/* 74 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+exports.__esModule = true;
+
+var _iterator = __webpack_require__(28);
+
+var _iterator2 = _interopRequireDefault(_iterator);
+
+var _symbol = __webpack_require__(37);
+
+var _symbol2 = _interopRequireDefault(_symbol);
+
+var _typeof = typeof _symbol2['default'] === "function" && typeof _iterator2['default'] === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof _symbol2['default'] === "function" && obj.constructor === _symbol2['default'] && obj !== _symbol2['default'].prototype ? "symbol" : typeof obj; }; /*jslint forin: true, regexp: true, todo: true, white: false, browser: true,
+                                                                                                                                                                                                                                                                                                                                         sloppy: true, white: true, eqeq: false, newcap: true, nomen: true */
+
+/*global FusionCharts */
+
+/**
+ * Raphael Canvas Extension
+ */
+
+var _raphael = __webpack_require__(7);
+
+var _raphael2 = _interopRequireDefault(_raphael);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+if (_raphael2['default'].canvas) {
+    var win = _raphael2['default']._g.win,
+        doc = _raphael2['default']._g.doc,
+        g = _raphael2['default']._g,
+        STRING = 'string',
+        PX = 'px',
+        separator = /[, ]+/,
+        Str = win.String,
+        toInt = win.parseInt,
+        toFloat = win.parseFloat,
+        math = win.Math,
+        mmax = math.max,
+        mmin = math.min,
+        pi = math.PI,
+        mathFloor = math.floor,
+        eve = _raphael2['default'].eve,
+        paperproto = _raphael2['default'].fn,
+        elproto = _raphael2['default'].el,
+        setproto = _raphael2['default'].st,
+        clone = _raphael2['default'].clone,
+        deg2rad = pi / 180,
+        rad2deg = 180 / pi,
+        DEFAULT_FILL = "#fff",
+        DEFAULT_STROKE = "#000",
+        has = "hasOwnProperty",
+        S = " ",
+
+    /** @todo: detect touch */
+    supportsTouch = 'ontouchstart' in win || navigator.msMaxTouchPoints > 0,
+        events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchstart touchmove touchend touchcancel".split(S),
+        noHandle = false,
+        $,
+        FauxNode,
+        Element,
+        draggable = [],
+        drag = [],
+        dragMove = function dragMove(e) {
+        var x = e.clientX,
+            y = e.clientY,
+            scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
+            scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
+            dragi,
+            j = drag.length;
+        while (j--) {
+            dragi = drag[j];
+            if (supportsTouch) {
+                var i = e.touches.length,
+                    touch;
+                while (i--) {
+                    touch = e.touches[i];
+                    if (touch.identifier == dragi.el._drag.id) {
+                        x = touch.clientX;
+                        y = touch.clientY;
+                        (e.originalEvent ? e.originalEvent : e).preventDefault();
+                        break;
+                    }
+                }
+            } else {
+                e.preventDefault();
+            }
+
+            //var node = dragi.el.node;
+            //o,
+            //next = node.nextSibling,
+            //parent = node.parentNode,
+            //display = node.style.display;
+
+            /** @todo: implement raphael.drag.over */
+
+            //g.win.opera && parent.removeChild(node);
+            //node.style.display = "none";
+            //o = dragi.el.paper.getElementByPoint(x, y);
+            //node.style.display = display;
+            //g.win.opera && (next ? parent.insertBefore(node, next) : parent.appendChild(node));
+            //o && eve("raphael.drag.over." + dragi.el.id, dragi.el, o);
+            x += scrollX;
+            y += scrollY;
+            eve("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, x - dragi.el._drag.x, y - dragi.el._drag.y, x, y, e);
+        }
+    },
+        dragUp = function dragUp(e) {
+        _raphael2['default'].unmousemove(dragMove).unmouseup(dragUp);
+        var i = drag.length,
+            dragi;
+        while (i--) {
+            dragi = drag[i];
+            dragi.el._drag = {};
+            dragi.onendHandler && eve("raphael.drag.end." + dragi.el.id, dragi.end_scope || dragi.start_scope || dragi.move_scope || dragi.el, e);
+        }
+        drag = [];
+    };
+
+    $ = _raphael2['default']._createNode = function (el, attr) {
+        if (attr) {
+            if ((typeof el === 'undefined' ? 'undefined' : _typeof(el)) === STRING) {
+                el = $(el);
+            }
+            for (var key in attr) {
+                if (attr.hasOwnProperty(key)) {
+                    el.setAttribute(key, Str(attr[key]));
+                }
+            }
+        } else {
+            el = doc.createElement(el);
+        }
+        return el;
+    };
+
+    _raphael2['default']._getConnectedNodes = function (node) {
+        return {
+            above: [],
+            below: []
+        };
+    };
+
+    _raphael2['default']._getTargetNode = function (coords) {
+        var x = coords[0],
+            y = coords[1];
+    };
+
+    _raphael2['default']._containerEventHandler = function (event) {
+        event = event || win.event;
+
+        if (noHandle) {
+            return;
+        }
+
+        /** @todo: do not use offsetX and offsetY */
+        var x = event.offsetX,
+            //mathFloor(event.pageX || (event.clientX + doc.body.scrollLeft + doc.documentElement.scrollLeft) || 0),
+        y = event.offsetY,
+            //mathFloor(event.pageY || (event.clientY + doc.body.scrollTop + doc.documentElement.scrollTop) || 0),
+        type = event.type,
+            node = _raphael2['default']._getTargetNode([x, y]);
+
+        //console.log(type + ":: x: " + x + " y: " + y);
+
+        /*
+        if (typeof node.listeners[type] === 'function') {
+            node.listeners[type].call(node, e);
+        }*/
+    };
+
+    FauxNode = function FauxNode(parent) {
+        this.type = "basic";
+
+        this.owner = parent;
+
+        // Element reference needed to get attrs so that there is no need to
+        // maintain a redundant copy.
+        this._rElement = null;
+
+        // False if this element does not need mouse interactivity.
+        this.mouseInteractions = false;
+        this.matrix = null;
+
+        // An outline path that will be the outline of the shape or in case of
+        // text the rect that bounds the text.
+        this.outlinePath = null;
+
+        this.conf = {};
+    };
+
+    FauxNode.prototype = {
+
+        constructor: FauxNode,
+
+        /**
+         * This method does the complete rendering of the element, including
+         * (re)setting the bbox and image map.
+         *
+         * @returns {_L10.FauxNode.prototype}
+         */
+        render: function render() {
+
+            var o = this;
+
+            o.draw();
+            o.setBBox();
+
+            return o;
+        },
+
+        /**
+         * Applies the transforms and clipping to the context and draws the
+         * element.
+         *
+         * @returns {undefined}
+         */
+        draw: function draw() {
+            var o = this,
+                ctx = o.context,
+                el = o._rElement,
+                m = el.matrix,
+                isClipped = o.isClipped,
+                attrs = o.validateAttrs(),
+                cr,
+                end;
+
+            // After the validation the attributes need to be set to the element
+            // as validateAttrs works on a copy of the attrs object.
+            el.attrs = attrs;
+
+            ctx.save();
+
+            ctx.fillStyle = attrs.fill;
+            ctx.strokeStyle = attrs.stroke;
+            ctx.lineWidth = attrs['stroke-width'];
+
+            // Applying the clip before the context is transformed as is the case
+            // in case of SVG.
+            if (cr = attrs['clip-rect']) {
+                cr = cr.split(" ");
+                ctx.rect(cr[0], cr[1], cr[2], cr[3]);
+                ctx.clip();
+                isClipped = o.isClipped = true;
+            }
+
+            o.applyTransform(m);
+
+            o.paint();
+
+            ctx.restore();
+        },
+
+        /**
+         * Parse the attributes provided to paint the element shape using the
+         * canvas context.
+         *
+         * Overridden by individual derived FauxNodes
+         */
+        paint: function paint() {},
+
+        /**
+         * The redraw of the FauxNodes is to be handled by the CanvasObjectModel
+         * instance as it involves redrawing all the elements corresponsing to
+         * that canvas in the proper order.
+         */
+        redraw: function redraw() {
+            this.COMInstance.redraw(this);
+        },
+
+        /**
+         * Clears the rectangle corresponding to the bounding box of the node.
+         */
+        clear: function clear() {
+            var o = this,
+                ctx = o.context,
+                bbox = o._bbox;
+
+            /** @todo: while clearing the stroke-width also needs to be accounted for. */
+            if (bbox) {
+                ctx.clearRect(bbox.x, bbox.y, bbox.width, bbox.height);
+            }
+        },
+
+        /**
+         * Creates the area node in the image map so that mouse interactivity
+         * can be emulated using it.
+         */
+        addMouseInteractivity: function addMouseInteractivity() {
+            var o = this,
+                attrs = o._rElement.attrs,
+                bbox = o._bbox,
+                map = o.owner.wrapper._map,
+                shape = o.type === 'circle' ? 'circle' : 'rect',
+                coords = shape === 'circle' ? [attrs.cx, attrs.cy, attrs.r].join(",") : [bbox.x, bbox.y, bbox.x2, bbox.y2].join(","),
+                area,
+                end;
+
+            area = $('area', { shape: shape, coords: coords });
+            if (map.firstChild) {
+                map.insertBefore(area, map.firstChild);
+            } else {
+                map.appendChild(area);
+            }
+
+            /** @todo: should be put this check here */
+            o._mouseArea = area;
+
+            // Needed for paths.
+            o.eventListeners = {};
+        },
+
+        /**
+         * Update the coords of the area node (image map) corresponding to the FauxNode
+         * after it has been modified by changing attributes.
+         */
+        updateMapAreaCoords: function updateMapAreaCoords() {
+            var o = this,
+                oArea = o._mouseArea,
+                bbox = o._bbox;
+
+            if (oArea) {
+                //o.context.strokeRect(bbox.x, bbox.y, bbox.width, bbox.height);
+                if (o instanceof CircleFauxNode) {
+                    var r = bbox.width / 2;
+                    oArea.setAttribute('coords', [bbox.x + r, bbox.y + r, r].join(","));
+                } else {
+                    oArea.setAttribute('coords', [bbox.x, bbox.y, bbox.x2, bbox.y2].join(","));
+                }
+            }
+        },
+
+        /**
+         * Applies the transform given the transformation matrix to the context.
+         *
+         * @param {type} matrix
+         * @param {type} bbox
+         * @param {type} dontsetbbox
+         *
+         * @returns {_L10.FauxNode.prototype.transformBBox.tbox}
+         */
+        applyTransform: function applyTransform(m) {
+            var o = this,
+                ctx = o.context,
+                split;
+
+            if (m) {
+                split = m.split();
+                ctx.translate(split.dx, split.dy);
+                !split.noRotation && ctx.rotate(deg2rad * split.rotate);
+                ctx.scale(split.scalex, split.scaley);
+            }
+        },
+
+        /**
+         *
+         */
+        setBBox: function setBBox() {
+            var o = this,
+                el = o._rElement,
+                m = el.matrix,
+                parent = o.owner,
+                pm = parent.getTransformMatrix && parent.getTransformMatrix();
+
+            if (pm) {
+                pm = pm.clone();
+                pm.add(m);
+                m = pm;
+            }
+
+            if (o.outlinePath) {
+                o._bbox = _raphael2['default'].pathBBox(_raphael2['default'].transformPath(o.outlinePath, m.toTransformString()).toString());
+            } else {
+                o.setShapeBBox(m);
+            }
+
+            o._mouseArea && o.updateMapAreaCoords();
+        },
+
+        getBBox: function getBBox() {
+            return this._bbox;
+        },
+
+        drawPath: function drawPath(path) {
+            var o = this,
+                ctx = o.context,
+                len = path && path.length || 0,
+                pp = PathParser,
+                i = 0,
+                command,
+                x,
+                y,
+                end;
+
+            // The PathParser object has been borrowed from canvg. All 3rd party attributions implied.
+            pp.reset();
+            pp.setTokens(path);
+
+            //var bb = new BoundingBox();
+            if (ctx != null) {
+                ctx.beginPath();
+            }
+
+            while (!pp.isEnd()) {
+                pp.nextCommand();
+                switch (pp.command) {
+                    case 'M':
+                    case 'm':
+                        var p = pp.getAsCurrentPoint();
+                        pp.addMarker(p);
+                        //bb.addPoint(p.x, p.y);
+                        if (ctx != null) {
+                            ctx.moveTo(p.x, p.y);
+                        }
+                        pp.start = pp.current;
+                        while (!pp.isCommandOrEnd()) {
+                            var p = pp.getAsCurrentPoint();
+                            pp.addMarker(p, pp.start);
+                            //bb.addPoint(p.x, p.y);
+                            if (ctx != null) {
+                                ctx.lineTo(p.x, p.y);
+                            }
+                        }
+                        break;
+                    case 'L':
+                    case 'l':
+                        while (!pp.isCommandOrEnd()) {
+                            var c = pp.current;
+                            var p = pp.getAsCurrentPoint();
+                            pp.addMarker(p, c);
+                            //bb.addPoint(p.x, p.y);
+                            if (ctx != null) {
+                                ctx.lineTo(p.x, p.y);
+                            }
+                        }
+                        break;
+                    case 'H':
+                    case 'h':
+                        while (!pp.isCommandOrEnd()) {
+                            var newP = new Point((pp.isRelativeCommand() ? pp.current.x : 0) + pp.getScalar(), pp.current.y);
+                            pp.addMarker(newP, pp.current);
+                            pp.current = newP;
+                            //bb.addPoint(pp.current.x, pp.current.y);
+                            if (ctx != null) {
+                                ctx.lineTo(pp.current.x, pp.current.y);
+                            }
+                        }
+                        break;
+                    case 'V':
+                    case 'v':
+                        while (!pp.isCommandOrEnd()) {
+                            var newP = new Point(pp.current.x, (pp.isRelativeCommand() ? pp.current.y : 0) + pp.getScalar());
+                            pp.addMarker(newP, pp.current);
+                            pp.current = newP;
+                            //bb.addPoint(pp.current.x, pp.current.y);
+                            if (ctx != null) {
+                                ctx.lineTo(pp.current.x, pp.current.y);
+                            }
+                        }
+                        break;
+                    case 'C':
+                    case 'c':
+                        while (!pp.isCommandOrEnd()) {
+                            var curr = pp.current;
+                            var p1 = pp.getPoint();
+                            var cntrl = pp.getAsControlPoint();
+                            var cp = pp.getAsCurrentPoint();
+                            pp.addMarker(cp, cntrl, p1);
+                            //bb.addBezierCurve(curr.x, curr.y, p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
+                            if (ctx != null) {
+                                ctx.bezierCurveTo(p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
+                            }
+                        }
+                        break;
+                    case 'S':
+                    case 's':
+                        while (!pp.isCommandOrEnd()) {
+                            var curr = pp.current;
+                            var p1 = pp.getReflectedControlPoint();
+                            var cntrl = pp.getAsControlPoint();
+                            var cp = pp.getAsCurrentPoint();
+                            pp.addMarker(cp, cntrl, p1);
+                            //bb.addBezierCurve(curr.x, curr.y, p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
+                            if (ctx != null) {
+                                ctx.bezierCurveTo(p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
+                            }
+                        }
+                        break;
+                    case 'Q':
+                    case 'q':
+                        while (!pp.isCommandOrEnd()) {
+                            var curr = pp.current;
+                            var cntrl = pp.getAsControlPoint();
+                            var cp = pp.getAsCurrentPoint();
+                            pp.addMarker(cp, cntrl, cntrl);
+                            //bb.addQuadraticCurve(curr.x, curr.y, cntrl.x, cntrl.y, cp.x, cp.y);
+                            if (ctx != null) ctx.quadraticCurveTo(cntrl.x, cntrl.y, cp.x, cp.y);
+                        }
+                        break;
+                    case 'T':
+                    case 't':
+                        while (!pp.isCommandOrEnd()) {
+                            var curr = pp.current;
+                            var cntrl = pp.getReflectedControlPoint();
+                            pp.control = cntrl;
+                            var cp = pp.getAsCurrentPoint();
+                            pp.addMarker(cp, cntrl, cntrl);
+                            //bb.addQuadraticCurve(curr.x, curr.y, cntrl.x, cntrl.y, cp.x, cp.y);
+                            if (ctx != null) ctx.quadraticCurveTo(cntrl.x, cntrl.y, cp.x, cp.y);
+                        }
+                        break;
+                    case 'A':
+                    case 'a':
+                        while (!pp.isCommandOrEnd()) {
+                            var curr = pp.current;
+                            var rx = pp.getScalar();
+                            var ry = pp.getScalar();
+                            var xAxisRotation = pp.getScalar() * (Math.PI / 180.0);
+                            var largeArcFlag = pp.getScalar();
+                            var sweepFlag = pp.getScalar();
+                            var cp = pp.getAsCurrentPoint();
+
+                            // Conversion from endpoint to center parameterization
+                            // http://www.w3.org/TR/SVG11/implnote.html#ArcImplementationNotes
+                            // x1', y1'
+                            var currp = new Point(Math.cos(xAxisRotation) * (curr.x - cp.x) / 2.0 + Math.sin(xAxisRotation) * (curr.y - cp.y) / 2.0, -Math.sin(xAxisRotation) * (curr.x - cp.x) / 2.0 + Math.cos(xAxisRotation) * (curr.y - cp.y) / 2.0);
+                            // adjust radii
+                            var l = Math.pow(currp.x, 2) / Math.pow(rx, 2) + Math.pow(currp.y, 2) / Math.pow(ry, 2);
+                            if (l > 1) {
+                                rx *= Math.sqrt(l);
+                                ry *= Math.sqrt(l);
+                            }
+                            // cx', cy'
+                            var s = (largeArcFlag == sweepFlag ? -1 : 1) * Math.sqrt((Math.pow(rx, 2) * Math.pow(ry, 2) - Math.pow(rx, 2) * Math.pow(currp.y, 2) - Math.pow(ry, 2) * Math.pow(currp.x, 2)) / (Math.pow(rx, 2) * Math.pow(currp.y, 2) + Math.pow(ry, 2) * Math.pow(currp.x, 2)));
+                            if (isNaN(s)) s = 0;
+                            var cpp = new Point(s * rx * currp.y / ry, s * -ry * currp.x / rx);
+                            // cx, cy
+                            var centp = new Point((curr.x + cp.x) / 2.0 + Math.cos(xAxisRotation) * cpp.x - Math.sin(xAxisRotation) * cpp.y, (curr.y + cp.y) / 2.0 + Math.sin(xAxisRotation) * cpp.x + Math.cos(xAxisRotation) * cpp.y);
+                            // vector magnitude
+                            var m = function m(v) {
+                                return Math.sqrt(Math.pow(v[0], 2) + Math.pow(v[1], 2));
+                            };
+                            // ratio between two vectors
+                            var r = function r(u, v) {
+                                return (u[0] * v[0] + u[1] * v[1]) / (m(u) * m(v));
+                            };
+                            // angle between two vectors
+                            var a = function a(u, v) {
+                                return (u[0] * v[1] < u[1] * v[0] ? -1 : 1) * Math.acos(r(u, v));
+                            };
+                            // initial angle
+                            var a1 = a([1, 0], [(currp.x - cpp.x) / rx, (currp.y - cpp.y) / ry]);
+                            // angle delta
+                            var u = [(currp.x - cpp.x) / rx, (currp.y - cpp.y) / ry];
+                            var v = [(-currp.x - cpp.x) / rx, (-currp.y - cpp.y) / ry];
+                            var ad = a(u, v);
+                            if (r(u, v) <= -1) ad = Math.PI;
+                            if (r(u, v) >= 1) ad = 0;
+
+                            // for markers
+                            var dir = 1 - sweepFlag ? 1.0 : -1.0;
+                            var ah = a1 + dir * (ad / 2.0);
+                            var halfWay = new Point(centp.x + rx * Math.cos(ah), centp.y + ry * Math.sin(ah));
+                            pp.addMarkerAngle(halfWay, ah - dir * Math.PI / 2);
+                            pp.addMarkerAngle(cp, ah - dir * Math.PI);
+
+                            //bb.addPoint(cp.x, cp.y); // TODO: this is too naive, make it better
+                            if (ctx != null) {
+                                var r = rx > ry ? rx : ry;
+                                var sx = rx > ry ? 1 : rx / ry;
+                                var sy = rx > ry ? ry / rx : 1;
+
+                                ctx.translate(centp.x, centp.y);
+                                ctx.rotate(xAxisRotation);
+                                ctx.scale(sx, sy);
+                                ctx.arc(0, 0, r, a1, a1 + ad, 1 - sweepFlag);
+                                ctx.scale(1 / sx, 1 / sy);
+                                ctx.rotate(-xAxisRotation);
+                                ctx.translate(-centp.x, -centp.y);
+                            }
+                        }
+                        break;
+                    case 'Z':
+                    case 'z':
+                        if (ctx != null) ctx.closePath();
+                        pp.current = pp.start;
+                }
+            }
+
+            o.outlinePath = path;
+
+            return o;
+        },
+
+        /**
+         * Methods to add and remove event listeners emulating the DOM of
+         * standard browsers (and also the non-standard one).
+         */
+        addEventListener: function addEventListener() {
+            var o = this,
+                args = arguments,
+                eventName = args && args[0],
+                handler = args && args[1],
+                area,
+                checkPathHandler,
+                end;
+
+            if (!o._mouseArea) {
+                o.addMouseInteractivity();
+            }
+
+            area = o._mouseArea;
+
+            if (typeof eventName === 'string' && typeof handler === 'function') {
+                /*
+                 * If the shape has an associated path then we need to check if
+                 * the mouse is within the co-ordinates of the path.
+                 */
+                if (o._path) {
+
+                    /*
+                     * If the event being listened to is mouseover, mouseout or
+                     * mousemove then the mouse position has to be constantly
+                     * monitored and the event handler called explicitly when
+                     * appropriate.
+                     */
+                    if (eventName === 'mouseover' || eventName === 'mouseout' || eventName === 'mousemove') {
+
+                        if (!o._mousemoveAdded) {
+                            var startListening = function (node) {
+
+                                var isInside = false,
+                                    isOutside = true,
+                                    transition = false;
+
+                                return function (event) {
+                                    /** @todo: replace layerX and layerY with
+                                     * standard ways of determining mouse position.
+                                     */
+                                    var x = event.layerX,
+                                        y = event.layerY;
+
+                                    transition = false;
+                                    /*
+                                     * Check if the current position of the mouse
+                                     * pointer lies within the path or not.
+                                     */
+                                    if (_raphael2['default'].isPointInsidePath(node._transformPath, x, y)) {
+                                        /*
+                                         * @todo: fix isPointInsidePath to return the
+                                         * proper result when the mouse pointer is on
+                                         * the same horizontal/vertical lines as one
+                                         * of the vertices of the path.
+                                         */
+                                        isInside = true;
+                                        if (isOutside) {
+                                            isOutside = false;
+                                            transition = true;
+                                        }
+                                    } else {
+                                        isOutside = true;
+                                        if (isInside) {
+                                            isInside = false;
+                                            transition = true;
+                                        }
+                                    }
+
+                                    // Based on the state of the flags, fire the
+                                    // appropriate event handlers.
+                                    if (isOutside && transition && node.eventListeners['mouseout']) {
+                                        node.eventListeners['mouseout'].apply(this, arguments);
+                                    }
+                                    if (isInside) {
+                                        if (transition && node.eventListeners['mouseover']) {
+                                            node.eventListeners['mouseover'].apply(this, arguments);
+                                        }
+                                        if (node.eventListeners['mousemove']) {
+                                            node.eventListeners['mousemove'].apply(this, arguments);
+                                        }
+                                    }
+                                };
+                            }(o);
+
+                            area.addEventListener('mousemove', startListening, false);
+                            o._mousemoveAdded = true;
+                        }
+
+                        o.eventListeners[eventName] = handler;
+                    } else {
+                        var checkPathHandler = function (node, handler) {
+                            return function (event) {
+                                if (_raphael2['default'].isPointInsidePath(node._path, event.layerX, event.layerY)) {
+                                    handler.apply(this, arguments);
+                                }
+                            };
+                        }(o, handler);
+
+                        area.addEventListener(eventName, checkPathHandler, false);
+                    }
+                } else {
+                    area.addEventListener(eventName, handler, false);
+                }
+            }
+        },
+
+        removeEventListener: function removeEventListener() {
+            var o = this,
+                args = arguments,
+                eventName = args && args[0],
+                handler = args && args[1],
+                area,
+                end;
+
+            if (!o._mouseArea) {
+                return;
+            }
+            area = o._mouseArea;
+
+            if (typeof eventName === 'string' && typeof handler === 'function') {
+                area.removeEventListener(eventName, handler);
+            }
+        },
+
+        attachEvent: function attachEvent() {},
+
+        detachEvent: function detachEvent() {},
+
+        validateAttrs: function validateAttrs(attrs) {
+
+            var o = this,
+                elAttrs = clone(o._rElement.attrs),
+                attr,
+                val;
+
+            if (attrs === null) {
+                if (o._isValid) {
+                    return elAttrs;
+                } else {
+                    o._isValid = true;
+                }
+            }
+
+            attrs = attrs || elAttrs;
+
+            for (attr in attrs) {
+                val = attrs[attr];
+
+                switch (attr) {
+
+                    default:
+                        continue;
+                }
+            }
+
+            return attrs;
+        },
+
+        attrs: function attrs() {}
+    };
+
+    var NodeListItem = function NodeListItem(node) {
+        this.node = node;
+        this.next = null;
+        this.prev = null;
+    },
+        NodeList = function NodeList() {
+        this.top = null;
+        this.bottom = null;
+    };
+
+    NodeList.prototype = {
+
+        constructor: NodeList,
+
+        add: function add(node) {
+
+            node = new NodeListItem(node);
+
+            if (!this.bottom) {
+                this.bottom = node;
+            }
+            if (this.top) {
+                this.top.next = node;
+            }
+            node.next = null;
+            node.prev = this.top;
+
+            this.top = node;
+        },
+
+        addList: function addList(list) {
+            if (!this.bottom) {
+                this.bottom = list.bottom;
+            }
+
+            if (this.top) {
+                this.top.next = list.bottom;
+                list.bottom.prev = this.top;
+            }
+
+            this.top = list.top;
+        },
+
+        toFront: function toFront(node) {
+            if (this.top === node) {
+                return false;
+            }
+
+            if (this.bottom === node) {
+                this.bottom = node.next;
+            }
+
+            //var map = node.node.canvas._map,
+            //    area = node.node._mouseArea;
+
+            node.prev && (node.prev.next = node.next);
+            node.next && (node.next.prev = node.prev);
+
+            this.top.next = node;
+            node.prev = this.top;
+            node.next = null;
+
+            this.top = node;
+
+            /*if (map.firstChild) {
+                map.insertBefore(area, map.firstChild);
+            }
+            else {
+                map.appendChild(area);
+            }
+             node.redraw();*/
+        },
+
+        toBack: function toBack(node) {
+            if (this.bottom === node) {
+                return false;
+            }
+
+            if (this.top === node) {
+                this.top = node.prev;
+            }
+
+            //var map = node.canvas._map,
+            //    area = node._mouseArea;
+
+            node.prev && (node.prev.next = node.next);
+            node.next && (node.next.prev = node.prev);
+
+            this.bottom.prev = node;
+            node.prev = null;
+            node.next = this.bottom;
+
+            this.bottom = node;
+
+            /*map.appendChild(area);
+             node.redraw();*/
+        },
+
+        insertBefore: function insertBefore() {},
+
+        insertAfter: function insertAfter() {},
+
+        each: function each(fn, args) {
+            var item = this.bottom;
+
+            while (item) {
+                fn.apply(item.node, args);
+                item = item.next;
+            }
+        },
+
+        iterate: function iterate(fn, args) {
+            var item = this.bottom,
+                retVal = true;
+
+            while (item) {
+                retVal = fn.apply(item.node, args);
+
+                if (retVal === false) {
+                    break;
+                }
+
+                item = item.next;
+            }
+        },
+
+        dispose: function dispose() {
+
+            this.each(function () {
+                this.node.dispose && this.node.dispose();
+            });
+
+            this.top = null;
+            this.bottom = null;
+        }
+    };
+
+    /**
+     *
+        ncowner, a NodeCollection that corresponds to the collection of which
+        the layer neing created  is a part
+         above, a NodeCollection iterator, that indicated the collection the layer has to be rendered. If
+        not provided then this is the first layer of ncowner.
+     */
+    var CanvasLayer = function CanvasLayer(ncowner, canvas) {
+        this.items = new NodeList();
+
+        this.owner = ncowner;
+        //this.above = above;
+        this.element = null;
+
+        if (canvas) {
+            this.element = canvas;
+        } else {
+            this.init();
+        }
+    };
+
+    CanvasLayer.prototype = {
+        constructor: CanvasLayer,
+
+        appendChild: function appendChild() {
+            var o = this,
+                ownerWrapper = o.owner.wrapper,
+                ele = this.element;
+
+            if (ownerWrapper._image) {
+                ownerWrapper.insertBefore(ele, ownerWrapper._image);
+            } else {
+                ownerWrapper.appendChild(ele);
+            }
+        },
+
+        insertBefore: function insertBefore() {},
+
+        insertAfter: function insertAfter() {},
+
+        init: function init() {
+            this.element = $("canvas");
+            // CHECKPOINT: width and height in %?
+            $(this.element, {
+                width: this.owner.wrapper.offsetWidth,
+                height: this.owner.wrapper.offsetHeight
+            });
+
+            this.element.style.cssText = "position:absolute;left:0;top:0;";
+
+            this.appendChild();
+        },
+
+        getCanvas: function getCanvas() {
+            return this.element;
+        },
+
+        getContext: function getContext() {
+            return this.element.getContext('2d');
+        },
+
+        addToLayer: function addToLayer(node) {
+            this.items.add(node);
+        },
+
+        mergeWithLayerOnTop: function mergeWithLayerOnTop(layerObj) {
+            this.items.addList(layerObj.items);
+            layerObj.dispose(true);
+        },
+
+        mergeWithLayerOnBottom: function mergeWithLayerOnBottom(layerObj) {
+            layerObj.items.addList(this.items);
+            this.items = layerObj.items;
+            layerObj.dispose(true);
+        },
+
+        dispose: function dispose(softDispose) {
+
+            if (!softDispose) {
+                this.items.each(function () {
+                    this.dispose();
+                });
+            }
+
+            this.items = null;
+            this.owner = null;
+
+            this.element.parentNode.removeChild(this.element);
+            this.element = null;
+        }
+    };
+
+    var NodeCollection = function NodeCollection(parent, wrapper, canvas) {
+
+        this.nodeItems = new NodeList();
+        this.collectionItems = new NodeList();
+        this.layerItems = new NodeList();
+
+        this.owner = this.parent = parent;
+        this.layerOnTop = null;
+
+        this.currentLayer = null;
+        this.baseLayer = null;
+
+        if (wrapper) {
+            this.wrapper = wrapper;
+            this.currentLayer = this.baseLayer = new CanvasLayer(this, canvas);
+        } else {
+            this.init();
+        }
+    };
+
+    NodeCollection.prototype = {
+        constructor: NodeCollection,
+
+        init: function init() {
+
+            var o = this,
+                parent = o.parent,
+                imageMap = parent.wrapper._image,
+                wrapper = $("div");
+
+            // Hacky but need a refernce to the image map to addEventListeners.
+            wrapper.style.cssText = "width:100%;height:100%;position:absolute;left:0;top:0;";
+
+            wrapper._map = parent.wrapper._map;
+
+            if (imageMap) {
+                parent.wrapper.insertBefore(wrapper, imageMap);
+            } else {
+                parent.wrapper.appendChild(wrapper);
+            }
+
+            o.wrapper = wrapper;
+            o.currentLayer = o.baseLayer = new CanvasLayer(o);
+        },
+
+        getCurrentContext: function getCurrentContext() {
+            return this.currentLayer.getContext();
+        },
+
+        setLayerOnTop: function setLayerOnTop(layerObj) {
+            this.layerOnTop = layerObj;
+        },
+
+        getCurrentCanvas: function getCurrentCanvas() {
+            return this.currentLayer.getCanvas();
+        },
+
+        addNode: function addNode(node) {
+            this.nodeItems.add(node);
+
+            if (node.type === "group") {
+                this.addCollection(node);
+            } else {
+                this.currentLayer.addToLayer(node);
+            }
+        },
+
+        addCollection: function addCollection(collectionNode) {
+
+            collectionNode = collectionNode || new NodeCollection(this);
+
+            this.collectionItems.add(collectionNode);
+            this.currentLayer = new CanvasLayer(this);
+            this.layerItems.add(this.currentLayer);
+            collectionNode.setLayerOnTop(this.currentLayer);
+        },
+
+        dispose: function dispose() {
+            this.nodeItems.dispose();
+            this.collectionItems.dispose();
+            this.layerItems.dispose();
+            this.owner = this.parent = null;
+
+            this.ownerLayer = null;
+            this.currentLayer = null;
+            this.baseLayer = null;
+        }
+    };
+
+    /**
+     * The CanvasObjectModel will be a layer of abstraction above the individual
+     * FauxNodes created to emulate the DOM in case of canvas rendering.
+     * The engine will be the point of contact for Raphael._engine that will be
+     * the direct consumer of the FauxNodes.
+     */
+    var CanvasObjectModel = function CanvasObjectModel(cnvs, wrpr, width, height) {
+
+        var com = this,
+            root = new NodeCollection(null, wrpr, cnvs);
+
+        //root.set
+
+        com.width = width;
+        com.height = height;
+
+        com.createNode = function (type, parent) {
+
+            parent = parent || root;
+
+            var node,
+                nodeItems = parent.nodeItems,
+                layer = parent.currentLayer,
+                canvasEle = layer.getCanvas();
+
+            switch (type) {
+                case 'rect':
+                    node = new RectFauxNode(parent);
+                    break;
+
+                case 'circle':
+                    node = new CircleFauxNode(parent);
+                    break;
+
+                case 'path':
+                    node = new PathFauxNode(parent);
+                    break;
+
+                case 'text':
+                    node = new TextFauxNode(parent);
+                    break;
+
+                case 'group':
+                    node = new GroupFauxNode(parent);
+                    parent.addCollection(node);
+                    break;
+
+                default:
+                    node = new FauxNode(canvasEle);
+            }
+
+            node.COMInstance = this;
+            nodeItems.add(node);
+            layer.addToLayer(node);
+
+            return node;
+        };
+
+        /**
+         * This method is needed to redraw a node. Redraw is to be handled at the
+         * COM level as redrawing one node needs all the (connected) nodes to be
+         * redrawn in the right order.
+         *
+         * @param {type} node The node that needs to be redrawn.
+         *
+         * @returns {undefined}
+         */
+        com.redraw = function (node) {
+
+            // Check if node is a group or a shape.
+            var nodeList, childNode, layer;
+
+            if (node.type === "group") {
+                nodeList = node.nodeItems;
+                node.render();
+            } else {
+
+                layer = node.layer;
+                nodeList = layer.items;
+                childNode = nodeList.bottom;
+
+                // Clear the canvas.
+                layer.element.width = layer.element.width;
+
+                while (childNode) {
+                    fNode = childNode.node;
+                    fNode.type !== "group" && fNode.render();
+                    childNode = childNode.next;
+                }
+            }
+        };
+
+        com.insertBefore = function (node) {};
+
+        com.insertAfter = function (node) {};
+
+        com.removeNode = function (node) {};
+
+        com.refreshNode = function (node) {};
+
+        com.refreshAll = function () {};
+    };
+
+    Point = function Point(x, y) {
+        this.x = x;
+        this.y = y;
+    };
+
+    Point.prototype.angleTo = function (p) {
+        return Math.atan2(p.y - this.y, p.x - this.x);
+    };
+
+    Point.prototype.applyTransform = function (v) {
+        var xp = this.x * v[0] + this.y * v[2] + v[4];
+        var yp = this.x * v[1] + this.y * v[3] + v[5];
+        this.x = xp;
+        this.y = yp;
+    };
+
+    PathParser = new function () {
+
+        this.tokens = null;
+
+        this.setTokens = function (d) {
+            if (typeof d === 'string') {
+                this.tokens = d.split(' ');
+            } else {
+                this.tokens = d;
+            }
+        };
+
+        this.reset = function () {
+            this.i = -1;
+            this.command = '';
+            this.previousCommand = '';
+            this.start = new Point(0, 0);
+            this.control = new Point(0, 0);
+            this.current = new Point(0, 0);
+            this.points = [];
+            this.angles = [];
+        };
+
+        this.isEnd = function () {
+            return this.i >= this.tokens.length - 1;
+        };
+
+        this.isCommandOrEnd = function () {
+            if (this.isEnd()) {
+                return true;
+            }
+
+            return this.tokens[this.i + 1].toString().match(/^[A-Za-z]$/) != null;
+        };
+
+        this.isRelativeCommand = function () {
+            switch (this.command) {
+                case 'm':
+                case 'l':
+                case 'h':
+                case 'v':
+                case 'c':
+                case 's':
+                case 'q':
+                case 't':
+                case 'a':
+                case 'z':
+                    return true;
+                    break;
+            }
+            return false;
+        };
+
+        this.getToken = function () {
+            this.i++;
+            return this.tokens[this.i];
+        };
+
+        this.getScalar = function () {
+            return parseFloat(this.getToken());
+        };
+
+        this.nextCommand = function () {
+            this.previousCommand = this.command;
+            this.command = this.getToken();
+        };
+
+        this.getPoint = function () {
+            var p = new Point(this.getScalar(), this.getScalar());
+            return this.makeAbsolute(p);
+        };
+
+        this.getAsControlPoint = function () {
+            var p = this.getPoint();
+            this.control = p;
+            return p;
+        };
+
+        this.getAsCurrentPoint = function () {
+            var p = this.getPoint();
+            this.current = p;
+            return p;
+        };
+
+        this.getReflectedControlPoint = function () {
+            if (this.previousCommand.toLowerCase() != 'c' && this.previousCommand.toLowerCase() != 's' && this.previousCommand.toLowerCase() != 'q' && this.previousCommand.toLowerCase() != 't') {
+                return this.current;
+            }
+
+            // reflect point
+            var p = new Point(2 * this.current.x - this.control.x, 2 * this.current.y - this.control.y);
+            return p;
+        };
+
+        this.makeAbsolute = function (p) {
+            if (this.isRelativeCommand()) {
+                p.x += this.current.x;
+                p.y += this.current.y;
+            }
+            return p;
+        };
+
+        this.addMarker = function (p, from, priorTo) {
+            // if the last angle isn't filled in because we didn't have this point yet ...
+            if (priorTo != null && this.angles.length > 0 && this.angles[this.angles.length - 1] == null) {
+                this.angles[this.angles.length - 1] = this.points[this.points.length - 1].angleTo(priorTo);
+            }
+            this.addMarkerAngle(p, from == null ? null : from.angleTo(p));
+        };
+
+        this.addMarkerAngle = function (p, a) {
+            this.points.push(p);
+            this.angles.push(a);
+        };
+
+        this.getMarkerPoints = function () {
+            return this.points;
+        };
+
+        this.getMarkerAngles = function () {
+            for (var i = 0; i < this.angles.length; i++) {
+                if (this.angles[i] == null) {
+                    for (var j = i + 1; j < this.angles.length; j++) {
+                        if (this.angles[j] != null) {
+                            this.angles[i] = this.angles[j];
+                            break;
+                        }
+                    }
+                }
+            }
+            return this.angles;
+        };
+    }();
+
+    /**
+     * The FauxNode is the adapter written to give DOM node like handling to the
+     * shapes that are create using canvas object model.
+     */
+
+    RectFauxNode = function RectFauxNode(parentObj) {
+        this.type = "rect";
+        this._isValid = false;
+
+        this.parent = this.owner = parentObj;
+        this.context = parentObj.getCurrentContext();
+        this.layer = parentObj.currentLayer;
+    };
+
+    RectFauxNode.prototype = _raphael2['default'].extend(new FauxNode(), {
+
+        constructor: RectFauxNode,
+
+        paint: function paint() {
+
+            var o = this,
+                ctx = o.context,
+
+            // CHECKPOINT 3. Rename validateAttrs to getValidAttrs?
+            attrs = o.validateAttrs(),
+                x = attrs.x,
+                y = attrs.y,
+                w = attrs.width,
+                h = attrs.height,
+                r = attrs.r,
+
+            /** @todo: provide support for rx, ry */
+            rx = r || attrs.rx,
+                ry = r || attrs.ry;
+
+            if (attrs.r) {
+                path = ["M", x + rx, y, "L", x + w - rx, y].concat(["A", rx, ry, 0, 0, 1, x + w, y + ry]).concat(["L", x + w, y + h - ry]).concat(["A", rx, ry, 0, 0, 1, x + w - rx, y + h]).concat(["L", x + rx, y + h]).concat(["A", rx, ry, 0, 0, 1, x, y + h - ry]).concat(["L", x, y + ry]).concat(["A", rx, ry, 0, 0, 1, x + rx, y, "Z"]);
+            } else {
+                path = ["M", x, y, "H", x + w, "V", y + h, "H", x, "V", y, "Z"];
+            }
+
+            o.drawPath(path);
+
+            if (attrs['stroke-width']) {
+                var strokeAlpha = attrs['stroke-opacity'] === undefined ? attrs['opacity'] : attrs['stroke-opacity'];
+                if (strokeAlpha !== undefined) {
+                    ctx.globalAlpha = strokeAlpha;
+                }
+                ctx.stroke();
+            }
+            var fillAlpha = attrs['fill-opacity'] === undefined ? attrs['opacity'] : attrs['fill-opacity'];
+            if (fillAlpha !== undefined) {
+                ctx.globalAlpha = fillAlpha;
+            }
+            ctx.fill();
+
+            return;
+        },
+
+        validateAttrs: function validateAttrs(attrs) {
+            var o = this,
+                elAttrs = clone(o._rElement.attrs),
+                attr,
+                val;
+
+            if (attrs === null) {
+                if (o._isValid) {
+                    return elAttrs;
+                } else {
+                    o._isValid = true;
+                }
+            }
+
+            attrs = attrs || elAttrs;
+
+            for (attr in attrs) {
+                val = attrs[attr];
+
+                switch (attr) {
+                    case "r":
+                        var w = elAttrs.width,
+                            h = elAttrs.height,
+                            maxR = mmin(w, h) / 2;
+
+                        if (val > maxR) {
+                            attrs.r = maxR;
+                        }
+
+                        if (val < 0) {
+                            attrs.r = 0;
+                        }
+                        break;
+
+                    case "width":
+                    case "height":
+                        if (val < 0) {
+                            attrs[attr] = 0;
+                        };
+                        break;
+
+                    default:
+                        continue;
+                }
+            }
+
+            return attrs;
+        },
+
+        setShapeBBox: function setShapeBBox(m) {
+            var o = this,
+                el = o._rElement,
+                attrs = el.attrs,
+                sX = m.get(0),
+                sY = m.get(3),
+                tX = m.get(4),
+                tY = m.get(5),
+                strokeW = attrs['stroke-width'];
+
+            o._bbox = {
+                x: attrs.x * sX + tX - strokeW,
+                y: attrs.y * sY + tY - strokeW,
+                width: attrs.width * sX + 2 * strokeW,
+                height: attrs.height * sY + 2 * strokeW
+            };
+
+            o._bbox.x2 = o._bbox.x + o._bbox.width;
+            o._bbox.y2 = o._bbox.y + o._bbox.height;
+
+            o.X = o._bbox.x;
+            o.Y = o._bbox.y;
+            o.W = o._bbox.width;
+            o.H = o._bbox.height;
+        }
+    });
+
+    var CircleFauxNode = function CircleFauxNode(parentObj) {
+        this.type = "circle";
+        this._isValid = false;
+
+        this.parent = this.owner = parentObj;
+        this.context = parentObj.getCurrentContext();
+        this.layer = parentObj.currentLayer;
+    },
+        PathFauxNode = function PathFauxNode(parentObj) {
+        this.type = "path";
+        this._isValid = false;
+
+        this.parent = this.owner = parentObj;
+        this.context = parentObj.getCurrentContext();
+        this.layer = parentObj.currentLayer;
+    },
+        TextFauxNode = function TextFauxNode(parentObj) {
+        this.type = "text";
+        this._isValid = false;
+
+        this.parent = this.owner = parentObj;
+        this.context = parentObj.getCurrentContext();
+        this.layer = parentObj.currentLayer;
+    },
+        GroupFauxNode = function GroupFauxNode(parent, width, height) {
+
+        this.type = "group";
+
+        this.nodeItems = new NodeList();
+        this.collectionItems = new NodeList();
+        this.layerItems = new NodeList();
+
+        this.owner = this.parent = parent;
+        this.layerOnTop = parent.currentLayer;
+
+        this.currentLayer = null;
+        this.baseLayer = null;
+
+        this.init();
+    };
+
+    CircleFauxNode.prototype = _raphael2['default'].extend(new FauxNode(), {
+
+        constructor: CircleFauxNode,
+
+        paint: function paint() {
+            var o = this,
+                ctx = o.context,
+                attrs = o.validateAttrs(),
+                x = attrs.cx,
+                y = attrs.cy,
+                r = attrs.r,
+
+            /** @todo: provide support for rx, ry */
+            rx = r || attrs.rx,
+                ry = r || attrs.ry;
+
+            if (attrs.r) {
+
+                o.drawPath(["M", x + r, y, "A", rx, ry, 0, 1, 0, x - r, y, "A", rx, ry, 0, 1, 0, x + r, y, "Z"]);
+
+                if (attrs['stroke-width']) {
+                    var strokeAlpha = attrs['stroke-opacity'] === undefined ? attrs['opacity'] : attrs['stroke-opacity'];
+                    if (strokeAlpha !== undefined) {
+                        ctx.globalAlpha = strokeAlpha;
+                    }
+                    ctx.stroke();
+                }
+                var fillAlpha = attrs['fill-opacity'] === undefined ? attrs['opacity'] : attrs['fill-opacity'];
+                if (fillAlpha !== undefined) {
+                    ctx.globalAlpha = fillAlpha;
+                }
+                ctx.fill();
+            }
+
+            return;
+        },
+
+        setShapeBBox: function setShapeBBox(m) {
+            var o = this,
+                el = o._rElement,
+                attrs = el.attrs,
+                sX = m.get(0),
+                sY = m.get(3),
+                tX = m.get(4),
+                tY = m.get(5),
+                strokeW = attrs['stroke-width'];
+
+            o._bbox = {
+                x: tX + (attrs.cx - attrs.r) * sX - strokeW,
+                y: tY + (attrs.cy - attrs.r) * sY - strokeW,
+                width: 2 * (strokeW + attrs.r * sX),
+                height: 2 * (attrs.r * sY + strokeW)
+            };
+
+            o._bbox.x2 = o._bbox.x + o._bbox.width;
+            o._bbox.y2 = o._bbox.y + o._bbox.height;
+
+            o.X = o._bbox.x;
+            o.Y = o._bbox.y;
+            o.W = o._bbox.width;
+            o.H = o._bbox.height;
+        }
+    });
+
+    PathFauxNode.prototype = _raphael2['default'].extend(new FauxNode(), {
+
+        constructor: PathFauxNode,
+
+        paint: function paint() {
+            var o = this,
+                el = o._rElement,
+                attrs = el.attrs,
+                path = el.attr('path'),
+                m = el.matrix,
+                ctx = o.context;
+
+            // 1. Get the path from the path attribute
+            // 2. Accept paths in different array formats.
+            // 3. Optimize as this can potentially be a huge pain-point.
+            // 4. Draw path mapping M,L,H,V etc to canvas APIs
+            o.drawPath(path);
+            o._transformPath = _raphael2['default'].transformPath(path, m.toTransformString());
+
+            var strokeAlpha = attrs['stroke-opacity'] === undefined ? attrs['opacity'] : attrs['stroke-opacity'];
+            if (strokeAlpha !== undefined) {
+                ctx.globalAlpha = strokeAlpha;
+            }
+            ctx.stroke();
+            var fillAlpha = attrs['fill-opacity'] === undefined ? attrs['opacity'] : attrs['fill-opacity'];
+            if (fillAlpha !== undefined) {
+                ctx.globalAlpha = fillAlpha;
+            }
+            ctx.fill();
+
+            return;
+        }
+    });
+
+    TextFauxNode.prototype = _raphael2['default'].extend(new FauxNode(), {
+
+        constructor: TextFauxNode,
+
+        paint: function paint() {
+            var o = this,
+                el = o._rElement,
+                attrs = el.attr(),
+                text = attrs['text'],
+                stroke = attrs['stroke'],
+                valign = attrs['vertical-align'],
+                halign = attrs['text-anchor'],
+                x = attrs['x'],
+                y = attrs['y'],
+                m = el.matrix,
+                ctx = o.context,
+                path;
+
+            // apply the font styles, if any
+
+            // find the dimensions of the text using the given styles.
+            // All the dimensions should be present in the attrs user provided OR default.
+            var fontSize = attrs['font-size'] || 10,
+                lineHeight = attrs['line-height'] || toInt(fontSize, 10) * 1.2,
+                fontArr = ["normal", fontSize, attrs['font']];
+
+            // draw the text.
+            ctx.fillStyle = stroke;
+            ctx.font = fontArr.join(" ");
+
+            if (text) {
+                var texts = Str(text).split(/\n|<br\s*?\/?>/ig),
+                    totalHeight = texts.length * lineHeight,
+                    totalWidth = -Infinity,
+                    startX = Infinity,
+                    startY,
+                    width,
+                    textX,
+                    textY;
+
+                if (valign === "top") {
+                    startY = y + lineHeight;
+                } else if (valign === "middle") {
+                    startY = y - totalHeight / 2 + lineHeight / 2;
+                } else {
+                    // valign is bottom.
+                    startY = y - totalHeight + lineHeight;
+                }
+
+                for (var i = 0, ii = texts.length; i < ii; i += 1) {
+
+                    text = texts[i];
+                    textY = startY + lineHeight * i;
+                    width = ctx.measureText(text).width;
+
+                    if (halign === "start") {
+                        textX = x;
+                    } else if (halign === "middle") {
+                        textX = x - width / 2;
+                    } else {
+                        textX = x - width;
+                    }
+
+                    totalWidth = mmax(totalWidth, width);
+                    startX = mmin(startX, textX);
+
+                    ctx.fillText(text, textX, textY);
+                }
+
+                el._textdirty = false;
+            }
+
+            o.outlinePath = ["M", startX, startY - lineHeight / 1.4, "H", startX + totalWidth, "V", startY - lineHeight + totalHeight, "H", startX, "V", startY - lineHeight / 1.4];
+
+            return;
+        }
+    });
+
+    GroupFauxNode.prototype = _raphael2['default'].extend(_raphael2['default'].extend(new FauxNode(), NodeCollection.prototype), {
+
+        constructor: GroupFauxNode,
+
+        draw: function draw() {
+
+            // Clear the group canvas first.
+            this.layerItems.each(function () {
+                this.element.width = this.element.width;
+            });
+
+            FauxNode.prototype.draw.apply(this, arguments);
+        },
+
+        /**
+         * This method does the complete rendering of the element, including
+         * (re)setting the bbox and image map.
+         *
+         * @returns {_L10.FauxNode.prototype}
+         */
+        render: function render() {
+
+            var o = this;
+
+            o.draw();
+            o.setBBox();
+
+            return o;
+        },
+
+        paint: function paint() {
+            var o = this,
+                list = o.nodeList,
+                el = o._rElement,
+                canvas = o.canvas,
+                attrs = el.attrs,
+                childNode = list.bottom;
+
+            /** @todo: Clean this up */
+            if (attrs.opacity !== undefined) {
+                this.layerItems.each(function () {
+                    this.getContext().globalAlpha = attrs.opacity;
+                });
+            }
+
+            while (childNode) {
+                childNode.render();
+                childNode = childNode.next;
+            }
+        },
+
+        setBBox: function setBBox() {},
+
+        addMouseInteractivity: function addMouseInteractivity() {},
+
+        applyTransform: function applyTransform(m) {
+            var o = this,
+                parent = o.parent,
+                parentMatrix = parent.getTransformMatrix && parent.getTransformMatrix();
+
+            // Parent is a group element with a transformation applied to it.
+            if (parentMatrix) {
+                o.matrixApplied = parentMatrix.clone();
+                o.matrixApplied.add(m.a, m.b, m.c, m.d, m.e, m.f);
+            } else {
+                o.matrixApplied = m;
+            }
+
+            this.layerItems.each(function () {
+                FauxNode.prototype.applyTransform.apply(this, [o.matrixApplied]);
+            });
+        },
+
+        getTransformMatrix: function getTransformMatrix() {
+            return this.matrixApplied;
+        }
+    });
+
+    Element = function Element(node, paper, group) {
+        var o = this,
+            parent = group || paper;
+
+        o.node = o[0] = node;
+        node.raphael = true;
+        node.raphaelid = o.id = _raphael2['default']._oid++;
+        node._rElement = o;
+
+        o.X = 0;
+        o.Y = 0;
+
+        o.attrs = o.attrs || {};
+        o.styles = o.styles || {};
+        o.followers = o.followers || [];
+
+        o.paper = paper;
+        o.com = parent.com;
+
+        o.ca = o.customAttributes = o.customAttributes || new paper._CustomAttributes();
+
+        o.matrix = _raphael2['default'].matrix();
+        o._ = {
+            transform: [],
+            sx: 1,
+            sy: 1,
+            dx: 0,
+            dy: 0,
+            deg: 0
+        };
+
+        o.parent = parent;
+        !parent.bottom && (parent.bottom = o);
+
+        o.prev = parent.top || null;
+        parent.top && (parent.top.next = o);
+        parent.top = o;
+        o.next = null;
+    };
+
+    Element.prototype = elproto;
+    elproto.constructor = Element;
+
+    var repaint = function repaint(el, finalAttrs, positionChanged, dimensionChanged) {
+
+        var node = getNode(el),
+            preC = _raphael2['default']._getConnectedNodes(node),
+            attrs = el.attrs,
+            elAbove = preC.above,
+            elBelow = preC.below,
+            len,
+            attr,
+            i;
+
+        for (attr in finalAttrs) {
+            attrs[attr] = finalAttrs[attr];
+        }
+
+        node.redraw();
+    },
+        setFillAndStroke = function setFillAndStroke(el, params) {
+
+        var attrs = el.attrs,
+            node = el.node,
+            finalAttrs = {},
+            att,
+            val,
+            needsRepaint = false,
+            positionChanged = false,
+            dimensionChanged = false,
+            i;
+
+        for (att in params) {
+            if (params[has](att)) {
+                if (!_raphael2['default']._availableAttrs[has](att)) {
+                    continue;
+                }
+                val = params[att];
+
+                switch (att) {
+
+                    case 'fill-opacity':
+                    case 'opacity':
+                    case 'stroke-opcaity':
+                    case 'stroke':
+                    case 'fill':
+                        finalAttrs[att] = val;
+                        needsRepaint = true;
+                        break;
+
+                    case 'stroke-width':
+                    case "cx":
+                    case "cy":
+                    case "x":
+                    case "y":
+                        finalAttrs[att] = val;
+                        positionChanged = true;
+                        break;
+
+                    case "width":
+                    case "height":
+                        finalAttrs[att] = val;
+                        dimensionChanged = true;
+                        break;
+
+                    case "clip-rect":
+                        finalAttrs[att] = val;
+                        needsRepaint = true;
+                        break;
+
+                    case "font-size":
+                    case "font":
+                    case "vertical-align":
+                    case "text-anchor":
+                        finalAttrs[att] = val;
+                        needsRepaint = true;
+
+                    default:
+                        continue;
+                }
+            }
+        }
+
+        tuneText(el, params, finalAttrs);
+
+        finalAttrs = node.validateAttrs(finalAttrs);
+
+        if (needsRepaint || positionChanged || dimensionChanged) {
+            repaint(el, finalAttrs, positionChanged, dimensionChanged);
+        }
+    },
+        leading = 1.2,
+        tuneText = function tuneText(el, params, finalAttrs) {
+        if (el.type != "text" || !(params[has]("text") || params[has]("font") || params[has]("font-size") || params[has]("x") || params[has]("y") || params[has]("line-height") || params[has]("vertical-align"))) {
+            return;
+        }
+
+        var a = el.attr(),
+            fontSize = params['font-size'] || a['font-size'] || 10,
+            lineHeight = toFloat(params['line-height'] || a['line-height']) || toInt(fontSize, 10) * leading,
+            valign = params["vertical-align"] || a["vertical-align"] || "middle";
+
+        if (isNaN(lineHeight)) {
+            lineHeight = fontSize * leading;
+        }
+
+        finalAttrs['font-size'] = toInt(fontSize, 10) + "px";
+        finalAttrs['font'] = params['font'] || a['font'] || 'Verdana';
+        finalAttrs['vertical-align'] = valign;
+        finalAttrs['x'] = params['x'] || a['x'] || 0;
+        finalAttrs['y'] = params['y'] || a['y'] || 0;
+        finalAttrs['line-height'] = toInt(lineHeight, 10);
+        finalAttrs['text-anchor'] = params['text-anchor'] || a['text-anchor'] || 'middle';
+    };
+
+    _raphael2['default']._engine.initWin = function (win) {
+        win = win;
+        doc = win.document;
+    };
+
+    _raphael2['default']._engine.setSize = function (w, h) {
+        var paper = this,
+            cs = paper.canvas.style;
+
+        cs.width = (paper.width = +w || paper.width) + PX;
+        cs.height = (paper.height = +h || paper.height) + PX;
+        /** @todo call setViewBox from setSize() */
+        return paper;
+    };
+    /** @todo implement setViewBox() */
+    _raphael2['default']._engine.create = function () {
+        var con = _raphael2['default']._getContainer.apply(0, arguments) || {},
+            container = con.container,
+            x = con.x,
+            y = con.y,
+            width = con.width,
+            height = con.height,
+
+        //handler = R._containerEventHandler,
+        wrapper,
+            cssText,
+            image,
+            mmap,
+            i,
+            paper,
+            canvas;
+
+        if (!container) {
+            throw new Error("Canvas container not found.");
+        }
+
+        paper = new _raphael2['default']._Paper();
+        paper.canvas = wrapper = $("div");
+
+        x = x || 0;
+        y = y || 0;
+        paper.width = width = width || 512;
+        paper.height = height = height || 342;
+        paper.left = paper.top = 0;
+
+        if (container == 1) {
+            wrapper.style.cssText = cssText + _raphael2['default'].format(";width:100%;height:100%;position:absolute;left:{0}px;top:{1}px;", [x, y]);
+            doc.body.appendChild(wrapper);
+        } else {
+            wrapper.style.cssText = cssText + ";width:100%;height:100%;position:absolute";
+            if (container.firstChild) {
+                container.insertBefore(wrapper, container.firstChild);
+            } else {
+                container.appendChild(wrapper);
+            }
+        }
+
+        cssText = "overflow:hidden;-webkit-tap-highlight-color:rgba(0,0,0,0);" + "-webkit-user-select:none;-moz-user-select:-moz-none;" + "-khtml-user-select:none;-ms-user-select:none;user-select:none;" + "-o-user-select:none;cursor:default;" + _raphael2['default'].format("width:{0}px;height:{1}px;", [width, height]);
+
+        // Create the canvas element and set it to occupy full space. Retain a
+        // reference to its context.
+        canvas = $("canvas");
+        canvas.style.cssText = "position:absolute;left:0;top:0";
+        canvas.setAttribute('width', paper.width);
+        canvas.setAttribute('height', paper.height);
+
+        paper.com = new CanvasObjectModel(canvas, wrapper, paper.width, paper.height);
+
+        wrapper.appendChild(canvas);
+
+        image = $("img");
+
+        // Easter egg idea! :)
+        image.src = "image1.png";
+
+        image.style.cssText = "opacity: 0;z-index: 100;background: transparent;position: absolute;left: 0;top: 0;width: " + width + "px;height: " + height + "px";
+        wrapper.appendChild(image);
+
+        mmap = $("map");
+
+        mmap.setAttribute("name", "mousemap");
+        mmap.setAttribute("id", "mousemap"); // Needed for FF.
+
+        wrapper.appendChild(mmap);
+
+        image.setAttribute("usemap", "#mousemap");
+        wrapper._image = image;
+        wrapper._map = mmap;
+
+        return paper;
+    };
+
+    var getNode = _raphael2['default']._engine.getNode = function (el) {
+        return el.node || el[0].node;
+    };
+
+    _raphael2['default']._engine.getLastNode = function (el) {
+        return el.node || el[el.length - 1].node;
+    };
+
+    _raphael2['default']._engine.rect = function (paper, x, y, w, h, r, group) {
+
+        var node = paper.com.createNode('rect', group && group.node),
+            el = new Element(node, paper, group),
+            attrs = el.attrs;
+
+        attrs.x = x;
+        attrs.y = y;
+        attrs.width = w;
+        attrs.height = h;
+        attrs.fill = "#fff";
+        attrs.stroke = "#000";
+        attrs['stroke-width'] = 1;
+        attrs.r = r || 0;
+        attrs.rx = r || 0;
+        attrs.ry = r || 0;
+
+        el.type = "rect";
+
+        node.render();
+        return el;
+    };
+
+    _raphael2['default']._engine.circle = function (paper, x, y, r, group) {
+        var node = paper.com.createNode('circle', group && group.node),
+            el = new Element(node, paper, group),
+            attrs = el.attrs;
+
+        attrs.cx = x;
+        attrs.cy = y;
+        attrs.r = r;
+        attrs.fill = 'none';
+        attrs.stroke = '#000';
+        attrs['stroke-width'] = 1;
+
+        el.type = "circle";
+
+        node.render();
+        return el;
+    };
+
+    _raphael2['default']._engine.ellipse = function (paper, x, y, rx, ry, group) {
+        var node = new FauxNode(),
+            el = new Element(node, paper, group);
+
+        el.type = "ellipse";
+        return el;
+    };
+
+    _raphael2['default']._engine.image = function (paper, src, x, y, w, h, group) {
+        var node = new FauxNode(),
+            el = new Element(node, paper, group);
+
+        el.type = "image";
+        return el;
+    };
+
+    _raphael2['default']._engine.text = function (paper, x, y, text, group) {
+        var node = paper.com.createNode('text', group && group.node),
+            el = new Element(node, paper, group),
+            attrs = el.attrs;
+
+        attrs.x = x;
+        attrs.y = y;
+        attrs.text = text;
+        attrs.fill = 'none';
+        attrs.stroke = '#000';
+        attrs.font = 'Verdana';
+        attrs['font-size'] = '12px';
+        attrs['vertical-align'] = 'middle';
+        attrs['text-anchor'] = 'middle';
+
+        el.type = "text";
+        node.render();
+        return el;
+    };
+
+    _raphael2['default']._engine.path = function (pathString, paper, group) {
+        var node = paper.com.createNode('path', group && group.node),
+            el = new Element(node, paper, group),
+            attrs = el.attrs;
+
+        attrs.path = pathString;
+        attrs.fill = "#fff";
+        attrs.stroke = "#000";
+        attrs['stroke-width'] = 1;
+
+        el.type = "path";
+
+        node.render();
+
+        return el;
+    };
+
+    _raphael2['default']._engine.group = function (paper, id, group) {
+
+        var node = paper.com.createNode('group', group && group.node),
+            el = new Element(node, paper, group),
+            wrapper = node.wrapper;
+
+        id && wrapper.setAttribute('class', ['red', id].join('-'));
+
+        el.canvas = wrapper;
+
+        //(group && group.canvas.appendChild(wrapper)) || paper.canvas.appendChild(wrapper);
+
+        el.type = "group";
+        return el;
+    };
+
+    elproto._getBBox = function () {
+        if (this.removed) {
+            return {};
+        }
+
+        return {
+            x: this.X + (this.bbx || 0) - this.W / 2,
+            y: this.Y + (this.bby || 0) - this.H / 2,
+            width: this.W,
+            height: this.H
+        };
+    };
+
+    /***** ELEMENT REORDERING / RESTRUCTING *****/
+
+    elproto.toFront = function () {
+        if (this.removed) {
+            return this;
+        }
+
+        var o = this,
+            thisNode = o.node,
+            parent = o.parent,
+            parentNode = thisNode.owner,
+            followers = o.followers,
+            follower,
+            i,
+            ii;
+
+        if (_raphael2['default']._tofront(o, parent)) {
+            if (elproto.type === "group") {
+                parent.canvas.appendChild(thisNode);
+            } else {
+                parentNode.nodeList.tofront(thisNode);
+            }
+        }
+
+        for (i = 0, ii = followers.length; i < ii; i++) {
+            (follower = followers[i]).stalk && follower.el[follower.stalk](o);
+        }
+
+        return o;
+    };
+
+    elproto.toBack = function () {
+        if (this.removed) {
+            return this;
+        }
+
+        var o = this,
+            thisNode = o.node,
+            parent = o.parent,
+            parentNode = thisNode.owner,
+            followers = o.followers,
+            follower,
+            i,
+            ii;
+
+        if (_raphael2['default']._toback(o, parent)) {
+            if (elproto.type === "group") {
+                parent.canvas.appendChild(thisNode);
+            } else {
+                parentNode.nodeList.toback(thisNode);
+            }
+        }
+
+        for (i = 0, ii = followers.length; i < ii; i++) {
+            (follower = followers[i]).stalk && follower.el[follower.stalk](o);
+        }
+
+        return o;
+    };
+
+    elproto.insertAfter = function (element) {
+        if (this.removed) {
+            return this;
+        }
+
+        var o = this,
+            thisNode = o.node,
+            thatNode = element.node,
+            parentNode = thatNode.owner,
+            followers = o.followers,
+            follower,
+            i,
+            ii;
+
+        if (thatNode.next) {
+            parentNode.nodeList.insertBefore(thisNode, thatNode.next);
+        } else {
+            parentNode.appendChild(thisNode);
+        }
+
+        _raphael2['default']._insertafter(o, element, o.parent, element.parent);
+
+        for (i = 0, ii = followers.length; i < ii; i++) {
+            (follower = followers[i]).stalk && follower.el[follower.stalk](element);
+        }
+
+        return o;
+    };
+
+    elproto.insertBefore = function (element) {
+        if (this.removed) {
+            return this;
+        }
+
+        var o = this,
+            thisNode = o.node,
+            thatNode = element.node,
+            parentNode = thatNode.owner,
+            followers = o.followers,
+            follower,
+            i,
+            ii;
+
+        if (thatNode) {
+            parentNode.nodeList.insertBefore(thisNode, thatNode);
+        } else {
+            parentNode.appendChild(thisNode);
+        }
+
+        _raphael2['default']._insertafter(o, element, o.parent, element.parent);
+
+        for (i = 0, ii = followers.length; i < ii; i++) {
+            (follower = followers[i]).stalk && follower.el[follower.stalk](element);
+        }
+
+        return o;
+    };
+
+    elproto.appendChild = function (element) {
+        return this;
+    };
+
+    elproto.removeChild = function (element) {
+        return this;
+    };
+
+    /***** ELEMENT REORDERING / RESTRUCTING *****/
+
+    elproto.attr = function (name, value) {
+        if (this.removed) {
+            return this;
+        }
+
+        var o = this,
+            attrs = o.attrs,
+            ca = o.ca,
+            names,
+            params,
+            par,
+            res,
+            key,
+            out,
+            subkey,
+            delkeys,
+            follower,
+            ii,
+            i;
+
+        // fetch a copy of all attributes
+        if (name == null) {
+            res = {};
+            for (key in attrs) {
+                if (attrs.hasOwnProperty(key)) {
+                    res[key] = attrs[key];
+                }
+            }res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
+            res.transform = o._.transform;
+            /** @todo res.visibility = o.node.style.display === "none" ? "hidden" : "visible"; */
+            return res;
+        }
+
+        // fetch a single value
+        if (value == null && _raphael2['default'].is(name, "string")) {
+            if (name == "fill" && attrs.fill == "none" && attrs.gradient) {
+                return attrs.gradient;
+            }
+            if (name == "transform") {
+                return o._.transform;
+            }
+            /** @todo if (name == "visibility") {
+                return this.node.style.display === "none" ? "hidden" : "visible";
+            }*/
+
+            names = name.split(separator), out = {};
+
+            for (i = 0, ii = names.length; i < ii; i++) {
+                name = names[i];
+                if (name in attrs) {
+                    out[name] = attrs[name];
+                } else if (_raphael2['default'].is(ca[name], "function")) {
+                    out[name] = ca[name].def;
+                } else {
+                    out[name] = _raphael2['default']._availableAttrs[name];
+                }
+            }
+            return ii - 1 ? out : out[names[0]];
+        }
+
+        // fetch specific attributes
+        if (value == null && _raphael2['default'].is(name, "array")) {
+            out = {};
+            for (i = 0, ii = name.length; i < ii; i++) {
+                out[name[i]] = o.attr(name[i]);
+            }
+            return out;
+        }
+
+        // prepare setter params
+        if (value != null) {
+            params = {};
+            params[name] = value;
+        } else if (name != null && _raphael2['default'].is(name, "object")) {
+            params = name;
+        }
+
+        if (_raphael2['default'].stopEvent !== false) {
+            for (key in params) {
+                eve("raphael.attr." + key + "." + o.id, o, params[key], key);
+            }
+        }
+
+        delkeys = {};
+        for (key in ca) {
+
+            if (ca[key] && params.hasOwnProperty(key) && _raphael2['default'].is(ca[key], "function") && !ca['_invoked' + key]) {
+
+                ca['_invoked' + key] = true; // prevent recursion
+                par = ca[key].apply(o, [].concat(params[key]));
+                delete ca['_invoked' + key];
+
+                for (subkey in par) {
+                    if (par.hasOwnProperty(subkey)) {
+                        params[subkey] = par[subkey];
+                    }
+                }
+                attrs[key] = params[key];
+                if (par === false) {
+                    delkeys[key] = params[key];
+                    delete params[key];
+                }
+            }
+        }
+
+        setFillAndStroke(this, params);
+
+        for (i = 0, ii = o.followers.length; i < ii; i++) {
+            follower = o.followers[i];
+            follower.cb && !follower.cb.call(follower.el, params, o) || follower.el.attr(params);
+        }
+
+        for (subkey in delkeys) {
+            params[subkey] = delkeys[subkey];
+        }
+        return this;
+    };
+
+    /**************** Drag *********************/
+    elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_scope) {
+
+        function start(e) {
+            (e.originalEvent || e).preventDefault();
+            var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
+                scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft;
+            this._drag.x = e.clientX + scrollX;
+            this._drag.y = e.clientY + scrollY;
+            this._drag.id = e.identifier;
+            !drag.length && _raphael2['default'].mousemove(dragMove).mouseup(dragUp);
+            drag.push({
+                el: this,
+                move_scope: move_scope,
+                start_scope: start_scope,
+                end_scope: end_scope,
+                onmoveHandler: onmove,
+                onstartHandler: onstart,
+                onendHandler: onend
+            });
+            onstart && eve.on("raphael.drag.start." + this.id, onstart);
+            onmove && eve.on("raphael.drag.move." + this.id, onmove);
+            onend && eve.on("raphael.drag.end." + this.id, onend);
+            onstart && eve("raphael.drag.start." + this.id, start_scope || move_scope || this, e.clientX + scrollX, e.clientY + scrollY, e);
+        }
+        this._drag = {};
+        draggable.push({
+            el: this,
+            start: start
+        });
+        this.mousedown(start);
+        return this;
+    };
+
+    elproto.undrag = function () {
+        var i = draggable.length;
+        while (i--) {
+            if (draggable[i].el == this) {
+                this.unmousedown(draggable[i].start);
+                draggable.splice(i, 1);
+                eve.unbind("raphael.drag.*." + this.id);
+            }
+        }!draggable.length && _raphael2['default'].unmousemove(dragMove).unmouseup(dragUp);
+    };
+
+    /***************** Drag *****************/
+    /************ TRANSFORMATIONS *************/
+
+    elproto.rotate = function (deg, cx, cy) {
+
+        var o = this,
+            bbox;
+        if (o.removed) {
+            return o;
+        }
+        deg = Str(deg).split(separator);
+        if (deg.length - 1) {
+            cx = toFloat(deg[1]);
+            cy = toFloat(deg[2]);
+        }
+        deg = toFloat(deg[0]);
+        cy == null && (cx = cy);
+        if (cx == null || cy == null) {
+            bbox = o.getBBox(1);
+            cx = bbox.x + bbox.width / 2;
+            cy = bbox.y + bbox.height / 2;
+        }
+        o.transform(o._.transform.concat([["r", deg, cx, cy]]));
+        return o;
+    };
+
+    elproto.scale = function (sx, sy, cx, cy) {
+        var o = this,
+            bbox;
+        if (o.removed) {
+            return o;
+        }
+        sx = Str(sx).split(separator);
+        if (sx.length - 1) {
+            sy = toFloat(sx[1]);
+            cx = toFloat(sx[2]);
+            cy = toFloat(sx[3]);
+        }
+        sx = toFloat(sx[0]);
+        sy == null && (sy = sx);
+        cy == null && (cx = cy);
+        if (cx == null || cy == null) {
+            bbox = o.getBBox(1);
+        }
+        cx = cx == null ? bbox.x + bbox.width / 2 : cx;
+        cy = cy == null ? bbox.y + bbox.height / 2 : cy;
+        o.transform(o._.transform.concat([["s", sx, sy, cx, cy]]));
+
+        return o;
+    };
+
+    elproto.translate = function (dx, dy) {
+        var o = this;
+        if (o.removed) {
+            return o;
+        }
+        dx = Str(dx).split(separator);
+        if (dx.length - 1) {
+            dy = toFloat(dx[1]);
+        }
+        dx = toFloat(dx[0]) || 0;
+        dy = +dy || 0;
+        o.transform(o._.transform.concat([["t", dx, dy]]));
+
+        return o;
+    };
+
+    elproto.transform = function (tstr) {
+
+        var o = this,
+            _ = o._,
+            sw;
+
+        if (tstr === null) {
+            return _.transform;
+        }
+
+        _raphael2['default']._extractTransform(o, tstr);
+
+        /** @todo: what changes to be made here in the context of canvas */
+        /*o.clip && !_.clipispath && $(o.clip, {
+            transform: o.matrix.invert()
+        });
+        o.pattern && updatePosition(o); */
+        if (_.sx != 1 || _.sy != 1) {
+            sw = o.attrs[has]("stroke-width") ? o.attrs["stroke-width"] : 1;
+            o.attr({
+                "stroke-width": sw
+            });
+        }
+
+        o.node && o.node.redraw();
+
+        return o;
+    };
+
+    /************ TRANSFORMATIONS *************/
+
+    elproto.hide = function () {
+        return this;
+    };
+
+    elproto.show = function () {
+        return this;
+    };
+
+    elproto.blur = function (size) {
+        return this;
+    };
+
+    elproto.on = function (eventType, handler) {
+        var el = this,
+            listeners = el.listeners;
+
+        if (!listeners) {
+            listeners = el.listeners = {};
+        }
+
+        if (!listeners[eventType]) {
+            listeners[eventType] = [];
+        }
+
+        listeners[eventType].push(handler);
+    };
+
+    elproto.remove = function () {
+        return this;
+    };
+
+    paperproto.clear = function () {
+        eve("raphael.clear", this);
+        return this;
+    };
+
+    paperproto.remove = function () {
+        if (this.removed) {
+            return;
+        }
+
+        var paper = this,
+            canvas = paper.canvas,
+            pn = canvas.parentNode,
+            i;
+
+        eve("raphael.remove", paper);
+        pn.removeChild(canvas);
+
+        for (i in paper) {
+            paper[i] = typeof paper[i] == "function" ? _raphael2['default']._removedFactory(i) : null;
+        }
+
+        this.removed = true;
+    };
+
+    _raphael2['default'].toString = function () {
+        return "Your browser supports canvas.\nYou are running RedRaphael " + _raphael2['default'].version;
+    };
+
+    for (var method in elproto) {
+        if (elproto.hasOwnProperty(method) && !setproto.hasOwnProperty(method)) {
+            setproto[method] = function (methodname) {
+                return function () {
+                    var arg = arguments;
+                    return this.forEach(function (el) {
+                        el[methodname].apply(el, arg);
+                    });
+                };
+            }(method);
+        }
+    };
 }
 
-module.exports = R;
+exports['default'] = _raphael2['default'];
+module.exports = exports['default'];
 
-},{"./raphael.core":4}],7:[function(require,module,exports){
-(function (global){
-var Raphael = require('./index');
-
-global.Raphael = Raphael;
-
-module.exports = Raphael;
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./index":2}]},{},[7]);
+/***/ })
+/******/ ]);
+});
+//# sourceMappingURL=raphael.js.map

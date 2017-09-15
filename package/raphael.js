@@ -70,7 +70,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 40);
+/******/ 	return __webpack_require__(__webpack_require__.s = 39);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -97,7 +97,7 @@ module.exports = function(it, key){
 
 // to indexed object, toObject with fallback for non-array-like ES3 strings
 var IObject = __webpack_require__(49)
-  , defined = __webpack_require__(15);
+  , defined = __webpack_require__(14);
 module.exports = function(it){
   return IObject(defined(it));
 };
@@ -107,7 +107,7 @@ module.exports = function(it){
 /***/ (function(module, exports, __webpack_require__) {
 
 var dP         = __webpack_require__(4)
-  , createDesc = __webpack_require__(11);
+  , createDesc = __webpack_require__(10);
 module.exports = __webpack_require__(5) ? function(object, key, value){
   return dP.f(object, key, createDesc(1, value));
 } : function(object, key, value){
@@ -119,9 +119,9 @@ module.exports = __webpack_require__(5) ? function(object, key, value){
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var anObject       = __webpack_require__(8)
-  , IE8_DOM_DEFINE = __webpack_require__(31)
-  , toPrimitive    = __webpack_require__(18)
+var anObject       = __webpack_require__(7)
+  , IE8_DOM_DEFINE = __webpack_require__(30)
+  , toPrimitive    = __webpack_require__(17)
   , dP             = Object.defineProperty;
 
 exports.f = __webpack_require__(5) ? Object.defineProperty : function defineProperty(O, P, Attributes){
@@ -141,7 +141,7 @@ exports.f = __webpack_require__(5) ? Object.defineProperty : function defineProp
 /***/ (function(module, exports, __webpack_require__) {
 
 // Thank's IE8 for his funny defineProperty
-module.exports = !__webpack_require__(10)(function(){
+module.exports = !__webpack_require__(9)(function(){
   return Object.defineProperty({}, 'a', {get: function(){ return 7; }}).a != 7;
 });
 
@@ -149,8 +149,8 @@ module.exports = !__webpack_require__(10)(function(){
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var store      = __webpack_require__(21)('wks')
-  , uid        = __webpack_require__(13)
+var store      = __webpack_require__(20)('wks')
+  , uid        = __webpack_require__(12)
   , Symbol     = __webpack_require__(0).Symbol
   , USE_SYMBOL = typeof Symbol == 'function';
 
@@ -165,16 +165,556 @@ $exports.store = store;
 /* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
+var isObject = __webpack_require__(8);
+module.exports = function(it){
+  if(!isObject(it))throw TypeError(it + ' is not an object!');
+  return it;
+};
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports) {
+
+module.exports = function(it){
+  return typeof it === 'object' ? it !== null : typeof it === 'function';
+};
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports) {
+
+module.exports = function(exec){
+  try {
+    return !!exec();
+  } catch(e){
+    return true;
+  }
+};
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports) {
+
+module.exports = function(bitmap, value){
+  return {
+    enumerable  : !(bitmap & 1),
+    configurable: !(bitmap & 2),
+    writable    : !(bitmap & 4),
+    value       : value
+  };
+};
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// 19.1.2.14 / 15.2.3.14 Object.keys(O)
+var $keys       = __webpack_require__(34)
+  , enumBugKeys = __webpack_require__(21);
+
+module.exports = Object.keys || function keys(O){
+  return $keys(O, enumBugKeys);
+};
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports) {
+
+var id = 0
+  , px = Math.random();
+module.exports = function(key){
+  return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + px).toString(36));
+};
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports) {
+
+// 7.1.4 ToInteger
+var ceil  = Math.ceil
+  , floor = Math.floor;
+module.exports = function(it){
+  return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
+};
+
+/***/ }),
+/* 14 */
+/***/ (function(module, exports) {
+
+// 7.2.1 RequireObjectCoercible(argument)
+module.exports = function(it){
+  if(it == undefined)throw TypeError("Can't call method on  " + it);
+  return it;
+};
+
+/***/ }),
+/* 15 */
+/***/ (function(module, exports) {
+
+module.exports = true;
+
+/***/ }),
+/* 16 */
+/***/ (function(module, exports) {
+
+var core = module.exports = {version: '2.4.0'};
+if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
+
+/***/ }),
+/* 17 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// 7.1.1 ToPrimitive(input [, PreferredType])
+var isObject = __webpack_require__(8);
+// instead of the ES6 spec version, we didn't implement @@toPrimitive case
+// and the second argument - flag - preferred type is a string
+module.exports = function(it, S){
+  if(!isObject(it))return it;
+  var fn, val;
+  if(S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it)))return val;
+  if(typeof (fn = it.valueOf) == 'function' && !isObject(val = fn.call(it)))return val;
+  if(!S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it)))return val;
+  throw TypeError("Can't convert object to primitive value");
+};
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports) {
+
+module.exports = {};
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var shared = __webpack_require__(20)('keys')
+  , uid    = __webpack_require__(12);
+module.exports = function(key){
+  return shared[key] || (shared[key] = uid(key));
+};
+
+/***/ }),
+/* 20 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var global = __webpack_require__(0)
+  , SHARED = '__core-js_shared__'
+  , store  = global[SHARED] || (global[SHARED] = {});
+module.exports = function(key){
+  return store[key] || (store[key] = {});
+};
+
+/***/ }),
+/* 21 */
+/***/ (function(module, exports) {
+
+// IE 8- don't enum bug keys
+module.exports = (
+  'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'
+).split(',');
+
+/***/ }),
+/* 22 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var def = __webpack_require__(4).f
+  , has = __webpack_require__(1)
+  , TAG = __webpack_require__(6)('toStringTag');
+
+module.exports = function(it, tag, stat){
+  if(it && !has(it = stat ? it : it.prototype, TAG))def(it, TAG, {configurable: true, value: tag});
+};
+
+/***/ }),
+/* 23 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports.f = __webpack_require__(6);
+
+/***/ }),
+/* 24 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var global         = __webpack_require__(0)
+  , core           = __webpack_require__(16)
+  , LIBRARY        = __webpack_require__(15)
+  , wksExt         = __webpack_require__(23)
+  , defineProperty = __webpack_require__(4).f;
+module.exports = function(name){
+  var $Symbol = core.Symbol || (core.Symbol = LIBRARY ? {} : global.Symbol || {});
+  if(name.charAt(0) != '_' && !(name in $Symbol))defineProperty($Symbol, name, {value: wksExt.f(name)});
+};
+
+/***/ }),
+/* 25 */
+/***/ (function(module, exports) {
+
+exports.f = {}.propertyIsEnumerable;
+
+/***/ }),
+/* 26 */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1,eval)("this");
+} catch(e) {
+	// This works if the window reference is available
+	if(typeof window === "object")
+		g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+/* 27 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = { "default": __webpack_require__(42), __esModule: true };
+
+/***/ }),
+/* 28 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var LIBRARY        = __webpack_require__(15)
+  , $export        = __webpack_require__(29)
+  , redefine       = __webpack_require__(32)
+  , hide           = __webpack_require__(3)
+  , has            = __webpack_require__(1)
+  , Iterators      = __webpack_require__(18)
+  , $iterCreate    = __webpack_require__(47)
+  , setToStringTag = __webpack_require__(22)
+  , getPrototypeOf = __webpack_require__(54)
+  , ITERATOR       = __webpack_require__(6)('iterator')
+  , BUGGY          = !([].keys && 'next' in [].keys()) // Safari has buggy iterators w/o `next`
+  , FF_ITERATOR    = '@@iterator'
+  , KEYS           = 'keys'
+  , VALUES         = 'values';
+
+var returnThis = function(){ return this; };
+
+module.exports = function(Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCED){
+  $iterCreate(Constructor, NAME, next);
+  var getMethod = function(kind){
+    if(!BUGGY && kind in proto)return proto[kind];
+    switch(kind){
+      case KEYS: return function keys(){ return new Constructor(this, kind); };
+      case VALUES: return function values(){ return new Constructor(this, kind); };
+    } return function entries(){ return new Constructor(this, kind); };
+  };
+  var TAG        = NAME + ' Iterator'
+    , DEF_VALUES = DEFAULT == VALUES
+    , VALUES_BUG = false
+    , proto      = Base.prototype
+    , $native    = proto[ITERATOR] || proto[FF_ITERATOR] || DEFAULT && proto[DEFAULT]
+    , $default   = $native || getMethod(DEFAULT)
+    , $entries   = DEFAULT ? !DEF_VALUES ? $default : getMethod('entries') : undefined
+    , $anyNative = NAME == 'Array' ? proto.entries || $native : $native
+    , methods, key, IteratorPrototype;
+  // Fix native
+  if($anyNative){
+    IteratorPrototype = getPrototypeOf($anyNative.call(new Base));
+    if(IteratorPrototype !== Object.prototype){
+      // Set @@toStringTag to native iterators
+      setToStringTag(IteratorPrototype, TAG, true);
+      // fix for some old engines
+      if(!LIBRARY && !has(IteratorPrototype, ITERATOR))hide(IteratorPrototype, ITERATOR, returnThis);
+    }
+  }
+  // fix Array#{values, @@iterator}.name in V8 / FF
+  if(DEF_VALUES && $native && $native.name !== VALUES){
+    VALUES_BUG = true;
+    $default = function values(){ return $native.call(this); };
+  }
+  // Define iterator
+  if((!LIBRARY || FORCED) && (BUGGY || VALUES_BUG || !proto[ITERATOR])){
+    hide(proto, ITERATOR, $default);
+  }
+  // Plug for library
+  Iterators[NAME] = $default;
+  Iterators[TAG]  = returnThis;
+  if(DEFAULT){
+    methods = {
+      values:  DEF_VALUES ? $default : getMethod(VALUES),
+      keys:    IS_SET     ? $default : getMethod(KEYS),
+      entries: $entries
+    };
+    if(FORCED)for(key in methods){
+      if(!(key in proto))redefine(proto, key, methods[key]);
+    } else $export($export.P + $export.F * (BUGGY || VALUES_BUG), NAME, methods);
+  }
+  return methods;
+};
+
+/***/ }),
+/* 29 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var global    = __webpack_require__(0)
+  , core      = __webpack_require__(16)
+  , ctx       = __webpack_require__(45)
+  , hide      = __webpack_require__(3)
+  , PROTOTYPE = 'prototype';
+
+var $export = function(type, name, source){
+  var IS_FORCED = type & $export.F
+    , IS_GLOBAL = type & $export.G
+    , IS_STATIC = type & $export.S
+    , IS_PROTO  = type & $export.P
+    , IS_BIND   = type & $export.B
+    , IS_WRAP   = type & $export.W
+    , exports   = IS_GLOBAL ? core : core[name] || (core[name] = {})
+    , expProto  = exports[PROTOTYPE]
+    , target    = IS_GLOBAL ? global : IS_STATIC ? global[name] : (global[name] || {})[PROTOTYPE]
+    , key, own, out;
+  if(IS_GLOBAL)source = name;
+  for(key in source){
+    // contains in native
+    own = !IS_FORCED && target && target[key] !== undefined;
+    if(own && key in exports)continue;
+    // export native or passed
+    out = own ? target[key] : source[key];
+    // prevent global pollution for namespaces
+    exports[key] = IS_GLOBAL && typeof target[key] != 'function' ? source[key]
+    // bind timers to global for call from export context
+    : IS_BIND && own ? ctx(out, global)
+    // wrap global constructors for prevent change them in library
+    : IS_WRAP && target[key] == out ? (function(C){
+      var F = function(a, b, c){
+        if(this instanceof C){
+          switch(arguments.length){
+            case 0: return new C;
+            case 1: return new C(a);
+            case 2: return new C(a, b);
+          } return new C(a, b, c);
+        } return C.apply(this, arguments);
+      };
+      F[PROTOTYPE] = C[PROTOTYPE];
+      return F;
+    // make static versions for prototype methods
+    })(out) : IS_PROTO && typeof out == 'function' ? ctx(Function.call, out) : out;
+    // export proto methods to core.%CONSTRUCTOR%.methods.%NAME%
+    if(IS_PROTO){
+      (exports.virtual || (exports.virtual = {}))[key] = out;
+      // export proto methods to core.%CONSTRUCTOR%.prototype.%NAME%
+      if(type & $export.R && expProto && !expProto[key])hide(expProto, key, out);
+    }
+  }
+};
+// type bitmap
+$export.F = 1;   // forced
+$export.G = 2;   // global
+$export.S = 4;   // static
+$export.P = 8;   // proto
+$export.B = 16;  // bind
+$export.W = 32;  // wrap
+$export.U = 64;  // safe
+$export.R = 128; // real proto method for `library` 
+module.exports = $export;
+
+/***/ }),
+/* 30 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = !__webpack_require__(5) && !__webpack_require__(9)(function(){
+  return Object.defineProperty(__webpack_require__(31)('div'), 'a', {get: function(){ return 7; }}).a != 7;
+});
+
+/***/ }),
+/* 31 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var isObject = __webpack_require__(8)
+  , document = __webpack_require__(0).document
+  // in old IE typeof document.createElement is 'object'
+  , is = isObject(document) && isObject(document.createElement);
+module.exports = function(it){
+  return is ? document.createElement(it) : {};
+};
+
+/***/ }),
+/* 32 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(3);
+
+/***/ }),
+/* 33 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
+var anObject    = __webpack_require__(7)
+  , dPs         = __webpack_require__(48)
+  , enumBugKeys = __webpack_require__(21)
+  , IE_PROTO    = __webpack_require__(19)('IE_PROTO')
+  , Empty       = function(){ /* empty */ }
+  , PROTOTYPE   = 'prototype';
+
+// Create object with fake `null` prototype: use iframe Object with cleared prototype
+var createDict = function(){
+  // Thrash, waste and sodomy: IE GC bug
+  var iframe = __webpack_require__(31)('iframe')
+    , i      = enumBugKeys.length
+    , lt     = '<'
+    , gt     = '>'
+    , iframeDocument;
+  iframe.style.display = 'none';
+  __webpack_require__(53).appendChild(iframe);
+  iframe.src = 'javascript:'; // eslint-disable-line no-script-url
+  // createDict = iframe.contentWindow.Object;
+  // html.removeChild(iframe);
+  iframeDocument = iframe.contentWindow.document;
+  iframeDocument.open();
+  iframeDocument.write(lt + 'script' + gt + 'document.F=Object' + lt + '/script' + gt);
+  iframeDocument.close();
+  createDict = iframeDocument.F;
+  while(i--)delete createDict[PROTOTYPE][enumBugKeys[i]];
+  return createDict();
+};
+
+module.exports = Object.create || function create(O, Properties){
+  var result;
+  if(O !== null){
+    Empty[PROTOTYPE] = anObject(O);
+    result = new Empty;
+    Empty[PROTOTYPE] = null;
+    // add "__proto__" for Object.getPrototypeOf polyfill
+    result[IE_PROTO] = O;
+  } else result = createDict();
+  return Properties === undefined ? result : dPs(result, Properties);
+};
+
+
+/***/ }),
+/* 34 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var has          = __webpack_require__(1)
+  , toIObject    = __webpack_require__(2)
+  , arrayIndexOf = __webpack_require__(50)(false)
+  , IE_PROTO     = __webpack_require__(19)('IE_PROTO');
+
+module.exports = function(object, names){
+  var O      = toIObject(object)
+    , i      = 0
+    , result = []
+    , key;
+  for(key in O)if(key != IE_PROTO)has(O, key) && result.push(key);
+  // Don't enum bug & hidden keys
+  while(names.length > i)if(has(O, key = names[i++])){
+    ~arrayIndexOf(result, key) || result.push(key);
+  }
+  return result;
+};
+
+/***/ }),
+/* 35 */
+/***/ (function(module, exports) {
+
+var toString = {}.toString;
+
+module.exports = function(it){
+  return toString.call(it).slice(8, -1);
+};
+
+/***/ }),
+/* 36 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = { "default": __webpack_require__(60), __esModule: true };
+
+/***/ }),
+/* 37 */
+/***/ (function(module, exports) {
+
+exports.f = Object.getOwnPropertySymbols;
+
+/***/ }),
+/* 38 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
+var $keys      = __webpack_require__(34)
+  , hiddenKeys = __webpack_require__(21).concat('length', 'prototype');
+
+exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O){
+  return $keys(O, hiddenKeys);
+};
+
+/***/ }),
+/* 39 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(40);
+
+
+/***/ }),
+/* 40 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+exports.__esModule = true;
+
+var _raphael = __webpack_require__(41);
+
+var _raphael2 = _interopRequireDefault(_raphael);
+
+var _raphael3 = __webpack_require__(72);
+
+var _raphael4 = _interopRequireDefault(_raphael3);
+
+var _raphael5 = __webpack_require__(73);
+
+var _raphael6 = _interopRequireDefault(_raphael5);
+
+var _raphael7 = __webpack_require__(74);
+
+var _raphael8 = _interopRequireDefault(_raphael7);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+// import Raphael from './index';
+
+// export default Raphael
+
+
+(0, _raphael4['default'])(_raphael2['default']);
+(0, _raphael6['default'])(_raphael2['default']);
+(0, _raphael8['default'])(_raphael2['default']);
+
+exports['default'] = _raphael2['default'];
+module.exports = exports['default'];
+
+/***/ }),
+/* 41 */
+/***/ (function(module, exports, __webpack_require__) {
+
 "use strict";
 /* WEBPACK VAR INJECTION */(function(global) {
 
 exports.__esModule = true;
 
-var _iterator = __webpack_require__(28);
+var _iterator = __webpack_require__(27);
 
 var _iterator2 = _interopRequireDefault(_iterator);
 
-var _symbol = __webpack_require__(37);
+var _symbol = __webpack_require__(36);
 
 var _symbol2 = _interopRequireDefault(_symbol);
 
@@ -7773,545 +8313,7 @@ _eve2["default"].on("raphael.DOMload", function () {
 
 exports["default"] = R;
 module.exports = exports["default"];
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(27)))
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var isObject = __webpack_require__(9);
-module.exports = function(it){
-  if(!isObject(it))throw TypeError(it + ' is not an object!');
-  return it;
-};
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports) {
-
-module.exports = function(it){
-  return typeof it === 'object' ? it !== null : typeof it === 'function';
-};
-
-/***/ }),
-/* 10 */
-/***/ (function(module, exports) {
-
-module.exports = function(exec){
-  try {
-    return !!exec();
-  } catch(e){
-    return true;
-  }
-};
-
-/***/ }),
-/* 11 */
-/***/ (function(module, exports) {
-
-module.exports = function(bitmap, value){
-  return {
-    enumerable  : !(bitmap & 1),
-    configurable: !(bitmap & 2),
-    writable    : !(bitmap & 4),
-    value       : value
-  };
-};
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// 19.1.2.14 / 15.2.3.14 Object.keys(O)
-var $keys       = __webpack_require__(35)
-  , enumBugKeys = __webpack_require__(22);
-
-module.exports = Object.keys || function keys(O){
-  return $keys(O, enumBugKeys);
-};
-
-/***/ }),
-/* 13 */
-/***/ (function(module, exports) {
-
-var id = 0
-  , px = Math.random();
-module.exports = function(key){
-  return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + px).toString(36));
-};
-
-/***/ }),
-/* 14 */
-/***/ (function(module, exports) {
-
-// 7.1.4 ToInteger
-var ceil  = Math.ceil
-  , floor = Math.floor;
-module.exports = function(it){
-  return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
-};
-
-/***/ }),
-/* 15 */
-/***/ (function(module, exports) {
-
-// 7.2.1 RequireObjectCoercible(argument)
-module.exports = function(it){
-  if(it == undefined)throw TypeError("Can't call method on  " + it);
-  return it;
-};
-
-/***/ }),
-/* 16 */
-/***/ (function(module, exports) {
-
-module.exports = true;
-
-/***/ }),
-/* 17 */
-/***/ (function(module, exports) {
-
-var core = module.exports = {version: '2.4.0'};
-if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
-
-/***/ }),
-/* 18 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// 7.1.1 ToPrimitive(input [, PreferredType])
-var isObject = __webpack_require__(9);
-// instead of the ES6 spec version, we didn't implement @@toPrimitive case
-// and the second argument - flag - preferred type is a string
-module.exports = function(it, S){
-  if(!isObject(it))return it;
-  var fn, val;
-  if(S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it)))return val;
-  if(typeof (fn = it.valueOf) == 'function' && !isObject(val = fn.call(it)))return val;
-  if(!S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it)))return val;
-  throw TypeError("Can't convert object to primitive value");
-};
-
-/***/ }),
-/* 19 */
-/***/ (function(module, exports) {
-
-module.exports = {};
-
-/***/ }),
-/* 20 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var shared = __webpack_require__(21)('keys')
-  , uid    = __webpack_require__(13);
-module.exports = function(key){
-  return shared[key] || (shared[key] = uid(key));
-};
-
-/***/ }),
-/* 21 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var global = __webpack_require__(0)
-  , SHARED = '__core-js_shared__'
-  , store  = global[SHARED] || (global[SHARED] = {});
-module.exports = function(key){
-  return store[key] || (store[key] = {});
-};
-
-/***/ }),
-/* 22 */
-/***/ (function(module, exports) {
-
-// IE 8- don't enum bug keys
-module.exports = (
-  'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'
-).split(',');
-
-/***/ }),
-/* 23 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var def = __webpack_require__(4).f
-  , has = __webpack_require__(1)
-  , TAG = __webpack_require__(6)('toStringTag');
-
-module.exports = function(it, tag, stat){
-  if(it && !has(it = stat ? it : it.prototype, TAG))def(it, TAG, {configurable: true, value: tag});
-};
-
-/***/ }),
-/* 24 */
-/***/ (function(module, exports, __webpack_require__) {
-
-exports.f = __webpack_require__(6);
-
-/***/ }),
-/* 25 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var global         = __webpack_require__(0)
-  , core           = __webpack_require__(17)
-  , LIBRARY        = __webpack_require__(16)
-  , wksExt         = __webpack_require__(24)
-  , defineProperty = __webpack_require__(4).f;
-module.exports = function(name){
-  var $Symbol = core.Symbol || (core.Symbol = LIBRARY ? {} : global.Symbol || {});
-  if(name.charAt(0) != '_' && !(name in $Symbol))defineProperty($Symbol, name, {value: wksExt.f(name)});
-};
-
-/***/ }),
-/* 26 */
-/***/ (function(module, exports) {
-
-exports.f = {}.propertyIsEnumerable;
-
-/***/ }),
-/* 27 */
-/***/ (function(module, exports) {
-
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1,eval)("this");
-} catch(e) {
-	// This works if the window reference is available
-	if(typeof window === "object")
-		g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
-
-
-/***/ }),
-/* 28 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = { "default": __webpack_require__(42), __esModule: true };
-
-/***/ }),
-/* 29 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var LIBRARY        = __webpack_require__(16)
-  , $export        = __webpack_require__(30)
-  , redefine       = __webpack_require__(33)
-  , hide           = __webpack_require__(3)
-  , has            = __webpack_require__(1)
-  , Iterators      = __webpack_require__(19)
-  , $iterCreate    = __webpack_require__(47)
-  , setToStringTag = __webpack_require__(23)
-  , getPrototypeOf = __webpack_require__(54)
-  , ITERATOR       = __webpack_require__(6)('iterator')
-  , BUGGY          = !([].keys && 'next' in [].keys()) // Safari has buggy iterators w/o `next`
-  , FF_ITERATOR    = '@@iterator'
-  , KEYS           = 'keys'
-  , VALUES         = 'values';
-
-var returnThis = function(){ return this; };
-
-module.exports = function(Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCED){
-  $iterCreate(Constructor, NAME, next);
-  var getMethod = function(kind){
-    if(!BUGGY && kind in proto)return proto[kind];
-    switch(kind){
-      case KEYS: return function keys(){ return new Constructor(this, kind); };
-      case VALUES: return function values(){ return new Constructor(this, kind); };
-    } return function entries(){ return new Constructor(this, kind); };
-  };
-  var TAG        = NAME + ' Iterator'
-    , DEF_VALUES = DEFAULT == VALUES
-    , VALUES_BUG = false
-    , proto      = Base.prototype
-    , $native    = proto[ITERATOR] || proto[FF_ITERATOR] || DEFAULT && proto[DEFAULT]
-    , $default   = $native || getMethod(DEFAULT)
-    , $entries   = DEFAULT ? !DEF_VALUES ? $default : getMethod('entries') : undefined
-    , $anyNative = NAME == 'Array' ? proto.entries || $native : $native
-    , methods, key, IteratorPrototype;
-  // Fix native
-  if($anyNative){
-    IteratorPrototype = getPrototypeOf($anyNative.call(new Base));
-    if(IteratorPrototype !== Object.prototype){
-      // Set @@toStringTag to native iterators
-      setToStringTag(IteratorPrototype, TAG, true);
-      // fix for some old engines
-      if(!LIBRARY && !has(IteratorPrototype, ITERATOR))hide(IteratorPrototype, ITERATOR, returnThis);
-    }
-  }
-  // fix Array#{values, @@iterator}.name in V8 / FF
-  if(DEF_VALUES && $native && $native.name !== VALUES){
-    VALUES_BUG = true;
-    $default = function values(){ return $native.call(this); };
-  }
-  // Define iterator
-  if((!LIBRARY || FORCED) && (BUGGY || VALUES_BUG || !proto[ITERATOR])){
-    hide(proto, ITERATOR, $default);
-  }
-  // Plug for library
-  Iterators[NAME] = $default;
-  Iterators[TAG]  = returnThis;
-  if(DEFAULT){
-    methods = {
-      values:  DEF_VALUES ? $default : getMethod(VALUES),
-      keys:    IS_SET     ? $default : getMethod(KEYS),
-      entries: $entries
-    };
-    if(FORCED)for(key in methods){
-      if(!(key in proto))redefine(proto, key, methods[key]);
-    } else $export($export.P + $export.F * (BUGGY || VALUES_BUG), NAME, methods);
-  }
-  return methods;
-};
-
-/***/ }),
-/* 30 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var global    = __webpack_require__(0)
-  , core      = __webpack_require__(17)
-  , ctx       = __webpack_require__(45)
-  , hide      = __webpack_require__(3)
-  , PROTOTYPE = 'prototype';
-
-var $export = function(type, name, source){
-  var IS_FORCED = type & $export.F
-    , IS_GLOBAL = type & $export.G
-    , IS_STATIC = type & $export.S
-    , IS_PROTO  = type & $export.P
-    , IS_BIND   = type & $export.B
-    , IS_WRAP   = type & $export.W
-    , exports   = IS_GLOBAL ? core : core[name] || (core[name] = {})
-    , expProto  = exports[PROTOTYPE]
-    , target    = IS_GLOBAL ? global : IS_STATIC ? global[name] : (global[name] || {})[PROTOTYPE]
-    , key, own, out;
-  if(IS_GLOBAL)source = name;
-  for(key in source){
-    // contains in native
-    own = !IS_FORCED && target && target[key] !== undefined;
-    if(own && key in exports)continue;
-    // export native or passed
-    out = own ? target[key] : source[key];
-    // prevent global pollution for namespaces
-    exports[key] = IS_GLOBAL && typeof target[key] != 'function' ? source[key]
-    // bind timers to global for call from export context
-    : IS_BIND && own ? ctx(out, global)
-    // wrap global constructors for prevent change them in library
-    : IS_WRAP && target[key] == out ? (function(C){
-      var F = function(a, b, c){
-        if(this instanceof C){
-          switch(arguments.length){
-            case 0: return new C;
-            case 1: return new C(a);
-            case 2: return new C(a, b);
-          } return new C(a, b, c);
-        } return C.apply(this, arguments);
-      };
-      F[PROTOTYPE] = C[PROTOTYPE];
-      return F;
-    // make static versions for prototype methods
-    })(out) : IS_PROTO && typeof out == 'function' ? ctx(Function.call, out) : out;
-    // export proto methods to core.%CONSTRUCTOR%.methods.%NAME%
-    if(IS_PROTO){
-      (exports.virtual || (exports.virtual = {}))[key] = out;
-      // export proto methods to core.%CONSTRUCTOR%.prototype.%NAME%
-      if(type & $export.R && expProto && !expProto[key])hide(expProto, key, out);
-    }
-  }
-};
-// type bitmap
-$export.F = 1;   // forced
-$export.G = 2;   // global
-$export.S = 4;   // static
-$export.P = 8;   // proto
-$export.B = 16;  // bind
-$export.W = 32;  // wrap
-$export.U = 64;  // safe
-$export.R = 128; // real proto method for `library` 
-module.exports = $export;
-
-/***/ }),
-/* 31 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = !__webpack_require__(5) && !__webpack_require__(10)(function(){
-  return Object.defineProperty(__webpack_require__(32)('div'), 'a', {get: function(){ return 7; }}).a != 7;
-});
-
-/***/ }),
-/* 32 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var isObject = __webpack_require__(9)
-  , document = __webpack_require__(0).document
-  // in old IE typeof document.createElement is 'object'
-  , is = isObject(document) && isObject(document.createElement);
-module.exports = function(it){
-  return is ? document.createElement(it) : {};
-};
-
-/***/ }),
-/* 33 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(3);
-
-/***/ }),
-/* 34 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
-var anObject    = __webpack_require__(8)
-  , dPs         = __webpack_require__(48)
-  , enumBugKeys = __webpack_require__(22)
-  , IE_PROTO    = __webpack_require__(20)('IE_PROTO')
-  , Empty       = function(){ /* empty */ }
-  , PROTOTYPE   = 'prototype';
-
-// Create object with fake `null` prototype: use iframe Object with cleared prototype
-var createDict = function(){
-  // Thrash, waste and sodomy: IE GC bug
-  var iframe = __webpack_require__(32)('iframe')
-    , i      = enumBugKeys.length
-    , lt     = '<'
-    , gt     = '>'
-    , iframeDocument;
-  iframe.style.display = 'none';
-  __webpack_require__(53).appendChild(iframe);
-  iframe.src = 'javascript:'; // eslint-disable-line no-script-url
-  // createDict = iframe.contentWindow.Object;
-  // html.removeChild(iframe);
-  iframeDocument = iframe.contentWindow.document;
-  iframeDocument.open();
-  iframeDocument.write(lt + 'script' + gt + 'document.F=Object' + lt + '/script' + gt);
-  iframeDocument.close();
-  createDict = iframeDocument.F;
-  while(i--)delete createDict[PROTOTYPE][enumBugKeys[i]];
-  return createDict();
-};
-
-module.exports = Object.create || function create(O, Properties){
-  var result;
-  if(O !== null){
-    Empty[PROTOTYPE] = anObject(O);
-    result = new Empty;
-    Empty[PROTOTYPE] = null;
-    // add "__proto__" for Object.getPrototypeOf polyfill
-    result[IE_PROTO] = O;
-  } else result = createDict();
-  return Properties === undefined ? result : dPs(result, Properties);
-};
-
-
-/***/ }),
-/* 35 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var has          = __webpack_require__(1)
-  , toIObject    = __webpack_require__(2)
-  , arrayIndexOf = __webpack_require__(50)(false)
-  , IE_PROTO     = __webpack_require__(20)('IE_PROTO');
-
-module.exports = function(object, names){
-  var O      = toIObject(object)
-    , i      = 0
-    , result = []
-    , key;
-  for(key in O)if(key != IE_PROTO)has(O, key) && result.push(key);
-  // Don't enum bug & hidden keys
-  while(names.length > i)if(has(O, key = names[i++])){
-    ~arrayIndexOf(result, key) || result.push(key);
-  }
-  return result;
-};
-
-/***/ }),
-/* 36 */
-/***/ (function(module, exports) {
-
-var toString = {}.toString;
-
-module.exports = function(it){
-  return toString.call(it).slice(8, -1);
-};
-
-/***/ }),
-/* 37 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = { "default": __webpack_require__(60), __esModule: true };
-
-/***/ }),
-/* 38 */
-/***/ (function(module, exports) {
-
-exports.f = Object.getOwnPropertySymbols;
-
-/***/ }),
-/* 39 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
-var $keys      = __webpack_require__(35)
-  , hiddenKeys = __webpack_require__(22).concat('length', 'prototype');
-
-exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O){
-  return $keys(O, hiddenKeys);
-};
-
-/***/ }),
-/* 40 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(41);
-
-
-/***/ }),
-/* 41 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-exports.__esModule = true;
-
-var _raphael = __webpack_require__(7);
-
-var _raphael2 = _interopRequireDefault(_raphael);
-
-var _raphael3 = __webpack_require__(72);
-
-var _raphael4 = _interopRequireDefault(_raphael3);
-
-var _raphael5 = __webpack_require__(73);
-
-var _raphael6 = _interopRequireDefault(_raphael5);
-
-var _raphael7 = __webpack_require__(74);
-
-var _raphael8 = _interopRequireDefault(_raphael7);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-// export {svg, vml, canvas}
-
-// import Raphael from './index';
-
-// export default Raphael
-
-
-exports['default'] = _raphael2['default'];
-module.exports = exports['default'];
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(26)))
 
 /***/ }),
 /* 42 */
@@ -8319,7 +8321,7 @@ module.exports = exports['default'];
 
 __webpack_require__(43);
 __webpack_require__(56);
-module.exports = __webpack_require__(24).f('iterator');
+module.exports = __webpack_require__(23).f('iterator');
 
 /***/ }),
 /* 43 */
@@ -8330,7 +8332,7 @@ module.exports = __webpack_require__(24).f('iterator');
 var $at  = __webpack_require__(44)(true);
 
 // 21.1.3.27 String.prototype[@@iterator]()
-__webpack_require__(29)(String, 'String', function(iterated){
+__webpack_require__(28)(String, 'String', function(iterated){
   this._t = String(iterated); // target
   this._i = 0;                // next index
 // 21.1.5.2.1 %StringIteratorPrototype%.next()
@@ -8348,8 +8350,8 @@ __webpack_require__(29)(String, 'String', function(iterated){
 /* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var toInteger = __webpack_require__(14)
-  , defined   = __webpack_require__(15);
+var toInteger = __webpack_require__(13)
+  , defined   = __webpack_require__(14);
 // true  -> String#at
 // false -> String#codePointAt
 module.exports = function(TO_STRING){
@@ -8406,9 +8408,9 @@ module.exports = function(it){
 
 "use strict";
 
-var create         = __webpack_require__(34)
-  , descriptor     = __webpack_require__(11)
-  , setToStringTag = __webpack_require__(23)
+var create         = __webpack_require__(33)
+  , descriptor     = __webpack_require__(10)
+  , setToStringTag = __webpack_require__(22)
   , IteratorPrototype = {};
 
 // 25.1.2.1.1 %IteratorPrototype%[@@iterator]()
@@ -8424,8 +8426,8 @@ module.exports = function(Constructor, NAME, next){
 /***/ (function(module, exports, __webpack_require__) {
 
 var dP       = __webpack_require__(4)
-  , anObject = __webpack_require__(8)
-  , getKeys  = __webpack_require__(12);
+  , anObject = __webpack_require__(7)
+  , getKeys  = __webpack_require__(11);
 
 module.exports = __webpack_require__(5) ? Object.defineProperties : function defineProperties(O, Properties){
   anObject(O);
@@ -8442,7 +8444,7 @@ module.exports = __webpack_require__(5) ? Object.defineProperties : function def
 /***/ (function(module, exports, __webpack_require__) {
 
 // fallback for non-array-like ES3 and non-enumerable old V8 strings
-var cof = __webpack_require__(36);
+var cof = __webpack_require__(35);
 module.exports = Object('z').propertyIsEnumerable(0) ? Object : function(it){
   return cof(it) == 'String' ? it.split('') : Object(it);
 };
@@ -8478,7 +8480,7 @@ module.exports = function(IS_INCLUDES){
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.1.15 ToLength
-var toInteger = __webpack_require__(14)
+var toInteger = __webpack_require__(13)
   , min       = Math.min;
 module.exports = function(it){
   return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
@@ -8488,7 +8490,7 @@ module.exports = function(it){
 /* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var toInteger = __webpack_require__(14)
+var toInteger = __webpack_require__(13)
   , max       = Math.max
   , min       = Math.min;
 module.exports = function(index, length){
@@ -8509,7 +8511,7 @@ module.exports = __webpack_require__(0).document && document.documentElement;
 // 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
 var has         = __webpack_require__(1)
   , toObject    = __webpack_require__(55)
-  , IE_PROTO    = __webpack_require__(20)('IE_PROTO')
+  , IE_PROTO    = __webpack_require__(19)('IE_PROTO')
   , ObjectProto = Object.prototype;
 
 module.exports = Object.getPrototypeOf || function(O){
@@ -8525,7 +8527,7 @@ module.exports = Object.getPrototypeOf || function(O){
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.1.13 ToObject(argument)
-var defined = __webpack_require__(15);
+var defined = __webpack_require__(14);
 module.exports = function(it){
   return Object(defined(it));
 };
@@ -8537,7 +8539,7 @@ module.exports = function(it){
 __webpack_require__(57);
 var global        = __webpack_require__(0)
   , hide          = __webpack_require__(3)
-  , Iterators     = __webpack_require__(19)
+  , Iterators     = __webpack_require__(18)
   , TO_STRING_TAG = __webpack_require__(6)('toStringTag');
 
 for(var collections = ['NodeList', 'DOMTokenList', 'MediaList', 'StyleSheetList', 'CSSRuleList'], i = 0; i < 5; i++){
@@ -8556,14 +8558,14 @@ for(var collections = ['NodeList', 'DOMTokenList', 'MediaList', 'StyleSheetList'
 
 var addToUnscopables = __webpack_require__(58)
   , step             = __webpack_require__(59)
-  , Iterators        = __webpack_require__(19)
+  , Iterators        = __webpack_require__(18)
   , toIObject        = __webpack_require__(2);
 
 // 22.1.3.4 Array.prototype.entries()
 // 22.1.3.13 Array.prototype.keys()
 // 22.1.3.29 Array.prototype.values()
 // 22.1.3.30 Array.prototype[@@iterator]()
-module.exports = __webpack_require__(29)(Array, 'Array', function(iterated, kind){
+module.exports = __webpack_require__(28)(Array, 'Array', function(iterated, kind){
   this._t = toIObject(iterated); // target
   this._i = 0;                   // next index
   this._k = kind;                // kind
@@ -8610,7 +8612,7 @@ __webpack_require__(61);
 __webpack_require__(68);
 __webpack_require__(69);
 __webpack_require__(70);
-module.exports = __webpack_require__(17).Symbol;
+module.exports = __webpack_require__(16).Symbol;
 
 /***/ }),
 /* 61 */
@@ -8622,28 +8624,28 @@ module.exports = __webpack_require__(17).Symbol;
 var global         = __webpack_require__(0)
   , has            = __webpack_require__(1)
   , DESCRIPTORS    = __webpack_require__(5)
-  , $export        = __webpack_require__(30)
-  , redefine       = __webpack_require__(33)
+  , $export        = __webpack_require__(29)
+  , redefine       = __webpack_require__(32)
   , META           = __webpack_require__(62).KEY
-  , $fails         = __webpack_require__(10)
-  , shared         = __webpack_require__(21)
-  , setToStringTag = __webpack_require__(23)
-  , uid            = __webpack_require__(13)
+  , $fails         = __webpack_require__(9)
+  , shared         = __webpack_require__(20)
+  , setToStringTag = __webpack_require__(22)
+  , uid            = __webpack_require__(12)
   , wks            = __webpack_require__(6)
-  , wksExt         = __webpack_require__(24)
-  , wksDefine      = __webpack_require__(25)
+  , wksExt         = __webpack_require__(23)
+  , wksDefine      = __webpack_require__(24)
   , keyOf          = __webpack_require__(63)
   , enumKeys       = __webpack_require__(64)
   , isArray        = __webpack_require__(65)
-  , anObject       = __webpack_require__(8)
+  , anObject       = __webpack_require__(7)
   , toIObject      = __webpack_require__(2)
-  , toPrimitive    = __webpack_require__(18)
-  , createDesc     = __webpack_require__(11)
-  , _create        = __webpack_require__(34)
+  , toPrimitive    = __webpack_require__(17)
+  , createDesc     = __webpack_require__(10)
+  , _create        = __webpack_require__(33)
   , gOPNExt        = __webpack_require__(66)
   , $GOPD          = __webpack_require__(67)
   , $DP            = __webpack_require__(4)
-  , $keys          = __webpack_require__(12)
+  , $keys          = __webpack_require__(11)
   , gOPD           = $GOPD.f
   , dP             = $DP.f
   , gOPN           = gOPNExt.f
@@ -8766,11 +8768,11 @@ if(!USE_NATIVE){
 
   $GOPD.f = $getOwnPropertyDescriptor;
   $DP.f   = $defineProperty;
-  __webpack_require__(39).f = gOPNExt.f = $getOwnPropertyNames;
-  __webpack_require__(26).f  = $propertyIsEnumerable;
-  __webpack_require__(38).f = $getOwnPropertySymbols;
+  __webpack_require__(38).f = gOPNExt.f = $getOwnPropertyNames;
+  __webpack_require__(25).f  = $propertyIsEnumerable;
+  __webpack_require__(37).f = $getOwnPropertySymbols;
 
-  if(DESCRIPTORS && !__webpack_require__(16)){
+  if(DESCRIPTORS && !__webpack_require__(15)){
     redefine(ObjectProto, 'propertyIsEnumerable', $propertyIsEnumerable, true);
   }
 
@@ -8857,15 +8859,15 @@ setToStringTag(global.JSON, 'JSON', true);
 /* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var META     = __webpack_require__(13)('meta')
-  , isObject = __webpack_require__(9)
+var META     = __webpack_require__(12)('meta')
+  , isObject = __webpack_require__(8)
   , has      = __webpack_require__(1)
   , setDesc  = __webpack_require__(4).f
   , id       = 0;
 var isExtensible = Object.isExtensible || function(){
   return true;
 };
-var FREEZE = !__webpack_require__(10)(function(){
+var FREEZE = !__webpack_require__(9)(function(){
   return isExtensible(Object.preventExtensions({}));
 });
 var setMeta = function(it){
@@ -8915,7 +8917,7 @@ var meta = module.exports = {
 /* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var getKeys   = __webpack_require__(12)
+var getKeys   = __webpack_require__(11)
   , toIObject = __webpack_require__(2);
 module.exports = function(object, el){
   var O      = toIObject(object)
@@ -8931,9 +8933,9 @@ module.exports = function(object, el){
 /***/ (function(module, exports, __webpack_require__) {
 
 // all enumerable object keys, includes symbols
-var getKeys = __webpack_require__(12)
-  , gOPS    = __webpack_require__(38)
-  , pIE     = __webpack_require__(26);
+var getKeys = __webpack_require__(11)
+  , gOPS    = __webpack_require__(37)
+  , pIE     = __webpack_require__(25);
 module.exports = function(it){
   var result     = getKeys(it)
     , getSymbols = gOPS.f;
@@ -8951,7 +8953,7 @@ module.exports = function(it){
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.2.2 IsArray(argument)
-var cof = __webpack_require__(36);
+var cof = __webpack_require__(35);
 module.exports = Array.isArray || function isArray(arg){
   return cof(arg) == 'Array';
 };
@@ -8962,7 +8964,7 @@ module.exports = Array.isArray || function isArray(arg){
 
 // fallback for IE11 buggy Object.getOwnPropertyNames with iframe and window
 var toIObject = __webpack_require__(2)
-  , gOPN      = __webpack_require__(39).f
+  , gOPN      = __webpack_require__(38).f
   , toString  = {}.toString;
 
 var windowNames = typeof window == 'object' && window && Object.getOwnPropertyNames
@@ -8985,12 +8987,12 @@ module.exports.f = function getOwnPropertyNames(it){
 /* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var pIE            = __webpack_require__(26)
-  , createDesc     = __webpack_require__(11)
+var pIE            = __webpack_require__(25)
+  , createDesc     = __webpack_require__(10)
   , toIObject      = __webpack_require__(2)
-  , toPrimitive    = __webpack_require__(18)
+  , toPrimitive    = __webpack_require__(17)
   , has            = __webpack_require__(1)
-  , IE8_DOM_DEFINE = __webpack_require__(31)
+  , IE8_DOM_DEFINE = __webpack_require__(30)
   , gOPD           = Object.getOwnPropertyDescriptor;
 
 exports.f = __webpack_require__(5) ? gOPD : function getOwnPropertyDescriptor(O, P){
@@ -9012,13 +9014,13 @@ exports.f = __webpack_require__(5) ? gOPD : function getOwnPropertyDescriptor(O,
 /* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(25)('asyncIterator');
+__webpack_require__(24)('asyncIterator');
 
 /***/ }),
 /* 70 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(25)('observable');
+__webpack_require__(24)('observable');
 
 /***/ }),
 /* 71 */
@@ -9477,7 +9479,7 @@ exports["default"] = function (glob) {
 }(typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : null);
 
 module.exports = exports["default"];
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(27)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(26)))
 
 /***/ }),
 /* 72 */
@@ -9488,3377 +9490,1701 @@ module.exports = exports["default"];
 
 exports.__esModule = true;
 
-var _raphael = __webpack_require__(7);
-
-var _raphael2 = _interopRequireDefault(_raphael);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-if (_raphael2["default"].svg) {
-    /*
-     * Recursively shows the element and stores the visibilties of its parents
-     * in a tree structure for future restoration.
-     * @param el - Element which is to shown recursively
-     * @return Function - Function to restore the old visibility state.
-    */
-    var showRecursively = function showRecursively(el) {
-        var origAttrTree = {},
-            currentEl = el,
-            currentNode = origAttrTree,
-            fn = function fn() {
-            var localEl = el,
-                localNode = origAttrTree;
-            while (localEl) {
-                if (localNode._doHide) {
-                    localEl.hide();
+exports["default"] = function (R) {
+    if (R.svg) {
+        /*
+         * Recursively shows the element and stores the visibilties of its parents
+         * in a tree structure for future restoration.
+         * @param el - Element which is to shown recursively
+         * @return Function - Function to restore the old visibility state.
+        */
+        var showRecursively = function showRecursively(el) {
+            var origAttrTree = {},
+                currentEl = el,
+                currentNode = origAttrTree,
+                fn = function fn() {
+                var localEl = el,
+                    localNode = origAttrTree;
+                while (localEl) {
+                    if (localNode._doHide) {
+                        localEl.hide();
+                    }
+                    localEl = localEl.parent;
+                    localNode = localNode.parent;
                 }
-                localEl = localEl.parent;
-                localNode = localNode.parent;
+            };
+            while (currentEl) {
+                if (currentEl.node && currentEl.node.style && currentEl.node.style.display === "none") {
+                    currentEl.show();
+                    currentNode._doHide = true;
+                }
+                currentEl = currentEl.parent;
+                currentNode.parent = {};
+                currentNode = currentNode.parent;
+            }
+            return fn;
+        };
+
+        var LoadRefImage = function LoadRefImage(element, attrs) {
+            var src = attrs.src,
+                parent = element._.group,
+                node = element.node,
+                RefImg = element._.RefImg;
+
+            if (!RefImg) {
+                RefImg = element._.RefImg = new Image();
+            }
+
+            if (attrs.src !== undefined) {
+                RefImg.src = src;
+                RefImg.onload = function () {
+                    element.attr({
+                        width: element.attrs.width || RefImg.width,
+                        height: element.attrs.height || RefImg.height
+                    });
+                    // parent.canvas && parent.canvas.appendChild(node);
+                };
+                RefImg.onerror = function (e) {
+                    node.onerror && node.onerror(e);
+                };
+                element._.RefImg = RefImg;
             }
         };
-        while (currentEl) {
-            if (currentEl.node && currentEl.node.style && currentEl.node.style.display === "none") {
-                currentEl.show();
-                currentNode._doHide = true;
+
+        var has = "hasOwnProperty",
+            Str = String,
+            toFloat = parseFloat,
+            toInt = parseInt,
+            math = Math,
+            mmax = math.max,
+            abs = math.abs,
+            pow = math.pow,
+            sqrt = math.sqrt,
+            separator = /[, ]+/,
+            arrayShift = Array.prototype.shift,
+            zeroStrokeFix = !!(/AppleWebKit/.test(R._g.win.navigator.userAgent) && (!/Chrome/.test(R._g.win.navigator.userAgent) || R._g.win.navigator.appVersion.match(/Chrome\/(\d+)\./)[1] < 29)),
+            eve = R.eve,
+            E = "",
+            S = " ",
+            xlink = "http://www.w3.org/1999/xlink",
+            markers = {
+            block: "M5,0 0,2.5 5,5z",
+            classic: "M5,0 0,2.5 5,5 3.5,3 3.5,2z",
+            diamond: "M2.5,0 5,2.5 2.5,5 0,2.5z",
+            open: "M6,1 1,3.5 6,6",
+            oval: "M2.5,0A2.5,2.5,0,0,1,2.5,5 2.5,2.5,0,0,1,2.5,0z"
+        },
+            markerCounter = {},
+            updateReferenceUrl = function updateReferenceUrl() {
+            return R._url = R._g.win.location.href.replace(/#.*?$/, E);
+        },
+            paperproto = R.fn,
+            serializeArgs = R._serializeArgs;
+
+        /*\
+         * Paper.group
+         [ method ]
+         **
+         * Creates a group
+         **
+         > Parameters
+         **
+         - id (number) id of the group
+         = (object) Raphaël element object with type “group”
+         **
+         > Usage
+         | var g = paper.group();
+        \*/
+        paperproto.group = function () {
+            // id
+            var paper = this,
+                args = arguments,
+                group = R._lastArgIfGroup(args, true),
+                out = R._engine.group(paper, args[0], group);
+            return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
+        };
+
+        /*\
+         * Paper.circle
+         [ method ]
+         **
+         * Draws a circle.
+         **
+         > Parameters
+         **
+         - x (number) x coordinate of the centre
+         - y (number) y coordinate of the centre
+         - r (number) radius
+         = (object) Raphaël element object with type “circle”
+         **
+         > Usage
+         | var c = paper.circle(50, 50, 40);
+        \*/
+        paperproto.circle = function () {
+            // x, y, r
+            var paper = this,
+                args = arguments,
+                group = R._lastArgIfGroup(args, true),
+                attrs = serializeArgs(args),
+
+            // "cx", 0,
+            // "cy", 0,
+            // "r", 0,
+            // "fill", none,
+            // "stroke", black),
+            out = R._engine.circle(paper, attrs, group);
+
+            return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
+        };
+
+        /*\
+         * Paper.rect
+         [ method ]
+         *
+         * Draws a rectangle.
+         **
+         > Parameters
+         **
+         - x (number) x coordinate of the top left corner
+         - y (number) y coordinate of the top left corner
+         - width (number) width
+         - height (number) height
+         - r (number) #optional radius for rounded corners, default is 0
+         = (object) Raphaël element object with type “rect”
+         **
+         > Usage
+         | // regular rectangle
+         | var c = paper.rect(10, 10, 50, 50);
+         | // rectangle with rounded corners
+         | var c = paper.rect(40, 40, 50, 50, 10);
+        \*/
+        paperproto.rect = function () {
+            var paper = this,
+                args = arguments,
+                group = R._lastArgIfGroup(args, true),
+                attrs = serializeArgs(args),
+
+            // "x", 0,
+            // "y", 0,
+            // "width", 0,
+            // "height", 0,
+            // "r", 0,
+            // "fill", none,
+            // "stroke", black),
+            out = R._engine.rect(paper, attrs, group);
+
+            return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
+        };
+
+        /*\
+         * Paper.ellipse
+         [ method ]
+         **
+         * Draws an ellipse.
+         **
+         > Parameters
+         **
+         - x (number) x coordinate of the centre
+         - y (number) y coordinate of the centre
+         - rx (number) horizontal radius
+         - ry (number) vertical radius
+         = (object) Raphaël element object with type “ellipse”
+         **
+         > Usage
+         | var c = paper.ellipse(50, 50, 40, 20);
+        \*/
+        paperproto.ellipse = function () {
+            var paper = this,
+                args = arguments,
+                group = R._lastArgIfGroup(args, true),
+                attrs = serializeArgs(args),
+
+            // "x", 0,
+            // "y", 0,
+            // "rx", 0,
+            // "ry", 0,
+            // "fill", none,
+            // "stroke", black),
+            out = R._engine.ellipse(this, attrs, group);
+
+            return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
+        };
+
+        /*\
+         * Paper.path
+         [ method ]
+         **
+         * Creates a path element by given path data string.
+         > Parameters
+         - pathString (string) #optional path string in SVG format.
+         * Path string consists of one-letter commands, followed by comma seprarated arguments in numercal form. Example:
+         | "M10,20L30,40"
+         * Here we can see two commands: “M”, with arguments `(10, 20)` and “L” with arguments `(30, 40)`. Upper case letter mean command is absolute, lower case—relative.
+         *
+         # <p>Here is short list of commands available, for more details see <a href="http://www.w3.org/TR/SVG/paths.html#PathData" title="Details of a path's data attribute's format are described in the SVG specification.">SVG path string format</a>.</p>
+         # <table><thead><tr><th>Command</th><th>Name</th><th>Parameters</th></tr></thead><tbody>
+         # <tr><td>M</td><td>moveto</td><td>(x y)+</td></tr>
+         # <tr><td>Z</td><td>closepath</td><td>(none)</td></tr>
+         # <tr><td>L</td><td>lineto</td><td>(x y)+</td></tr>
+         # <tr><td>H</td><td>horizontal lineto</td><td>x+</td></tr>
+         # <tr><td>V</td><td>vertical lineto</td><td>y+</td></tr>
+         # <tr><td>C</td><td>curveto</td><td>(x1 y1 x2 y2 x y)+</td></tr>
+         # <tr><td>S</td><td>smooth curveto</td><td>(x2 y2 x y)+</td></tr>
+         # <tr><td>Q</td><td>quadratic Bézier curveto</td><td>(x1 y1 x y)+</td></tr>
+         # <tr><td>T</td><td>smooth quadratic Bézier curveto</td><td>(x y)+</td></tr>
+         # <tr><td>A</td><td>elliptical arc</td><td>(rx ry x-axis-rotation large-arc-flag sweep-flag x y)+</td></tr>
+         # <tr><td>R</td><td><a href="http://en.wikipedia.org/wiki/Catmull–Rom_spline#Catmull.E2.80.93Rom_spline">Catmull-Rom curveto</a>*</td><td>x1 y1 (x y)+</td></tr></tbody></table>
+         * * “Catmull-Rom curveto” is a not standard SVG command and added in 2.0 to make life easier.
+         * Note: there is a special case when path consist of just three commands: “M10,10R…z”. In this case path will smoothly connects to its beginning.
+         > Usage
+         | var c = paper.path("M10 10L90 90");
+         | // draw a diagonal line:
+         | // move to 10,10, line to 90,90
+         * For example of path strings, check out these icons: http://raphaeljs.com/icons/
+        \*/
+        paperproto.path = function () {
+            var paper = this,
+                args = arguments,
+                group = R._lastArgIfGroup(args, true),
+                paperConfig = paper.config,
+                capStyle = paperConfig && paperConfig["stroke-linecap"] || "butt",
+                attrs = serializeArgs(args),
+
+            // "path", E,
+            // "fill", none,
+            // "stroke", black,
+            // "stroke-linecap", capStyle),
+            out = R._engine.path(paper, attrs, group);
+            return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
+        };
+
+        /*\
+         * Paper.image
+         [ method ]
+         **
+         * Embeds an image into the surface.
+         **
+         > Parameters
+         **
+         - src (string) URI of the source image
+         - x (number) x coordinate position
+         - y (number) y coordinate position
+         - width (number) width of the image
+         - height (number) height of the image
+         = (object) Raphaël element object with type “image”
+         **
+         > Usage
+         | var c = paper.image("apple.png", 10, 10, 80, 80);
+        \*/
+        paperproto.image = function () {
+            var paper = this,
+                args = arguments,
+                group = R._lastArgIfGroup(args, true),
+                attrs = serializeArgs(args),
+
+            // "src", "",
+            // "x", 0,
+            // "y", 0,
+            // "width", 0,
+            // "height", 0)
+            out = R._engine.image(paper, attrs, group);
+            return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
+        };
+
+        /*\
+         * Paper.text
+         [ method ]
+         **
+         * Draws a text string. If you need line breaks, put “\n” in the string.
+         **
+         > Parameters
+         **
+         - x (number) x coordinate position
+         - y (number) y coordinate position
+         - text (string) The text string to draw
+         = (object) Raphaël element object with type “text”
+         **
+         > Usage
+         | var t = paper.text(50, 50, "Raphaël\nkicks\nbutt!");
+        \*/
+        paperproto.text = function () {
+            var paper = this,
+                args = arguments,
+                group = R._lastArgIfGroup(args, true),
+                attrs = serializeArgs(args),
+
+            // "x", 0,
+            // "y", 0,
+            // "text", E,
+            // "stroke", none,
+            // "fill", black,
+            // "text-anchor", "middle",
+            // "vertical-align", "middle"),
+
+            out = R._engine.text(paper, attrs, group, args[1]);
+            return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
+        };
+
+        R.cachedFontHeight = {};
+
+        R.toString = function () {
+            return "Your browser supports SVG.\nYou are running Rapha\xebl " + this.version;
+        };
+
+        // Code commented as resources will now be referenced using relative urls.
+        // @todo Remove once we have acertained that there are no issues in any environment.
+        // Automatic gradient and other reference update on state change
+        // R._url = (/msie/i.test(navigator.userAgent) && !window.opera) ?
+        //     E : updateReferenceUrl();
+        // if (R._url && R._g.win.history.pushState) {
+        //     R._g.win.history.pushState = (function () {
+        //         var fn = R._g.win.history.pushState;
+        //         return function () {
+        //             var ret = fn.apply(R._g.win.history, arguments);
+        //             return updateReferenceUrl(), ret;
+        //         };
+        //     }());
+        //     R._g.win.addEventListener("popstate", updateReferenceUrl, false);
+        // }
+        R._url = E;
+
+        var updateGradientReference = function updateGradientReference(element, newGradient) {
+            var gradient = element.gradient;
+
+            if (gradient) {
+                if (gradient === newGradient) {
+                    return; // no change
+                }
+                // else gradient is specified and it is not same as newGradient, implying a dereference
+                gradient.refCount--;
+                if (!gradient.refCount) {
+                    gradient.parentNode.removeChild(gradient);
+                }
+                delete element.gradient;
             }
-            currentEl = currentEl.parent;
-            currentNode.parent = {};
-            currentNode = currentNode.parent;
-        }
-        return fn;
-    };
 
-    var LoadRefImage = function LoadRefImage(element, attrs) {
-        var src = attrs.src,
-            parent = element._.group,
-            node = element.node,
-            RefImg = element._.RefImg;
-
-        if (!RefImg) {
-            RefImg = element._.RefImg = new Image();
-        }
-
-        if (attrs.src !== undefined) {
-            RefImg.src = src;
-            RefImg.onload = function () {
-                element.attr({
-                    width: element.attrs.width || RefImg.width,
-                    height: element.attrs.height || RefImg.height
-                });
-                // parent.canvas && parent.canvas.appendChild(node);
-            };
-            RefImg.onerror = function (e) {
-                node.onerror && node.onerror(e);
-            };
-            element._.RefImg = RefImg;
-        }
-    };
-
-    var has = "hasOwnProperty",
-        Str = String,
-        toFloat = parseFloat,
-        toInt = parseInt,
-        math = Math,
-        mmax = math.max,
-        abs = math.abs,
-        pow = math.pow,
-        sqrt = math.sqrt,
-        separator = /[, ]+/,
-        arrayShift = Array.prototype.shift,
-        zeroStrokeFix = !!(/AppleWebKit/.test(_raphael2["default"]._g.win.navigator.userAgent) && (!/Chrome/.test(_raphael2["default"]._g.win.navigator.userAgent) || _raphael2["default"]._g.win.navigator.appVersion.match(/Chrome\/(\d+)\./)[1] < 29)),
-        eve = _raphael2["default"].eve,
-        E = "",
-        S = " ",
-        xlink = "http://www.w3.org/1999/xlink",
-        markers = {
-        block: "M5,0 0,2.5 5,5z",
-        classic: "M5,0 0,2.5 5,5 3.5,3 3.5,2z",
-        diamond: "M2.5,0 5,2.5 2.5,5 0,2.5z",
-        open: "M6,1 1,3.5 6,6",
-        oval: "M2.5,0A2.5,2.5,0,0,1,2.5,5 2.5,2.5,0,0,1,2.5,0z"
-    },
-        markerCounter = {},
-        updateReferenceUrl = function updateReferenceUrl() {
-        return _raphael2["default"]._url = _raphael2["default"]._g.win.location.href.replace(/#.*?$/, E);
-    },
-        paperproto = _raphael2["default"].fn,
-        serializeArgs = _raphael2["default"]._serializeArgs;
-
-    /*\
-     * Paper.group
-     [ method ]
-     **
-     * Creates a group
-     **
-     > Parameters
-     **
-     - id (number) id of the group
-     = (object) Raphaël element object with type “group”
-     **
-     > Usage
-     | var g = paper.group();
-    \*/
-    paperproto.group = function () {
-        // id
-        var paper = this,
-            args = arguments,
-            group = _raphael2["default"]._lastArgIfGroup(args, true),
-            out = _raphael2["default"]._engine.group(paper, args[0], group);
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
-
-    /*\
-     * Paper.circle
-     [ method ]
-     **
-     * Draws a circle.
-     **
-     > Parameters
-     **
-     - x (number) x coordinate of the centre
-     - y (number) y coordinate of the centre
-     - r (number) radius
-     = (object) Raphaël element object with type “circle”
-     **
-     > Usage
-     | var c = paper.circle(50, 50, 40);
-    \*/
-    paperproto.circle = function () {
-        // x, y, r
-        var paper = this,
-            args = arguments,
-            group = _raphael2["default"]._lastArgIfGroup(args, true),
-            attrs = serializeArgs(args),
-
-        // "cx", 0,
-        // "cy", 0,
-        // "r", 0,
-        // "fill", none,
-        // "stroke", black),
-        out = _raphael2["default"]._engine.circle(paper, attrs, group);
-
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
-
-    /*\
-     * Paper.rect
-     [ method ]
-     *
-     * Draws a rectangle.
-     **
-     > Parameters
-     **
-     - x (number) x coordinate of the top left corner
-     - y (number) y coordinate of the top left corner
-     - width (number) width
-     - height (number) height
-     - r (number) #optional radius for rounded corners, default is 0
-     = (object) Raphaël element object with type “rect”
-     **
-     > Usage
-     | // regular rectangle
-     | var c = paper.rect(10, 10, 50, 50);
-     | // rectangle with rounded corners
-     | var c = paper.rect(40, 40, 50, 50, 10);
-    \*/
-    paperproto.rect = function () {
-        var paper = this,
-            args = arguments,
-            group = _raphael2["default"]._lastArgIfGroup(args, true),
-            attrs = serializeArgs(args),
-
-        // "x", 0,
-        // "y", 0,
-        // "width", 0,
-        // "height", 0,
-        // "r", 0,
-        // "fill", none,
-        // "stroke", black),
-        out = _raphael2["default"]._engine.rect(paper, attrs, group);
-
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
-
-    /*\
-     * Paper.ellipse
-     [ method ]
-     **
-     * Draws an ellipse.
-     **
-     > Parameters
-     **
-     - x (number) x coordinate of the centre
-     - y (number) y coordinate of the centre
-     - rx (number) horizontal radius
-     - ry (number) vertical radius
-     = (object) Raphaël element object with type “ellipse”
-     **
-     > Usage
-     | var c = paper.ellipse(50, 50, 40, 20);
-    \*/
-    paperproto.ellipse = function () {
-        var paper = this,
-            args = arguments,
-            group = _raphael2["default"]._lastArgIfGroup(args, true),
-            attrs = serializeArgs(args),
-
-        // "x", 0,
-        // "y", 0,
-        // "rx", 0,
-        // "ry", 0,
-        // "fill", none,
-        // "stroke", black),
-        out = _raphael2["default"]._engine.ellipse(this, attrs, group);
-
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
-
-    /*\
-     * Paper.path
-     [ method ]
-     **
-     * Creates a path element by given path data string.
-     > Parameters
-     - pathString (string) #optional path string in SVG format.
-     * Path string consists of one-letter commands, followed by comma seprarated arguments in numercal form. Example:
-     | "M10,20L30,40"
-     * Here we can see two commands: “M”, with arguments `(10, 20)` and “L” with arguments `(30, 40)`. Upper case letter mean command is absolute, lower case—relative.
-     *
-     # <p>Here is short list of commands available, for more details see <a href="http://www.w3.org/TR/SVG/paths.html#PathData" title="Details of a path's data attribute's format are described in the SVG specification.">SVG path string format</a>.</p>
-     # <table><thead><tr><th>Command</th><th>Name</th><th>Parameters</th></tr></thead><tbody>
-     # <tr><td>M</td><td>moveto</td><td>(x y)+</td></tr>
-     # <tr><td>Z</td><td>closepath</td><td>(none)</td></tr>
-     # <tr><td>L</td><td>lineto</td><td>(x y)+</td></tr>
-     # <tr><td>H</td><td>horizontal lineto</td><td>x+</td></tr>
-     # <tr><td>V</td><td>vertical lineto</td><td>y+</td></tr>
-     # <tr><td>C</td><td>curveto</td><td>(x1 y1 x2 y2 x y)+</td></tr>
-     # <tr><td>S</td><td>smooth curveto</td><td>(x2 y2 x y)+</td></tr>
-     # <tr><td>Q</td><td>quadratic Bézier curveto</td><td>(x1 y1 x y)+</td></tr>
-     # <tr><td>T</td><td>smooth quadratic Bézier curveto</td><td>(x y)+</td></tr>
-     # <tr><td>A</td><td>elliptical arc</td><td>(rx ry x-axis-rotation large-arc-flag sweep-flag x y)+</td></tr>
-     # <tr><td>R</td><td><a href="http://en.wikipedia.org/wiki/Catmull–Rom_spline#Catmull.E2.80.93Rom_spline">Catmull-Rom curveto</a>*</td><td>x1 y1 (x y)+</td></tr></tbody></table>
-     * * “Catmull-Rom curveto” is a not standard SVG command and added in 2.0 to make life easier.
-     * Note: there is a special case when path consist of just three commands: “M10,10R…z”. In this case path will smoothly connects to its beginning.
-     > Usage
-     | var c = paper.path("M10 10L90 90");
-     | // draw a diagonal line:
-     | // move to 10,10, line to 90,90
-     * For example of path strings, check out these icons: http://raphaeljs.com/icons/
-    \*/
-    paperproto.path = function () {
-        var paper = this,
-            args = arguments,
-            group = _raphael2["default"]._lastArgIfGroup(args, true),
-            paperConfig = paper.config,
-            capStyle = paperConfig && paperConfig["stroke-linecap"] || "butt",
-            attrs = serializeArgs(args),
-
-        // "path", E,
-        // "fill", none,
-        // "stroke", black,
-        // "stroke-linecap", capStyle),
-        out = _raphael2["default"]._engine.path(paper, attrs, group);
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
-
-    /*\
-     * Paper.image
-     [ method ]
-     **
-     * Embeds an image into the surface.
-     **
-     > Parameters
-     **
-     - src (string) URI of the source image
-     - x (number) x coordinate position
-     - y (number) y coordinate position
-     - width (number) width of the image
-     - height (number) height of the image
-     = (object) Raphaël element object with type “image”
-     **
-     > Usage
-     | var c = paper.image("apple.png", 10, 10, 80, 80);
-    \*/
-    paperproto.image = function () {
-        var paper = this,
-            args = arguments,
-            group = _raphael2["default"]._lastArgIfGroup(args, true),
-            attrs = serializeArgs(args),
-
-        // "src", "",
-        // "x", 0,
-        // "y", 0,
-        // "width", 0,
-        // "height", 0)
-        out = _raphael2["default"]._engine.image(paper, attrs, group);
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
-
-    /*\
-     * Paper.text
-     [ method ]
-     **
-     * Draws a text string. If you need line breaks, put “\n” in the string.
-     **
-     > Parameters
-     **
-     - x (number) x coordinate position
-     - y (number) y coordinate position
-     - text (string) The text string to draw
-     = (object) Raphaël element object with type “text”
-     **
-     > Usage
-     | var t = paper.text(50, 50, "Raphaël\nkicks\nbutt!");
-    \*/
-    paperproto.text = function () {
-        var paper = this,
-            args = arguments,
-            group = _raphael2["default"]._lastArgIfGroup(args, true),
-            attrs = serializeArgs(args),
-
-        // "x", 0,
-        // "y", 0,
-        // "text", E,
-        // "stroke", none,
-        // "fill", black,
-        // "text-anchor", "middle",
-        // "vertical-align", "middle"),
-
-        out = _raphael2["default"]._engine.text(paper, attrs, group, args[1]);
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
-
-    _raphael2["default"].cachedFontHeight = {};
-
-    _raphael2["default"].toString = function () {
-        return "Your browser supports SVG.\nYou are running Rapha\xebl " + this.version;
-    };
-
-    // Code commented as resources will now be referenced using relative urls.
-    // @todo Remove once we have acertained that there are no issues in any environment.
-    // Automatic gradient and other reference update on state change
-    // R._url = (/msie/i.test(navigator.userAgent) && !window.opera) ?
-    //     E : updateReferenceUrl();
-    // if (R._url && R._g.win.history.pushState) {
-    //     R._g.win.history.pushState = (function () {
-    //         var fn = R._g.win.history.pushState;
-    //         return function () {
-    //             var ret = fn.apply(R._g.win.history, arguments);
-    //             return updateReferenceUrl(), ret;
-    //         };
-    //     }());
-    //     R._g.win.addEventListener("popstate", updateReferenceUrl, false);
-    // }
-    _raphael2["default"]._url = E;
-
-    var updateGradientReference = function updateGradientReference(element, newGradient) {
-        var gradient = element.gradient;
-
-        if (gradient) {
-            if (gradient === newGradient) {
-                return; // no change
+            if (newGradient) {
+                // add new gradient
+                element.gradient = newGradient;
+                newGradient.refCount++;
             }
-            // else gradient is specified and it is not same as newGradient, implying a dereference
-            gradient.refCount--;
-            if (!gradient.refCount) {
-                gradient.parentNode.removeChild(gradient);
-            }
-            delete element.gradient;
-        }
+        };
 
-        if (newGradient) {
-            // add new gradient
-            element.gradient = newGradient;
-            newGradient.refCount++;
-        }
-    };
-
-    var $ = _raphael2["default"]._createNode = function (el, attr) {
-        if (attr) {
-            if (typeof el == "string") {
-                el = $(el);
-            }
-            for (var key in attr) {
-                if (attr[has](key)) {
-                    if (key.substring(0, 6) == "xlink:") {
-                        el.setAttributeNS(xlink, key.substring(6), Str(attr[key]));
-                    } else {
-                        el.setAttribute(key, Str(attr[key]));
+        var $ = R._createNode = function (el, attr) {
+            if (attr) {
+                if (typeof el == "string") {
+                    el = $(el);
+                }
+                for (var key in attr) {
+                    if (attr[has](key)) {
+                        if (key.substring(0, 6) == "xlink:") {
+                            el.setAttributeNS(xlink, key.substring(6), Str(attr[key]));
+                        } else {
+                            el.setAttribute(key, Str(attr[key]));
+                        }
                     }
                 }
+            } else {
+                el = R._g.doc.createElementNS("http://www.w3.org/2000/svg", el);
             }
-        } else {
-            el = _raphael2["default"]._g.doc.createElementNS("http://www.w3.org/2000/svg", el);
-        }
-        return el;
-    },
-        gradientUnitNames = {
-        userSpaceOnUse: 'userSpaceOnUse',
-        objectBoundingBox: 'objectBoundingBox'
-    },
-        gradientSpreadNames = {
-        pad: 'pad',
-        redlect: 'reflect',
-        repeat: 'repeat'
-    },
-        addGradientFill = function addGradientFill(element, gradient) {
-        if (!element.paper || !element.paper.defs) {
-            return 0;
-        }
+            return el;
+        },
+            gradientUnitNames = {
+            userSpaceOnUse: 'userSpaceOnUse',
+            objectBoundingBox: 'objectBoundingBox'
+        },
+            gradientSpreadNames = {
+            pad: 'pad',
+            redlect: 'reflect',
+            repeat: 'repeat'
+        },
+            addGradientFill = function addGradientFill(element, gradient) {
+            if (!element.paper || !element.paper.defs) {
+                return 0;
+            }
 
-        var type = "linear",
-            SVG = element.paper,
-            id = _raphael2["default"].getElementID((SVG.id + '-' + gradient).replace(/[\(\)\s%:,\xb0#]/g, "_")),
-            fx = .5,
-            fy = .5,
-            r,
-            cx,
-            cy,
-            units,
-            spread,
-            o = element.node,
-            s = o.style,
-            el = _raphael2["default"]._g.doc.getElementById(id);
+            var type = "linear",
+                SVG = element.paper,
+                id = R.getElementID((SVG.id + '-' + gradient).replace(/[\(\)\s%:,\xb0#]/g, "_")),
+                fx = .5,
+                fy = .5,
+                r,
+                cx,
+                cy,
+                units,
+                spread,
+                o = element.node,
+                s = o.style,
+                el = R._g.doc.getElementById(id);
 
-        if (!el) {
-            gradient = Str(gradient).replace(_raphael2["default"]._radial_gradient, function (all, opts) {
-                type = "radial";
-                opts = opts && opts.split(',') || [];
-                units = opts[5];
-                spread = opts[6];
+            if (!el) {
+                gradient = Str(gradient).replace(R._radial_gradient, function (all, opts) {
+                    type = "radial";
+                    opts = opts && opts.split(',') || [];
+                    units = opts[5];
+                    spread = opts[6];
 
-                var _fx = opts[0],
-                    _fy = opts[1],
-                    _r = opts[2],
-                    _cx = opts[3],
-                    _cy = opts[4],
-                    shifted = _fx && _fy,
-                    dir,
-                    sqx;
+                    var _fx = opts[0],
+                        _fy = opts[1],
+                        _r = opts[2],
+                        _cx = opts[3],
+                        _cy = opts[4],
+                        shifted = _fx && _fy,
+                        dir,
+                        sqx;
 
-                if (_r) {
-                    r = /\%/.test(_r) ? _r : toFloat(_r);
-                }
+                    if (_r) {
+                        r = /\%/.test(_r) ? _r : toFloat(_r);
+                    }
 
-                if (units === gradientUnitNames.userSpaceOnUse) {
+                    if (units === gradientUnitNames.userSpaceOnUse) {
+                        if (shifted) {
+                            fx = _fx;
+                            fy = _fy;
+                        }
+                        if (_cx && _cy) {
+                            cx = _cx;
+                            cy = _cy;
+                            if (!shifted) {
+                                fx = cx;
+                                fy = cy;
+                            }
+                        }
+                        return E;
+                    }
+
                     if (shifted) {
-                        fx = _fx;
-                        fy = _fy;
+                        fx = toFloat(_fx);
+                        fy = toFloat(_fy);
+                        dir = (fy > .5) * 2 - 1;
+                        (sqx = pow(fx - .5, 2)) + pow(fy - .5, 2) > .25 && sqx < .25 && (fy = sqrt(.25 - sqx) * dir + .5) && fy !== .5 && (fy = fy.toFixed(5) - 1e-5 * dir);
                     }
                     if (_cx && _cy) {
-                        cx = _cx;
-                        cy = _cy;
+                        cx = toFloat(_cx);
+                        cy = toFloat(_cy);
+                        dir = (cy > .5) * 2 - 1;
+
+                        (sqx = pow(cx - .5, 2)) + pow(cy - .5, 2) > .25 && sqx < .25 && (cy = sqrt(.25 - sqx) * dir + .5) && cy !== .5 && (cy = cy.toFixed(5) - 1e-5 * dir);
+
                         if (!shifted) {
                             fx = cx;
                             fy = cy;
                         }
                     }
+
                     return E;
-                }
+                });
+                gradient = gradient.split(/\s*\-\s*/);
+                if (type == "linear") {
+                    var angle = gradient.shift(),
+                        specs = angle.match(/\((.*)\)/),
+                        vector,
+                        max;
 
-                if (shifted) {
-                    fx = toFloat(_fx);
-                    fy = toFloat(_fy);
-                    dir = (fy > .5) * 2 - 1;
-                    (sqx = pow(fx - .5, 2)) + pow(fy - .5, 2) > .25 && sqx < .25 && (fy = sqrt(.25 - sqx) * dir + .5) && fy !== .5 && (fy = fy.toFixed(5) - 1e-5 * dir);
-                }
-                if (_cx && _cy) {
-                    cx = toFloat(_cx);
-                    cy = toFloat(_cy);
-                    dir = (cy > .5) * 2 - 1;
+                    specs = specs && specs[1] && specs[1].split(/\s*\,\s*/);
+                    angle = -toFloat(angle);
+                    if (isNaN(angle)) {
+                        return null;
+                    }
+                    if (specs && specs.length) {
+                        if (specs[0] in gradientUnitNames) {
+                            units = specs.shift();
+                            specs[0] in gradientSpreadNames && (spread = specs.shift());
+                        } else {
+                            specs[4] && (units = specs[4]);
+                            specs[5] && (spread = specs[5]);
+                        }
 
-                    (sqx = pow(cx - .5, 2)) + pow(cy - .5, 2) > .25 && sqx < .25 && (cy = sqrt(.25 - sqx) * dir + .5) && cy !== .5 && (cy = cy.toFixed(5) - 1e-5 * dir);
-
-                    if (!shifted) {
-                        fx = cx;
-                        fy = cy;
+                        /** @todo apply angle rotation and validation */
+                        vector = [specs[0] || "0%", specs[1] || "0%", specs[2] || "100%", specs[3] || "0%"];
+                    } else {
+                        vector = [0, 0, math.cos(R.rad(angle)), math.sin(R.rad(angle))];
+                        max = 1 / (mmax(abs(vector[2]), abs(vector[3])) || 1);
+                        vector[2] *= max;
+                        vector[3] *= max;
+                        if (vector[2] < 0) {
+                            vector[0] = -vector[2];
+                            vector[2] = 0;
+                        }
+                        if (vector[3] < 0) {
+                            vector[1] = -vector[3];
+                            vector[3] = 0;
+                        }
                     }
                 }
-
-                return E;
-            });
-            gradient = gradient.split(/\s*\-\s*/);
-            if (type == "linear") {
-                var angle = gradient.shift(),
-                    specs = angle.match(/\((.*)\)/),
-                    vector,
-                    max;
-
-                specs = specs && specs[1] && specs[1].split(/\s*\,\s*/);
-                angle = -toFloat(angle);
-                if (isNaN(angle)) {
+                var dots = R._parseDots(gradient);
+                if (!dots) {
                     return null;
                 }
-                if (specs && specs.length) {
-                    if (specs[0] in gradientUnitNames) {
-                        units = specs.shift();
-                        specs[0] in gradientSpreadNames && (spread = specs.shift());
-                    } else {
-                        specs[4] && (units = specs[4]);
-                        specs[5] && (spread = specs[5]);
-                    }
 
-                    /** @todo apply angle rotation and validation */
-                    vector = [specs[0] || "0%", specs[1] || "0%", specs[2] || "100%", specs[3] || "0%"];
-                } else {
-                    vector = [0, 0, math.cos(_raphael2["default"].rad(angle)), math.sin(_raphael2["default"].rad(angle))];
-                    max = 1 / (mmax(abs(vector[2]), abs(vector[3])) || 1);
-                    vector[2] *= max;
-                    vector[3] *= max;
-                    if (vector[2] < 0) {
-                        vector[0] = -vector[2];
-                        vector[2] = 0;
-                    }
-                    if (vector[3] < 0) {
-                        vector[1] = -vector[3];
-                        vector[3] = 0;
-                    }
-                }
-            }
-            var dots = _raphael2["default"]._parseDots(gradient);
-            if (!dots) {
-                return null;
-            }
-
-            el = $(type + "Gradient", {
-                id: id
-            });
-            el.refCount = 0;
-            units in gradientUnitNames && el.setAttribute('gradientUnits', Str(units));
-            spread in gradientSpreadNames && el.setAttribute('spreadMethod', Str(spread));
-            if (type === "radial") {
-                r !== undefined && el.setAttribute('r', Str(r));
-
-                if (cx !== undefined && cy !== undefined) {
-                    el.setAttribute('cx', Str(cx));
-                    el.setAttribute('cy', Str(cy));
-                }
-                el.setAttribute('fx', Str(fx));
-                el.setAttribute('fy', Str(fy));
-            } else {
-                $(el, {
-                    x1: vector[0],
-                    y1: vector[1],
-                    x2: vector[2],
-                    y2: vector[3]
+                el = $(type + "Gradient", {
+                    id: id
                 });
-            }
+                el.refCount = 0;
+                units in gradientUnitNames && el.setAttribute('gradientUnits', Str(units));
+                spread in gradientSpreadNames && el.setAttribute('spreadMethod', Str(spread));
+                if (type === "radial") {
+                    r !== undefined && el.setAttribute('r', Str(r));
 
-            for (var i = 0, ii = dots.length; i < ii; i++) {
-                el.appendChild($("stop", {
-                    offset: dots[i].offset ? dots[i].offset : i ? "100%" : "0%",
-                    "stop-color": dots[i].color || "#fff",
-                    //add stop opacity information
-                    "stop-opacity": dots[i].opacity === undefined ? 1 : dots[i].opacity
-                }));
-            }
-            SVG.defs.appendChild(el);
-        }
-
-        updateGradientReference(element, el);
-
-        $(o, {
-            fill: "url('" + _raphael2["default"]._url + "#" + id + "')",
-            "fill-opacity": 1
-        });
-
-        s.fill = E;
-        s.fillOpacity = 1;
-        return 1;
-    },
-        updatePosition = function updatePosition(o) {
-        var bbox = o.getBBox(1);
-        $(o.pattern, {
-            patternTransform: o.matrix.invert() + " translate(" + bbox.x + "," + bbox.y + ")"
-        });
-    },
-        addArrow = function addArrow(o, value, isEnd) {
-        if (o.type == "path") {
-            var values = Str(value).toLowerCase().split("-"),
-                p = o.paper,
-                se = isEnd ? "end" : "start",
-                node = o.node,
-                attrs = o.attrs,
-                stroke = attrs["stroke-width"],
-                i = values.length,
-                type = "classic",
-                from,
-                to,
-                dx,
-                refX,
-                attr,
-                w = 3,
-                h = 3,
-                t = 5;
-            while (i--) {
-                switch (values[i]) {
-                    case "block":
-                    case "classic":
-                    case "oval":
-                    case "diamond":
-                    case "open":
-                    case "none":
-                        type = values[i];
-                        break;
-                    case "wide":
-                        h = 5;
-                        break;
-                    case "narrow":
-                        h = 2;
-                        break;
-                    case "long":
-                        w = 5;
-                        break;
-                    case "short":
-                        w = 2;
-                        break;
-                }
-            }
-            if (type == "open") {
-                w += 2;
-                h += 2;
-                t += 2;
-                dx = 1;
-                refX = isEnd ? 4 : 1;
-                attr = {
-                    fill: "none",
-                    stroke: attrs.stroke
-                };
-            } else {
-                refX = dx = w / 2;
-                attr = {
-                    fill: attrs.stroke,
-                    stroke: "none"
-                };
-            }
-            if (o._.arrows) {
-                if (isEnd) {
-                    o._.arrows.endPath && markerCounter[o._.arrows.endPath]--;
-                    o._.arrows.endMarker && markerCounter[o._.arrows.endMarker]--;
+                    if (cx !== undefined && cy !== undefined) {
+                        el.setAttribute('cx', Str(cx));
+                        el.setAttribute('cy', Str(cy));
+                    }
+                    el.setAttribute('fx', Str(fx));
+                    el.setAttribute('fy', Str(fy));
                 } else {
-                    o._.arrows.startPath && markerCounter[o._.arrows.startPath]--;
-                    o._.arrows.startMarker && markerCounter[o._.arrows.startMarker]--;
+                    $(el, {
+                        x1: vector[0],
+                        y1: vector[1],
+                        x2: vector[2],
+                        y2: vector[3]
+                    });
                 }
-            } else {
-                o._.arrows = {};
-            }
-            if (type != "none") {
-                var pathId = "raphael-marker-" + type,
-                    markerId = "raphael-marker-" + se + type + w + h + "-obj" + o.id;
-                if (!_raphael2["default"]._g.doc.getElementById(pathId)) {
-                    p.defs.appendChild($($("path"), {
-                        "stroke-linecap": "round",
-                        d: markers[type],
-                        id: pathId
+
+                for (var i = 0, ii = dots.length; i < ii; i++) {
+                    el.appendChild($("stop", {
+                        offset: dots[i].offset ? dots[i].offset : i ? "100%" : "0%",
+                        "stop-color": dots[i].color || "#fff",
+                        //add stop opacity information
+                        "stop-opacity": dots[i].opacity === undefined ? 1 : dots[i].opacity
                     }));
-                    markerCounter[pathId] = 1;
-                } else {
-                    markerCounter[pathId]++;
                 }
-                var marker = _raphael2["default"]._g.doc.getElementById(markerId),
-                    use;
-                if (!marker) {
-                    marker = $($("marker"), {
-                        id: markerId,
-                        markerHeight: h,
-                        markerWidth: w,
-                        orient: "auto",
-                        refX: refX,
-                        refY: h / 2
-                    });
-                    use = $($("use"), {
-                        "xlink:href": "#" + pathId,
-                        transform: (isEnd ? "rotate(180 " + w / 2 + " " + h / 2 + ") " : E) + "scale(" + w / t + "," + h / t + ")",
-                        "stroke-width": (1 / ((w / t + h / t) / 2)).toFixed(4)
-                    });
-                    marker.appendChild(use);
-                    p.defs.appendChild(marker);
-                    markerCounter[markerId] = 1;
-                } else {
-                    markerCounter[markerId]++;
-                    use = marker.getElementsByTagName("use")[0];
-                }
-                $(use, attr);
-                var delta = dx * (type != "diamond" && type != "oval");
-                if (isEnd) {
-                    from = o._.arrows.startdx * stroke || 0;
-                    to = _raphael2["default"].getTotalLength(attrs.path) - delta * stroke;
-                } else {
-                    from = delta * stroke;
-                    to = _raphael2["default"].getTotalLength(attrs.path) - (o._.arrows.enddx * stroke || 0);
-                }
-                attr = {};
-                attr["marker-" + se] = "url('" + _raphael2["default"]._url + "#" + markerId + "')";
-                if (to || from) {
-                    attr.d = _raphael2["default"].getSubpath(attrs.path, from, to);
-                }
-                $(node, attr);
-                o._.arrows[se + "Path"] = pathId;
-                o._.arrows[se + "Marker"] = markerId;
-                o._.arrows[se + "dx"] = delta;
-                o._.arrows[se + "Type"] = type;
-                o._.arrows[se + "String"] = value;
-            } else {
-                if (isEnd) {
-                    from = o._.arrows.startdx * stroke || 0;
-                    to = _raphael2["default"].getTotalLength(attrs.path) - from;
-                } else {
-                    from = 0;
-                    to = _raphael2["default"].getTotalLength(attrs.path) - (o._.arrows.enddx * stroke || 0);
-                }
-                o._.arrows[se + "Path"] && $(node, {
-                    d: _raphael2["default"].getSubpath(attrs.path, from, to)
-                });
-                delete o._.arrows[se + "Path"];
-                delete o._.arrows[se + "Marker"];
-                delete o._.arrows[se + "dx"];
-                delete o._.arrows[se + "Type"];
-                delete o._.arrows[se + "String"];
+                SVG.defs.appendChild(el);
             }
-            for (attr in markerCounter) {
-                if (markerCounter[has](attr) && !markerCounter[attr]) {
-                    var item = _raphael2["default"]._g.doc.getElementById(attr);
-                    item && item.parentNode.removeChild(item);
-                }
-            }
-        }
-    },
-        dasharray = {
-        // In Firefox 37.0.1 the value of "stroke-dasharray" attribute `0` make the stroke/border invisible.
-        // The actual issue is setting `none` as the value of `stroke-dasharray` attribute
-        // redraphael internally changes the "none" value to "0", thus the stroke/border becomes invisible
-        // To fix this issue now instead of setting the value as `0` for `stroke-dasharray` attribute
-        // now using `none` string as none is a w3c standard value for stroke-dasharray
-        "": ["none"],
-        "none": ["none"],
-        "-": [3, 1],
-        ".": [1, 1],
-        "-.": [3, 1, 1, 1],
-        "-..": [3, 1, 1, 1, 1, 1],
-        ". ": [1, 3],
-        "- ": [4, 3],
-        "--": [8, 3],
-        "- .": [4, 3, 1, 3],
-        "--.": [8, 3, 1, 3],
-        "--..": [8, 3, 1, 3, 1, 3]
-    },
-        addDashes = function addDashes(o, value, params) {
-        var predefValue = dasharray[Str(value).toLowerCase()],
-            calculatedValues,
-            width,
-            butt,
-            i,
-            l,
-            widthFactor;
 
-        value = predefValue || value !== undefined && [].concat(value);
-        if (value) {
+            updateGradientReference(element, el);
 
-            width = o.attrs["stroke-width"] || 1;
-            butt = {
-                round: width,
-                square: width,
-                butt: 0
-            }[params["stroke-linecap"] || o.attrs["stroke-linecap"]] || 0;
-            l = i = value.length;
-            widthFactor = predefValue ? width : 1;
+            $(o, {
+                fill: "url('" + R._url + "#" + id + "')",
+                "fill-opacity": 1
+            });
 
-            if (value[0] == 'none') {
-                calculatedValues = value;
-            } else {
-                calculatedValues = [];
+            s.fill = E;
+            s.fillOpacity = 1;
+            return 1;
+        },
+            updatePosition = function updatePosition(o) {
+            var bbox = o.getBBox(1);
+            $(o.pattern, {
+                patternTransform: o.matrix.invert() + " translate(" + bbox.x + "," + bbox.y + ")"
+            });
+        },
+            addArrow = function addArrow(o, value, isEnd) {
+            if (o.type == "path") {
+                var values = Str(value).toLowerCase().split("-"),
+                    p = o.paper,
+                    se = isEnd ? "end" : "start",
+                    node = o.node,
+                    attrs = o.attrs,
+                    stroke = attrs["stroke-width"],
+                    i = values.length,
+                    type = "classic",
+                    from,
+                    to,
+                    dx,
+                    refX,
+                    attr,
+                    w = 3,
+                    h = 3,
+                    t = 5;
                 while (i--) {
-                    calculatedValues[i] = value[i] * widthFactor + (i % 2 ? 1 : -1) * butt;
-                    calculatedValues[i] <= 0 && (calculatedValues[i] = 0.01 + (width <= 1 ? butt : 0));
-                    if (isNaN(calculatedValues[i])) {
-                        calculatedValues[i] = 0;
+                    switch (values[i]) {
+                        case "block":
+                        case "classic":
+                        case "oval":
+                        case "diamond":
+                        case "open":
+                        case "none":
+                            type = values[i];
+                            break;
+                        case "wide":
+                            h = 5;
+                            break;
+                        case "narrow":
+                            h = 2;
+                            break;
+                        case "long":
+                            w = 5;
+                            break;
+                        case "short":
+                            w = 2;
+                            break;
+                    }
+                }
+                if (type == "open") {
+                    w += 2;
+                    h += 2;
+                    t += 2;
+                    dx = 1;
+                    refX = isEnd ? 4 : 1;
+                    attr = {
+                        fill: "none",
+                        stroke: attrs.stroke
+                    };
+                } else {
+                    refX = dx = w / 2;
+                    attr = {
+                        fill: attrs.stroke,
+                        stroke: "none"
+                    };
+                }
+                if (o._.arrows) {
+                    if (isEnd) {
+                        o._.arrows.endPath && markerCounter[o._.arrows.endPath]--;
+                        o._.arrows.endMarker && markerCounter[o._.arrows.endMarker]--;
+                    } else {
+                        o._.arrows.startPath && markerCounter[o._.arrows.startPath]--;
+                        o._.arrows.startMarker && markerCounter[o._.arrows.startMarker]--;
+                    }
+                } else {
+                    o._.arrows = {};
+                }
+                if (type != "none") {
+                    var pathId = "raphael-marker-" + type,
+                        markerId = "raphael-marker-" + se + type + w + h + "-obj" + o.id;
+                    if (!R._g.doc.getElementById(pathId)) {
+                        p.defs.appendChild($($("path"), {
+                            "stroke-linecap": "round",
+                            d: markers[type],
+                            id: pathId
+                        }));
+                        markerCounter[pathId] = 1;
+                    } else {
+                        markerCounter[pathId]++;
+                    }
+                    var marker = R._g.doc.getElementById(markerId),
+                        use;
+                    if (!marker) {
+                        marker = $($("marker"), {
+                            id: markerId,
+                            markerHeight: h,
+                            markerWidth: w,
+                            orient: "auto",
+                            refX: refX,
+                            refY: h / 2
+                        });
+                        use = $($("use"), {
+                            "xlink:href": "#" + pathId,
+                            transform: (isEnd ? "rotate(180 " + w / 2 + " " + h / 2 + ") " : E) + "scale(" + w / t + "," + h / t + ")",
+                            "stroke-width": (1 / ((w / t + h / t) / 2)).toFixed(4)
+                        });
+                        marker.appendChild(use);
+                        p.defs.appendChild(marker);
+                        markerCounter[markerId] = 1;
+                    } else {
+                        markerCounter[markerId]++;
+                        use = marker.getElementsByTagName("use")[0];
+                    }
+                    $(use, attr);
+                    var delta = dx * (type != "diamond" && type != "oval");
+                    if (isEnd) {
+                        from = o._.arrows.startdx * stroke || 0;
+                        to = R.getTotalLength(attrs.path) - delta * stroke;
+                    } else {
+                        from = delta * stroke;
+                        to = R.getTotalLength(attrs.path) - (o._.arrows.enddx * stroke || 0);
+                    }
+                    attr = {};
+                    attr["marker-" + se] = "url('" + R._url + "#" + markerId + "')";
+                    if (to || from) {
+                        attr.d = R.getSubpath(attrs.path, from, to);
+                    }
+                    $(node, attr);
+                    o._.arrows[se + "Path"] = pathId;
+                    o._.arrows[se + "Marker"] = markerId;
+                    o._.arrows[se + "dx"] = delta;
+                    o._.arrows[se + "Type"] = type;
+                    o._.arrows[se + "String"] = value;
+                } else {
+                    if (isEnd) {
+                        from = o._.arrows.startdx * stroke || 0;
+                        to = R.getTotalLength(attrs.path) - from;
+                    } else {
+                        from = 0;
+                        to = R.getTotalLength(attrs.path) - (o._.arrows.enddx * stroke || 0);
+                    }
+                    o._.arrows[se + "Path"] && $(node, {
+                        d: R.getSubpath(attrs.path, from, to)
+                    });
+                    delete o._.arrows[se + "Path"];
+                    delete o._.arrows[se + "Marker"];
+                    delete o._.arrows[se + "dx"];
+                    delete o._.arrows[se + "Type"];
+                    delete o._.arrows[se + "String"];
+                }
+                for (attr in markerCounter) {
+                    if (markerCounter[has](attr) && !markerCounter[attr]) {
+                        var item = R._g.doc.getElementById(attr);
+                        item && item.parentNode.removeChild(item);
                     }
                 }
             }
+        },
+            dasharray = {
+            // In Firefox 37.0.1 the value of "stroke-dasharray" attribute `0` make the stroke/border invisible.
+            // The actual issue is setting `none` as the value of `stroke-dasharray` attribute
+            // redraphael internally changes the "none" value to "0", thus the stroke/border becomes invisible
+            // To fix this issue now instead of setting the value as `0` for `stroke-dasharray` attribute
+            // now using `none` string as none is a w3c standard value for stroke-dasharray
+            "": ["none"],
+            "none": ["none"],
+            "-": [3, 1],
+            ".": [1, 1],
+            "-.": [3, 1, 1, 1],
+            "-..": [3, 1, 1, 1, 1, 1],
+            ". ": [1, 3],
+            "- ": [4, 3],
+            "--": [8, 3],
+            "- .": [4, 3, 1, 3],
+            "--.": [8, 3, 1, 3],
+            "--..": [8, 3, 1, 3, 1, 3]
+        },
+            addDashes = function addDashes(o, value, params) {
+            var predefValue = dasharray[Str(value).toLowerCase()],
+                calculatedValues,
+                width,
+                butt,
+                i,
+                l,
+                widthFactor;
 
-            if (_raphael2["default"].is(value, 'array')) {
-                $(o.node, {
-                    "stroke-dasharray": calculatedValues.join(",")
-                });
-            }
-        }
-    },
-        applyCustomAttributes = function applyCustomAttributes(o, attrs) {
-        for (var key in attrs) {
-            eve("raphael.attr." + key + "." + o.id, o, attrs[key], key);
-            o.ca[key] && o.attr(key, attrs[key]);
-        }
-    },
-        setFillAndStroke = _raphael2["default"]._setFillAndStroke = function (o, params, group) {
-        if (!o.paper.canvas) {
-            return;
-        }
-        var node = o.node,
-            attrs = o.attrs,
-            paper = o.paper,
-            s = node.style,
-            vis = s.visibility,
-            i,
-            l;
-        // Convert all the &lt; and &gt; to < and > and if there is any <br/> tag in between &lt; and &gt;
-        // then converting them into <<br/> and ><br/> respectively.
-        if (params && params.text && params.text.replace) {
-            params.text = params.text.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&<br\/>lt;|&l<br\/>t;|&lt<br\/>;/g, "<<br/>").replace(/&<br\/>gt;|&g<br\/>t;|&gt<br\/>;/g, "><br/>");
-        }
-        s.visibility = "hidden";
-        if (o.type === "image") {
-            LoadRefImage(o, params);
-        }
-        for (var att in params) {
-            if (params[has](att)) {
-                if (!_raphael2["default"]._availableAttrs[has](att)) {
-                    continue;
+            value = predefValue || value !== undefined && [].concat(value);
+            if (value) {
+
+                width = o.attrs["stroke-width"] || 1;
+                butt = {
+                    round: width,
+                    square: width,
+                    butt: 0
+                }[params["stroke-linecap"] || o.attrs["stroke-linecap"]] || 0;
+                l = i = value.length;
+                widthFactor = predefValue ? width : 1;
+
+                if (value[0] == 'none') {
+                    calculatedValues = value;
+                } else {
+                    calculatedValues = [];
+                    while (i--) {
+                        calculatedValues[i] = value[i] * widthFactor + (i % 2 ? 1 : -1) * butt;
+                        calculatedValues[i] <= 0 && (calculatedValues[i] = 0.01 + (width <= 1 ? butt : 0));
+                        if (isNaN(calculatedValues[i])) {
+                            calculatedValues[i] = 0;
+                        }
+                    }
                 }
-                var value = params[att];
-                attrs[att] = value;
-                switch (att) {
-                    case "blur":
-                        o.blur(value);
-                        break;
-                    case "href":
-                    case "title":
-                    case "target":
-                        var pn = node.parentNode;
-                        if (pn.tagName.toLowerCase() != "a") {
-                            if (value == E) {
-                                break;
+
+                if (R.is(value, 'array')) {
+                    $(o.node, {
+                        "stroke-dasharray": calculatedValues.join(",")
+                    });
+                }
+            }
+        },
+            applyCustomAttributes = function applyCustomAttributes(o, attrs) {
+            for (var key in attrs) {
+                eve("raphael.attr." + key + "." + o.id, o, attrs[key], key);
+                o.ca[key] && o.attr(key, attrs[key]);
+            }
+        },
+            setFillAndStroke = R._setFillAndStroke = function (o, params, group) {
+            if (!o.paper.canvas) {
+                return;
+            }
+            var node = o.node,
+                attrs = o.attrs,
+                paper = o.paper,
+                s = node.style,
+                vis = s.visibility,
+                i,
+                l;
+            // Convert all the &lt; and &gt; to < and > and if there is any <br/> tag in between &lt; and &gt;
+            // then converting them into <<br/> and ><br/> respectively.
+            if (params && params.text && params.text.replace) {
+                params.text = params.text.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&<br\/>lt;|&l<br\/>t;|&lt<br\/>;/g, "<<br/>").replace(/&<br\/>gt;|&g<br\/>t;|&gt<br\/>;/g, "><br/>");
+            }
+            s.visibility = "hidden";
+            if (o.type === "image") {
+                LoadRefImage(o, params);
+            }
+            for (var att in params) {
+                if (params[has](att)) {
+                    if (!R._availableAttrs[has](att)) {
+                        continue;
+                    }
+                    var value = params[att];
+                    attrs[att] = value;
+                    switch (att) {
+                        case "blur":
+                            o.blur(value);
+                            break;
+                        case "href":
+                        case "title":
+                        case "target":
+                            var pn = node.parentNode;
+                            if (pn.tagName.toLowerCase() != "a") {
+                                if (value == E) {
+                                    break;
+                                }
+                                var hl = $("a");
+                                hl.raphael = true;
+                                hl.raphaelid = node.raphaelid;
+                                pn.insertBefore(hl, node);
+                                hl.appendChild(node);
+                                pn = hl;
                             }
-                            var hl = $("a");
-                            hl.raphael = true;
-                            hl.raphaelid = node.raphaelid;
-                            pn.insertBefore(hl, node);
-                            hl.appendChild(node);
-                            pn = hl;
-                        }
-                        if (att == "target") {
-                            pn.setAttributeNS(xlink, "show", value == "blank" ? "new" : value);
-                        } else {
-                            pn.setAttributeNS(xlink, att, value);
-                        }
-                        node.titleNode = pn;
-                        break;
-                    case "cursor":
-                        s.cursor = value;
-                        break;
-                    case "transform":
-                        o.transform(value);
-                        break;
-                    case "rotation":
-                        if (_raphael2["default"].is(value, "array")) {
-                            o.rotate.apply(o, value);
-                        } else {
-                            o.rotate(value);
-                        }
-                        break;
-                    case "arrow-start":
-                        addArrow(o, value);
-                        break;
-                    case "arrow-end":
-                        addArrow(o, value, 1);
-                        break;
-                    case "clip-path":
-                        var pathClip = true;
-                    case "clip-rect":
-                        var rect = !pathClip && Str(value).split(separator);
-                        o._.clipispath = !!pathClip;
-                        if (pathClip || rect.length == 4) {
-                            o.clip && o.clip.parentNode.parentNode.removeChild(o.clip.parentNode);
-                            var el = $("clipPath"),
-                                rc = $(pathClip ? "path" : "rect");
-                            el.id = _raphael2["default"].getElementID(_raphael2["default"].createUUID());
-                            $(rc, pathClip ? {
-                                d: value ? attrs['clip-path'] = _raphael2["default"]._pathToAbsolute(value) : _raphael2["default"]._availableAttrs.path,
-                                fill: 'none'
-                            } : {
-                                x: rect[0],
-                                y: rect[1],
-                                width: rect[2],
-                                height: rect[3],
-                                transform: o.matrix.invert()
-                            });
-                            el.appendChild(rc);
-                            paper.defs.appendChild(el);
-                            $(node, {
-                                "clip-path": "url('" + _raphael2["default"]._url + "#" + el.id + "')"
-                            });
-                            o.clip = rc;
-                        }
-                        if (!value) {
-                            var path = node.getAttribute("clip-path");
-                            if (path) {
-                                var clip = _raphael2["default"]._g.doc.getElementById(path.replace(/(^url\(#|\)$)/g, E));
-                                clip && clip.parentNode.removeChild(clip);
+                            if (att == "target") {
+                                pn.setAttributeNS(xlink, "show", value == "blank" ? "new" : value);
+                            } else {
+                                pn.setAttributeNS(xlink, att, value);
+                            }
+                            node.titleNode = pn;
+                            break;
+                        case "cursor":
+                            s.cursor = value;
+                            break;
+                        case "transform":
+                            o.transform(value);
+                            break;
+                        case "rotation":
+                            if (R.is(value, "array")) {
+                                o.rotate.apply(o, value);
+                            } else {
+                                o.rotate(value);
+                            }
+                            break;
+                        case "arrow-start":
+                            addArrow(o, value);
+                            break;
+                        case "arrow-end":
+                            addArrow(o, value, 1);
+                            break;
+                        case "clip-path":
+                            var pathClip = true;
+                        case "clip-rect":
+                            var rect = !pathClip && Str(value).split(separator);
+                            o._.clipispath = !!pathClip;
+                            if (pathClip || rect.length == 4) {
+                                o.clip && o.clip.parentNode.parentNode.removeChild(o.clip.parentNode);
+                                var el = $("clipPath"),
+                                    rc = $(pathClip ? "path" : "rect");
+                                el.id = R.getElementID(R.createUUID());
+                                $(rc, pathClip ? {
+                                    d: value ? attrs['clip-path'] = R._pathToAbsolute(value) : R._availableAttrs.path,
+                                    fill: 'none'
+                                } : {
+                                    x: rect[0],
+                                    y: rect[1],
+                                    width: rect[2],
+                                    height: rect[3],
+                                    transform: o.matrix.invert()
+                                });
+                                el.appendChild(rc);
+                                paper.defs.appendChild(el);
                                 $(node, {
-                                    "clip-path": E
+                                    "clip-path": "url('" + R._url + "#" + el.id + "')"
                                 });
-                                document.documentMode === 11 && node.removeAttribute('clip-path');
-                                delete o.clip;
+                                o.clip = rc;
                             }
-                        }
-                        break;
-                    case "path":
-                        if (o.type == "path") {
-                            $(node, {
-                                d: value ? attrs.path = _raphael2["default"]._pathToAbsolute(value) : _raphael2["default"]._availableAttrs.path
-                            });
-                            o._.dirty = 1;
-                            if (o._.arrows) {
-                                "startString" in o._.arrows && addArrow(o, o._.arrows.startString);
-                                "endString" in o._.arrows && addArrow(o, o._.arrows.endString, 1);
-                            }
-                        }
-                        break;
-                    case "width":
-                        node.setAttribute(att, value);
-                        o._.dirty = 1;
-                        if (attrs.fx) {
-                            att = "x";
-                            value = attrs.x;
-                        } else {
-                            break;
-                        }
-                    case "x":
-                        if (attrs.fx) {
-                            value = -attrs.x - (attrs.width || 0);
-                        }
-                    case "rx":
-                        if (att == "rx" && o.type == "rect") {
-                            break;
-                        }
-                    case "cx":
-                        node.setAttribute(att, value);
-                        o.pattern && updatePosition(o);
-                        o._.dirty = 1;
-                        break;
-                    case "height":
-                        node.setAttribute(att, value);
-                        o._.dirty = 1;
-                        if (attrs.fy) {
-                            att = "y";
-                            value = attrs.y;
-                        } else {
-                            break;
-                        }
-                    case "y":
-                        if (attrs.fy) {
-                            value = -attrs.y - (attrs.height || 0);
-                        }
-                    case "ry":
-                        if (att == "ry" && o.type == "rect") {
-                            break;
-                        }
-                    case "cy":
-                        node.setAttribute(att, value);
-                        o.pattern && updatePosition(o);
-                        o._.dirty = 1;
-                        break;
-                    case "r":
-                        if (o.type == "rect") {
-                            $(node, {
-                                rx: value,
-                                ry: value
-                            });
-                        } else {
-                            node.setAttribute(att, value);
-                        }
-                        o._.dirty = 1;
-                        break;
-                    case "src":
-                        if (o.type == "image") {
-                            node.setAttributeNS(xlink, "href", value);
-                        }
-                        break;
-                    case "stroke-width":
-                        if (o._.sx != 1 || o._.sy != 1) {
-                            value /= mmax(abs(o._.sx), abs(o._.sy)) || 1;
-                        }
-                        if (paper._vbSize) {
-                            value *= paper._vbSize;
-                        }
-                        if (zeroStrokeFix && value === 0) {
-                            value = 0.000001;
-                        }
-                        node.setAttribute(att, value);
-                        if (attrs["stroke-dasharray"]) {
-                            addDashes(o, attrs["stroke-dasharray"], params);
-                        }
-                        if (o._.arrows) {
-                            "startString" in o._.arrows && addArrow(o, o._.arrows.startString);
-                            "endString" in o._.arrows && addArrow(o, o._.arrows.endString, 1);
-                        }
-                        break;
-                    case "stroke-dasharray":
-                        addDashes(o, value, params);
-                        break;
-                    case "fill":
-                        var isURL = Str(value).match(_raphael2["default"]._ISURL);
-                        if (isURL) {
-                            el = $("pattern");
-                            var ig = $("image");
-                            el.id = _raphael2["default"].getElementID(_raphael2["default"].createUUID());
-                            $(el, {
-                                x: 0,
-                                y: 0,
-                                patternUnits: "userSpaceOnUse",
-                                height: 1,
-                                width: 1
-                            });
-                            $(ig, {
-                                x: 0,
-                                y: 0,
-                                "xlink:href": isURL[1]
-                            });
-                            el.appendChild(ig);
-
-                            (function (el) {
-                                _raphael2["default"]._preload(isURL[1], function () {
-                                    var w = this.offsetWidth,
-                                        h = this.offsetHeight;
-                                    $(el, {
-                                        width: w,
-                                        height: h
+                            if (!value) {
+                                var path = node.getAttribute("clip-path");
+                                if (path) {
+                                    var clip = R._g.doc.getElementById(path.replace(/(^url\(#|\)$)/g, E));
+                                    clip && clip.parentNode.removeChild(clip);
+                                    $(node, {
+                                        "clip-path": E
                                     });
-                                    $(ig, {
-                                        width: w,
-                                        height: h
-                                    });
-                                    paper.safari();
-                                });
-                            })(el);
-                            paper.defs.appendChild(el);
-                            s.fill = "url('" + _raphael2["default"]._url + "#" + el.id + "')";
-                            $(node, {
-                                fill: s.fill
-                            });
-
-                            o.pattern = el;
-                            o.pattern && updatePosition(o);
-                            break;
-                        }
-                        var clr = _raphael2["default"].getRGB(value);
-                        if (!clr.error) {
-                            delete params.gradient;
-                            delete attrs.gradient;
-                            // !R.is(attrs.opacity, "undefined") &&
-                            //     R.is(params.opacity, "undefined") &&
-                            //     $(node, {
-                            //         opacity: attrs.opacity
-                            //     });
-                            !_raphael2["default"].is(attrs["fill-opacity"], "undefined") && _raphael2["default"].is(params["fill-opacity"], "undefined") && $(node, {
-                                "fill-opacity": attrs["fill-opacity"]
-                            });
-                            o.gradient && updateGradientReference(o);
-                        } else if ((o.type == "circle" || o.type == "ellipse" || Str(value).charAt() != "r") && addGradientFill(o, value)) {
-                            if ("opacity" in attrs || "fill-opacity" in attrs) {
-                                var gradient = _raphael2["default"]._g.doc.getElementById(node.getAttribute("fill").replace(/^url\(#|\)$/g, E));
-                                if (gradient) {
-                                    var stops = gradient.getElementsByTagName("stop");
-                                    $(stops[stops.length - 1], {
-                                        "stop-opacity": ("opacity" in attrs ? attrs.opacity : 1) * ("fill-opacity" in attrs ? attrs["fill-opacity"] : 1)
-                                    });
+                                    document.documentMode === 11 && node.removeAttribute('clip-path');
+                                    delete o.clip;
                                 }
                             }
-                            attrs.gradient = value;
-                            // attrs.fill = "none";
-                            s.fill = E;
                             break;
-                        }
-                        if (clr[has]("opacity")) {
-                            $(node, {
-                                "fill-opacity": s.fillOpacity = clr.opacity > 1 ? clr.opacity / 100 : clr.opacity
-                            });
-                            o._.fillOpacityDirty = true;
-                        } else if (o._.fillOpacityDirty && _raphael2["default"].is(attrs['fill-opacity'], "undefined") && _raphael2["default"].is(params["fill-opacity"], "undefined")) {
-                            node.removeAttribute('fill-opacity');
-                            s.fillOpacity = E;
-                            delete o._.fillOpacityDirty;
-                        }
-                    case "stroke":
-                        clr = _raphael2["default"].getRGB(value);
-                        node.setAttribute(att, clr.hex);
-                        s[att] = clr.hex;
-                        if (att == "stroke") {
-                            // remove stroke opacity when stroke is set to none
-                            if (clr[has]("opacity")) {
+                        case "path":
+                            if (o.type == "path") {
                                 $(node, {
-                                    "stroke-opacity": s.strokeOpacity = clr.opacity > 1 ? clr.opacity / 100 : clr.opacity
+                                    d: value ? attrs.path = R._pathToAbsolute(value) : R._availableAttrs.path
                                 });
-                                o._.strokeOpacityDirty = true;
-                            } else if (o._.strokeOpacityDirty && _raphael2["default"].is(attrs['stroke-opacity'], "undefined") && _raphael2["default"].is(params["stroke-opacity"], "undefined")) {
-                                node.removeAttribute('stroke-opacity');
-                                s.strokeOpacity = E;
-                                delete o._.strokeOpacityDirty;
+                                o._.dirty = 1;
+                                if (o._.arrows) {
+                                    "startString" in o._.arrows && addArrow(o, o._.arrows.startString);
+                                    "endString" in o._.arrows && addArrow(o, o._.arrows.endString, 1);
+                                }
+                            }
+                            break;
+                        case "width":
+                            node.setAttribute(att, value);
+                            o._.dirty = 1;
+                            if (attrs.fx) {
+                                att = "x";
+                                value = attrs.x;
+                            } else {
+                                break;
+                            }
+                        case "x":
+                            if (attrs.fx) {
+                                value = -attrs.x - (attrs.width || 0);
+                            }
+                        case "rx":
+                            if (att == "rx" && o.type == "rect") {
+                                break;
+                            }
+                        case "cx":
+                            node.setAttribute(att, value);
+                            o.pattern && updatePosition(o);
+                            o._.dirty = 1;
+                            break;
+                        case "height":
+                            node.setAttribute(att, value);
+                            o._.dirty = 1;
+                            if (attrs.fy) {
+                                att = "y";
+                                value = attrs.y;
+                            } else {
+                                break;
+                            }
+                        case "y":
+                            if (attrs.fy) {
+                                value = -attrs.y - (attrs.height || 0);
+                            }
+                        case "ry":
+                            if (att == "ry" && o.type == "rect") {
+                                break;
+                            }
+                        case "cy":
+                            node.setAttribute(att, value);
+                            o.pattern && updatePosition(o);
+                            o._.dirty = 1;
+                            break;
+                        case "r":
+                            if (o.type == "rect") {
+                                $(node, {
+                                    rx: value,
+                                    ry: value
+                                });
+                            } else {
+                                node.setAttribute(att, value);
+                            }
+                            o._.dirty = 1;
+                            break;
+                        case "src":
+                            if (o.type == "image") {
+                                node.setAttributeNS(xlink, "href", value);
+                            }
+                            break;
+                        case "stroke-width":
+                            if (o._.sx != 1 || o._.sy != 1) {
+                                value /= mmax(abs(o._.sx), abs(o._.sy)) || 1;
+                            }
+                            if (paper._vbSize) {
+                                value *= paper._vbSize;
+                            }
+                            if (zeroStrokeFix && value === 0) {
+                                value = 0.000001;
+                            }
+                            node.setAttribute(att, value);
+                            if (attrs["stroke-dasharray"]) {
+                                addDashes(o, attrs["stroke-dasharray"], params);
                             }
                             if (o._.arrows) {
                                 "startString" in o._.arrows && addArrow(o, o._.arrows.startString);
                                 "endString" in o._.arrows && addArrow(o, o._.arrows.endString, 1);
                             }
-                        }
-                        break;
-                    case "gradient":
-                        (o.type == "circle" || o.type == "ellipse" || Str(value).charAt() != "r") && addGradientFill(o, value);
-                        break;
-                    case 'line-height': // do not apply
-                    case 'vertical-align':
-                        // do not apply
-                        break;
-                    case "visibility":
-                        value === 'hidden' ? o.hide() : o.show();
-                        break;
-                    case "opacity":
-                        // if (attrs.gradient && !attrs[has]("stroke-opacity")) {
-                        //     $(node, {
-                        //         "stroke-opacity": value > 1 ? value / 100 : value
-                        //     });
-                        // }
-                        value = value > 1 ? value / 100 : value;
-                        $(node, {
-                            "opacity": value
-                        });
-                        s.opacity = value;
-                        break;
-                    // fall
-                    case "fill-opacity":
-                        // if (attrs.gradient) {
-                        //     gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\([\'\"]#|[\'\"]\)$/g, E));
-                        //     if (gradient) {
-                        //         stops = gradient.getElementsByTagName("stop");
-                        //         l = stops.length;
-                        //         for (i = 0; i < l; i += 1) {
-                        //           $(stops[i], {
-                        //               "stop-opacity": value
-                        //           });
-                        //         }
-                        //     }
-                        //     break;
-                        // }
-                        value = value > 1 ? value / 100 : value;
-                        $(node, {
-                            "fill-opacity": value
-                        });
-                        s.fillOpacity = value;
-                        break;
-                    default:
-                        att == "font-size" && (value = toInt(value, 10) + "px");
-                        var cssrule = att.replace(/(\-.)/g, function (w) {
-                            return w.substring(1).toUpperCase();
-                        });
-                        s[cssrule] = value;
-                        o._.dirty = 1;
-                        node.setAttribute(att, value);
-                        break;
+                            break;
+                        case "stroke-dasharray":
+                            addDashes(o, value, params);
+                            break;
+                        case "fill":
+                            var isURL = Str(value).match(R._ISURL);
+                            if (isURL) {
+                                el = $("pattern");
+                                var ig = $("image");
+                                el.id = R.getElementID(R.createUUID());
+                                $(el, {
+                                    x: 0,
+                                    y: 0,
+                                    patternUnits: "userSpaceOnUse",
+                                    height: 1,
+                                    width: 1
+                                });
+                                $(ig, {
+                                    x: 0,
+                                    y: 0,
+                                    "xlink:href": isURL[1]
+                                });
+                                el.appendChild(ig);
+
+                                (function (el) {
+                                    R._preload(isURL[1], function () {
+                                        var w = this.offsetWidth,
+                                            h = this.offsetHeight;
+                                        $(el, {
+                                            width: w,
+                                            height: h
+                                        });
+                                        $(ig, {
+                                            width: w,
+                                            height: h
+                                        });
+                                        paper.safari();
+                                    });
+                                })(el);
+                                paper.defs.appendChild(el);
+                                s.fill = "url('" + R._url + "#" + el.id + "')";
+                                $(node, {
+                                    fill: s.fill
+                                });
+
+                                o.pattern = el;
+                                o.pattern && updatePosition(o);
+                                break;
+                            }
+                            var clr = R.getRGB(value);
+                            if (!clr.error) {
+                                delete params.gradient;
+                                delete attrs.gradient;
+                                // !R.is(attrs.opacity, "undefined") &&
+                                //     R.is(params.opacity, "undefined") &&
+                                //     $(node, {
+                                //         opacity: attrs.opacity
+                                //     });
+                                !R.is(attrs["fill-opacity"], "undefined") && R.is(params["fill-opacity"], "undefined") && $(node, {
+                                    "fill-opacity": attrs["fill-opacity"]
+                                });
+                                o.gradient && updateGradientReference(o);
+                            } else if ((o.type == "circle" || o.type == "ellipse" || Str(value).charAt() != "r") && addGradientFill(o, value)) {
+                                if ("opacity" in attrs || "fill-opacity" in attrs) {
+                                    var gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\(#|\)$/g, E));
+                                    if (gradient) {
+                                        var stops = gradient.getElementsByTagName("stop");
+                                        $(stops[stops.length - 1], {
+                                            "stop-opacity": ("opacity" in attrs ? attrs.opacity : 1) * ("fill-opacity" in attrs ? attrs["fill-opacity"] : 1)
+                                        });
+                                    }
+                                }
+                                attrs.gradient = value;
+                                // attrs.fill = "none";
+                                s.fill = E;
+                                break;
+                            }
+                            if (clr[has]("opacity")) {
+                                $(node, {
+                                    "fill-opacity": s.fillOpacity = clr.opacity > 1 ? clr.opacity / 100 : clr.opacity
+                                });
+                                o._.fillOpacityDirty = true;
+                            } else if (o._.fillOpacityDirty && R.is(attrs['fill-opacity'], "undefined") && R.is(params["fill-opacity"], "undefined")) {
+                                node.removeAttribute('fill-opacity');
+                                s.fillOpacity = E;
+                                delete o._.fillOpacityDirty;
+                            }
+                        case "stroke":
+                            clr = R.getRGB(value);
+                            node.setAttribute(att, clr.hex);
+                            s[att] = clr.hex;
+                            if (att == "stroke") {
+                                // remove stroke opacity when stroke is set to none
+                                if (clr[has]("opacity")) {
+                                    $(node, {
+                                        "stroke-opacity": s.strokeOpacity = clr.opacity > 1 ? clr.opacity / 100 : clr.opacity
+                                    });
+                                    o._.strokeOpacityDirty = true;
+                                } else if (o._.strokeOpacityDirty && R.is(attrs['stroke-opacity'], "undefined") && R.is(params["stroke-opacity"], "undefined")) {
+                                    node.removeAttribute('stroke-opacity');
+                                    s.strokeOpacity = E;
+                                    delete o._.strokeOpacityDirty;
+                                }
+                                if (o._.arrows) {
+                                    "startString" in o._.arrows && addArrow(o, o._.arrows.startString);
+                                    "endString" in o._.arrows && addArrow(o, o._.arrows.endString, 1);
+                                }
+                            }
+                            break;
+                        case "gradient":
+                            (o.type == "circle" || o.type == "ellipse" || Str(value).charAt() != "r") && addGradientFill(o, value);
+                            break;
+                        case 'line-height': // do not apply
+                        case 'vertical-align':
+                            // do not apply
+                            break;
+                        case "visibility":
+                            value === 'hidden' ? o.hide() : o.show();
+                            break;
+                        case "opacity":
+                            // if (attrs.gradient && !attrs[has]("stroke-opacity")) {
+                            //     $(node, {
+                            //         "stroke-opacity": value > 1 ? value / 100 : value
+                            //     });
+                            // }
+                            value = value > 1 ? value / 100 : value;
+                            $(node, {
+                                "opacity": value
+                            });
+                            s.opacity = value;
+                            break;
+                        // fall
+                        case "fill-opacity":
+                            // if (attrs.gradient) {
+                            //     gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\([\'\"]#|[\'\"]\)$/g, E));
+                            //     if (gradient) {
+                            //         stops = gradient.getElementsByTagName("stop");
+                            //         l = stops.length;
+                            //         for (i = 0; i < l; i += 1) {
+                            //           $(stops[i], {
+                            //               "stop-opacity": value
+                            //           });
+                            //         }
+                            //     }
+                            //     break;
+                            // }
+                            value = value > 1 ? value / 100 : value;
+                            $(node, {
+                                "fill-opacity": value
+                            });
+                            s.fillOpacity = value;
+                            break;
+                        default:
+                            att == "font-size" && (value = toInt(value, 10) + "px");
+                            var cssrule = att.replace(/(\-.)/g, function (w) {
+                                return w.substring(1).toUpperCase();
+                            });
+                            s[cssrule] = value;
+                            o._.dirty = 1;
+                            node.setAttribute(att, value);
+                            break;
+                    }
                 }
             }
-        }
-        o.type === 'text' && !params["_do-not-tune"] && tuneText(o, params, group);
-        s.visibility = vis;
-    },
+            o.type === 'text' && !params["_do-not-tune"] && tuneText(o, params, group);
+            s.visibility = vis;
+        },
 
-    /*
-     * Keeps the follower element in sync with the leaders.
-     * First and second arguments represents the context(element) and the
-     name of the callBack function respectively.
-     * The callBack is invoked for indivual follower Element with the rest of
-     arguments.
-    */
-    updateFollowers = _raphael2["default"]._updateFollowers = function () {
-        var i,
-            ii,
-            followerElem,
-            args = arguments,
-            o = arrayShift.call(args),
-            fnName = arrayShift.call(args);
-        for (i = 0, ii = o.followers.length; i < ii; i++) {
-            followerElem = o.followers[i].el;
-            followerElem[fnName].apply(followerElem, args);
-        }
-    },
-        leading = 1.2,
-        tuneText = function tuneText(el, params, group) {
-        var a = el.attrs,
-            node,
-            computedStyle,
-            fontSize,
-            lineHeight,
-            valign,
-            direction,
-            valign,
-            actualValign,
-            fontFamily,
-            isIE;
-
-        if (!(params[has]("text") || a.text) || !(params[has]("x") || a.x) || !(params[has]("y") || a.y) || el.type != "text" || !(params[has]("font") || params[has]("font-size") || params[has]("line-height") || params[has]("vertical-align"))) {
-            return;
-        }
-
-        node = el.node;
-        computedStyle = node.firstChild && _raphael2["default"]._g.doc.defaultView.getComputedStyle(node.firstChild, E);
-        fontSize = params['fontSize'] || params['font-size'] || a['font-size'] || group && group.attrs.fontSize;
-        lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading;
-        actualValign = a[has]("vertical-align") ? a["vertical-align"] : "middle";
-        direction = params["direction"] || group && group.attrs.direction || "initial";
-        isIE = /*@cc_on!@*/false || !!document.documentMode;
-        fontFamily = params['fontFamily'] || params['font-family'] || a['font-family'] || group && group.attrs.fontFamily || 'Verdana,sans';
-
-        fontSize = fontSize === undefined ? lineHeight / 1.2 || 10 : fontSize.toString().replace(/px/, '');
-
-        if (isNaN(lineHeight)) {
-            lineHeight = fontSize * leading;
-        }
-
-        if (_raphael2["default"].is(params.text, 'array')) {
-            params.text = params.text.join('<br>');
-        }
-
-        valign = actualValign === 'top' ? -0.5 : actualValign === 'bottom' ? 0.5 : 0;
-
-        if (params[has]("text") && (params.text !== a.text || el._textdirty)) {
-            a.text = params.text;
-            while (node.firstChild) {
-                node.removeChild(node.firstChild);
+        /*
+         * Keeps the follower element in sync with the leaders.
+         * First and second arguments represents the context(element) and the
+         name of the callBack function respectively.
+         * The callBack is invoked for indivual follower Element with the rest of
+         arguments.
+        */
+        updateFollowers = R._updateFollowers = function () {
+            var i,
+                ii,
+                followerElem,
+                args = arguments,
+                o = arrayShift.call(args),
+                fnName = arrayShift.call(args);
+            for (i = 0, ii = o.followers.length; i < ii; i++) {
+                followerElem = o.followers[i].el;
+                followerElem[fnName].apply(followerElem, args);
             }
-            var texts = Str(params.text).split(/\n|<br\s*?\/?>/ig),
-                tspans = [],
-                tspan;
-            for (var i = 0, ii = texts.length; i < ii; i++) {
-                tspan = $("tspan");
-                if (i) {
-                    $(tspan, {
-                        dy: lineHeight,
-                        x: a.x
-                    });
-                } else {
-                    $(tspan, {
-                        dy: lineHeight * texts.length * valign,
-                        x: a.x
-                    });
-                }
-                if (!texts[i]) {
-                    // preserve blank lines
-                    tspan.setAttributeNS("http://www.w3.org/XML/1998/namespace", "xml:space", "preserve");
-                    texts[i] = " ";
-                }
-                tspan.appendChild(_raphael2["default"]._g.doc.createTextNode(texts[i]));
-                node.appendChild(tspan);
-                tspans[i] = tspan;
+        },
+            leading = 1.2,
+            tuneText = function tuneText(el, params, group) {
+            var a = el.attrs,
+                node,
+                computedStyle,
+                fontSize,
+                lineHeight,
+                valign,
+                direction,
+                valign,
+                actualValign,
+                fontFamily,
+                isIE;
 
-                if (!isIE && direction === "rtl" && i < ii - 1) {
+            if (!(params[has]("text") || a.text) || !(params[has]("x") || a.x) || !(params[has]("y") || a.y) || el.type != "text" || !(params[has]("font") || params[has]("font-size") || params[has]("line-height") || params[has]("vertical-align"))) {
+                return;
+            }
+
+            node = el.node;
+            computedStyle = node.firstChild && R._g.doc.defaultView.getComputedStyle(node.firstChild, E);
+            fontSize = params['fontSize'] || params['font-size'] || a['font-size'] || group && group.attrs.fontSize;
+            lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading;
+            actualValign = a[has]("vertical-align") ? a["vertical-align"] : "middle";
+            direction = params["direction"] || group && group.attrs.direction || "initial";
+            isIE = /*@cc_on!@*/false || !!document.documentMode;
+            fontFamily = params['fontFamily'] || params['font-family'] || a['font-family'] || group && group.attrs.fontFamily || 'Verdana,sans';
+
+            fontSize = fontSize === undefined ? lineHeight / 1.2 || 10 : fontSize.toString().replace(/px/, '');
+
+            if (isNaN(lineHeight)) {
+                lineHeight = fontSize * leading;
+            }
+
+            if (R.is(params.text, 'array')) {
+                params.text = params.text.join('<br>');
+            }
+
+            valign = actualValign === 'top' ? -0.5 : actualValign === 'bottom' ? 0.5 : 0;
+
+            if (params[has]("text") && (params.text !== a.text || el._textdirty)) {
+                a.text = params.text;
+                while (node.firstChild) {
+                    node.removeChild(node.firstChild);
+                }
+                var texts = Str(params.text).split(/\n|<br\s*?\/?>/ig),
+                    tspans = [],
+                    tspan;
+                for (var i = 0, ii = texts.length; i < ii; i++) {
                     tspan = $("tspan");
-                    $(tspan, {
-                        visibility: "hidden",
-                        "font-size": "0px"
-                    });
-                    tspan.appendChild(_raphael2["default"]._g.doc.createTextNode("i"));
+                    if (i) {
+                        $(tspan, {
+                            dy: lineHeight,
+                            x: a.x
+                        });
+                    } else {
+                        $(tspan, {
+                            dy: lineHeight * texts.length * valign,
+                            x: a.x
+                        });
+                    }
+                    if (!texts[i]) {
+                        // preserve blank lines
+                        tspan.setAttributeNS("http://www.w3.org/XML/1998/namespace", "xml:space", "preserve");
+                        texts[i] = " ";
+                    }
+                    tspan.appendChild(R._g.doc.createTextNode(texts[i]));
                     node.appendChild(tspan);
+                    tspans[i] = tspan;
+
+                    if (!isIE && direction === "rtl" && i < ii - 1) {
+                        tspan = $("tspan");
+                        $(tspan, {
+                            visibility: "hidden",
+                            "font-size": "0px"
+                        });
+                        tspan.appendChild(R._g.doc.createTextNode("i"));
+                        node.appendChild(tspan);
+                    }
                 }
-            }
-            el._textdirty = false;
-        } else {
-            tspans = node.getElementsByTagName("tspan");
-            var obj,
-                numDummyTspans = 0;
+                el._textdirty = false;
+            } else {
+                tspans = node.getElementsByTagName("tspan");
+                var obj,
+                    numDummyTspans = 0;
 
-            for (i = 0, ii = tspans.length; i < ii; i++) {
-                tspan = tspans[i];
-                obj = tspan.attributes[0];
+                for (i = 0, ii = tspans.length; i < ii; i++) {
+                    tspan = tspans[i];
+                    obj = tspan.attributes[0];
 
-                if (obj && (obj.name === "visibility" || obj.nodeName === "visibility") && (obj.value === "hidden" || obj.nodeValue === "hidden")) {
-                    continue;
-                }
-
-                if (i) {
-                    $(tspan, {
-                        dy: lineHeight,
-                        x: a.x
-                    });
-                } else {
-                    obj = tspans[1] && tspans[1].attributes[0];
                     if (obj && (obj.name === "visibility" || obj.nodeName === "visibility") && (obj.value === "hidden" || obj.nodeValue === "hidden")) {
-                        numDummyTspans = math.floor(tspans.length * 0.5);
+                        continue;
                     }
 
-                    $(tspans[0], {
-                        dy: lineHeight * (tspans.length - numDummyTspans) * valign,
-                        x: a.x
-                    });
+                    if (i) {
+                        $(tspan, {
+                            dy: lineHeight,
+                            x: a.x
+                        });
+                    } else {
+                        obj = tspans[1] && tspans[1].attributes[0];
+                        if (obj && (obj.name === "visibility" || obj.nodeName === "visibility") && (obj.value === "hidden" || obj.nodeValue === "hidden")) {
+                            numDummyTspans = math.floor(tspans.length * 0.5);
+                        }
+
+                        $(tspans[0], {
+                            dy: lineHeight * (tspans.length - numDummyTspans) * valign,
+                            x: a.x
+                        });
+                    }
                 }
             }
-        }
-        $(node, {
-            x: a.x,
-            y: a.y
-        });
-        el._.dirty = 1;
-        var bb = el._getCustomBBox(fontFamily, fontSize + 'px', actualValign, i),
-            dif = bb.diff;
+            $(node, {
+                x: a.x,
+                y: a.y
+            });
+            el._.dirty = 1;
+            var bb = el._getCustomBBox(fontFamily, fontSize + 'px', actualValign, i),
+                dif = bb.diff;
 
-        dif && _raphael2["default"].is(dif, "finite") && tspans[0] && $(tspans[0], {
-            dy: dif
-        });
-    },
-        Element = function Element(node, svg, group /*, dontAppend*/) {
-        var o = this,
-            parent = group || svg;
+            dif && R.is(dif, "finite") && tspans[0] && $(tspans[0], {
+                dy: dif
+            });
+        },
+            Element = function Element(node, svg, group /*, dontAppend*/) {
+            var o = this,
+                parent = group || svg;
 
-        /*!dontAppend && */parent.canvas && parent.canvas.appendChild(node);
+            /*!dontAppend && */parent.canvas && parent.canvas.appendChild(node);
 
-        o.node = o[0] = node;
-        node.raphael = true;
-        node.raphaelid = o.id = _raphael2["default"]._oid++;
+            o.node = o[0] = node;
+            node.raphael = true;
+            node.raphaelid = o.id = R._oid++;
 
-        o.matrix = _raphael2["default"].matrix();
-        o.realPath = null;
+            o.matrix = R.matrix();
+            o.realPath = null;
 
-        o.attrs = o.attrs || {};
-        o.followers = o.followers || [];
+            o.attrs = o.attrs || {};
+            o.followers = o.followers || [];
 
-        o.paper = svg;
-        o.ca = o.customAttributes = o.customAttributes || new svg._CustomAttributes();
+            o.paper = svg;
+            o.ca = o.customAttributes = o.customAttributes || new svg._CustomAttributes();
 
-        o._ = {
-            transform: [],
-            sx: 1,
-            sy: 1,
-            deg: 0,
-            dx: 0,
-            dy: 0,
-            dirty: 1
+            o._ = {
+                transform: [],
+                sx: 1,
+                sy: 1,
+                deg: 0,
+                dx: 0,
+                dy: 0,
+                dirty: 1
+            };
+
+            o.parent = parent;
+            !parent.bottom && (parent.bottom = o);
+
+            o.prev = parent.top;
+            parent.top && (parent.top.next = o);
+            parent.top = o;
+            o.next = null;
+        },
+            elproto = R.el;
+
+        Element.prototype = elproto;
+        elproto.constructor = Element;
+
+        R._engine.getNode = function (el) {
+            var node = el.node || el[0].node;
+            return node.titleNode || node;
+        };
+        R._engine.getLastNode = function (el) {
+            var node = el.node || el[el.length - 1].node;
+            return node.titleNode || node;
         };
 
-        o.parent = parent;
-        !parent.bottom && (parent.bottom = o);
-
-        o.prev = parent.top;
-        parent.top && (parent.top.next = o);
-        parent.top = o;
-        o.next = null;
-    },
-        elproto = _raphael2["default"].el;
-
-    Element.prototype = elproto;
-    elproto.constructor = Element;
-
-    _raphael2["default"]._engine.getNode = function (el) {
-        var node = el.node || el[0].node;
-        return node.titleNode || node;
-    };
-    _raphael2["default"]._engine.getLastNode = function (el) {
-        var node = el.node || el[el.length - 1].node;
-        return node.titleNode || node;
-    };
-
-    elproto.rotate = function (deg, cx, cy) {
-        var o = this,
-            bbox;
-        if (o.removed) {
+        elproto.rotate = function (deg, cx, cy) {
+            var o = this,
+                bbox;
+            if (o.removed) {
+                return o;
+            }
+            updateFollowers(o, 'rotate', deg, cx, cy);
+            deg = Str(deg).split(separator);
+            if (deg.length - 1) {
+                cx = toFloat(deg[1]);
+                cy = toFloat(deg[2]);
+            }
+            deg = toFloat(deg[0]);
+            cy == null && (cx = cy);
+            if (cx == null || cy == null) {
+                bbox = o.getBBox(1);
+                cx = bbox.x + bbox.width / 2;
+                cy = bbox.y + bbox.height / 2;
+            }
+            o.transform(o._.transform.concat([["r", deg, cx, cy]]));
             return o;
-        }
-        updateFollowers(o, 'rotate', deg, cx, cy);
-        deg = Str(deg).split(separator);
-        if (deg.length - 1) {
-            cx = toFloat(deg[1]);
-            cy = toFloat(deg[2]);
-        }
-        deg = toFloat(deg[0]);
-        cy == null && (cx = cy);
-        if (cx == null || cy == null) {
-            bbox = o.getBBox(1);
-            cx = bbox.x + bbox.width / 2;
-            cy = bbox.y + bbox.height / 2;
-        }
-        o.transform(o._.transform.concat([["r", deg, cx, cy]]));
-        return o;
-    };
+        };
 
-    elproto.scale = function (sx, sy, cx, cy) {
-        var o = this,
-            bbox;
-        if (o.removed) {
+        elproto.scale = function (sx, sy, cx, cy) {
+            var o = this,
+                bbox;
+            if (o.removed) {
+                return o;
+            }
+            updateFollowers(o, 'scale', sx, sy, cx, cy);
+            sx = Str(sx).split(separator);
+            if (sx.length - 1) {
+                sy = toFloat(sx[1]);
+                cx = toFloat(sx[2]);
+                cy = toFloat(sx[3]);
+            }
+            sx = toFloat(sx[0]);
+            sy == null && (sy = sx);
+            cy == null && (cx = cy);
+            if (cx == null || cy == null) {
+                bbox = o.getBBox(1);
+            }
+            cx = cx == null ? bbox.x + bbox.width / 2 : cx;
+            cy = cy == null ? bbox.y + bbox.height / 2 : cy;
+            o.transform(o._.transform.concat([["s", sx, sy, cx, cy]]));
             return o;
-        }
-        updateFollowers(o, 'scale', sx, sy, cx, cy);
-        sx = Str(sx).split(separator);
-        if (sx.length - 1) {
-            sy = toFloat(sx[1]);
-            cx = toFloat(sx[2]);
-            cy = toFloat(sx[3]);
-        }
-        sx = toFloat(sx[0]);
-        sy == null && (sy = sx);
-        cy == null && (cx = cy);
-        if (cx == null || cy == null) {
-            bbox = o.getBBox(1);
-        }
-        cx = cx == null ? bbox.x + bbox.width / 2 : cx;
-        cy = cy == null ? bbox.y + bbox.height / 2 : cy;
-        o.transform(o._.transform.concat([["s", sx, sy, cx, cy]]));
-        return o;
-    };
+        };
 
-    elproto.translate = function (dx, dy) {
-        var o = this;
-        if (o.removed) {
+        elproto.translate = function (dx, dy) {
+            var o = this;
+            if (o.removed) {
+                return o;
+            }
+            updateFollowers(o, 'translate', dx, dy);
+            dx = Str(dx).split(separator);
+            if (dx.length - 1) {
+                dy = toFloat(dx[1]);
+            }
+            dx = toFloat(dx[0]) || 0;
+            dy = +dy || 0;
+            o.transform(o._.transform.concat([["t", dx, dy]]));
             return o;
-        }
-        updateFollowers(o, 'translate', dx, dy);
-        dx = Str(dx).split(separator);
-        if (dx.length - 1) {
-            dy = toFloat(dx[1]);
-        }
-        dx = toFloat(dx[0]) || 0;
-        dy = +dy || 0;
-        o.transform(o._.transform.concat([["t", dx, dy]]));
-        return o;
-    };
+        };
 
-    elproto.transform = function (tstr) {
-        var o = this,
-            _ = o._,
-            sw;
+        elproto.transform = function (tstr) {
+            var o = this,
+                _ = o._,
+                sw;
 
-        if (tstr == null) {
-            return _.transform;
-        }
-        _raphael2["default"]._extractTransform(o, tstr);
-
-        o.clip && !_.clipispath && $(o.clip, {
-            transform: o.matrix.invert()
-        });
-        o.pattern && updatePosition(o);
-        o.node && $(o.node, {
-            transform: o.matrix
-        });
-
-        sw = o.attrs[has]("stroke-width") ? o.attrs["stroke-width"] : 1;
-        o.attr({
-            "stroke-width": sw
-        });
-
-        return o;
-    };
-
-    elproto.hide = function () {
-        var o = this;
-        updateFollowers(o, 'hide');
-        !o.removed && o.paper.safari(o.node.style.display = "none");
-        return o;
-    };
-
-    elproto.show = function () {
-        var o = this;
-        updateFollowers(o, 'show');
-        !o.removed && o.paper.safari(o.node.style.display = E);
-        return o;
-    };
-
-    elproto.remove = function () {
-        if (this.removed || !this.parent.canvas) {
-            return;
-        }
-
-        var o = this,
-            node = _raphael2["default"]._engine.getNode(o),
-            paper = o.paper,
-            defs = paper.defs,
-            i;
-
-        paper.__set__ && paper.__set__.exclude(o);
-        eve.unbind("raphael.*.*." + o.id);
-
-        if (o.gradient && defs) {
-            updateGradientReference(o);
-        }
-        while (i = o.followers.pop()) {
-            i.el.remove();
-        }
-        while (i = o.bottom) {
-            i.remove();
-        }
-
-        if (o._drag) {
-            o.undrag();
-        }
-
-        if (o.events) {
-            while (i = o.events.pop()) {
-                i.unbind();
+            if (tstr == null) {
+                return _.transform;
             }
-        }
+            R._extractTransform(o, tstr);
 
-        o.parent.canvas.contains(node) && o.parent.canvas.removeChild(node);
-        o.removeData();
-        delete paper._elementsById[o.id]; // remove from lookup hash
-        _raphael2["default"]._tear(o, o.parent);
-
-        for (i in o) {
-            o[i] = typeof o[i] === "function" ? _raphael2["default"]._removedFactory(i) : null;
-        }
-
-        o.removed = true;
-    };;
-
-    elproto._getCustomBBox = function (fontFamily, fontSize, valign, lines) {
-        var fn,
-            o = this,
-            node = o.node,
-            hide,
-            isText = o.type === "text",
-            isIE = /*@cc_on!@*/false || !!document.documentMode,
-            cachedFontHeight,
-            txtElem,
-            theText,
-            theMSG,
-            availableFontFamily,
-            availableFontSize,
-            info,
-            randomPos,
-            bboxY,
-            diff,
-            bbox,
-            bboxHeight;
-        if (isIE && isText) {
-            fn = showRecursively(o);
-        } else {
-            if (node.style.display === "none") {
-                o.show();
-                hide = true;
-            }
-        }
-
-        if (isText) {
-            cachedFontHeight = _raphael2["default"].cachedFontHeight;
-            txtElem = cachedFontHeight.txtElem;
-            availableFontFamily = cachedFontHeight[fontFamily] || (cachedFontHeight[fontFamily] = {});
-            availableFontSize = availableFontFamily[fontSize];
-            randomPos = -100;
-
-            if (!availableFontSize) {
-                if (!txtElem) {
-                    txtElem = cachedFontHeight.txtElem = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                    txtElem.setAttribute('x', randomPos);
-                    txtElem.setAttribute('y', randomPos);
-
-                    theMSG = document.createTextNode('abcdefhiklmnopqrstuvwxyz');
-                    txtElem.appendChild(theMSG);
-
-                    document.getElementsByTagName('svg')[0].appendChild(txtElem);
-                }
-                txtElem.setAttribute('style', 'font-family :' + fontFamily + '; font-size :' + fontSize);
-
-                bbox = txtElem.getBBox();
-                availableFontFamily[fontSize] = availableFontSize = [];
-                availableFontSize.push(bbox.height);
-                availableFontSize.push(bbox.y);
-            }
-
-            bboxY = availableFontSize[1];
-            bboxHeight = availableFontSize[0];
-            switch (valign) {
-                case "bottom":
-                    diff = randomPos - bboxY - bboxHeight * lines;
-                    break;
-                case "top":
-                    diff = randomPos - bboxY;
-                    break;
-                default:
-                    diff = randomPos - bboxY - bboxHeight / 2 * lines;
-            };
-
-            bbox = {
-                height: availableFontSize[0],
-                diff: diff
-            };
-        }
-
-        isIE && isText ? fn && fn() : hide && o.hide();
-        return bbox;
-    };
-
-    elproto._getBBox = function () {
-        var fn,
-            o = this,
-            node = o.node,
-            bbox = {},
-            a = o.attrs,
-            align,
-            hide,
-            isText = o.type === "text",
-            isIE = /*@cc_on!@*/false || !!document.documentMode;
-        if (isIE && isText) {
-            fn = showRecursively(o);
-        } else {
-            if (node.style.display === "none") {
-                o.show();
-                hide = true;
-            }
-        }
-
-        try {
-            bbox = node.getBBox();
-            if (isText) {
-                // If bbox does not have x / y, which is possible in certain
-                // environments, we mathematically calculate these values by
-                // using x, y (adjusted using the values of text-anchor, and
-                // vertical-align attributes), of the element along with the
-                // width and height provided by the getBBox().
-                if (bbox.x === undefined) {
-                    bbox.isCalculated = true;
-                    align = a['text-anchor'];
-                    bbox.x = (a.x || 0) - bbox.width * (align === "start" ? 0 : align === "middle" ? 0.5 : 1);
-                }
-
-                if (bbox.y === undefined) {
-                    bbox.isCalculated = true;
-                    align = a['vertical-align'];
-                    bbox.y = (a.y || 0) - bbox.height * (align === "bottom" ? 1 : align === "middle" ? 0.5 : 0);
-                }
-            }
-        } catch (e) {
-            // Firefox 3.0.x plays badly here
-        } finally {
-            bbox = bbox || {};
-        }
-        isIE && isText ? fn && fn() : hide && o.hide();
-        return bbox;
-    };
-
-    elproto.attr = function (name, value) {
-        if (this.removed) {
-            return this;
-        }
-        if (name == null) {
-            var res = {};
-            for (var a in this.attrs) {
-                if (this.attrs[has](a)) {
-                    res[a] = this.attrs[a];
-                }
-            }res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
-            res.transform = this._.transform;
-            res.visibility = this.node.style.display === "none" ? "hidden" : "visible";
-            return res;
-        }
-        if (value == null && _raphael2["default"].is(name, "string")) {
-            if (name == "fill" && this.attrs.fill == "none" && this.attrs.gradient) {
-                return this.attrs.gradient;
-            }
-            if (name == "transform") {
-                return this._.transform;
-            }
-            if (name == "visibility") {
-                return this.node.style.display === "none" ? "hidden" : "visible";
-            }
-            var names = name.split(separator),
-                out = {};
-            for (var i = 0, ii = names.length; i < ii; i++) {
-                name = names[i];
-                if (name in this.attrs) {
-                    out[name] = this.attrs[name];
-                } else if (_raphael2["default"].is(this.ca[name], "function")) {
-                    out[name] = this.ca[name].def;
-                } else {
-                    out[name] = _raphael2["default"]._availableAttrs[name];
-                }
-            }
-            return ii - 1 ? out : out[names[0]];
-        }
-        if (value == null && _raphael2["default"].is(name, "array")) {
-            out = {};
-            for (i = 0, ii = name.length; i < ii; i++) {
-                out[name[i]] = this.attr(name[i]);
-            }
-            return out;
-        }
-        if (value != null) {
-            var params = {};
-            params[name] = value;
-        } else if (name != null && _raphael2["default"].is(name, "object")) {
-            params = name;
-        }
-        if (_raphael2["default"].stopEvent !== false) {
-            for (var key in params) {
-                eve("raphael.attr." + key + "." + this.id, this, params[key], key);
-            }
-        }
-        var todel = {};
-        for (key in this.ca) {
-            if (this.ca[key] && params[has](key) && _raphael2["default"].is(this.ca[key], "function") && !this.ca['_invoked' + key]) {
-
-                this.ca['_invoked' + key] = true; // prevent recursion
-                var par = this.ca[key].apply(this, [].concat(params[key]));
-                delete this.ca['_invoked' + key];
-
-                for (var subkey in par) {
-                    if (par[has](subkey)) {
-                        params[subkey] = par[subkey];
-                    }
-                }
-                this.attrs[key] = params[key];
-                if (par === false) {
-                    todel[key] = params[key];
-                    delete params[key];
-                }
-            }
-        }
-
-        setFillAndStroke(this, params);
-
-        var follower;
-        for (i = 0, ii = this.followers.length; i < ii; i++) {
-            follower = this.followers[i];
-            follower.cb && !follower.cb.call(follower.el, params, this) || follower.el.attr(params);
-        }
-
-        for (subkey in todel) {
-            params[subkey] = todel[subkey];
-        }
-        return this;
-    };
-
-    elproto.blur = function (size) {
-        // Experimental. No Safari support. Use it on your own risk.
-        var t = this;
-        if (+size !== 0) {
-            var fltr = $("filter"),
-                blur = $("feGaussianBlur");
-            t.attrs.blur = size;
-            fltr.id = _raphael2["default"].getElementID(_raphael2["default"].createUUID());
-            $(blur, {
-                stdDeviation: +size || 1.5
+            o.clip && !_.clipispath && $(o.clip, {
+                transform: o.matrix.invert()
             });
-            fltr.appendChild(blur);
-            t.paper.defs.appendChild(fltr);
-            t._blur = fltr;
-            $(t.node, {
-                filter: "url('" + _raphael2["default"]._url + "#" + fltr.id + "')"
+            o.pattern && updatePosition(o);
+            o.node && $(o.node, {
+                transform: o.matrix
             });
-        } else {
-            if (t._blur) {
-                t._blur.parentNode.removeChild(t._blur);
-                delete t._blur;
-                delete t.attrs.blur;
-            }
-            t.node.removeAttribute("filter");
-        }
-    };
 
-    /*\
-     * Element.on
-     [ method ]
-     **
-     * Bind handler function for a particular event to Element
-     * @param eventType - Type of event
-     * @param handler - Function to be called on the firing of the event
-    \*/
-    elproto.on = function (eventType, handler) {
-        var elem = this,
-            fn,
-            oldEventType;
-        if (this.removed) {
-            return this;
-        }
-
-        if (eventType === 'dragstart') {
-            this.drag(null, handler);
-            return this;
-        } else if (eventType === 'dragmove') {
-            this.drag(handler);
-            return this;
-        } else if (eventType === 'dragend') {
-            this.drag(null, null, handler);
-            return this;
-        }
-
-        fn = handler;
-        oldEventType = eventType;
-        if (_raphael2["default"].supportsTouch) {
-            eventType = _raphael2["default"]._touchMap[eventType] || eventType === 'click' && 'touchstart' || eventType;
-            if (eventType !== oldEventType) {
-                // store the new listeners for removeEventListener
-                if (!elem._tempTouchListeners) {
-                    elem._tempTouchListeners = {};
-                }
-                if (!elem._tempTouchListeners[oldEventType]) {
-                    elem._tempTouchListeners[oldEventType] = [];
-                }
-                fn = function fn(e) {
-                    e.preventDefault();
-                    handler(e);
-                };
-                elem._tempTouchListeners[oldEventType].push({
-                    oldFn: handler,
-                    newFn: fn,
-                    newEvt: eventType
-                });
-            }
-        }
-        if (this.node.addEventListener) {
-            this.node.addEventListener(eventType, fn);
-        } else {
-            this.node['on' + eventType] = fn;
-        }
-        return this;
-    };
-
-    /*\
-     * Element.off
-     [ method ]
-     **
-     * Remove handler function bind to an event of element
-     * @param eventType - Type of event
-     * @param handler - Function to be removed from event
-    \*/
-    elproto.off = function (eventType, handler) {
-        var elem = this,
-            fn,
-            i,
-            l,
-            oldEventType;
-        if (this.removed) {
-            return this;
-        }
-
-        if (eventType === 'dragstart') {
-            this.undragstart();
-            return this;
-        } else if (eventType === 'dragmove') {
-            this.undragmove();
-            return this;
-        } else if (eventType === 'dragend') {
-            this.undragend();
-            return this;
-        }
-
-        fn = handler;
-        oldEventType = eventType;
-
-        if (_raphael2["default"].supportsTouch && elem._tempTouchListeners && elem._tempTouchListeners[oldEventType]) {
-            l = elem._tempTouchListeners[oldEventType].length;
-            for (i = 0; i < l && oldEventType === eventType; i += 1) {
-                if (elem._tempTouchListeners[oldEventType][i] && elem._tempTouchListeners[oldEventType][i].oldFn === fn) {
-                    eventType = elem._tempTouchListeners[oldEventType][i].newEvt;
-                    fn = elem._tempTouchListeners[oldEventType][i].newFn;
-                    elem._tempTouchListeners[oldEventType].splice(i, 1);
-                }
-            }
-        }
-        if (this.node.removeEventListener) {
-            this.node.removeEventListener(eventType, fn);
-        } else {
-            this.node['on' + eventType] = null;
-        }
-        return this;
-    };
-
-    _raphael2["default"]._engine.path = function (svg, attrs, group) {
-        var el = $("path"),
-            res = new Element(el, svg, group);
-
-        res.type = "path";
-        setFillAndStroke(res, attrs);
-        applyCustomAttributes(res, attrs);
-        return res;
-    };
-
-    _raphael2["default"]._engine.group = function (svg, id, group) {
-        var el = $("g"),
-            res = new Element(el, svg, group);
-
-        res.type = "group";
-        res.canvas = res.node;
-        res.top = res.bottom = null;
-        res._id = id || E;
-        id && el.setAttribute('class', 'raphael-group-' + res.id + '-' + id);
-        return res;
-    };
-
-    _raphael2["default"]._engine.circle = function (svg, attrs, group) {
-        var el = $("circle"),
-            res = new Element(el, svg, group);
-
-        res.type = "circle";
-        setFillAndStroke(res, attrs);
-        applyCustomAttributes(res, attrs);
-        return res;
-    };
-    _raphael2["default"]._engine.rect = function (svg, attrs, group) {
-        var el = $("rect"),
-            res = new Element(el, svg, group);
-
-        res.type = "rect";
-        attrs.rx = attrs.ry = attrs.r;
-        setFillAndStroke(res, attrs);
-        applyCustomAttributes(res, attrs);
-        return res;
-    };
-    _raphael2["default"]._engine.ellipse = function (svg, attrs, group) {
-        var el = $("ellipse"),
-            res = new Element(el, svg, group);
-
-        res.type = "ellipse";
-        setFillAndStroke(res, attrs);
-        applyCustomAttributes(res, attrs);
-        return res;
-    };
-    ;
-    _raphael2["default"]._engine.image = function (svg, attrs, group) {
-        var el = $("image"),
-            src = attrs.src,
-            res = new Element(el, svg, group, true);
-
-        res._.group = group || svg;
-        res.type = "image";
-        el.setAttribute("preserveAspectRatio", "none");
-        setFillAndStroke(res, attrs);
-        applyCustomAttributes(res, attrs);
-        return res;
-    };
-    _raphael2["default"]._engine.text = function (svg, attrs, group, css) {
-        var el = $("text"),
-            res = new Element(el, svg, group);
-        res.type = "text";
-        res._textdirty = true;
-        // Ideally this code should not be here as .css() is not a function of rapheal.
-        css && res.css && res.css(css, undefined, true);
-
-        setFillAndStroke(res, attrs, group);
-        applyCustomAttributes(res, attrs);
-        return res;
-    };
-
-    _raphael2["default"]._engine.setSize = function (width, height) {
-        this.width = width || this.width;
-        this.height = height || this.height;
-        this.canvas.setAttribute("width", this.width);
-        this.canvas.setAttribute("height", this.height);
-        if (this._viewBox) {
-            this.setViewBox.apply(this, this._viewBox);
-        }
-        return this;
-    };
-    _raphael2["default"]._engine.create = function () {
-        var con = _raphael2["default"]._getContainer.apply(0, arguments),
-            container = con && con.container,
-            x = con.x,
-            y = con.y,
-            width = con.width,
-            height = con.height;
-        if (!container) {
-            throw new Error("SVG container not found.");
-        }
-        var cnvs = $("svg"),
-            css = "overflow:hidden;-webkit-tap-highlight-color:rgba(0,0,0,0);" + "-webkit-user-select:none;-moz-user-select:-moz-none;-khtml-user-select:none;" + "-ms-user-select:none;user-select:none;-o-user-select:none;cursor:default;",
-            css = css + "vertical-align:middle;",
-            isFloating;
-        x = x || 0;
-        y = y || 0;
-        width = width || 512;
-        height = height || 342;
-        $(cnvs, {
-            height: height,
-            version: 1.1,
-            width: width,
-            xmlns: "http://www.w3.org/2000/svg"
-        });
-        if (container == 1) {
-            cnvs.style.cssText = css + "position:absolute;left:" + x + "px;top:" + y + "px";
-            _raphael2["default"]._g.doc.body.appendChild(cnvs);
-            isFloating = 1;
-        } else {
-            cnvs.style.cssText = css + "position:relative";
-            if (container.firstChild) {
-                container.insertBefore(cnvs, container.firstChild);
-            } else {
-                container.appendChild(cnvs);
-            }
-        }
-        container = new _raphael2["default"]._Paper();
-        container.width = width;
-        container.height = height;
-        container.canvas = cnvs;
-        $(cnvs, {
-            id: "raphael-paper-" + container.id
-        });
-        container.clear();
-        container._left = container._top = 0;
-        isFloating && (container.renderfix = function () {});
-        container.renderfix();
-        return container;
-    };
-    _raphael2["default"]._engine.setViewBox = function (x, y, w, h, fit) {
-        eve("raphael.setViewBox", this, this._viewBox, [x, y, w, h, fit]);
-        var size = mmax(w / this.width, h / this.height),
-            top = this.top,
-            aspectRatio = fit ? "meet" : "xMinYMin",
-            vb,
-            sw;
-        if (x == null) {
-            if (this._vbSize) {
-                size = 1;
-            }
-            delete this._vbSize;
-            vb = "0 0 " + this.width + S + this.height;
-        } else {
-            this._vbSize = size;
-            vb = x + S + y + S + w + S + h;
-        }
-        $(this.canvas, {
-            viewBox: vb,
-            preserveAspectRatio: aspectRatio
-        });
-        while (size && top) {
-            sw = "stroke-width" in top.attrs ? top.attrs["stroke-width"] : 1;
-            top.attr({
+            sw = o.attrs[has]("stroke-width") ? o.attrs["stroke-width"] : 1;
+            o.attr({
                 "stroke-width": sw
             });
-            top._.dirty = 1;
-            top._.dirtyT = 1;
-            top = top.prev;
-        }
-        this._viewBox = [x, y, w, h, !!fit];
-        return this;
-    };
 
-    _raphael2["default"].prototype.renderfix = function () {
-        var cnvs = this.canvas,
-            s = cnvs.style,
-            pos;
-        try {
-            pos = cnvs.getScreenCTM() || cnvs.createSVGMatrix();
-        } catch (e) {
-            pos = cnvs.createSVGMatrix();
-        }
-        var left = -pos.e % 1,
-            top = -pos.f % 1;
-        if (left || top) {
-            if (left) {
-                this._left = (this._left + left) % 1;
-                s.left = this._left + "px";
-            }
-            if (top) {
-                this._top = (this._top + top) % 1;
-                s.top = this._top + "px";
-            }
-        }
-    };
-
-    _raphael2["default"].prototype._desc = function (txt) {
-        var desc = this.desc;
-
-        if (!desc) {
-            this.desc = desc = $("desc");
-            this.canvas.appendChild(desc);
-        } else {
-            while (desc.firstChild) {
-                desc.removeChild(desc.firstChild);
-            }
-        }
-        desc.appendChild(_raphael2["default"]._g.doc.createTextNode(_raphael2["default"].is(txt, "string") ? txt : "Created with Red Rapha\xebl " + _raphael2["default"].version));
-    };
-
-    _raphael2["default"].prototype.clear = function () {
-        var c;
-        eve("raphael.clear", this);
-
-        while (c = this.bottom) {
-            c.remove();
-        }
-
-        c = this.canvas;
-        while (c.firstChild) {
-            c.removeChild(c.firstChild);
-        }
-        this.bottom = this.top = null;
-        c.appendChild(this.desc = $("desc"));
-        c.appendChild(this.defs = $("defs"));
-    };
-
-    _raphael2["default"].prototype.remove = function () {
-        var i;
-        eve("raphael.remove", this);
-
-        while (i = this.bottom) {
-            i.remove();
-        }
-
-        this.defs && this.defs.parentNode.removeChild(this.defs);
-        this.desc && this.desc.parentNode.removeChild(this.desc);
-        this.canvas.parentNode && this.canvas.parentNode.removeChild(this.canvas);
-        for (i in this) {
-            this[i] = typeof this[i] == "function" ? _raphael2["default"]._removedFactory(i) : null;
-        }
-        this.removed = true;
-    };
-    var setproto = _raphael2["default"].st;
-    for (var method in elproto) {
-        if (elproto[has](method) && !setproto[has](method)) {
-            setproto[method] = function (methodname) {
-                return function () {
-                    var arg = arguments;
-                    return this.forEach(function (el) {
-                        el[methodname].apply(el, arg);
-                    });
-                };
-            }(method);
-        }
-    }
-} /**!
-  * RedRaphael 1.0.0 - JavaScript Vector Library SVG Module
-  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
-  *
-  * Raphael 2.1.0 - JavaScript Vector Library SVG Module
-  * Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
-  * Copyright © 2008-2012 Sencha Labs <http://sencha.com>
-  *
-  * Licensed under the MIT license.
-  */
-// Define _window as window object in case of indivual file inclusion.
-
-exports["default"] = _raphael2["default"];
-module.exports = exports["default"];
-
-/***/ }),
-/* 73 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-exports.__esModule = true;
-
-var _raphael = __webpack_require__(7);
-
-var _raphael2 = _interopRequireDefault(_raphael);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-if (_raphael2["default"].vml) {
-    var has = "hasOwnProperty",
-        Str = String,
-        toFloat = parseFloat,
-        math = Math,
-        round = math.round,
-        mmax = math.max,
-        mmin = math.min,
-        sqrt = math.sqrt,
-        abs = math.abs,
-        fillString = "fill",
-        separator = /[, ]+/,
-        eve = _raphael2["default"].eve,
-        paperproto = _raphael2["default"].fn,
-        serializeArgs = _raphael2["default"]._serializeArgs,
-        ms = " progid:DXImageTransform.Microsoft",
-        arrayShift = Array.prototype.shift,
-        S = " ",
-        E = "",
-        map = {
-        M: "m",
-        L: "l",
-        C: "c",
-        Z: "x",
-        m: "t",
-        l: "r",
-        c: "v",
-        z: "x"
-    },
-        bites = /([clmz]),?([^clmz]*)/gi,
-        blurregexp = / progid:\S+Blur\([^\)]+\)/g,
-        val = /-?[^,\s-]+/g,
-        cssDot = "position:absolute;left:0;top:0;width:1px;height:1px",
-        zoom = 21600,
-        pathTypes = {
-        path: 1,
-        rect: 1,
-        image: 1
-    },
-        ovalTypes = {
-        circle: 1,
-        ellipse: 1
-    },
-        path2vml = function path2vml(path) {
-        var total = /[ahqstv]/ig,
-            command = _raphael2["default"]._pathToAbsolute;
-        Str(path).match(total) && (command = _raphael2["default"]._path2curve);
-        total = /[clmz]/g;
-        if (command == _raphael2["default"]._pathToAbsolute && !Str(path).match(total)) {
-            var res = Str(path).replace(bites, function (all, command, args) {
-                var vals = [],
-                    isMove = command.toLowerCase() == "m",
-                    res = map[command];
-                args.replace(val, function (value) {
-                    if (isMove && vals.length == 2) {
-                        res += vals + map[command == "m" ? "l" : "L"];
-                        vals = [];
-                    }
-                    vals.push(round(value * zoom));
-                });
-                return res + vals;
-            });
-
-            return res || 'm0,0';
-        }
-        var pa = command(path),
-            p,
-            r;
-        res = [];
-        for (var i = 0, ii = pa.length; i < ii; i++) {
-            p = pa[i];
-            r = pa[i][0].toLowerCase();
-            r == "z" && (r = "x");
-            for (var j = 1, jj = p.length; j < jj; j++) {
-                r += round(p[j] * zoom) + (j != jj - 1 ? "," : E);
-            }
-            res.push(r);
-        }
-        return res.length ? res.join(S) : 'm0,0';
-    },
-        compensation = function compensation(deg, dx, dy) {
-        var m = _raphael2["default"].matrix();
-        m.rotate(-deg, .5, .5);
-        return {
-            dx: m.x(dx, dy),
-            dy: m.y(dx, dy)
+            return o;
         };
-    },
-        setCoords = function setCoords(p, sx, sy, dx, dy, deg) {
-        var _ = p._,
-            m = p.matrix,
-            fillpos = _.fillpos,
-            o = p.node,
-            s = o.style,
-            y = 1,
-            flip = "",
-            dxdy,
-            kx = zoom / sx,
-            ky = zoom / sy;
-        s.visibility = "hidden";
-        if (!sx || !sy) {
-            return;
-        }
-        o.coordsize = abs(kx) + S + abs(ky);
-        s.rotation = deg * (sx * sy < 0 ? -1 : 1);
-        if (deg) {
-            var c = compensation(deg, dx, dy);
-            dx = c.dx;
-            dy = c.dy;
-        }
-        sx < 0 && (flip += "x");
-        sy < 0 && (flip += " y") && (y = -1);
-        s.flip = flip;
-        o.coordorigin = dx * -kx + S + dy * -ky;
-        if (fillpos || _.fillsize) {
-            var fill = o.getElementsByTagName(fillString);
-            fill = fill && fill[0];
-            if (fill) {
-                o.removeChild(fill);
-                if (fillpos) {
-                    c = compensation(deg, m.x(fillpos[0], fillpos[1]), m.y(fillpos[0], fillpos[1]));
-                    fill.position = c.dx * y + S + c.dy * y;
-                }
-                if (_.fillsize) {
-                    fill.size = _.fillsize[0] * abs(sx) + S + _.fillsize[1] * abs(sy);
-                }
-                o.appendChild(fill);
-            }
-        }
-        s.visibility = "visible";
-    };
-    _raphael2["default"]._url = E;
-    _raphael2["default"].toString = function () {
-        return "Your browser doesn\u2019t support SVG. Falling down to VML.\nYou are running Rapha\xEBl " + this.version;
-    };
-    var addArrow = function addArrow(o, value, isEnd) {
-        var values = Str(value).toLowerCase().split("-"),
-            se = isEnd ? "end" : "start",
-            i = values.length,
-            type = "classic",
-            w = "medium",
-            h = "medium";
-        while (i--) {
-            switch (values[i]) {
-                case "block":
-                case "classic":
-                case "oval":
-                case "diamond":
-                case "open":
-                case "none":
-                    type = values[i];
-                    break;
-                case "wide":
-                case "narrow":
-                    h = values[i];
-                    break;
-                case "long":
-                case "short":
-                    w = values[i];
-                    break;
-            }
-        }
-        var stroke = o.node.getElementsByTagName("stroke")[0];
-        stroke[se + "arrow"] = type;
-        stroke[se + "arrowlength"] = w;
-        stroke[se + "arrowwidth"] = h;
-    },
-        applyCustomAttributes = function applyCustomAttributes(o, attrs) {
-        for (var key in attrs) {
-            eve("raphael.attr." + key + "." + o.id, o, attrs[key], key);
-            o.ca[key] && o.attr(key, attrs[key]);
-        }
-    },
-        setFillAndStroke = _raphael2["default"]._setFillAndStroke = function (o, params) {
-        if (!o.paper.canvas) return;
-        // o.paper.canvas.style.display = "none";
-        o.attrs = o.attrs || {};
-        var node = o.node,
-            a = o.attrs,
-            s = node.style,
-            xy,
-            oriOp,
-            newpath = pathTypes[o.type] && (params.x != a.x || params.y != a.y || params.width != a.width || params.height != a.height || params.cx != a.cx || params.cy != a.cy || params.rx != a.rx || params.ry != a.ry || params.r != a.r),
-            isOval = ovalTypes[o.type] && (a.cx != params.cx || a.cy != params.cy || a.r != params.r || a.rx != params.rx || a.ry != params.ry),
-            isGroup = o.type === 'group',
-            res = o;
-        oriOp = res.oriOp || (res.oriOp = {});
-        for (var par in params) {
-            if (params[has](par)) {
-                a[par] = params[par];
-            }
-        }if (newpath) {
-            a.path = _raphael2["default"]._getPath[o.type](o);
-            o._.dirty = 1;
-        }
-        params.href && (node.href = params.href);
-        params.title && (node.title = params.title);
-        params.target && (node.target = params.target);
-        params.cursor && (s.cursor = params.cursor);
-        "blur" in params && o.blur(params.blur);
 
-        if (params.path && o.type == "path" || newpath) {
-            node.path = path2vml(~Str(a.path).toLowerCase().indexOf("r") ? _raphael2["default"]._pathToAbsolute(a.path) : a.path);
-            if (o.type == "image") {
-                o._.fillpos = [a.x, a.y];
-                o._.fillsize = [a.width, a.height];
-                setCoords(o, 1, 1, 0, 0, 0);
+        elproto.hide = function () {
+            var o = this;
+            updateFollowers(o, 'hide');
+            !o.removed && o.paper.safari(o.node.style.display = "none");
+            return o;
+        };
+
+        elproto.show = function () {
+            var o = this;
+            updateFollowers(o, 'show');
+            !o.removed && o.paper.safari(o.node.style.display = E);
+            return o;
+        };
+
+        elproto.remove = function () {
+            if (this.removed || !this.parent.canvas) {
+                return;
             }
-        }
-        "transform" in params && o.transform(params.transform);
-        if ("rotation" in params) {
-            var rotation = params.rotation;
-            if (_raphael2["default"].is(rotation, "array")) {
-                o.rotate.apply(o, rotation);
+
+            var o = this,
+                node = R._engine.getNode(o),
+                paper = o.paper,
+                defs = paper.defs,
+                i;
+
+            paper.__set__ && paper.__set__.exclude(o);
+            eve.unbind("raphael.*.*." + o.id);
+
+            if (o.gradient && defs) {
+                updateGradientReference(o);
+            }
+            while (i = o.followers.pop()) {
+                i.el.remove();
+            }
+            while (i = o.bottom) {
+                i.remove();
+            }
+
+            if (o._drag) {
+                o.undrag();
+            }
+
+            if (o.events) {
+                while (i = o.events.pop()) {
+                    i.unbind();
+                }
+            }
+
+            o.parent.canvas.contains(node) && o.parent.canvas.removeChild(node);
+            o.removeData();
+            delete paper._elementsById[o.id]; // remove from lookup hash
+            R._tear(o, o.parent);
+
+            for (i in o) {
+                o[i] = typeof o[i] === "function" ? R._removedFactory(i) : null;
+            }
+
+            o.removed = true;
+        };;
+
+        elproto._getCustomBBox = function (fontFamily, fontSize, valign, lines) {
+            var fn,
+                o = this,
+                node = o.node,
+                hide,
+                isText = o.type === "text",
+                isIE = /*@cc_on!@*/false || !!document.documentMode,
+                cachedFontHeight,
+                txtElem,
+                theText,
+                theMSG,
+                availableFontFamily,
+                availableFontSize,
+                info,
+                randomPos,
+                bboxY,
+                diff,
+                bbox,
+                bboxHeight;
+            if (isIE && isText) {
+                fn = showRecursively(o);
             } else {
-                o.rotate(rotation);
-            }
-        }
-        if ("visibility" in params) {
-            params.visibility === 'hidden' ? o.hide() : o.show();
-        }
-        if (isOval) {
-            var cx = +a.cx,
-                cy = +a.cy,
-                rx = +a.rx || +a.r || 0,
-                ry = +a.ry || +a.r || 0;
-            node.path = _raphael2["default"].format("ar{0},{1},{2},{3},{4},{1},{4},{1}x", round((cx - rx) * zoom), round((cy - ry) * zoom), round((cx + rx) * zoom), round((cy + ry) * zoom), round(cx * zoom));
-        }
-        if ("clip-rect" in params) {
-            var rect = Str(params["clip-rect"]).split(separator);
-
-            if (rect.length == 4) {
-                rect[0] = +rect[0];
-                rect[1] = +rect[1];
-                rect[2] = +rect[2] + rect[0];
-                rect[3] = +rect[3] + rect[1];
-
-                /** @todo create separate element for group clip-rect to
-                 * avoid unclipping issue */
-                var div = isGroup ? node : node.clipRect || _raphael2["default"]._g.doc.createElement("div"),
-                    offset,
-                    dstyle = div.style;
-
-                if (isGroup) {
-                    o.clip = rect.slice(); // copy param
-                    offset = o.matrix.offset();
-                    offset = [toFloat(offset[0]), toFloat(offset[1])];
-                    // invert matrix calculation
-                    rect[0] -= offset[0];
-                    rect[1] -= offset[1];
-                    rect[2] -= offset[0];
-                    rect[3] -= offset[1];
-                    // Fix for bug in ie clip-auto when height/width is not defined
-                    /** @todo set dynamic w/h based on clip bounds or find
-                     * another workaround fix */
-                    //dstyle.width = "10800px";
-                    //dstyle.height = "10800px";
-
-                    // Not sure about the above fix
-                    // Revert the fix because it's creating another issue.
-                    // Setting the Group style, width/height as "10800px" makes the other group inaccessible
-                    // which is below this group
-                    dstyle.width = "1px";
-                    dstyle.height = "1px";
-                } else if (!node.clipRect) {
-                    dstyle.top = "0";
-                    dstyle.left = "0";
-                    dstyle.width = o.paper.width + "px";
-                    dstyle.height = o.paper.height + "px";
-                    node.parentNode.insertBefore(div, node);
-                    div.appendChild(node);
-                    div.raphael = true;
-                    div.raphaelid = node.raphaelid;
-                    node.clipRect = div;
-                }
-                dstyle.position = "absolute";
-                dstyle.clip = _raphael2["default"].format("rect({1}px {2}px {3}px {0}px)", rect);
-            }
-            if (!params["clip-rect"]) {
-                if (isGroup && o.clip) {
-                    node.style.clip = "rect(0px 10800px 10800px 0px)";
-                    delete o.clip;
-                } else if (node.clipRect) {
-                    node.clipRect.style.clip = "rect(0px 10800px 10800px 0px)";
+                if (node.style.display === "none") {
+                    o.show();
+                    hide = true;
                 }
             }
-        }
-        // Css styles will be applied in element or group.
-        if (o.textpath || isGroup) {
-            var textpathStyle = isGroup ? node.style : o.textpath.style;
-            params.font && (textpathStyle.font = params.font);
-            params["font-family"] && (textpathStyle.fontFamily = '"' + params["font-family"].split(",")[0].replace(/^['"]+|['"]+$/g, E) + '"');
-            params["font-size"] && (textpathStyle.fontSize = params["font-size"]);
-            params["font-weight"] && (textpathStyle.fontWeight = params["font-weight"]);
-            params["font-style"] && (textpathStyle.fontStyle = params["font-style"]);
-        }
-        if ("arrow-start" in params) {
-            addArrow(res, params["arrow-start"]);
-        }
-        if ("arrow-end" in params) {
-            addArrow(res, params["arrow-end"], 1);
-        }
-        if (!isGroup && (params.opacity != null || params["stroke-width"] != null || params.fill != null || params.src != null || params.stroke != null || params["stroke-width"] != null || params["stroke-opacity"] != null || params["fill-opacity"] != null || params["stroke-dasharray"] != null || params["stroke-miterlimit"] != null || params["stroke-linejoin"] != null || params["stroke-linecap"] != null)) {
-            var fill = node.getElementsByTagName(fillString),
-                newfill = false,
-                fillOpacity = -1;
-            fill = fill && fill[0];
-            !fill && (newfill = fill = createNode(fillString));
-            if (o.type == "image" && params.src) {
-                fill.src = params.src;
+
+            if (isText) {
+                cachedFontHeight = R.cachedFontHeight;
+                txtElem = cachedFontHeight.txtElem;
+                availableFontFamily = cachedFontHeight[fontFamily] || (cachedFontHeight[fontFamily] = {});
+                availableFontSize = availableFontFamily[fontSize];
+                randomPos = -100;
+
+                if (!availableFontSize) {
+                    if (!txtElem) {
+                        txtElem = cachedFontHeight.txtElem = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                        txtElem.setAttribute('x', randomPos);
+                        txtElem.setAttribute('y', randomPos);
+
+                        theMSG = document.createTextNode('abcdefhiklmnopqrstuvwxyz');
+                        txtElem.appendChild(theMSG);
+
+                        document.getElementsByTagName('svg')[0].appendChild(txtElem);
+                    }
+                    txtElem.setAttribute('style', 'font-family :' + fontFamily + '; font-size :' + fontSize);
+
+                    bbox = txtElem.getBBox();
+                    availableFontFamily[fontSize] = availableFontSize = [];
+                    availableFontSize.push(bbox.height);
+                    availableFontSize.push(bbox.y);
+                }
+
+                bboxY = availableFontSize[1];
+                bboxHeight = availableFontSize[0];
+                switch (valign) {
+                    case "bottom":
+                        diff = randomPos - bboxY - bboxHeight * lines;
+                        break;
+                    case "top":
+                        diff = randomPos - bboxY;
+                        break;
+                    default:
+                        diff = randomPos - bboxY - bboxHeight / 2 * lines;
+                };
+
+                bbox = {
+                    height: availableFontSize[0],
+                    diff: diff
+                };
             }
-            params.fill && (fill.on = true);
-            if (fill.on == null || params.fill == "none" || params.fill === null) {
-                fill.on = false;
+
+            isIE && isText ? fn && fn() : hide && o.hide();
+            return bbox;
+        };
+
+        elproto._getBBox = function () {
+            var fn,
+                o = this,
+                node = o.node,
+                bbox = {},
+                a = o.attrs,
+                align,
+                hide,
+                isText = o.type === "text",
+                isIE = /*@cc_on!@*/false || !!document.documentMode;
+            if (isIE && isText) {
+                fn = showRecursively(o);
+            } else {
+                if (node.style.display === "none") {
+                    o.show();
+                    hide = true;
+                }
             }
 
-            if (fill.on && params.fill) {
-                var isURL = Str(params.fill).match(_raphael2["default"]._ISURL);
-                if (isURL) {
-                    fill.parentNode == node && node.removeChild(fill);
-                    fill.rotate = true;
-                    fill.src = isURL[1];
-                    fill.type = "tile";
-                    var bbox = o.getBBox(1);
-                    fill.position = bbox.x + S + bbox.y;
-                    o._.fillpos = [bbox.x, bbox.y];
+            try {
+                bbox = node.getBBox();
+                if (isText) {
+                    // If bbox does not have x / y, which is possible in certain
+                    // environments, we mathematically calculate these values by
+                    // using x, y (adjusted using the values of text-anchor, and
+                    // vertical-align attributes), of the element along with the
+                    // width and height provided by the getBBox().
+                    if (bbox.x === undefined) {
+                        bbox.isCalculated = true;
+                        align = a['text-anchor'];
+                        bbox.x = (a.x || 0) - bbox.width * (align === "start" ? 0 : align === "middle" ? 0.5 : 1);
+                    }
 
-                    _raphael2["default"]._preload(isURL[1], function () {
-                        o._.fillsize = [this.offsetWidth, this.offsetHeight];
-                    });
-                } else {
-                    var color = _raphael2["default"].getRGB(params.fill);
-                    fill.color = color.hex;
-                    fill.src = E;
-                    fill.type = "solid";
-
-                    if (color.error && (res.type in {
-                        circle: 1,
-                        ellipse: 1
-                    } || Str(params.fill).charAt() != "r") && addGradientFill(res, params.fill, fill)) {
-                        a.fill = "none";
-                        a.gradient = params.fill;
-                        fill.rotate = false;
-                    } else if ("opacity" in color && !("fill-opacity" in params)) {
-                        // store oiginal non gradient color opacity
-                        oriOp.nonGradOpacity = fillOpacity = color.opacity;
+                    if (bbox.y === undefined) {
+                        bbox.isCalculated = true;
+                        align = a['vertical-align'];
+                        bbox.y = (a.y || 0) - bbox.height * (align === "bottom" ? 1 : align === "middle" ? 0.5 : 0);
                     }
                 }
+            } catch (e) {
+                // Firefox 3.0.x plays badly here
+            } finally {
+                bbox = bbox || {};
             }
-
-            if (fillOpacity !== -1 || "fill-opacity" in params || "opacity" in params) {
-                var opacity = ((+a["fill-opacity"] + 1 || 2) - 1) * ((+a.opacity + 1 || 2) - 1) * ((+fillOpacity + 1 || 2) - 1);
-                opacity = mmin(mmax(opacity, 0), 1);
-                oriOp.opacity = opacity;
-                // if gradient color opacity is set then opacity (applied through the params)
-                //  should be multiplied with the gradient opacity so that ratio will remain same
-                if (oriOp.opacity1 !== undefined) {
-                    fill.opacity = oriOp.opacity1 * opacity;
-                    fill['o:opacity2'] = oriOp.opacity2 * opacity;
-                } else {
-                    // multiply with the original non gradient color opacity with the opacity to preserve the ratio of the opacity
-                    fill.opacity = opacity * (oriOp.nonGradOpacity === undefined ? 1 : oriOp.nonGradOpacity);
-                }
-                if (fill.src) {
-                    fill.color = "none";
-                }
-            }
-            oriOp.opacity = undefined;
-            node.appendChild(fill);
-            var stroke = node.getElementsByTagName("stroke") && node.getElementsByTagName("stroke")[0],
-                newstroke = false;
-            !stroke && (newstroke = stroke = createNode("stroke"));
-            if (params.stroke && params.stroke != "none" || params["stroke-width"] || params["stroke-opacity"] != null || params["stroke-dasharray"] || params["stroke-miterlimit"] || params["stroke-linejoin"] || params["stroke-linecap"]) {
-                stroke.on = true;
-            }
-            (params.stroke == "none" || params.stroke === null || stroke.on == null || params.stroke == 0 || params["stroke-width"] == 0) && (stroke.on = false);
-            var strokeColor = _raphael2["default"].getRGB('stroke' in params ? params.stroke : a.stroke);
-            stroke.on && params.stroke && (stroke.color = strokeColor.hex);
-            opacity = ((+a["stroke-opacity"] + 1 || 2) - 1) * ((+a.opacity + 1 || 2) - 1) * ((+strokeColor.opacity + 1 || 2) - 1);
-            var width = (toFloat(params["stroke-width"]) || 1) * .75;
-            opacity = mmin(mmax(opacity, 0), 1);
-            params["stroke-width"] == null && (width = a["stroke-width"]);
-            params["stroke-width"] && (stroke.weight = width);
-            width && width < 1 && (opacity *= width) && (stroke.weight = 1);
-            stroke.opacity = opacity;
-
-            params["stroke-linejoin"] && (stroke.joinstyle = params["stroke-linejoin"]) || newstroke && (newstroke.joinstyle = 'miter');
-            stroke.miterlimit = params["stroke-miterlimit"] || 8;
-            params["stroke-linecap"] && (stroke.endcap = params["stroke-linecap"] == "butt" ? "flat" : params["stroke-linecap"] == "square" ? "square" : "round");
-            if (params["stroke-dasharray"]) {
-                var dasharray = {
-                    "-": "shortdash",
-                    ".": "shortdot",
-                    "-.": "shortdashdot",
-                    "-..": "shortdashdotdot",
-                    ". ": "dot",
-                    "- ": "dash",
-                    "--": "longdash",
-                    "- .": "dashdot",
-                    "--.": "longdashdot",
-                    "--..": "longdashdotdot"
-                };
-                stroke.dashstyle = dasharray[has](params["stroke-dasharray"]) ? dasharray[params["stroke-dasharray"]] : params["stroke-dasharray"].join && params["stroke-dasharray"].join(' ') || E;
-            }
-            newstroke && node.appendChild(stroke);
-        }
-        if (res.type == "text") {
-            res.paper.canvas.style.display = E;
-            var span = res.paper.span,
-                m = 100,
-                fontSize = a.font && a.font.match(/\d+(?:\.\d*)?(?=px)/),
-                lineHeight = a['line-height'] && (a['line-height'] + E).match(/\d+(?:\.\d*)?(?=px)/);
-            s = span.style;
-            a.font && (s.font = a.font);
-            a["font-family"] && (s.fontFamily = a["font-family"]);
-            a["font-weight"] && (s.fontWeight = a["font-weight"]);
-            a["font-style"] && (s.fontStyle = a["font-style"]);
-            fontSize = toFloat(a["font-size"] || fontSize && fontSize[0]) || 10;
-            s.fontSize = fontSize * m + "px";
-            lineHeight = toFloat(a["line-height"] || lineHeight && lineHeight[0]) || 12;
-            a["line-height"] && (s.lineHeight = lineHeight * m + 'px');
-            _raphael2["default"].is(params.text, 'array') && (params.text = res.textpath.string = params.text.join('\n').replace(/<br\s*?\/?>/ig, '\n'));
-            res.textpath.string && (span.innerHTML = Str(res.textpath.string).replace(/</g, "&#60;").replace(/&/g, "&#38;").replace(/\n/g, "<br>"));
-            var brect = span.getBoundingClientRect();
-            res.W = a.w = (brect.right - brect.left) / m;
-            res.H = a.h = (brect.bottom - brect.top) / m;
-            // res.paper.canvas.style.display = "none";
-            res.X = a.x;
-            res.Y = a.y;
-            var leading = lineHeight - fontSize;
-
-            switch (a["vertical-align"]) {
-                case "top":
-                    res.bby = res.H / 2; // + leading;
-                    break;
-                case "bottom":
-                    res.bby = -res.H / 2; // - leading;
-                    break;
-                default:
-                    res.bby = 0;
-            }
-
-            ("x" in params || "y" in params || res.bby !== undefined) && (res.path.v = _raphael2["default"].format("m{0},{1}l{2},{1}", round(a.x * zoom), round((a.y + (res.bby || 0)) * zoom), round(a.x * zoom) + 1));
-            var dirtyattrs = ["x", "y", "text", "font", "font-family", "font-weight", "font-style", "font-size", "line-height"];
-            for (var d = 0, dd = dirtyattrs.length; d < dd; d++) {
-                if (dirtyattrs[d] in params) {
-                    res._.dirty = 1;
-                    break;
-                }
-            } // text-anchor emulation
-            switch (a["text-anchor"]) {
-                case "start":
-                    res.textpath.style["v-text-align"] = "left";
-                    res.bbx = res.W / 2;
-                    break;
-                case "end":
-                    res.textpath.style["v-text-align"] = "right";
-                    res.bbx = -res.W / 2;
-                    break;
-                default:
-                    res.textpath.style["v-text-align"] = "center";
-                    res.bbx = 0;
-                    break;
-            }
-            res.textpath.style["v-text-kern"] = true;
-        }
-        // res.paper.canvas.style.display = E;
-    },
-
-    /*
-     * Keeps the follower element in sync with the leaders.
-     * First and second arguments represents the context(element) and the
-     name of the callBack function respectively.
-     * The callBack is invoked for indivual follower Element with the rest of
-     arguments.
-    */
-    updateFollowers = _raphael2["default"]._updateFollowers = function () {
-        var i,
-            ii,
-            followerElem,
-            args = arguments,
-            o = arrayShift.call(args),
-            fnName = arrayShift.call(args);
-        for (i = 0, ii = o.followers.length; i < ii; i++) {
-            followerElem = o.followers[i].el;
-            followerElem[fnName].apply(followerElem, args);
-        }
-    },
-        addGradientFill = function addGradientFill(o, gradient, fill) {
-        o.attrs = o.attrs || {};
-        var attrs = o.attrs,
-            pow = Math.pow,
-            oriFOpacity,
-            oriOp = o.oriOp,
-            opacity,
-            oindex,
-            type = "linear",
-            fxfy = ".5 .5";
-        o.attrs.gradient = gradient;
-        gradient = Str(gradient).replace(_raphael2["default"]._radial_gradient, function (all, opts) {
-            type = "radial";
-            opts = opts && opts.split(',') || [];
-
-            // fx,fy of vml is cx,cy of svg
-            var cx = opts[0],
-                cy = opts[1],
-                r = opts[2],
-                fx = opts[3],
-                fy = opts[4],
-                units = opts[5];
-            if (fx && fy) {
-                fx = toFloat(fx);
-                fy = toFloat(fy);
-                pow(fx - .5, 2) + pow(fy - .5, 2) > .25 && (fy = sqrt(.25 - pow(fx - .5, 2)) * ((fy > .5) * 2 - 1) + .5);
-                fxfy = fx + S + fy;
-            }
-            return E;
-        });
-        gradient = gradient.split(/\s*\-\s*/);
-        if (type == "linear") {
-            var angle = gradient.shift();
-            angle = -toFloat(angle);
-            if (isNaN(angle)) {
-                return null;
-            }
-        }
-        var dots = _raphael2["default"]._parseDots(gradient);
-        if (!dots) {
-            return null;
-        }
-        o = o.shape || o.node;
-        if (dots.length) {
-            fill.parentNode == o && o.removeChild(fill);
-            fill.on = true;
-            fill.method = "none";
-            fill.color = dots[0].color;
-            fill.color2 = dots[dots.length - 1].color;
-            //For VML use first and last available alpha
-            var clrs = [],
-                opacity1 = 1,
-                opacity2 = dots[0].opacity === undefined ? 1 : dots[0].opacity;
-            for (var i = 0, ii = dots.length; i < ii; i++) {
-                dots[i].offset && clrs.push(dots[i].offset + S + dots[i].color);
-                if (dots[i].opacity !== undefined) {
-                    opacity1 = dots[i].opacity; //update with latest avaible opacity
-                }
-            }
-            fill.colors = clrs.length ? clrs.join() : "0% " + fill.color;
-            //set opacity1 & opacity2
-            // store original gradient color opacity
-            oriOp.opacity1 = opacity1;
-            oriOp.opacity2 = opacity2;
-            oriFOpacity = oriOp.opacity === undefined ? 1 : oriOp.opacity;
-            // if gradient color opacity is set then opacity (applied through the params)
-            // should be multiplied with the gradient opacity so that ratio will remain same
-            fill.opacity = opacity1 * oriFOpacity;
-            fill['o:opacity2'] = opacity2 * oriFOpacity;
-            if (type == "radial") {
-                fill.type = "gradientTitle";
-                fill.focus = "100%";
-                fill.focussize = "0 0";
-                fill.focusposition = fxfy;
-                fill.angle = 0;
-            } else {
-                // fill.rotate= true;
-                fill.type = "gradient";
-                fill.angle = (270 - angle) % 360;
-            }
-            o.appendChild(fill);
-        }
-        return 1;
-    },
-        Element = function Element(node, vml, group /*, dontAppend*/) {
-        var o = this,
-            parent = group || vml,
-            skew;
-
-        /*!dontAppend && */parent.canvas && parent.canvas.appendChild(node);
-        skew = createNode("skew");
-        skew.on = true;
-        node.appendChild(skew);
-        o.skew = skew;
-
-        o.node = o[0] = node;
-        node.raphael = true;
-        node.raphaelid = o.id = _raphael2["default"]._oid++;
-
-        o.X = 0;
-        o.Y = 0;
-
-        o.attrs = o.attrs || {};
-        o.followers = o.followers || [];
-
-        o.paper = vml;
-        o.ca = o.customAttributes = o.customAttributes || new vml._CustomAttributes();
-
-        o.matrix = _raphael2["default"].matrix();
-        o._ = {
-            transform: [],
-            sx: 1,
-            sy: 1,
-            dx: 0,
-            dy: 0,
-            deg: 0,
-            dirty: 1,
-            dirtyT: 1
+            isIE && isText ? fn && fn() : hide && o.hide();
+            return bbox;
         };
 
-        o.parent = parent;
-        !parent.bottom && (parent.bottom = o);
-
-        o.prev = parent.top;
-        parent.top && (parent.top.next = o);
-        parent.top = o;
-        o.next = null;
-    };
-    var elproto = _raphael2["default"].el,
-        notApplicableGroupAttrs = {
-        fill: true,
-        stroke: true,
-        'stroke-width': true,
-        'stroke-dasharray': true,
-        'stroke-linejoin': true,
-        'stroke-opacity': true,
-        'fill-opacity': true,
-        opacity: true
-    },
-
-    /*
-     * Function to over-write the default attr() function of group so that the individual properties of group
-     * can be applied to its child.
-     */
-    customGroupUpdate = function customGroupUpdate(attributes) {
-        var group = this,
-            childElem,
-            ownAttr = group.ownAttr;
-
-        if (attributes) {
-            group.ownAttr = ownAttr ? _raphael2["default"].extend(ownAttr, attributes) : attributes;
-        }
-        info = getApplicableGroupAttributes(group);
-        group.customAttr = info.customAttr;
-        group.inheritAttr = info.inheritAttr;
-
-        // Applying the group properties to all its child element
-        childElem = group.bottom;
-        while (childElem) {
-            childElem.attr();
-            childElem = childElem.next;
-        }
-        return attributes && elproto.attr.call(group, attributes);
-    },
-
-
-    /*
-     * Function to over-write the default attr() function of an element so that the individual properties of group
-     * can be applied to the child.
-     */
-    customElementUpdate = function customElementUpdate(attributes) {
-        var element = this,
-            parent = element.parent,
-            ownAttr = element.ownAttr;
-
-        if (attributes) {
-            element.ownAttr = ownAttr ? _raphael2["default"].extend(ownAttr, attributes) : attributes;
-        }
-
-        attributes = getApplicableAttributes(parent, attributes, element);
-
-        element.inheritAttrFromGroup = parent && parent.inheritAttr;
-        element.customAttrFromGroup = parent && parent.customAttr;
-
-        return elproto.attr.call(element, attributes);
-    },
-
-
-    /*
-     * Function to manage attributes for group level inheritance
-     */
-    getApplicableGroupAttributes = function getApplicableGroupAttributes(group) {
-        var parent = group && group.parent,
-            customAttr = {},
-            inheritAttr = {},
-            attr;
-
-        ownAttr = group && group.ownAttr;
-        // Segregating the custom group attributes
-        if (ownAttr) {
-            for (attr in ownAttr) {
-                if (notApplicableGroupAttrs[attr]) {
-                    customAttr[attr] = ownAttr[attr];
+        elproto.attr = function (name, value) {
+            if (this.removed) {
+                return this;
+            }
+            if (name == null) {
+                var res = {};
+                for (var a in this.attrs) {
+                    if (this.attrs[has](a)) {
+                        res[a] = this.attrs[a];
+                    }
+                }res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
+                res.transform = this._.transform;
+                res.visibility = this.node.style.display === "none" ? "hidden" : "visible";
+                return res;
+            }
+            if (value == null && R.is(name, "string")) {
+                if (name == "fill" && this.attrs.fill == "none" && this.attrs.gradient) {
+                    return this.attrs.gradient;
                 }
-            }
-        }
-
-        // Inhereiting from parent
-        if (parent && parent.type === 'group') {
-            parentCustomAttr = parent.customAttr;
-            parentInheritAttr = parent.inheritAttr;
-
-            // Direct attributes from parent
-            for (attr in parentCustomAttr) {
-                inheritAttr[attr] = parentCustomAttr[attr];
-            }
-
-            // Inherited attributes from parent
-            for (attr in parentInheritAttr) {
-                !inheritAttr[attr] && (inheritAttr[attr] = parentInheritAttr[attr]);
-            }
-        }
-
-        return {
-            customAttr: customAttr,
-            inheritAttr: inheritAttr
-        };
-    },
-
-
-    /*
-     * Function to get the group attrs applicable to its child.
-     */
-    getApplicableAttributes = function getApplicableAttributes(group, elemAttr, elem) {
-        var customAttr, inheritAttr, attr;
-        elemAttr = elemAttr || _raphael2["default"].extend({}, elem.ownAttr);
-        if (group) {
-            customAttr = group.customAttr;
-            inheritAttr = group.inheritAttr;
-
-            for (attr in customAttr) {
-                !elemAttr[attr] && (elemAttr[attr] = customAttr[attr]);
-            }
-
-            for (attr in inheritAttr) {
-                !elemAttr[attr] && (elemAttr[attr] = inheritAttr[attr]);
-            }
-        }
-        return elemAttr;
-    };
-
-    /*\
-     * Paper.group
-     [ method ]
-     **
-     * Creates a group
-     **
-     > Parameters
-     **
-     - id (number) id of the group
-     = (object) Raphaël element object with type “group”
-     **
-     > Usage
-     | var g = paper.group();
-    \*/
-    paperproto.group = function () {
-        // id
-        var paper = this,
-            args = arguments,
-            group = _raphael2["default"]._lastArgIfGroup(args, true),
-            attrs,
-            info,
-            out;
-
-        out = _raphael2["default"]._engine.group(paper, args[0], group);
-        out.attr = customGroupUpdate;
-
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
-
-    /*\
-     * Paper.circle
-     [ method ]
-     **
-     * Draws a circle.
-     **
-     > Parameters
-     **
-     - x (number) x coordinate of the centre
-     - y (number) y coordinate of the centre
-     - r (number) radius
-     = (object) Raphaël element object with type “circle”
-     **
-     > Usage
-     | var c = paper.circle(50, 50, 40);
-    \*/
-    paperproto.circle = function () {
-        // x, y, r
-        var paper = this,
-            args = arguments,
-            group = _raphael2["default"]._lastArgIfGroup(args, true),
-            attrs = serializeArgs(args),
-            out;
-
-        attrs = getApplicableAttributes(group, attrs);
-        out = _raphael2["default"]._engine.circle(paper, attrs, group);
-        out.attr = customElementUpdate;
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
-
-    /*\
-     * Paper.rect
-     [ method ]
-     *
-     * Draws a rectangle.
-     **
-     > Parameters
-     **
-     - x (number) x coordinate of the top left corner
-     - y (number) y coordinate of the top left corner
-     - width (number) width
-     - height (number) height
-     - r (number) #optional radius for rounded corners, default is 0
-     = (object) Raphaël element object with type “rect”
-     **
-     > Usage
-     | // regular rectangle
-     | var c = paper.rect(10, 10, 50, 50);
-     | // rectangle with rounded corners
-     | var c = paper.rect(40, 40, 50, 50, 10);
-    \*/
-    paperproto.rect = function () {
-        var paper = this,
-            args = arguments,
-            group = _raphael2["default"]._lastArgIfGroup(args, true),
-            ownAttr = serializeArgs(args),
-            attrs,
-            out;
-
-        attrs = getApplicableAttributes(group, ownAttr);
-        out = _raphael2["default"]._engine.rect(paper, attrs, group);
-
-        out.attr = customElementUpdate;
-        out.ownAttr = ownAttr;
-        out.inheritAttrFromGroup = group.inheritAttr;
-        out.customAttrFromGroup = group.customAttr;
-
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
-
-    /*\
-     * Paper.ellipse
-     [ method ]
-     **
-     * Draws an ellipse.
-     **
-     > Parameters
-     **
-     - x (number) x coordinate of the centre
-     - y (number) y coordinate of the centre
-     - rx (number) horizontal radius
-     - ry (number) vertical radius
-     = (object) Raphaël element object with type “ellipse”
-     **
-     > Usage
-     | var c = paper.ellipse(50, 50, 40, 20);
-    \*/
-    paperproto.ellipse = function () {
-        var paper = this,
-            args = arguments,
-            group = _raphael2["default"]._lastArgIfGroup(args, true),
-            attrs = serializeArgs(args),
-            out;
-
-        attrs = getApplicableAttributes(group, attrs);
-        out = _raphael2["default"]._engine.ellipse(this, attrs, group);
-        out.attr = customElementUpdate;
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
-
-    /*\
-     * Paper.path
-     [ method ]
-     **
-     * Creates a path element by given path data string.
-     > Parameters
-     - pathString (string) #optional path string in SVG format.
-     * Path string consists of one-letter commands, followed by comma seprarated arguments in numercal form. Example:
-     | "M10,20L30,40"
-     * Here we can see two commands: “M”, with arguments `(10, 20)` and “L” with arguments `(30, 40)`. Upper case letter mean command is absolute, lower case—relative.
-     *
-     # <p>Here is short list of commands available, for more details see <a href="http://www.w3.org/TR/SVG/paths.html#PathData" title="Details of a path's data attribute's format are described in the SVG specification.">SVG path string format</a>.</p>
-     # <table><thead><tr><th>Command</th><th>Name</th><th>Parameters</th></tr></thead><tbody>
-     # <tr><td>M</td><td>moveto</td><td>(x y)+</td></tr>
-     # <tr><td>Z</td><td>closepath</td><td>(none)</td></tr>
-     # <tr><td>L</td><td>lineto</td><td>(x y)+</td></tr>
-     # <tr><td>H</td><td>horizontal lineto</td><td>x+</td></tr>
-     # <tr><td>V</td><td>vertical lineto</td><td>y+</td></tr>
-     # <tr><td>C</td><td>curveto</td><td>(x1 y1 x2 y2 x y)+</td></tr>
-     # <tr><td>S</td><td>smooth curveto</td><td>(x2 y2 x y)+</td></tr>
-     # <tr><td>Q</td><td>quadratic Bézier curveto</td><td>(x1 y1 x y)+</td></tr>
-     # <tr><td>T</td><td>smooth quadratic Bézier curveto</td><td>(x y)+</td></tr>
-     # <tr><td>A</td><td>elliptical arc</td><td>(rx ry x-axis-rotation large-arc-flag sweep-flag x y)+</td></tr>
-     # <tr><td>R</td><td><a href="http://en.wikipedia.org/wiki/Catmull–Rom_spline#Catmull.E2.80.93Rom_spline">Catmull-Rom curveto</a>*</td><td>x1 y1 (x y)+</td></tr></tbody></table>
-     * * “Catmull-Rom curveto” is a not standard SVG command and added in 2.0 to make life easier.
-     * Note: there is a special case when path consist of just three commands: “M10,10R…z”. In this case path will smoothly connects to its beginning.
-     > Usage
-     | var c = paper.path("M10 10L90 90");
-     | // draw a diagonal line:
-     | // move to 10,10, line to 90,90
-     * For example of path strings, check out these icons: http://raphaeljs.com/icons/
-    \*/
-    paperproto.path = function () {
-        var paper = this,
-            args = arguments,
-            group = _raphael2["default"]._lastArgIfGroup(args, true),
-            paperConfig = paper.config,
-            capStyle = paperConfig && paperConfig["stroke-linecap"] || "butt",
-            attrs = serializeArgs(args),
-            out;
-
-        attrs = getApplicableAttributes(group, attrs);
-        out = _raphael2["default"]._engine.path(paper, attrs, group);
-        out.attr = customElementUpdate;
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
-
-    /*\
-     * Paper.image
-     [ method ]
-     **
-     * Embeds an image into the surface.
-     **
-     > Parameters
-     **
-     - src (string) URI of the source image
-     - x (number) x coordinate position
-     - y (number) y coordinate position
-     - width (number) width of the image
-     - height (number) height of the image
-     = (object) Raphaël element object with type “image”
-     **
-     > Usage
-     | var c = paper.image("apple.png", 10, 10, 80, 80);
-    \*/
-    paperproto.image = function () {
-        var paper = this,
-            args = arguments,
-            group = _raphael2["default"]._lastArgIfGroup(args, true),
-            attrs = serializeArgs(args),
-            out;
-
-        attrs = getApplicableAttributes(group, attrs);
-        out = _raphael2["default"]._engine.image(paper, attrs, group);
-        out.attr = customElementUpdate;
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
-
-    /*\
-     * Paper.text
-     [ method ]
-     **
-     * Draws a text string. If you need line breaks, put “\n” in the string.
-     **
-     > Parameters
-     **
-     - x (number) x coordinate position
-     - y (number) y coordinate position
-     - text (string) The text string to draw
-     = (object) Raphaël element object with type “text”
-     **
-     > Usage
-     | var t = paper.text(50, 50, "Raphaël\nkicks\nbutt!");
-    \*/
-    paperproto.text = function () {
-        var paper = this,
-            args = arguments,
-            group = _raphael2["default"]._lastArgIfGroup(args, true),
-            attrs = serializeArgs(args),
-            out;
-
-        attrs = getApplicableAttributes(group, attrs);
-        out = _raphael2["default"]._engine.text(paper, attrs, group, args[1]);
-        return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
-    };
-
-    Element.prototype = elproto;
-    elproto.constructor = Element;
-
-    elproto.transform = function (tstr) {
-        if (tstr == null) {
-            return this._.transform;
-        }
-        var vbs = this.paper._viewBoxShift,
-            vbt = vbs ? "s" + [vbs.scale, vbs.scale] + "-1-1t" + [vbs.dx, vbs.dy] : E,
-            oldt;
-
-        if (vbs) {
-            oldt = tstr = Str(tstr).replace(/\.{3}|\u2026/g, this._.transform || E);
-        }
-
-        _raphael2["default"]._extractTransform(this, vbt + tstr);
-
-        var matrix = this.matrix.clone(),
-            skew = this.skew,
-            o = this.node,
-            split,
-            isGrad = ~Str(this.attrs.fill).indexOf("-"),
-            isPatt = !Str(this.attrs.fill).indexOf("url(");
-        matrix.translate(-.5, -.5);
-        if (isPatt || isGrad || this.type == "image") {
-            skew.matrix = "1 0 0 1";
-            skew.offset = "0 0";
-            split = matrix.split();
-            if (isGrad && split.noRotation || !split.isSimple) {
-                o.style.filter = matrix.toFilter();
-                var bb = this.getBBox(),
-                    bbt = this.getBBox(1),
-                    xget = bb.x2 && bbt.x2 && 'x2' || 'x',
-                    yget = bb.y2 && bbt.y2 && 'y2' || 'y',
-                    dx = bb[xget] - bbt[xget],
-                    dy = bb[yget] - bbt[yget];
-                o.coordorigin = dx * -zoom + S + dy * -zoom;
-                setCoords(this, 1, 1, dx, dy, 0);
-            } else {
-                o.style.filter = E;
-                setCoords(this, split.scalex, split.scaley, split.dx, split.dy, split.rotate);
-            }
-        } else {
-            o.style.filter = E;
-            skew.matrix = Str(matrix);
-            skew.offset = matrix.offset();
-        }
-        oldt && (this._.transform = oldt);
-
-        return this;
-    };
-    elproto.rotate = function (deg, cx, cy) {
-        var o = this;
-        if (o.removed) {
-            return o;
-        }
-        updateFollowers(o, 'rotate', deg, cx, cy);
-        if (deg == null) {
-            return;
-        }
-        deg = Str(deg).split(separator);
-        if (deg.length - 1) {
-            cx = toFloat(deg[1]);
-            cy = toFloat(deg[2]);
-        }
-        deg = toFloat(deg[0]);
-        cy == null && (cx = cy);
-        if (cx == null || cy == null) {
-            var bbox = o.getBBox(1);
-            cx = bbox.x + bbox.width / 2;
-            cy = bbox.y + bbox.height / 2;
-        }
-        o._.dirtyT = 1;
-        o.transform(o._.transform.concat([["r", deg, cx, cy]]));
-        return o;
-    };
-    elproto.translate = function (dx, dy) {
-        var o = this;
-        if (o.removed) {
-            return o;
-        }
-        updateFollowers(o, 'translate', dx, dy);
-        dx = Str(dx).split(separator);
-        if (dx.length - 1) {
-            dy = toFloat(dx[1]);
-        }
-        dx = toFloat(dx[0]) || 0;
-        dy = +dy || 0;
-        if (o._.bbox) {
-            o._.bbox.x += dx;
-            o._.bbox.y += dy;
-        }
-        o.transform(o._.transform.concat([["t", dx, dy]]));
-        return o;
-    };
-    elproto.scale = function (sx, sy, cx, cy) {
-        var o = this;
-        if (o.removed) {
-            return o;
-        }
-        updateFollowers(o, 'scale', sx, sy, cx, cy);
-        sx = Str(sx).split(separator);
-        if (sx.length - 1) {
-            sy = toFloat(sx[1]);
-            cx = toFloat(sx[2]);
-            cy = toFloat(sx[3]);
-            isNaN(cx) && (cx = null);
-            isNaN(cy) && (cy = null);
-        }
-        sx = toFloat(sx[0]);
-        sy == null && (sy = sx);
-        cy == null && (cx = cy);
-        if (cx == null || cy == null) {
-            var bbox = o.getBBox(1);
-        }
-        cx = cx == null ? bbox.x + bbox.width / 2 : cx;
-        cy = cy == null ? bbox.y + bbox.height / 2 : cy;
-
-        o.transform(o._.transform.concat([["s", sx, sy, cx, cy]]));
-        o._.dirtyT = 1;
-        return o;
-    };
-    elproto.hide = function (soft) {
-        var o = this;
-        updateFollowers(o, 'hide', soft);
-        !o.removed && (o.node.style.display = "none");
-        return o;
-    };
-
-    elproto.show = function (soft) {
-        var o = this;
-        updateFollowers(o, 'show', soft);
-        !o.removed && (o.node.style.display = E);
-        return o;
-    };
-    elproto._getBBox = function () {
-        var o = this;
-        if (o.removed) {
-            return {};
-        }
-        return {
-            x: o.X + (o.bbx || 0) - o.W / 2,
-            y: o.Y + (o.bby || 0) - o.H / 2,
-            width: o.W,
-            height: o.H
-        };
-    };
-    elproto.remove = function () {
-        if (this.removed || !this.parent.canvas) {
-            return;
-        }
-
-        var o = this,
-            node = _raphael2["default"]._engine.getNode(o),
-            paper = o.paper,
-            shape = o.shape,
-            i;
-
-        paper.__set__ && paper.__set__.exclude(o);
-        eve.unbind("raphael.*.*." + o.id);
-
-        shape && shape.parentNode.removeChild(shape);
-        node.parentNode && node.parentNode.removeChild(node);
-
-        while (i = o.followers.pop()) {
-            i.el.remove();
-        }
-        while (i = o.bottom) {
-            i.remove();
-        }
-
-        if (o._drag) {
-            o.undrag();
-        }
-
-        if (o.events) {
-            while (i = o.events.pop()) {
-                i.unbind();
-            }
-        }
-
-        o.removeData();
-        delete paper._elementsById[o.id];
-        _raphael2["default"]._tear(o, o.parent);
-
-        for (var i in o) {
-            o[i] = typeof o[i] === "function" ? _raphael2["default"]._removedFactory(i) : null;
-        }
-        o.removed = true;
-    };
-
-    elproto.attr = function (name, value) {
-        if (this.removed) {
-            return this;
-        }
-        if (name == null) {
-            var res = {};
-            for (var a in this.attrs) {
-                if (this.attrs[has](a)) {
-                    res[a] = this.attrs[a];
+                if (name == "transform") {
+                    return this._.transform;
                 }
-            }res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
-            res.transform = this._.transform;
-            res.visibility = this.node.style.display === "none" ? "hidden" : "visible";
-            return res;
-        }
-        if (value == null && _raphael2["default"].is(name, "string")) {
-            if (name == fillString && this.attrs.fill == "none" && this.attrs.gradient) {
-                return this.attrs.gradient;
+                if (name == "visibility") {
+                    return this.node.style.display === "none" ? "hidden" : "visible";
+                }
+                var names = name.split(separator),
+                    out = {};
+                for (var i = 0, ii = names.length; i < ii; i++) {
+                    name = names[i];
+                    if (name in this.attrs) {
+                        out[name] = this.attrs[name];
+                    } else if (R.is(this.ca[name], "function")) {
+                        out[name] = this.ca[name].def;
+                    } else {
+                        out[name] = R._availableAttrs[name];
+                    }
+                }
+                return ii - 1 ? out : out[names[0]];
             }
-            if (name == "visibility") {
-                return this.node.style.display === "none" ? "hidden" : "visible";
-            }
-            var names = name.split(separator),
+            if (value == null && R.is(name, "array")) {
                 out = {};
-            for (var i = 0, ii = names.length; i < ii; i++) {
-                name = names[i];
-                if (name in this.attrs) {
-                    out[name] = this.attrs[name];
-                } else if (_raphael2["default"].is(this.ca[name], "function")) {
-                    out[name] = this.ca[name].def;
-                } else {
-                    out[name] = _raphael2["default"]._availableAttrs[name];
+                for (i = 0, ii = name.length; i < ii; i++) {
+                    out[name[i]] = this.attr(name[i]);
+                }
+                return out;
+            }
+            if (value != null) {
+                var params = {};
+                params[name] = value;
+            } else if (name != null && R.is(name, "object")) {
+                params = name;
+            }
+            if (R.stopEvent !== false) {
+                for (var key in params) {
+                    eve("raphael.attr." + key + "." + this.id, this, params[key], key);
                 }
             }
-            return ii - 1 ? out : out[names[0]];
-        }
-        if (this.attrs && value == null && _raphael2["default"].is(name, "array")) {
-            out = {};
-            for (i = 0, ii = name.length; i < ii; i++) {
-                out[name[i]] = this.attr(name[i]);
-            }
-            return out;
-        }
-        var params;
-        if (value != null) {
-            params = {};
-            params[name] = value;
-        }
-        value == null && _raphael2["default"].is(name, "object") && (params = name);
-        if (_raphael2["default"].stopEvent !== false) {
-            for (var key in params) {
-                eve("raphael.attr." + key + "." + this.id, this, params[key], key);
-            }
-        }
-        if (params) {
             var todel = {};
             for (key in this.ca) {
-                if (this.ca[key] && params[has](key) && _raphael2["default"].is(this.ca[key], "function") && !this.ca['_invoked' + key]) {
+                if (this.ca[key] && params[has](key) && R.is(this.ca[key], "function") && !this.ca['_invoked' + key]) {
+
                     this.ca['_invoked' + key] = true; // prevent recursion
                     var par = this.ca[key].apply(this, [].concat(params[key]));
                     delete this.ca['_invoked' + key];
@@ -12876,452 +11202,2121 @@ if (_raphael2["default"].vml) {
                 }
             }
 
-            // this.paper.canvas.style.display = "none";
-            if ('text' in params && this.type == "text") {
-                _raphael2["default"].is(params.text, 'array') && (params.text = params.text.join('\n'));
-                this.textpath.string = params.text.replace(/<br\s*?\/?>/ig, '\n');
-            }
             setFillAndStroke(this, params);
+
             var follower;
             for (i = 0, ii = this.followers.length; i < ii; i++) {
                 follower = this.followers[i];
                 follower.cb && !follower.cb.call(follower.el, params, this) || follower.el.attr(params);
             }
-            for (var subkey in todel) {
+
+            for (subkey in todel) {
                 params[subkey] = todel[subkey];
             }
-            // this.paper.canvas.style.display = E;
-        }
-        return this;
-    };
-
-    elproto.blur = function (size) {
-        var s = this.node.runtimeStyle,
-            f = s.filter;
-        f = f.replace(blurregexp, E);
-        if (+size !== 0) {
-            this.attrs.blur = size;
-            s.filter = f + S + ms + ".Blur(pixelradius=" + (+size || 1.5) + ")";
-            s.margin = _raphael2["default"].format("-{0}px 0 0 -{0}px", round(+size || 1.5));
-        } else {
-            s.filter = f;
-            s.margin = 0;
-            delete this.attrs.blur;
-        }
-        return this;
-    };
-
-    /*\
-     * Element.on
-     [ method ]
-     **
-     * Bind handler function for a particular event to Element
-     * @param eventType - Type of event
-     * @param handler - Function to be called on the firing of the event
-    \*/
-    elproto.on = function (eventType, handler) {
-        if (this.removed) {
             return this;
-        }
-
-        if (eventType === 'dragstart') {
-            this.drag(null, handler);
-            return this;
-        } else if (eventType === 'dragmove') {
-            this.drag(handler);
-            return this;
-        } else if (eventType === 'dragend') {
-            this.drag(null, null, handler);
-            return this;
-        }
-        if (this.node.attachEvent) {
-            this.node.attachEvent('on' + eventType, handler);
-        } else {
-            this.node['on' + eventType] = function () {
-                var evt = _raphael2["default"]._g.win.event;
-                evt.target = evt.srcElement;
-                handler(evt);
-            };
-        }
-        return this;
-    };
-
-    /*\
-     * Element.off
-     [ method ]
-     **
-     * Remove handler function bind to an event of element
-     * @param eventType - Type of event
-     * @param handler - Function to be removed from event
-    \*/
-    elproto.off = function (eventType, handler) {
-        if (this.removed) {
-            return this;
-        }
-
-        if (eventType === 'dragstart') {
-            this.undragstart();
-            return this;
-        } else if (eventType === 'dragmove') {
-            this.undragmove();
-            return this;
-        } else if (eventType === 'dragend') {
-            this.undragend();
-            return this;
-        }
-        if (this.node.attachEvent) {
-            this.node.detachEvent('on' + eventType, handler);
-        } else {
-            this.node['on' + eventType] = null;
-        }
-        return this;
-    };
-
-    _raphael2["default"]._engine.getNode = function (el) {
-        var node = el.node || el[0].node;
-        return node.clipRect || node;
-    };
-    _raphael2["default"]._engine.getLastNode = function (el) {
-        var node = el.node || el[el.length - 1].node;
-        return node.clipRect || node;
-    };
-
-    _raphael2["default"]._engine.group = function (vml, id, group) {
-        var el = _raphael2["default"]._g.doc.createElement("div"),
-            p = new Element(el, vml, group);
-
-        el.style.cssText = cssDot;
-        p._id = id || E;
-        id && (el.className = 'raphael-group-' + p.id + '-' + id);
-        (group || vml).canvas.appendChild(el);
-
-        p.type = 'group';
-        p.canvas = p.node;
-        p.transform = _raphael2["default"]._engine.group.transform;
-        p.top = null;
-        p.bottom = null;
-
-        return p;
-    };
-
-    _raphael2["default"]._engine.group.transform = function (tstr) {
-        if (tstr == null) {
-            return this._.transform;
-        }
-
-        var o = this,
-            s = o.node.style,
-            c = o.clip,
-            vbs = o.paper._viewBoxShift,
-            vbt = vbs ? "s" + [vbs.scale, vbs.scale] + "-1-1t" + [vbs.dx, vbs.dy] : E,
-            oldt,
-            matrix,
-            offset,
-            tx,
-            ty;
-
-        if (vbs) {
-            oldt = tstr = Str(tstr).replace(/\.{3}|\u2026/g, o._.transform || E);
-        }
-        _raphael2["default"]._extractTransform(o, vbt + tstr);
-        matrix = o.matrix;
-        offset = matrix.offset();
-        tx = toFloat(offset[0]) || 0;
-        ty = toFloat(offset[1]) || 0;
-
-        s.left = tx + "px";
-        s.top = ty + "px";
-        s.zoom = (o._.tzoom = matrix.get(0)) + E;
-
-        /** @todo try perform relative group transform, thus avoiding
-         * transform on clipping */
-        c && (s.clip = _raphael2["default"].format("rect({1}px {2}px {3}px {0}px)", [c[0] - tx, c[1] - ty, c[2] - tx, c[3] - ty]));
-
-        return o;
-    };
-
-    _raphael2["default"]._engine.path = function (vml, attrs, group) {
-        var el = createNode("shape");
-        el.style.cssText = cssDot;
-        el.coordsize = zoom + S + zoom;
-        el.coordorigin = vml.coordorigin;
-
-        var p = new Element(el, vml, group);
-        p.type = attrs.type || "path";
-        p.path = [];
-        p.Path = E;
-
-        attrs.type && delete attrs.type;
-        setFillAndStroke(p, attrs);
-        applyCustomAttributes(p, attrs);
-        return p;
-    };
-
-    _raphael2["default"]._engine.rect = function (vml, attrs, group) {
-        var path = _raphael2["default"]._rectPath(attrs.x, attrs.y, attrs.w, attrs.h, attrs.r);
-
-        attrs.path = path;
-        attrs.type = "rect";
-
-        var res = vml.path(attrs, group),
-            a = res.attrs;
-        res.X = a.x;
-        res.Y = a.y;
-        res.W = a.width;
-        res.H = a.height;
-        a.path = path;
-
-        return res;
-    };
-    _raphael2["default"]._engine.ellipse = function (vml, attrs, group) {
-        attrs.type = "ellipse";
-
-        var res = vml.path(attrs, group),
-            a = res.attrs;
-        res.X = a.x - a.rx;
-        res.Y = a.y - a.ry;
-        res.W = a.rx * 2;
-        res.H = a.ry * 2;
-
-        return res;
-    };
-    _raphael2["default"]._engine.circle = function (vml, attrs, group) {
-        attrs.type = "circle";
-
-        var res = vml.path(attrs, group),
-            a = res.attrs;
-
-        res.X = a.x - a.r;
-        res.Y = a.y - a.r;
-        res.W = res.H = a.r * 2;
-        return res;
-    };
-    _raphael2["default"]._engine.image = function (vml, attrs, group) {
-        var path = _raphael2["default"]._rectPath(attrs.x, attrs.y, attrs.w, attrs.h);
-
-        attrs.path = path;
-        attrs.type = "image";
-        attrs.stroke = "none";
-        var res = vml.path(attrs, group),
-            a = res.attrs,
-            node = res.node,
-            fill = node.getElementsByTagName(fillString)[0];
-
-        a.src = attrs.src;
-        res.X = a.x = attrs.x;
-        res.Y = a.y = attrs.y;
-        res.W = a.width = attrs.w;
-        res.H = a.height = attrs.h;
-
-        fill.parentNode == node && node.removeChild(fill);
-        fill.rotate = true;
-        fill.src = a.src;
-        fill.type = "tile";
-        res._.fillpos = [a.x, a.y];
-        res._.fillsize = [a.w, a.h];
-        node.appendChild(fill);
-        setCoords(res, 1, 1, 0, 0, 0);
-        return res;
-    };
-    _raphael2["default"]._engine.text = function (vml, attrs, group, css) {
-        var el = createNode("shape"),
-            path = createNode("path"),
-            o = createNode("textpath");
-        x = attrs.x || 0;
-        y = attrs.y || 0;
-        text = attrs.text;
-        path.v = _raphael2["default"].format("m{0},{1}l{2},{1}", round(attrs.x * zoom), round(attrs.y * zoom), round(attrs.x * zoom) + 1);
-        path.textpathok = true;
-        o.string = Str(attrs.text).replace(/<br\s*?\/?>/ig, '\n');
-        o.on = true;
-        el.style.cssText = cssDot;
-        el.coordsize = zoom + S + zoom;
-        el.coordorigin = "0 0";
-        var p = new Element(el, vml, group);
-
-        p.shape = el;
-        p.path = path;
-        p.textpath = o;
-        p.type = "text";
-        p.attrs.text = Str(attrs.text || E);
-        p.attrs.x = attrs.x;
-        p.attrs.y = attrs.y;
-        p.attrs.w = 1;
-        p.attrs.h = 1;
-        css && p.css && p.css(css, undefined, true);
-        setFillAndStroke(p, attrs);
-        applyCustomAttributes(p, attrs);
-
-        el.appendChild(o);
-        el.appendChild(path);
-
-        return p;
-    };
-
-    _raphael2["default"]._engine.setSize = function (width, height) {
-        var cs = this.canvas.style;
-        this.width = width;
-        this.height = height;
-        width == +width && (width += "px");
-        height == +height && (height += "px");
-        width && (cs.width = width);
-        height && (cs.height = height);
-        cs.clip = "rect(0 " + cs.width + " " + cs.height + " 0)";
-        if (this._viewBox) {
-            _raphael2["default"]._engine.setViewBox.apply(this, this._viewBox);
-        }
-        return this;
-    };
-    _raphael2["default"]._engine.setViewBox = function (x, y, w, h, fit) {
-        eve("raphael.setViewBox", this, this._viewBox, [x, y, w, h, fit]);
-        var width = this.width,
-            height = this.height,
-            size = 1 / mmax(w / width, h / height),
-            H,
-            W;
-        if (fit) {
-            H = height / h;
-            W = width / w;
-            if (w * H < width) {
-                x -= (width - w * H) / 2 / H;
-            }
-            if (h * W < height) {
-                y -= (height - h * W) / 2 / W;
-            }
-        }
-        this._viewBox = [x, y, w, h, !!fit];
-        this._viewBoxShift = {
-            dx: -x,
-            dy: -y,
-            scale: size
         };
-        this.forEach(function (el) {
-            el.transform("...");
-        });
-        return this;
-    };
-    var createNode;
-    _raphael2["default"]._engine.initWin = function (win) {
-        var doc = win.document;
-        doc.createStyleSheet().addRule(".rvml", "behavior:url(#default#VML)");
-        try {
-            !doc.namespaces.rvml && doc.namespaces.add("rvml", "urn:schemas-microsoft-com:vml");
-            createNode = _raphael2["default"]._createNode = function (tagName, attrs) {
-                var el = doc.createElement('<rvml:' + tagName + ' class="rvml">'),
-                    prop;
-                for (prop in attrs) {
-                    el[prop] = Str(attrs[prop]);
-                }
-                return el;
-            };
-        } catch (e) {
-            createNode = _raphael2["default"]._createNode = function (tagName, attrs) {
-                var el = doc.createElement('<' + tagName + ' xmlns="urn:schemas-microsoft.com:vml" class="rvml">'),
-                    prop;
-                for (prop in attrs) {
-                    el[prop] = Str(attrs[prop]);
-                }
-                return el;
-            };
-        }
-    };
-    _raphael2["default"]._engine.initWin(_raphael2["default"]._g.win);
-    _raphael2["default"]._engine.create = function () {
-        var con = _raphael2["default"]._getContainer.apply(0, arguments),
-            container = con.container,
-            height = con.height,
-            s,
-            width = con.width,
-            x = con.x,
-            y = con.y;
-        if (!container) {
-            throw new Error("VML container not found.");
-        }
-        var res = new _raphael2["default"]._Paper(),
-            c = res.canvas = _raphael2["default"]._g.doc.createElement("div"),
-            cs = c.style;
-        x = x || 0;
-        y = y || 0;
-        width = width || 512;
-        height = height || 342;
-        res.width = width;
-        res.height = height;
-        width == +width && (width += "px");
-        height == +height && (height += "px");
-        res.coordsize = zoom * 1e3 + S + zoom * 1e3;
-        res.coordorigin = "0 0";
-        c.id = "raphael-paper-" + res.id;
-        res.span = _raphael2["default"]._g.doc.createElement("span");
-        res.span.style.cssText = "position:absolute;left:-9999em;top:-9999em;padding:0;margin:0;line-height:1;";
-        c.appendChild(res.span);
-        cs.cssText = _raphael2["default"].format("top:0;left:0;width:{0};height:{1};display:inline-block;cursor:default;position:relative;clip:rect(0 {0} {1} 0);overflow:hidden", width, height);
-        if (container == 1) {
-            _raphael2["default"]._g.doc.body.appendChild(c);
-            cs.left = x + "px";
-            cs.top = y + "px";
-            cs.position = "absolute";
-        } else {
-            if (container.firstChild) {
-                container.insertBefore(c, container.firstChild);
-            } else {
-                container.appendChild(c);
-            }
-        }
-        res.renderfix = function () {};
-        return res;
-    };
-    _raphael2["default"].prototype.clear = function () {
-        var c;
-        eve("raphael.clear", this);
-        while (c = this.bottom) {
-            c.remove();
-        }
-        this.canvas.innerHTML = E;
-        this.span = _raphael2["default"]._g.doc.createElement("span");
-        this.span.style.cssText = "position:absolute;left:-9999em;top:-9999em;padding:0;margin:0;line-height:1;display:inline;";
-        this.canvas.appendChild(this.span);
-        this.bottom = this.top = null;
-    };
-    _raphael2["default"].prototype.remove = function () {
-        var i;
-        eve("raphael.remove", this);
-        while (i = this.bottom) {
-            i.remove();
-        }
-        this.canvas.parentNode.removeChild(this.canvas);
-        for (i in this) {
-            this[i] = typeof this[i] == "function" ? _raphael2["default"]._removedFactory(i) : null;
-        }
-        return true;
-    };
 
-    var setproto = _raphael2["default"].st;
-    for (var method in elproto) {
-        if (elproto[has](method) && !setproto[has](method)) {
-            setproto[method] = function (methodname) {
-                return function () {
-                    var arg = arguments;
-                    return this.forEach(function (el) {
-                        el[methodname].apply(el, arg);
+        elproto.blur = function (size) {
+            // Experimental. No Safari support. Use it on your own risk.
+            var t = this;
+            if (+size !== 0) {
+                var fltr = $("filter"),
+                    blur = $("feGaussianBlur");
+                t.attrs.blur = size;
+                fltr.id = R.getElementID(R.createUUID());
+                $(blur, {
+                    stdDeviation: +size || 1.5
+                });
+                fltr.appendChild(blur);
+                t.paper.defs.appendChild(fltr);
+                t._blur = fltr;
+                $(t.node, {
+                    filter: "url('" + R._url + "#" + fltr.id + "')"
+                });
+            } else {
+                if (t._blur) {
+                    t._blur.parentNode.removeChild(t._blur);
+                    delete t._blur;
+                    delete t.attrs.blur;
+                }
+                t.node.removeAttribute("filter");
+            }
+        };
+
+        /*\
+         * Element.on
+         [ method ]
+         **
+         * Bind handler function for a particular event to Element
+         * @param eventType - Type of event
+         * @param handler - Function to be called on the firing of the event
+        \*/
+        elproto.on = function (eventType, handler) {
+            var elem = this,
+                fn,
+                oldEventType;
+            if (this.removed) {
+                return this;
+            }
+
+            if (eventType === 'dragstart') {
+                this.drag(null, handler);
+                return this;
+            } else if (eventType === 'dragmove') {
+                this.drag(handler);
+                return this;
+            } else if (eventType === 'dragend') {
+                this.drag(null, null, handler);
+                return this;
+            }
+
+            fn = handler;
+            oldEventType = eventType;
+            if (R.supportsTouch) {
+                eventType = R._touchMap[eventType] || eventType === 'click' && 'touchstart' || eventType;
+                if (eventType !== oldEventType) {
+                    // store the new listeners for removeEventListener
+                    if (!elem._tempTouchListeners) {
+                        elem._tempTouchListeners = {};
+                    }
+                    if (!elem._tempTouchListeners[oldEventType]) {
+                        elem._tempTouchListeners[oldEventType] = [];
+                    }
+                    fn = function fn(e) {
+                        e.preventDefault();
+                        handler(e);
+                    };
+                    elem._tempTouchListeners[oldEventType].push({
+                        oldFn: handler,
+                        newFn: fn,
+                        newEvt: eventType
                     });
-                };
-            }(method);
+                }
+            }
+            if (this.node.addEventListener) {
+                this.node.addEventListener(eventType, fn);
+            } else {
+                this.node['on' + eventType] = fn;
+            }
+            return this;
+        };
+
+        /*\
+         * Element.off
+         [ method ]
+         **
+         * Remove handler function bind to an event of element
+         * @param eventType - Type of event
+         * @param handler - Function to be removed from event
+        \*/
+        elproto.off = function (eventType, handler) {
+            var elem = this,
+                fn,
+                i,
+                l,
+                oldEventType;
+            if (this.removed) {
+                return this;
+            }
+
+            if (eventType === 'dragstart') {
+                this.undragstart();
+                return this;
+            } else if (eventType === 'dragmove') {
+                this.undragmove();
+                return this;
+            } else if (eventType === 'dragend') {
+                this.undragend();
+                return this;
+            }
+
+            fn = handler;
+            oldEventType = eventType;
+
+            if (R.supportsTouch && elem._tempTouchListeners && elem._tempTouchListeners[oldEventType]) {
+                l = elem._tempTouchListeners[oldEventType].length;
+                for (i = 0; i < l && oldEventType === eventType; i += 1) {
+                    if (elem._tempTouchListeners[oldEventType][i] && elem._tempTouchListeners[oldEventType][i].oldFn === fn) {
+                        eventType = elem._tempTouchListeners[oldEventType][i].newEvt;
+                        fn = elem._tempTouchListeners[oldEventType][i].newFn;
+                        elem._tempTouchListeners[oldEventType].splice(i, 1);
+                    }
+                }
+            }
+            if (this.node.removeEventListener) {
+                this.node.removeEventListener(eventType, fn);
+            } else {
+                this.node['on' + eventType] = null;
+            }
+            return this;
+        };
+
+        R._engine.path = function (svg, attrs, group) {
+            var el = $("path"),
+                res = new Element(el, svg, group);
+
+            res.type = "path";
+            setFillAndStroke(res, attrs);
+            applyCustomAttributes(res, attrs);
+            return res;
+        };
+
+        R._engine.group = function (svg, id, group) {
+            var el = $("g"),
+                res = new Element(el, svg, group);
+
+            res.type = "group";
+            res.canvas = res.node;
+            res.top = res.bottom = null;
+            res._id = id || E;
+            id && el.setAttribute('class', 'raphael-group-' + res.id + '-' + id);
+            return res;
+        };
+
+        R._engine.circle = function (svg, attrs, group) {
+            var el = $("circle"),
+                res = new Element(el, svg, group);
+
+            res.type = "circle";
+            setFillAndStroke(res, attrs);
+            applyCustomAttributes(res, attrs);
+            return res;
+        };
+        R._engine.rect = function (svg, attrs, group) {
+            var el = $("rect"),
+                res = new Element(el, svg, group);
+
+            res.type = "rect";
+            attrs.rx = attrs.ry = attrs.r;
+            setFillAndStroke(res, attrs);
+            applyCustomAttributes(res, attrs);
+            return res;
+        };
+        R._engine.ellipse = function (svg, attrs, group) {
+            var el = $("ellipse"),
+                res = new Element(el, svg, group);
+
+            res.type = "ellipse";
+            setFillAndStroke(res, attrs);
+            applyCustomAttributes(res, attrs);
+            return res;
+        };
+        ;
+        R._engine.image = function (svg, attrs, group) {
+            var el = $("image"),
+                src = attrs.src,
+                res = new Element(el, svg, group, true);
+
+            res._.group = group || svg;
+            res.type = "image";
+            el.setAttribute("preserveAspectRatio", "none");
+            setFillAndStroke(res, attrs);
+            applyCustomAttributes(res, attrs);
+            return res;
+        };
+        R._engine.text = function (svg, attrs, group, css) {
+            var el = $("text"),
+                res = new Element(el, svg, group);
+            res.type = "text";
+            res._textdirty = true;
+            // Ideally this code should not be here as .css() is not a function of rapheal.
+            css && res.css && res.css(css, undefined, true);
+
+            setFillAndStroke(res, attrs, group);
+            applyCustomAttributes(res, attrs);
+            return res;
+        };
+
+        R._engine.setSize = function (width, height) {
+            this.width = width || this.width;
+            this.height = height || this.height;
+            this.canvas.setAttribute("width", this.width);
+            this.canvas.setAttribute("height", this.height);
+            if (this._viewBox) {
+                this.setViewBox.apply(this, this._viewBox);
+            }
+            return this;
+        };
+        R._engine.create = function () {
+            var con = R._getContainer.apply(0, arguments),
+                container = con && con.container,
+                x = con.x,
+                y = con.y,
+                width = con.width,
+                height = con.height;
+            if (!container) {
+                throw new Error("SVG container not found.");
+            }
+            var cnvs = $("svg"),
+                css = "overflow:hidden;-webkit-tap-highlight-color:rgba(0,0,0,0);" + "-webkit-user-select:none;-moz-user-select:-moz-none;-khtml-user-select:none;" + "-ms-user-select:none;user-select:none;-o-user-select:none;cursor:default;",
+                css = css + "vertical-align:middle;",
+                isFloating;
+            x = x || 0;
+            y = y || 0;
+            width = width || 512;
+            height = height || 342;
+            $(cnvs, {
+                height: height,
+                version: 1.1,
+                width: width,
+                xmlns: "http://www.w3.org/2000/svg"
+            });
+            if (container == 1) {
+                cnvs.style.cssText = css + "position:absolute;left:" + x + "px;top:" + y + "px";
+                R._g.doc.body.appendChild(cnvs);
+                isFloating = 1;
+            } else {
+                cnvs.style.cssText = css + "position:relative";
+                if (container.firstChild) {
+                    container.insertBefore(cnvs, container.firstChild);
+                } else {
+                    container.appendChild(cnvs);
+                }
+            }
+            container = new R._Paper();
+            container.width = width;
+            container.height = height;
+            container.canvas = cnvs;
+            $(cnvs, {
+                id: "raphael-paper-" + container.id
+            });
+            container.clear();
+            container._left = container._top = 0;
+            isFloating && (container.renderfix = function () {});
+            container.renderfix();
+            return container;
+        };
+        R._engine.setViewBox = function (x, y, w, h, fit) {
+            eve("raphael.setViewBox", this, this._viewBox, [x, y, w, h, fit]);
+            var size = mmax(w / this.width, h / this.height),
+                top = this.top,
+                aspectRatio = fit ? "meet" : "xMinYMin",
+                vb,
+                sw;
+            if (x == null) {
+                if (this._vbSize) {
+                    size = 1;
+                }
+                delete this._vbSize;
+                vb = "0 0 " + this.width + S + this.height;
+            } else {
+                this._vbSize = size;
+                vb = x + S + y + S + w + S + h;
+            }
+            $(this.canvas, {
+                viewBox: vb,
+                preserveAspectRatio: aspectRatio
+            });
+            while (size && top) {
+                sw = "stroke-width" in top.attrs ? top.attrs["stroke-width"] : 1;
+                top.attr({
+                    "stroke-width": sw
+                });
+                top._.dirty = 1;
+                top._.dirtyT = 1;
+                top = top.prev;
+            }
+            this._viewBox = [x, y, w, h, !!fit];
+            return this;
+        };
+
+        R.prototype.renderfix = function () {
+            var cnvs = this.canvas,
+                s = cnvs.style,
+                pos;
+            try {
+                pos = cnvs.getScreenCTM() || cnvs.createSVGMatrix();
+            } catch (e) {
+                pos = cnvs.createSVGMatrix();
+            }
+            var left = -pos.e % 1,
+                top = -pos.f % 1;
+            if (left || top) {
+                if (left) {
+                    this._left = (this._left + left) % 1;
+                    s.left = this._left + "px";
+                }
+                if (top) {
+                    this._top = (this._top + top) % 1;
+                    s.top = this._top + "px";
+                }
+            }
+        };
+
+        R.prototype._desc = function (txt) {
+            var desc = this.desc;
+
+            if (!desc) {
+                this.desc = desc = $("desc");
+                this.canvas.appendChild(desc);
+            } else {
+                while (desc.firstChild) {
+                    desc.removeChild(desc.firstChild);
+                }
+            }
+            desc.appendChild(R._g.doc.createTextNode(R.is(txt, "string") ? txt : "Created with Red Rapha\xebl " + R.version));
+        };
+
+        R.prototype.clear = function () {
+            var c;
+            eve("raphael.clear", this);
+
+            while (c = this.bottom) {
+                c.remove();
+            }
+
+            c = this.canvas;
+            while (c.firstChild) {
+                c.removeChild(c.firstChild);
+            }
+            this.bottom = this.top = null;
+            c.appendChild(this.desc = $("desc"));
+            c.appendChild(this.defs = $("defs"));
+        };
+
+        R.prototype.remove = function () {
+            var i;
+            eve("raphael.remove", this);
+
+            while (i = this.bottom) {
+                i.remove();
+            }
+
+            this.defs && this.defs.parentNode.removeChild(this.defs);
+            this.desc && this.desc.parentNode.removeChild(this.desc);
+            this.canvas.parentNode && this.canvas.parentNode.removeChild(this.canvas);
+            for (i in this) {
+                this[i] = typeof this[i] == "function" ? R._removedFactory(i) : null;
+            }
+            this.removed = true;
+        };
+        var setproto = R.st;
+        for (var method in elproto) {
+            if (elproto[has](method) && !setproto[has](method)) {
+                setproto[method] = function (methodname) {
+                    return function () {
+                        var arg = arguments;
+                        return this.forEach(function (el) {
+                            el[methodname].apply(el, arg);
+                        });
+                    };
+                }(method);
+            }
         }
     }
-} /**!
-  * RedRaphael 1.0.0 - JavaScript Vector Library VML Module
-  * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
-  *
-  * Raphael 2.1.0 - JavaScript Vector Library VML Module
-  * Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
-  * Copyright © 2008-2012 Sencha Labs <http://sencha.com>
-  *
-  * Licensed under the MIT license.
-  */
+};
+
+module.exports = exports["default"]; /**
+                                     * !
+                                     * RedRaphael 1.0.0 - JavaScript Vector Library SVG Module
+                                     * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
+                                     *
+                                     * Raphael 2.1.0 - JavaScript Vector Library SVG Module
+                                     * Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
+                                     * Copyright © 2008-2012 Sencha Labs <http://sencha.com>
+                                     *
+                                     * Licensed under the MIT license.
+                                     */
 // Define _window as window object in case of indivual file inclusion.
 
-exports["default"] = _raphael2["default"];
-module.exports = exports["default"];
+/***/ }),
+/* 73 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+exports.__esModule = true;
+
+exports["default"] = function (R) {
+    if (R.vml) {
+        var has = "hasOwnProperty",
+            Str = String,
+            toFloat = parseFloat,
+            math = Math,
+            round = math.round,
+            mmax = math.max,
+            mmin = math.min,
+            sqrt = math.sqrt,
+            abs = math.abs,
+            fillString = "fill",
+            separator = /[, ]+/,
+            eve = R.eve,
+            paperproto = R.fn,
+            serializeArgs = R._serializeArgs,
+            ms = " progid:DXImageTransform.Microsoft",
+            arrayShift = Array.prototype.shift,
+            S = " ",
+            E = "",
+            map = {
+            M: "m",
+            L: "l",
+            C: "c",
+            Z: "x",
+            m: "t",
+            l: "r",
+            c: "v",
+            z: "x"
+        },
+            bites = /([clmz]),?([^clmz]*)/gi,
+            blurregexp = / progid:\S+Blur\([^\)]+\)/g,
+            val = /-?[^,\s-]+/g,
+            cssDot = "position:absolute;left:0;top:0;width:1px;height:1px",
+            zoom = 21600,
+            pathTypes = {
+            path: 1,
+            rect: 1,
+            image: 1
+        },
+            ovalTypes = {
+            circle: 1,
+            ellipse: 1
+        },
+            path2vml = function path2vml(path) {
+            var total = /[ahqstv]/ig,
+                command = R._pathToAbsolute;
+            Str(path).match(total) && (command = R._path2curve);
+            total = /[clmz]/g;
+            if (command == R._pathToAbsolute && !Str(path).match(total)) {
+                var res = Str(path).replace(bites, function (all, command, args) {
+                    var vals = [],
+                        isMove = command.toLowerCase() == "m",
+                        res = map[command];
+                    args.replace(val, function (value) {
+                        if (isMove && vals.length == 2) {
+                            res += vals + map[command == "m" ? "l" : "L"];
+                            vals = [];
+                        }
+                        vals.push(round(value * zoom));
+                    });
+                    return res + vals;
+                });
+
+                return res || 'm0,0';
+            }
+            var pa = command(path),
+                p,
+                r;
+            res = [];
+            for (var i = 0, ii = pa.length; i < ii; i++) {
+                p = pa[i];
+                r = pa[i][0].toLowerCase();
+                r == "z" && (r = "x");
+                for (var j = 1, jj = p.length; j < jj; j++) {
+                    r += round(p[j] * zoom) + (j != jj - 1 ? "," : E);
+                }
+                res.push(r);
+            }
+            return res.length ? res.join(S) : 'm0,0';
+        },
+            compensation = function compensation(deg, dx, dy) {
+            var m = R.matrix();
+            m.rotate(-deg, .5, .5);
+            return {
+                dx: m.x(dx, dy),
+                dy: m.y(dx, dy)
+            };
+        },
+            setCoords = function setCoords(p, sx, sy, dx, dy, deg) {
+            var _ = p._,
+                m = p.matrix,
+                fillpos = _.fillpos,
+                o = p.node,
+                s = o.style,
+                y = 1,
+                flip = "",
+                dxdy,
+                kx = zoom / sx,
+                ky = zoom / sy;
+            s.visibility = "hidden";
+            if (!sx || !sy) {
+                return;
+            }
+            o.coordsize = abs(kx) + S + abs(ky);
+            s.rotation = deg * (sx * sy < 0 ? -1 : 1);
+            if (deg) {
+                var c = compensation(deg, dx, dy);
+                dx = c.dx;
+                dy = c.dy;
+            }
+            sx < 0 && (flip += "x");
+            sy < 0 && (flip += " y") && (y = -1);
+            s.flip = flip;
+            o.coordorigin = dx * -kx + S + dy * -ky;
+            if (fillpos || _.fillsize) {
+                var fill = o.getElementsByTagName(fillString);
+                fill = fill && fill[0];
+                if (fill) {
+                    o.removeChild(fill);
+                    if (fillpos) {
+                        c = compensation(deg, m.x(fillpos[0], fillpos[1]), m.y(fillpos[0], fillpos[1]));
+                        fill.position = c.dx * y + S + c.dy * y;
+                    }
+                    if (_.fillsize) {
+                        fill.size = _.fillsize[0] * abs(sx) + S + _.fillsize[1] * abs(sy);
+                    }
+                    o.appendChild(fill);
+                }
+            }
+            s.visibility = "visible";
+        };
+        R._url = E;
+        R.toString = function () {
+            return "Your browser doesn\u2019t support SVG. Falling down to VML.\nYou are running Rapha\xEBl " + this.version;
+        };
+        var addArrow = function addArrow(o, value, isEnd) {
+            var values = Str(value).toLowerCase().split("-"),
+                se = isEnd ? "end" : "start",
+                i = values.length,
+                type = "classic",
+                w = "medium",
+                h = "medium";
+            while (i--) {
+                switch (values[i]) {
+                    case "block":
+                    case "classic":
+                    case "oval":
+                    case "diamond":
+                    case "open":
+                    case "none":
+                        type = values[i];
+                        break;
+                    case "wide":
+                    case "narrow":
+                        h = values[i];
+                        break;
+                    case "long":
+                    case "short":
+                        w = values[i];
+                        break;
+                }
+            }
+            var stroke = o.node.getElementsByTagName("stroke")[0];
+            stroke[se + "arrow"] = type;
+            stroke[se + "arrowlength"] = w;
+            stroke[se + "arrowwidth"] = h;
+        },
+            applyCustomAttributes = function applyCustomAttributes(o, attrs) {
+            for (var key in attrs) {
+                eve("raphael.attr." + key + "." + o.id, o, attrs[key], key);
+                o.ca[key] && o.attr(key, attrs[key]);
+            }
+        },
+            setFillAndStroke = R._setFillAndStroke = function (o, params) {
+            if (!o.paper.canvas) return;
+            // o.paper.canvas.style.display = "none";
+            o.attrs = o.attrs || {};
+            var node = o.node,
+                a = o.attrs,
+                s = node.style,
+                xy,
+                oriOp,
+                newpath = pathTypes[o.type] && (params.x != a.x || params.y != a.y || params.width != a.width || params.height != a.height || params.cx != a.cx || params.cy != a.cy || params.rx != a.rx || params.ry != a.ry || params.r != a.r),
+                isOval = ovalTypes[o.type] && (a.cx != params.cx || a.cy != params.cy || a.r != params.r || a.rx != params.rx || a.ry != params.ry),
+                isGroup = o.type === 'group',
+                res = o;
+            oriOp = res.oriOp || (res.oriOp = {});
+            for (var par in params) {
+                if (params[has](par)) {
+                    a[par] = params[par];
+                }
+            }if (newpath) {
+                a.path = R._getPath[o.type](o);
+                o._.dirty = 1;
+            }
+            params.href && (node.href = params.href);
+            params.title && (node.title = params.title);
+            params.target && (node.target = params.target);
+            params.cursor && (s.cursor = params.cursor);
+            "blur" in params && o.blur(params.blur);
+
+            if (params.path && o.type == "path" || newpath) {
+                node.path = path2vml(~Str(a.path).toLowerCase().indexOf("r") ? R._pathToAbsolute(a.path) : a.path);
+                if (o.type == "image") {
+                    o._.fillpos = [a.x, a.y];
+                    o._.fillsize = [a.width, a.height];
+                    setCoords(o, 1, 1, 0, 0, 0);
+                }
+            }
+            "transform" in params && o.transform(params.transform);
+            if ("rotation" in params) {
+                var rotation = params.rotation;
+                if (R.is(rotation, "array")) {
+                    o.rotate.apply(o, rotation);
+                } else {
+                    o.rotate(rotation);
+                }
+            }
+            if ("visibility" in params) {
+                params.visibility === 'hidden' ? o.hide() : o.show();
+            }
+            if (isOval) {
+                var cx = +a.cx,
+                    cy = +a.cy,
+                    rx = +a.rx || +a.r || 0,
+                    ry = +a.ry || +a.r || 0;
+                node.path = R.format("ar{0},{1},{2},{3},{4},{1},{4},{1}x", round((cx - rx) * zoom), round((cy - ry) * zoom), round((cx + rx) * zoom), round((cy + ry) * zoom), round(cx * zoom));
+            }
+            if ("clip-rect" in params) {
+                var rect = Str(params["clip-rect"]).split(separator);
+
+                if (rect.length == 4) {
+                    rect[0] = +rect[0];
+                    rect[1] = +rect[1];
+                    rect[2] = +rect[2] + rect[0];
+                    rect[3] = +rect[3] + rect[1];
+
+                    /** @todo create separate element for group clip-rect to
+                     * avoid unclipping issue */
+                    var div = isGroup ? node : node.clipRect || R._g.doc.createElement("div"),
+                        offset,
+                        dstyle = div.style;
+
+                    if (isGroup) {
+                        o.clip = rect.slice(); // copy param
+                        offset = o.matrix.offset();
+                        offset = [toFloat(offset[0]), toFloat(offset[1])];
+                        // invert matrix calculation
+                        rect[0] -= offset[0];
+                        rect[1] -= offset[1];
+                        rect[2] -= offset[0];
+                        rect[3] -= offset[1];
+                        // Fix for bug in ie clip-auto when height/width is not defined
+                        /** @todo set dynamic w/h based on clip bounds or find
+                         * another workaround fix */
+                        //dstyle.width = "10800px";
+                        //dstyle.height = "10800px";
+
+                        // Not sure about the above fix
+                        // Revert the fix because it's creating another issue.
+                        // Setting the Group style, width/height as "10800px" makes the other group inaccessible
+                        // which is below this group
+                        dstyle.width = "1px";
+                        dstyle.height = "1px";
+                    } else if (!node.clipRect) {
+                        dstyle.top = "0";
+                        dstyle.left = "0";
+                        dstyle.width = o.paper.width + "px";
+                        dstyle.height = o.paper.height + "px";
+                        node.parentNode.insertBefore(div, node);
+                        div.appendChild(node);
+                        div.raphael = true;
+                        div.raphaelid = node.raphaelid;
+                        node.clipRect = div;
+                    }
+                    dstyle.position = "absolute";
+                    dstyle.clip = R.format("rect({1}px {2}px {3}px {0}px)", rect);
+                }
+                if (!params["clip-rect"]) {
+                    if (isGroup && o.clip) {
+                        node.style.clip = "rect(0px 10800px 10800px 0px)";
+                        delete o.clip;
+                    } else if (node.clipRect) {
+                        node.clipRect.style.clip = "rect(0px 10800px 10800px 0px)";
+                    }
+                }
+            }
+            // Css styles will be applied in element or group.
+            if (o.textpath || isGroup) {
+                var textpathStyle = isGroup ? node.style : o.textpath.style;
+                params.font && (textpathStyle.font = params.font);
+                params["font-family"] && (textpathStyle.fontFamily = '"' + params["font-family"].split(",")[0].replace(/^['"]+|['"]+$/g, E) + '"');
+                params["font-size"] && (textpathStyle.fontSize = params["font-size"]);
+                params["font-weight"] && (textpathStyle.fontWeight = params["font-weight"]);
+                params["font-style"] && (textpathStyle.fontStyle = params["font-style"]);
+            }
+            if ("arrow-start" in params) {
+                addArrow(res, params["arrow-start"]);
+            }
+            if ("arrow-end" in params) {
+                addArrow(res, params["arrow-end"], 1);
+            }
+            if (!isGroup && (params.opacity != null || params["stroke-width"] != null || params.fill != null || params.src != null || params.stroke != null || params["stroke-width"] != null || params["stroke-opacity"] != null || params["fill-opacity"] != null || params["stroke-dasharray"] != null || params["stroke-miterlimit"] != null || params["stroke-linejoin"] != null || params["stroke-linecap"] != null)) {
+                var fill = node.getElementsByTagName(fillString),
+                    newfill = false,
+                    fillOpacity = -1;
+                fill = fill && fill[0];
+                !fill && (newfill = fill = createNode(fillString));
+                if (o.type == "image" && params.src) {
+                    fill.src = params.src;
+                }
+                params.fill && (fill.on = true);
+                if (fill.on == null || params.fill == "none" || params.fill === null) {
+                    fill.on = false;
+                }
+
+                if (fill.on && params.fill) {
+                    var isURL = Str(params.fill).match(R._ISURL);
+                    if (isURL) {
+                        fill.parentNode == node && node.removeChild(fill);
+                        fill.rotate = true;
+                        fill.src = isURL[1];
+                        fill.type = "tile";
+                        var bbox = o.getBBox(1);
+                        fill.position = bbox.x + S + bbox.y;
+                        o._.fillpos = [bbox.x, bbox.y];
+
+                        R._preload(isURL[1], function () {
+                            o._.fillsize = [this.offsetWidth, this.offsetHeight];
+                        });
+                    } else {
+                        var color = R.getRGB(params.fill);
+                        fill.color = color.hex;
+                        fill.src = E;
+                        fill.type = "solid";
+
+                        if (color.error && (res.type in {
+                            circle: 1,
+                            ellipse: 1
+                        } || Str(params.fill).charAt() != "r") && addGradientFill(res, params.fill, fill)) {
+                            a.fill = "none";
+                            a.gradient = params.fill;
+                            fill.rotate = false;
+                        } else if ("opacity" in color && !("fill-opacity" in params)) {
+                            // store oiginal non gradient color opacity
+                            oriOp.nonGradOpacity = fillOpacity = color.opacity;
+                        }
+                    }
+                }
+
+                if (fillOpacity !== -1 || "fill-opacity" in params || "opacity" in params) {
+                    var opacity = ((+a["fill-opacity"] + 1 || 2) - 1) * ((+a.opacity + 1 || 2) - 1) * ((+fillOpacity + 1 || 2) - 1);
+                    opacity = mmin(mmax(opacity, 0), 1);
+                    oriOp.opacity = opacity;
+                    // if gradient color opacity is set then opacity (applied through the params)
+                    //  should be multiplied with the gradient opacity so that ratio will remain same
+                    if (oriOp.opacity1 !== undefined) {
+                        fill.opacity = oriOp.opacity1 * opacity;
+                        fill['o:opacity2'] = oriOp.opacity2 * opacity;
+                    } else {
+                        // multiply with the original non gradient color opacity with the opacity to preserve the ratio of the opacity
+                        fill.opacity = opacity * (oriOp.nonGradOpacity === undefined ? 1 : oriOp.nonGradOpacity);
+                    }
+                    if (fill.src) {
+                        fill.color = "none";
+                    }
+                }
+                oriOp.opacity = undefined;
+                node.appendChild(fill);
+                var stroke = node.getElementsByTagName("stroke") && node.getElementsByTagName("stroke")[0],
+                    newstroke = false;
+                !stroke && (newstroke = stroke = createNode("stroke"));
+                if (params.stroke && params.stroke != "none" || params["stroke-width"] || params["stroke-opacity"] != null || params["stroke-dasharray"] || params["stroke-miterlimit"] || params["stroke-linejoin"] || params["stroke-linecap"]) {
+                    stroke.on = true;
+                }
+                (params.stroke == "none" || params.stroke === null || stroke.on == null || params.stroke == 0 || params["stroke-width"] == 0) && (stroke.on = false);
+                var strokeColor = R.getRGB('stroke' in params ? params.stroke : a.stroke);
+                stroke.on && params.stroke && (stroke.color = strokeColor.hex);
+                opacity = ((+a["stroke-opacity"] + 1 || 2) - 1) * ((+a.opacity + 1 || 2) - 1) * ((+strokeColor.opacity + 1 || 2) - 1);
+                var width = (toFloat(params["stroke-width"]) || 1) * .75;
+                opacity = mmin(mmax(opacity, 0), 1);
+                params["stroke-width"] == null && (width = a["stroke-width"]);
+                params["stroke-width"] && (stroke.weight = width);
+                width && width < 1 && (opacity *= width) && (stroke.weight = 1);
+                stroke.opacity = opacity;
+
+                params["stroke-linejoin"] && (stroke.joinstyle = params["stroke-linejoin"]) || newstroke && (newstroke.joinstyle = 'miter');
+                stroke.miterlimit = params["stroke-miterlimit"] || 8;
+                params["stroke-linecap"] && (stroke.endcap = params["stroke-linecap"] == "butt" ? "flat" : params["stroke-linecap"] == "square" ? "square" : "round");
+                if (params["stroke-dasharray"]) {
+                    var dasharray = {
+                        "-": "shortdash",
+                        ".": "shortdot",
+                        "-.": "shortdashdot",
+                        "-..": "shortdashdotdot",
+                        ". ": "dot",
+                        "- ": "dash",
+                        "--": "longdash",
+                        "- .": "dashdot",
+                        "--.": "longdashdot",
+                        "--..": "longdashdotdot"
+                    };
+                    stroke.dashstyle = dasharray[has](params["stroke-dasharray"]) ? dasharray[params["stroke-dasharray"]] : params["stroke-dasharray"].join && params["stroke-dasharray"].join(' ') || E;
+                }
+                newstroke && node.appendChild(stroke);
+            }
+            if (res.type == "text") {
+                res.paper.canvas.style.display = E;
+                var span = res.paper.span,
+                    m = 100,
+                    fontSize = a.font && a.font.match(/\d+(?:\.\d*)?(?=px)/),
+                    lineHeight = a['line-height'] && (a['line-height'] + E).match(/\d+(?:\.\d*)?(?=px)/);
+                s = span.style;
+                a.font && (s.font = a.font);
+                a["font-family"] && (s.fontFamily = a["font-family"]);
+                a["font-weight"] && (s.fontWeight = a["font-weight"]);
+                a["font-style"] && (s.fontStyle = a["font-style"]);
+                fontSize = toFloat(a["font-size"] || fontSize && fontSize[0]) || 10;
+                s.fontSize = fontSize * m + "px";
+                lineHeight = toFloat(a["line-height"] || lineHeight && lineHeight[0]) || 12;
+                a["line-height"] && (s.lineHeight = lineHeight * m + 'px');
+                R.is(params.text, 'array') && (params.text = res.textpath.string = params.text.join('\n').replace(/<br\s*?\/?>/ig, '\n'));
+                res.textpath.string && (span.innerHTML = Str(res.textpath.string).replace(/</g, "&#60;").replace(/&/g, "&#38;").replace(/\n/g, "<br>"));
+                var brect = span.getBoundingClientRect();
+                res.W = a.w = (brect.right - brect.left) / m;
+                res.H = a.h = (brect.bottom - brect.top) / m;
+                // res.paper.canvas.style.display = "none";
+                res.X = a.x;
+                res.Y = a.y;
+                var leading = lineHeight - fontSize;
+
+                switch (a["vertical-align"]) {
+                    case "top":
+                        res.bby = res.H / 2; // + leading;
+                        break;
+                    case "bottom":
+                        res.bby = -res.H / 2; // - leading;
+                        break;
+                    default:
+                        res.bby = 0;
+                }
+
+                ("x" in params || "y" in params || res.bby !== undefined) && (res.path.v = R.format("m{0},{1}l{2},{1}", round(a.x * zoom), round((a.y + (res.bby || 0)) * zoom), round(a.x * zoom) + 1));
+                var dirtyattrs = ["x", "y", "text", "font", "font-family", "font-weight", "font-style", "font-size", "line-height"];
+                for (var d = 0, dd = dirtyattrs.length; d < dd; d++) {
+                    if (dirtyattrs[d] in params) {
+                        res._.dirty = 1;
+                        break;
+                    }
+                } // text-anchor emulation
+                switch (a["text-anchor"]) {
+                    case "start":
+                        res.textpath.style["v-text-align"] = "left";
+                        res.bbx = res.W / 2;
+                        break;
+                    case "end":
+                        res.textpath.style["v-text-align"] = "right";
+                        res.bbx = -res.W / 2;
+                        break;
+                    default:
+                        res.textpath.style["v-text-align"] = "center";
+                        res.bbx = 0;
+                        break;
+                }
+                res.textpath.style["v-text-kern"] = true;
+            }
+            // res.paper.canvas.style.display = E;
+        },
+
+        /*
+         * Keeps the follower element in sync with the leaders.
+         * First and second arguments represents the context(element) and the
+         name of the callBack function respectively.
+         * The callBack is invoked for indivual follower Element with the rest of
+         arguments.
+        */
+        updateFollowers = R._updateFollowers = function () {
+            var i,
+                ii,
+                followerElem,
+                args = arguments,
+                o = arrayShift.call(args),
+                fnName = arrayShift.call(args);
+            for (i = 0, ii = o.followers.length; i < ii; i++) {
+                followerElem = o.followers[i].el;
+                followerElem[fnName].apply(followerElem, args);
+            }
+        },
+            addGradientFill = function addGradientFill(o, gradient, fill) {
+            o.attrs = o.attrs || {};
+            var attrs = o.attrs,
+                pow = Math.pow,
+                oriFOpacity,
+                oriOp = o.oriOp,
+                opacity,
+                oindex,
+                type = "linear",
+                fxfy = ".5 .5";
+            o.attrs.gradient = gradient;
+            gradient = Str(gradient).replace(R._radial_gradient, function (all, opts) {
+                type = "radial";
+                opts = opts && opts.split(',') || [];
+
+                // fx,fy of vml is cx,cy of svg
+                var cx = opts[0],
+                    cy = opts[1],
+                    r = opts[2],
+                    fx = opts[3],
+                    fy = opts[4],
+                    units = opts[5];
+                if (fx && fy) {
+                    fx = toFloat(fx);
+                    fy = toFloat(fy);
+                    pow(fx - .5, 2) + pow(fy - .5, 2) > .25 && (fy = sqrt(.25 - pow(fx - .5, 2)) * ((fy > .5) * 2 - 1) + .5);
+                    fxfy = fx + S + fy;
+                }
+                return E;
+            });
+            gradient = gradient.split(/\s*\-\s*/);
+            if (type == "linear") {
+                var angle = gradient.shift();
+                angle = -toFloat(angle);
+                if (isNaN(angle)) {
+                    return null;
+                }
+            }
+            var dots = R._parseDots(gradient);
+            if (!dots) {
+                return null;
+            }
+            o = o.shape || o.node;
+            if (dots.length) {
+                fill.parentNode == o && o.removeChild(fill);
+                fill.on = true;
+                fill.method = "none";
+                fill.color = dots[0].color;
+                fill.color2 = dots[dots.length - 1].color;
+                //For VML use first and last available alpha
+                var clrs = [],
+                    opacity1 = 1,
+                    opacity2 = dots[0].opacity === undefined ? 1 : dots[0].opacity;
+                for (var i = 0, ii = dots.length; i < ii; i++) {
+                    dots[i].offset && clrs.push(dots[i].offset + S + dots[i].color);
+                    if (dots[i].opacity !== undefined) {
+                        opacity1 = dots[i].opacity; //update with latest avaible opacity
+                    }
+                }
+                fill.colors = clrs.length ? clrs.join() : "0% " + fill.color;
+                //set opacity1 & opacity2
+                // store original gradient color opacity
+                oriOp.opacity1 = opacity1;
+                oriOp.opacity2 = opacity2;
+                oriFOpacity = oriOp.opacity === undefined ? 1 : oriOp.opacity;
+                // if gradient color opacity is set then opacity (applied through the params)
+                // should be multiplied with the gradient opacity so that ratio will remain same
+                fill.opacity = opacity1 * oriFOpacity;
+                fill['o:opacity2'] = opacity2 * oriFOpacity;
+                if (type == "radial") {
+                    fill.type = "gradientTitle";
+                    fill.focus = "100%";
+                    fill.focussize = "0 0";
+                    fill.focusposition = fxfy;
+                    fill.angle = 0;
+                } else {
+                    // fill.rotate= true;
+                    fill.type = "gradient";
+                    fill.angle = (270 - angle) % 360;
+                }
+                o.appendChild(fill);
+            }
+            return 1;
+        },
+            Element = function Element(node, vml, group /*, dontAppend*/) {
+            var o = this,
+                parent = group || vml,
+                skew;
+
+            /*!dontAppend && */parent.canvas && parent.canvas.appendChild(node);
+            skew = createNode("skew");
+            skew.on = true;
+            node.appendChild(skew);
+            o.skew = skew;
+
+            o.node = o[0] = node;
+            node.raphael = true;
+            node.raphaelid = o.id = R._oid++;
+
+            o.X = 0;
+            o.Y = 0;
+
+            o.attrs = o.attrs || {};
+            o.followers = o.followers || [];
+
+            o.paper = vml;
+            o.ca = o.customAttributes = o.customAttributes || new vml._CustomAttributes();
+
+            o.matrix = R.matrix();
+            o._ = {
+                transform: [],
+                sx: 1,
+                sy: 1,
+                dx: 0,
+                dy: 0,
+                deg: 0,
+                dirty: 1,
+                dirtyT: 1
+            };
+
+            o.parent = parent;
+            !parent.bottom && (parent.bottom = o);
+
+            o.prev = parent.top;
+            parent.top && (parent.top.next = o);
+            parent.top = o;
+            o.next = null;
+        };
+        var elproto = R.el,
+            notApplicableGroupAttrs = {
+            fill: true,
+            stroke: true,
+            'stroke-width': true,
+            'stroke-dasharray': true,
+            'stroke-linejoin': true,
+            'stroke-opacity': true,
+            'fill-opacity': true,
+            opacity: true
+        },
+
+        /*
+         * Function to over-write the default attr() function of group so that the individual properties of group
+         * can be applied to its child.
+         */
+        customGroupUpdate = function customGroupUpdate(attributes) {
+            var group = this,
+                childElem,
+                ownAttr = group.ownAttr;
+
+            if (attributes) {
+                group.ownAttr = ownAttr ? R.extend(ownAttr, attributes) : attributes;
+            }
+            info = getApplicableGroupAttributes(group);
+            group.customAttr = info.customAttr;
+            group.inheritAttr = info.inheritAttr;
+
+            // Applying the group properties to all its child element
+            childElem = group.bottom;
+            while (childElem) {
+                childElem.attr();
+                childElem = childElem.next;
+            }
+            return attributes && elproto.attr.call(group, attributes);
+        },
+
+
+        /*
+         * Function to over-write the default attr() function of an element so that the individual properties of group
+         * can be applied to the child.
+         */
+        customElementUpdate = function customElementUpdate(attributes) {
+            var element = this,
+                parent = element.parent,
+                ownAttr = element.ownAttr;
+
+            if (attributes) {
+                element.ownAttr = ownAttr ? R.extend(ownAttr, attributes) : attributes;
+            }
+
+            attributes = getApplicableAttributes(parent, attributes, element);
+
+            element.inheritAttrFromGroup = parent && parent.inheritAttr;
+            element.customAttrFromGroup = parent && parent.customAttr;
+
+            return elproto.attr.call(element, attributes);
+        },
+
+
+        /*
+         * Function to manage attributes for group level inheritance
+         */
+        getApplicableGroupAttributes = function getApplicableGroupAttributes(group) {
+            var parent = group && group.parent,
+                customAttr = {},
+                inheritAttr = {},
+                attr;
+
+            ownAttr = group && group.ownAttr;
+            // Segregating the custom group attributes
+            if (ownAttr) {
+                for (attr in ownAttr) {
+                    if (notApplicableGroupAttrs[attr]) {
+                        customAttr[attr] = ownAttr[attr];
+                    }
+                }
+            }
+
+            // Inhereiting from parent
+            if (parent && parent.type === 'group') {
+                parentCustomAttr = parent.customAttr;
+                parentInheritAttr = parent.inheritAttr;
+
+                // Direct attributes from parent
+                for (attr in parentCustomAttr) {
+                    inheritAttr[attr] = parentCustomAttr[attr];
+                }
+
+                // Inherited attributes from parent
+                for (attr in parentInheritAttr) {
+                    !inheritAttr[attr] && (inheritAttr[attr] = parentInheritAttr[attr]);
+                }
+            }
+
+            return {
+                customAttr: customAttr,
+                inheritAttr: inheritAttr
+            };
+        },
+
+
+        /*
+         * Function to get the group attrs applicable to its child.
+         */
+        getApplicableAttributes = function getApplicableAttributes(group, elemAttr, elem) {
+            var customAttr, inheritAttr, attr;
+            elemAttr = elemAttr || R.extend({}, elem.ownAttr);
+            if (group) {
+                customAttr = group.customAttr;
+                inheritAttr = group.inheritAttr;
+
+                for (attr in customAttr) {
+                    !elemAttr[attr] && (elemAttr[attr] = customAttr[attr]);
+                }
+
+                for (attr in inheritAttr) {
+                    !elemAttr[attr] && (elemAttr[attr] = inheritAttr[attr]);
+                }
+            }
+            return elemAttr;
+        };
+
+        /*\
+         * Paper.group
+         [ method ]
+         **
+         * Creates a group
+         **
+         > Parameters
+         **
+         - id (number) id of the group
+         = (object) Raphaël element object with type “group”
+         **
+         > Usage
+         | var g = paper.group();
+        \*/
+        paperproto.group = function () {
+            // id
+            var paper = this,
+                args = arguments,
+                group = R._lastArgIfGroup(args, true),
+                attrs,
+                info,
+                out;
+
+            out = R._engine.group(paper, args[0], group);
+            out.attr = customGroupUpdate;
+
+            return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
+        };
+
+        /*\
+         * Paper.circle
+         [ method ]
+         **
+         * Draws a circle.
+         **
+         > Parameters
+         **
+         - x (number) x coordinate of the centre
+         - y (number) y coordinate of the centre
+         - r (number) radius
+         = (object) Raphaël element object with type “circle”
+         **
+         > Usage
+         | var c = paper.circle(50, 50, 40);
+        \*/
+        paperproto.circle = function () {
+            // x, y, r
+            var paper = this,
+                args = arguments,
+                group = R._lastArgIfGroup(args, true),
+                attrs = serializeArgs(args),
+                out;
+
+            attrs = getApplicableAttributes(group, attrs);
+            out = R._engine.circle(paper, attrs, group);
+            out.attr = customElementUpdate;
+            return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
+        };
+
+        /*\
+         * Paper.rect
+         [ method ]
+         *
+         * Draws a rectangle.
+         **
+         > Parameters
+         **
+         - x (number) x coordinate of the top left corner
+         - y (number) y coordinate of the top left corner
+         - width (number) width
+         - height (number) height
+         - r (number) #optional radius for rounded corners, default is 0
+         = (object) Raphaël element object with type “rect”
+         **
+         > Usage
+         | // regular rectangle
+         | var c = paper.rect(10, 10, 50, 50);
+         | // rectangle with rounded corners
+         | var c = paper.rect(40, 40, 50, 50, 10);
+        \*/
+        paperproto.rect = function () {
+            var paper = this,
+                args = arguments,
+                group = R._lastArgIfGroup(args, true),
+                ownAttr = serializeArgs(args),
+                attrs,
+                out;
+
+            attrs = getApplicableAttributes(group, ownAttr);
+            out = R._engine.rect(paper, attrs, group);
+
+            out.attr = customElementUpdate;
+            out.ownAttr = ownAttr;
+            out.inheritAttrFromGroup = group.inheritAttr;
+            out.customAttrFromGroup = group.customAttr;
+
+            return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
+        };
+
+        /*\
+         * Paper.ellipse
+         [ method ]
+         **
+         * Draws an ellipse.
+         **
+         > Parameters
+         **
+         - x (number) x coordinate of the centre
+         - y (number) y coordinate of the centre
+         - rx (number) horizontal radius
+         - ry (number) vertical radius
+         = (object) Raphaël element object with type “ellipse”
+         **
+         > Usage
+         | var c = paper.ellipse(50, 50, 40, 20);
+        \*/
+        paperproto.ellipse = function () {
+            var paper = this,
+                args = arguments,
+                group = R._lastArgIfGroup(args, true),
+                attrs = serializeArgs(args),
+                out;
+
+            attrs = getApplicableAttributes(group, attrs);
+            out = R._engine.ellipse(this, attrs, group);
+            out.attr = customElementUpdate;
+            return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
+        };
+
+        /*\
+         * Paper.path
+         [ method ]
+         **
+         * Creates a path element by given path data string.
+         > Parameters
+         - pathString (string) #optional path string in SVG format.
+         * Path string consists of one-letter commands, followed by comma seprarated arguments in numercal form. Example:
+         | "M10,20L30,40"
+         * Here we can see two commands: “M”, with arguments `(10, 20)` and “L” with arguments `(30, 40)`. Upper case letter mean command is absolute, lower case—relative.
+         *
+         # <p>Here is short list of commands available, for more details see <a href="http://www.w3.org/TR/SVG/paths.html#PathData" title="Details of a path's data attribute's format are described in the SVG specification.">SVG path string format</a>.</p>
+         # <table><thead><tr><th>Command</th><th>Name</th><th>Parameters</th></tr></thead><tbody>
+         # <tr><td>M</td><td>moveto</td><td>(x y)+</td></tr>
+         # <tr><td>Z</td><td>closepath</td><td>(none)</td></tr>
+         # <tr><td>L</td><td>lineto</td><td>(x y)+</td></tr>
+         # <tr><td>H</td><td>horizontal lineto</td><td>x+</td></tr>
+         # <tr><td>V</td><td>vertical lineto</td><td>y+</td></tr>
+         # <tr><td>C</td><td>curveto</td><td>(x1 y1 x2 y2 x y)+</td></tr>
+         # <tr><td>S</td><td>smooth curveto</td><td>(x2 y2 x y)+</td></tr>
+         # <tr><td>Q</td><td>quadratic Bézier curveto</td><td>(x1 y1 x y)+</td></tr>
+         # <tr><td>T</td><td>smooth quadratic Bézier curveto</td><td>(x y)+</td></tr>
+         # <tr><td>A</td><td>elliptical arc</td><td>(rx ry x-axis-rotation large-arc-flag sweep-flag x y)+</td></tr>
+         # <tr><td>R</td><td><a href="http://en.wikipedia.org/wiki/Catmull–Rom_spline#Catmull.E2.80.93Rom_spline">Catmull-Rom curveto</a>*</td><td>x1 y1 (x y)+</td></tr></tbody></table>
+         * * “Catmull-Rom curveto” is a not standard SVG command and added in 2.0 to make life easier.
+         * Note: there is a special case when path consist of just three commands: “M10,10R…z”. In this case path will smoothly connects to its beginning.
+         > Usage
+         | var c = paper.path("M10 10L90 90");
+         | // draw a diagonal line:
+         | // move to 10,10, line to 90,90
+         * For example of path strings, check out these icons: http://raphaeljs.com/icons/
+        \*/
+        paperproto.path = function () {
+            var paper = this,
+                args = arguments,
+                group = R._lastArgIfGroup(args, true),
+                paperConfig = paper.config,
+                capStyle = paperConfig && paperConfig["stroke-linecap"] || "butt",
+                attrs = serializeArgs(args),
+                out;
+
+            attrs = getApplicableAttributes(group, attrs);
+            out = R._engine.path(paper, attrs, group);
+            out.attr = customElementUpdate;
+            return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
+        };
+
+        /*\
+         * Paper.image
+         [ method ]
+         **
+         * Embeds an image into the surface.
+         **
+         > Parameters
+         **
+         - src (string) URI of the source image
+         - x (number) x coordinate position
+         - y (number) y coordinate position
+         - width (number) width of the image
+         - height (number) height of the image
+         = (object) Raphaël element object with type “image”
+         **
+         > Usage
+         | var c = paper.image("apple.png", 10, 10, 80, 80);
+        \*/
+        paperproto.image = function () {
+            var paper = this,
+                args = arguments,
+                group = R._lastArgIfGroup(args, true),
+                attrs = serializeArgs(args),
+                out;
+
+            attrs = getApplicableAttributes(group, attrs);
+            out = R._engine.image(paper, attrs, group);
+            out.attr = customElementUpdate;
+            return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
+        };
+
+        /*\
+         * Paper.text
+         [ method ]
+         **
+         * Draws a text string. If you need line breaks, put “\n” in the string.
+         **
+         > Parameters
+         **
+         - x (number) x coordinate position
+         - y (number) y coordinate position
+         - text (string) The text string to draw
+         = (object) Raphaël element object with type “text”
+         **
+         > Usage
+         | var t = paper.text(50, 50, "Raphaël\nkicks\nbutt!");
+        \*/
+        paperproto.text = function () {
+            var paper = this,
+                args = arguments,
+                group = R._lastArgIfGroup(args, true),
+                attrs = serializeArgs(args),
+                out;
+
+            attrs = getApplicableAttributes(group, attrs);
+            out = R._engine.text(paper, attrs, group, args[1]);
+            return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
+        };
+
+        Element.prototype = elproto;
+        elproto.constructor = Element;
+
+        elproto.transform = function (tstr) {
+            if (tstr == null) {
+                return this._.transform;
+            }
+            var vbs = this.paper._viewBoxShift,
+                vbt = vbs ? "s" + [vbs.scale, vbs.scale] + "-1-1t" + [vbs.dx, vbs.dy] : E,
+                oldt;
+
+            if (vbs) {
+                oldt = tstr = Str(tstr).replace(/\.{3}|\u2026/g, this._.transform || E);
+            }
+
+            R._extractTransform(this, vbt + tstr);
+
+            var matrix = this.matrix.clone(),
+                skew = this.skew,
+                o = this.node,
+                split,
+                isGrad = ~Str(this.attrs.fill).indexOf("-"),
+                isPatt = !Str(this.attrs.fill).indexOf("url(");
+            matrix.translate(-.5, -.5);
+            if (isPatt || isGrad || this.type == "image") {
+                skew.matrix = "1 0 0 1";
+                skew.offset = "0 0";
+                split = matrix.split();
+                if (isGrad && split.noRotation || !split.isSimple) {
+                    o.style.filter = matrix.toFilter();
+                    var bb = this.getBBox(),
+                        bbt = this.getBBox(1),
+                        xget = bb.x2 && bbt.x2 && 'x2' || 'x',
+                        yget = bb.y2 && bbt.y2 && 'y2' || 'y',
+                        dx = bb[xget] - bbt[xget],
+                        dy = bb[yget] - bbt[yget];
+                    o.coordorigin = dx * -zoom + S + dy * -zoom;
+                    setCoords(this, 1, 1, dx, dy, 0);
+                } else {
+                    o.style.filter = E;
+                    setCoords(this, split.scalex, split.scaley, split.dx, split.dy, split.rotate);
+                }
+            } else {
+                o.style.filter = E;
+                skew.matrix = Str(matrix);
+                skew.offset = matrix.offset();
+            }
+            oldt && (this._.transform = oldt);
+
+            return this;
+        };
+        elproto.rotate = function (deg, cx, cy) {
+            var o = this;
+            if (o.removed) {
+                return o;
+            }
+            updateFollowers(o, 'rotate', deg, cx, cy);
+            if (deg == null) {
+                return;
+            }
+            deg = Str(deg).split(separator);
+            if (deg.length - 1) {
+                cx = toFloat(deg[1]);
+                cy = toFloat(deg[2]);
+            }
+            deg = toFloat(deg[0]);
+            cy == null && (cx = cy);
+            if (cx == null || cy == null) {
+                var bbox = o.getBBox(1);
+                cx = bbox.x + bbox.width / 2;
+                cy = bbox.y + bbox.height / 2;
+            }
+            o._.dirtyT = 1;
+            o.transform(o._.transform.concat([["r", deg, cx, cy]]));
+            return o;
+        };
+        elproto.translate = function (dx, dy) {
+            var o = this;
+            if (o.removed) {
+                return o;
+            }
+            updateFollowers(o, 'translate', dx, dy);
+            dx = Str(dx).split(separator);
+            if (dx.length - 1) {
+                dy = toFloat(dx[1]);
+            }
+            dx = toFloat(dx[0]) || 0;
+            dy = +dy || 0;
+            if (o._.bbox) {
+                o._.bbox.x += dx;
+                o._.bbox.y += dy;
+            }
+            o.transform(o._.transform.concat([["t", dx, dy]]));
+            return o;
+        };
+        elproto.scale = function (sx, sy, cx, cy) {
+            var o = this;
+            if (o.removed) {
+                return o;
+            }
+            updateFollowers(o, 'scale', sx, sy, cx, cy);
+            sx = Str(sx).split(separator);
+            if (sx.length - 1) {
+                sy = toFloat(sx[1]);
+                cx = toFloat(sx[2]);
+                cy = toFloat(sx[3]);
+                isNaN(cx) && (cx = null);
+                isNaN(cy) && (cy = null);
+            }
+            sx = toFloat(sx[0]);
+            sy == null && (sy = sx);
+            cy == null && (cx = cy);
+            if (cx == null || cy == null) {
+                var bbox = o.getBBox(1);
+            }
+            cx = cx == null ? bbox.x + bbox.width / 2 : cx;
+            cy = cy == null ? bbox.y + bbox.height / 2 : cy;
+
+            o.transform(o._.transform.concat([["s", sx, sy, cx, cy]]));
+            o._.dirtyT = 1;
+            return o;
+        };
+        elproto.hide = function (soft) {
+            var o = this;
+            updateFollowers(o, 'hide', soft);
+            !o.removed && (o.node.style.display = "none");
+            return o;
+        };
+
+        elproto.show = function (soft) {
+            var o = this;
+            updateFollowers(o, 'show', soft);
+            !o.removed && (o.node.style.display = E);
+            return o;
+        };
+        elproto._getBBox = function () {
+            var o = this;
+            if (o.removed) {
+                return {};
+            }
+            return {
+                x: o.X + (o.bbx || 0) - o.W / 2,
+                y: o.Y + (o.bby || 0) - o.H / 2,
+                width: o.W,
+                height: o.H
+            };
+        };
+        elproto.remove = function () {
+            if (this.removed || !this.parent.canvas) {
+                return;
+            }
+
+            var o = this,
+                node = R._engine.getNode(o),
+                paper = o.paper,
+                shape = o.shape,
+                i;
+
+            paper.__set__ && paper.__set__.exclude(o);
+            eve.unbind("raphael.*.*." + o.id);
+
+            shape && shape.parentNode.removeChild(shape);
+            node.parentNode && node.parentNode.removeChild(node);
+
+            while (i = o.followers.pop()) {
+                i.el.remove();
+            }
+            while (i = o.bottom) {
+                i.remove();
+            }
+
+            if (o._drag) {
+                o.undrag();
+            }
+
+            if (o.events) {
+                while (i = o.events.pop()) {
+                    i.unbind();
+                }
+            }
+
+            o.removeData();
+            delete paper._elementsById[o.id];
+            R._tear(o, o.parent);
+
+            for (var i in o) {
+                o[i] = typeof o[i] === "function" ? R._removedFactory(i) : null;
+            }
+            o.removed = true;
+        };
+
+        elproto.attr = function (name, value) {
+            if (this.removed) {
+                return this;
+            }
+            if (name == null) {
+                var res = {};
+                for (var a in this.attrs) {
+                    if (this.attrs[has](a)) {
+                        res[a] = this.attrs[a];
+                    }
+                }res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
+                res.transform = this._.transform;
+                res.visibility = this.node.style.display === "none" ? "hidden" : "visible";
+                return res;
+            }
+            if (value == null && R.is(name, "string")) {
+                if (name == fillString && this.attrs.fill == "none" && this.attrs.gradient) {
+                    return this.attrs.gradient;
+                }
+                if (name == "visibility") {
+                    return this.node.style.display === "none" ? "hidden" : "visible";
+                }
+                var names = name.split(separator),
+                    out = {};
+                for (var i = 0, ii = names.length; i < ii; i++) {
+                    name = names[i];
+                    if (name in this.attrs) {
+                        out[name] = this.attrs[name];
+                    } else if (R.is(this.ca[name], "function")) {
+                        out[name] = this.ca[name].def;
+                    } else {
+                        out[name] = R._availableAttrs[name];
+                    }
+                }
+                return ii - 1 ? out : out[names[0]];
+            }
+            if (this.attrs && value == null && R.is(name, "array")) {
+                out = {};
+                for (i = 0, ii = name.length; i < ii; i++) {
+                    out[name[i]] = this.attr(name[i]);
+                }
+                return out;
+            }
+            var params;
+            if (value != null) {
+                params = {};
+                params[name] = value;
+            }
+            value == null && R.is(name, "object") && (params = name);
+            if (R.stopEvent !== false) {
+                for (var key in params) {
+                    eve("raphael.attr." + key + "." + this.id, this, params[key], key);
+                }
+            }
+            if (params) {
+                var todel = {};
+                for (key in this.ca) {
+                    if (this.ca[key] && params[has](key) && R.is(this.ca[key], "function") && !this.ca['_invoked' + key]) {
+                        this.ca['_invoked' + key] = true; // prevent recursion
+                        var par = this.ca[key].apply(this, [].concat(params[key]));
+                        delete this.ca['_invoked' + key];
+
+                        for (var subkey in par) {
+                            if (par[has](subkey)) {
+                                params[subkey] = par[subkey];
+                            }
+                        }
+                        this.attrs[key] = params[key];
+                        if (par === false) {
+                            todel[key] = params[key];
+                            delete params[key];
+                        }
+                    }
+                }
+
+                // this.paper.canvas.style.display = "none";
+                if ('text' in params && this.type == "text") {
+                    R.is(params.text, 'array') && (params.text = params.text.join('\n'));
+                    this.textpath.string = params.text.replace(/<br\s*?\/?>/ig, '\n');
+                }
+                setFillAndStroke(this, params);
+                var follower;
+                for (i = 0, ii = this.followers.length; i < ii; i++) {
+                    follower = this.followers[i];
+                    follower.cb && !follower.cb.call(follower.el, params, this) || follower.el.attr(params);
+                }
+                for (var subkey in todel) {
+                    params[subkey] = todel[subkey];
+                }
+                // this.paper.canvas.style.display = E;
+            }
+            return this;
+        };
+
+        elproto.blur = function (size) {
+            var s = this.node.runtimeStyle,
+                f = s.filter;
+            f = f.replace(blurregexp, E);
+            if (+size !== 0) {
+                this.attrs.blur = size;
+                s.filter = f + S + ms + ".Blur(pixelradius=" + (+size || 1.5) + ")";
+                s.margin = R.format("-{0}px 0 0 -{0}px", round(+size || 1.5));
+            } else {
+                s.filter = f;
+                s.margin = 0;
+                delete this.attrs.blur;
+            }
+            return this;
+        };
+
+        /*\
+         * Element.on
+         [ method ]
+         **
+         * Bind handler function for a particular event to Element
+         * @param eventType - Type of event
+         * @param handler - Function to be called on the firing of the event
+        \*/
+        elproto.on = function (eventType, handler) {
+            if (this.removed) {
+                return this;
+            }
+
+            if (eventType === 'dragstart') {
+                this.drag(null, handler);
+                return this;
+            } else if (eventType === 'dragmove') {
+                this.drag(handler);
+                return this;
+            } else if (eventType === 'dragend') {
+                this.drag(null, null, handler);
+                return this;
+            }
+            if (this.node.attachEvent) {
+                this.node.attachEvent('on' + eventType, handler);
+            } else {
+                this.node['on' + eventType] = function () {
+                    var evt = R._g.win.event;
+                    evt.target = evt.srcElement;
+                    handler(evt);
+                };
+            }
+            return this;
+        };
+
+        /*\
+         * Element.off
+         [ method ]
+         **
+         * Remove handler function bind to an event of element
+         * @param eventType - Type of event
+         * @param handler - Function to be removed from event
+        \*/
+        elproto.off = function (eventType, handler) {
+            if (this.removed) {
+                return this;
+            }
+
+            if (eventType === 'dragstart') {
+                this.undragstart();
+                return this;
+            } else if (eventType === 'dragmove') {
+                this.undragmove();
+                return this;
+            } else if (eventType === 'dragend') {
+                this.undragend();
+                return this;
+            }
+            if (this.node.attachEvent) {
+                this.node.detachEvent('on' + eventType, handler);
+            } else {
+                this.node['on' + eventType] = null;
+            }
+            return this;
+        };
+
+        R._engine.getNode = function (el) {
+            var node = el.node || el[0].node;
+            return node.clipRect || node;
+        };
+        R._engine.getLastNode = function (el) {
+            var node = el.node || el[el.length - 1].node;
+            return node.clipRect || node;
+        };
+
+        R._engine.group = function (vml, id, group) {
+            var el = R._g.doc.createElement("div"),
+                p = new Element(el, vml, group);
+
+            el.style.cssText = cssDot;
+            p._id = id || E;
+            id && (el.className = 'raphael-group-' + p.id + '-' + id);
+            (group || vml).canvas.appendChild(el);
+
+            p.type = 'group';
+            p.canvas = p.node;
+            p.transform = R._engine.group.transform;
+            p.top = null;
+            p.bottom = null;
+
+            return p;
+        };
+
+        R._engine.group.transform = function (tstr) {
+            if (tstr == null) {
+                return this._.transform;
+            }
+
+            var o = this,
+                s = o.node.style,
+                c = o.clip,
+                vbs = o.paper._viewBoxShift,
+                vbt = vbs ? "s" + [vbs.scale, vbs.scale] + "-1-1t" + [vbs.dx, vbs.dy] : E,
+                oldt,
+                matrix,
+                offset,
+                tx,
+                ty;
+
+            if (vbs) {
+                oldt = tstr = Str(tstr).replace(/\.{3}|\u2026/g, o._.transform || E);
+            }
+            R._extractTransform(o, vbt + tstr);
+            matrix = o.matrix;
+            offset = matrix.offset();
+            tx = toFloat(offset[0]) || 0;
+            ty = toFloat(offset[1]) || 0;
+
+            s.left = tx + "px";
+            s.top = ty + "px";
+            s.zoom = (o._.tzoom = matrix.get(0)) + E;
+
+            /** @todo try perform relative group transform, thus avoiding
+             * transform on clipping */
+            c && (s.clip = R.format("rect({1}px {2}px {3}px {0}px)", [c[0] - tx, c[1] - ty, c[2] - tx, c[3] - ty]));
+
+            return o;
+        };
+
+        R._engine.path = function (vml, attrs, group) {
+            var el = createNode("shape");
+            el.style.cssText = cssDot;
+            el.coordsize = zoom + S + zoom;
+            el.coordorigin = vml.coordorigin;
+
+            var p = new Element(el, vml, group);
+            p.type = attrs.type || "path";
+            p.path = [];
+            p.Path = E;
+
+            attrs.type && delete attrs.type;
+            setFillAndStroke(p, attrs);
+            applyCustomAttributes(p, attrs);
+            return p;
+        };
+
+        R._engine.rect = function (vml, attrs, group) {
+            var path = R._rectPath(attrs.x, attrs.y, attrs.w, attrs.h, attrs.r);
+
+            attrs.path = path;
+            attrs.type = "rect";
+
+            var res = vml.path(attrs, group),
+                a = res.attrs;
+            res.X = a.x;
+            res.Y = a.y;
+            res.W = a.width;
+            res.H = a.height;
+            a.path = path;
+
+            return res;
+        };
+        R._engine.ellipse = function (vml, attrs, group) {
+            attrs.type = "ellipse";
+
+            var res = vml.path(attrs, group),
+                a = res.attrs;
+            res.X = a.x - a.rx;
+            res.Y = a.y - a.ry;
+            res.W = a.rx * 2;
+            res.H = a.ry * 2;
+
+            return res;
+        };
+        R._engine.circle = function (vml, attrs, group) {
+            attrs.type = "circle";
+
+            var res = vml.path(attrs, group),
+                a = res.attrs;
+
+            res.X = a.x - a.r;
+            res.Y = a.y - a.r;
+            res.W = res.H = a.r * 2;
+            return res;
+        };
+        R._engine.image = function (vml, attrs, group) {
+            var path = R._rectPath(attrs.x, attrs.y, attrs.w, attrs.h);
+
+            attrs.path = path;
+            attrs.type = "image";
+            attrs.stroke = "none";
+            var res = vml.path(attrs, group),
+                a = res.attrs,
+                node = res.node,
+                fill = node.getElementsByTagName(fillString)[0];
+
+            a.src = attrs.src;
+            res.X = a.x = attrs.x;
+            res.Y = a.y = attrs.y;
+            res.W = a.width = attrs.w;
+            res.H = a.height = attrs.h;
+
+            fill.parentNode == node && node.removeChild(fill);
+            fill.rotate = true;
+            fill.src = a.src;
+            fill.type = "tile";
+            res._.fillpos = [a.x, a.y];
+            res._.fillsize = [a.w, a.h];
+            node.appendChild(fill);
+            setCoords(res, 1, 1, 0, 0, 0);
+            return res;
+        };
+        R._engine.text = function (vml, attrs, group, css) {
+            var el = createNode("shape"),
+                path = createNode("path"),
+                o = createNode("textpath");
+            x = attrs.x || 0;
+            y = attrs.y || 0;
+            text = attrs.text;
+            path.v = R.format("m{0},{1}l{2},{1}", round(attrs.x * zoom), round(attrs.y * zoom), round(attrs.x * zoom) + 1);
+            path.textpathok = true;
+            o.string = Str(attrs.text).replace(/<br\s*?\/?>/ig, '\n');
+            o.on = true;
+            el.style.cssText = cssDot;
+            el.coordsize = zoom + S + zoom;
+            el.coordorigin = "0 0";
+            var p = new Element(el, vml, group);
+
+            p.shape = el;
+            p.path = path;
+            p.textpath = o;
+            p.type = "text";
+            p.attrs.text = Str(attrs.text || E);
+            p.attrs.x = attrs.x;
+            p.attrs.y = attrs.y;
+            p.attrs.w = 1;
+            p.attrs.h = 1;
+            css && p.css && p.css(css, undefined, true);
+            setFillAndStroke(p, attrs);
+            applyCustomAttributes(p, attrs);
+
+            el.appendChild(o);
+            el.appendChild(path);
+
+            return p;
+        };
+
+        R._engine.setSize = function (width, height) {
+            var cs = this.canvas.style;
+            this.width = width;
+            this.height = height;
+            width == +width && (width += "px");
+            height == +height && (height += "px");
+            width && (cs.width = width);
+            height && (cs.height = height);
+            cs.clip = "rect(0 " + cs.width + " " + cs.height + " 0)";
+            if (this._viewBox) {
+                R._engine.setViewBox.apply(this, this._viewBox);
+            }
+            return this;
+        };
+        R._engine.setViewBox = function (x, y, w, h, fit) {
+            eve("raphael.setViewBox", this, this._viewBox, [x, y, w, h, fit]);
+            var width = this.width,
+                height = this.height,
+                size = 1 / mmax(w / width, h / height),
+                H,
+                W;
+            if (fit) {
+                H = height / h;
+                W = width / w;
+                if (w * H < width) {
+                    x -= (width - w * H) / 2 / H;
+                }
+                if (h * W < height) {
+                    y -= (height - h * W) / 2 / W;
+                }
+            }
+            this._viewBox = [x, y, w, h, !!fit];
+            this._viewBoxShift = {
+                dx: -x,
+                dy: -y,
+                scale: size
+            };
+            this.forEach(function (el) {
+                el.transform("...");
+            });
+            return this;
+        };
+        var createNode;
+        R._engine.initWin = function (win) {
+            var doc = win.document;
+            doc.createStyleSheet().addRule(".rvml", "behavior:url(#default#VML)");
+            try {
+                !doc.namespaces.rvml && doc.namespaces.add("rvml", "urn:schemas-microsoft-com:vml");
+                createNode = R._createNode = function (tagName, attrs) {
+                    var el = doc.createElement('<rvml:' + tagName + ' class="rvml">'),
+                        prop;
+                    for (prop in attrs) {
+                        el[prop] = Str(attrs[prop]);
+                    }
+                    return el;
+                };
+            } catch (e) {
+                createNode = R._createNode = function (tagName, attrs) {
+                    var el = doc.createElement('<' + tagName + ' xmlns="urn:schemas-microsoft.com:vml" class="rvml">'),
+                        prop;
+                    for (prop in attrs) {
+                        el[prop] = Str(attrs[prop]);
+                    }
+                    return el;
+                };
+            }
+        };
+        R._engine.initWin(R._g.win);
+        R._engine.create = function () {
+            var con = R._getContainer.apply(0, arguments),
+                container = con.container,
+                height = con.height,
+                s,
+                width = con.width,
+                x = con.x,
+                y = con.y;
+            if (!container) {
+                throw new Error("VML container not found.");
+            }
+            var res = new R._Paper(),
+                c = res.canvas = R._g.doc.createElement("div"),
+                cs = c.style;
+            x = x || 0;
+            y = y || 0;
+            width = width || 512;
+            height = height || 342;
+            res.width = width;
+            res.height = height;
+            width == +width && (width += "px");
+            height == +height && (height += "px");
+            res.coordsize = zoom * 1e3 + S + zoom * 1e3;
+            res.coordorigin = "0 0";
+            c.id = "raphael-paper-" + res.id;
+            res.span = R._g.doc.createElement("span");
+            res.span.style.cssText = "position:absolute;left:-9999em;top:-9999em;padding:0;margin:0;line-height:1;";
+            c.appendChild(res.span);
+            cs.cssText = R.format("top:0;left:0;width:{0};height:{1};display:inline-block;cursor:default;position:relative;clip:rect(0 {0} {1} 0);overflow:hidden", width, height);
+            if (container == 1) {
+                R._g.doc.body.appendChild(c);
+                cs.left = x + "px";
+                cs.top = y + "px";
+                cs.position = "absolute";
+            } else {
+                if (container.firstChild) {
+                    container.insertBefore(c, container.firstChild);
+                } else {
+                    container.appendChild(c);
+                }
+            }
+            res.renderfix = function () {};
+            return res;
+        };
+        R.prototype.clear = function () {
+            var c;
+            eve("raphael.clear", this);
+            while (c = this.bottom) {
+                c.remove();
+            }
+            this.canvas.innerHTML = E;
+            this.span = R._g.doc.createElement("span");
+            this.span.style.cssText = "position:absolute;left:-9999em;top:-9999em;padding:0;margin:0;line-height:1;display:inline;";
+            this.canvas.appendChild(this.span);
+            this.bottom = this.top = null;
+        };
+        R.prototype.remove = function () {
+            var i;
+            eve("raphael.remove", this);
+            while (i = this.bottom) {
+                i.remove();
+            }
+            this.canvas.parentNode.removeChild(this.canvas);
+            for (i in this) {
+                this[i] = typeof this[i] == "function" ? R._removedFactory(i) : null;
+            }
+            return true;
+        };
+
+        var setproto = R.st;
+        for (var method in elproto) {
+            if (elproto[has](method) && !setproto[has](method)) {
+                setproto[method] = function (methodname) {
+                    return function () {
+                        var arg = arguments;
+                        return this.forEach(function (el) {
+                            el[methodname].apply(el, arg);
+                        });
+                    };
+                }(method);
+            }
+        }
+    }
+};
+
+module.exports = exports["default"]; /**
+                                     * !
+                                     * RedRaphael 1.0.0 - JavaScript Vector Library VML Module
+                                     * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
+                                     *
+                                     * Raphael 2.1.0 - JavaScript Vector Library VML Module
+                                     * Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
+                                     * Copyright © 2008-2012 Sencha Labs <http://sencha.com>
+                                     *
+                                     * Licensed under the MIT license.
+                                     */
+// Define _window as window object in case of indivual file inclusion.
+//
 
 /***/ }),
 /* 74 */
@@ -13332,11 +13327,11 @@ module.exports = exports["default"];
 
 exports.__esModule = true;
 
-var _iterator = __webpack_require__(28);
+var _iterator = __webpack_require__(27);
 
 var _iterator2 = _interopRequireDefault(_iterator);
 
-var _symbol = __webpack_require__(37);
+var _symbol = __webpack_require__(36);
 
 var _symbol2 = _interopRequireDefault(_symbol);
 
@@ -13349,1510 +13344,1352 @@ var _typeof = typeof _symbol2['default'] === "function" && typeof _iterator2['de
  * Raphael Canvas Extension
  */
 
-var _raphael = __webpack_require__(7);
-
-var _raphael2 = _interopRequireDefault(_raphael);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-if (_raphael2['default'].canvas) {
-    var win = _raphael2['default']._g.win,
-        doc = _raphael2['default']._g.doc,
-        g = _raphael2['default']._g,
-        STRING = 'string',
-        PX = 'px',
-        separator = /[, ]+/,
-        Str = win.String,
-        toInt = win.parseInt,
-        toFloat = win.parseFloat,
-        math = win.Math,
-        mmax = math.max,
-        mmin = math.min,
-        pi = math.PI,
-        mathFloor = math.floor,
-        eve = _raphael2['default'].eve,
-        paperproto = _raphael2['default'].fn,
-        elproto = _raphael2['default'].el,
-        setproto = _raphael2['default'].st,
-        clone = _raphael2['default'].clone,
-        deg2rad = pi / 180,
-        rad2deg = 180 / pi,
-        DEFAULT_FILL = "#fff",
-        DEFAULT_STROKE = "#000",
-        has = "hasOwnProperty",
-        S = " ",
-
-    /** @todo: detect touch */
-    supportsTouch = 'ontouchstart' in win || navigator.msMaxTouchPoints > 0,
-        events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchstart touchmove touchend touchcancel".split(S),
-        noHandle = false,
-        $,
-        FauxNode,
-        Element,
-        draggable = [],
-        drag = [],
-        dragMove = function dragMove(e) {
-        var x = e.clientX,
-            y = e.clientY,
-            scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
-            scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
-            dragi,
-            j = drag.length;
-        while (j--) {
-            dragi = drag[j];
-            if (supportsTouch) {
-                var i = e.touches.length,
-                    touch;
-                while (i--) {
-                    touch = e.touches[i];
-                    if (touch.identifier == dragi.el._drag.id) {
-                        x = touch.clientX;
-                        y = touch.clientY;
-                        (e.originalEvent ? e.originalEvent : e).preventDefault();
-                        break;
-                    }
-                }
-            } else {
-                e.preventDefault();
-            }
-
-            //var node = dragi.el.node;
-            //o,
-            //next = node.nextSibling,
-            //parent = node.parentNode,
-            //display = node.style.display;
-
-            /** @todo: implement raphael.drag.over */
-
-            //g.win.opera && parent.removeChild(node);
-            //node.style.display = "none";
-            //o = dragi.el.paper.getElementByPoint(x, y);
-            //node.style.display = display;
-            //g.win.opera && (next ? parent.insertBefore(node, next) : parent.appendChild(node));
-            //o && eve("raphael.drag.over." + dragi.el.id, dragi.el, o);
-            x += scrollX;
-            y += scrollY;
-            eve("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, x - dragi.el._drag.x, y - dragi.el._drag.y, x, y, e);
-        }
-    },
-        dragUp = function dragUp(e) {
-        _raphael2['default'].unmousemove(dragMove).unmouseup(dragUp);
-        var i = drag.length,
-            dragi;
-        while (i--) {
-            dragi = drag[i];
-            dragi.el._drag = {};
-            dragi.onendHandler && eve("raphael.drag.end." + dragi.el.id, dragi.end_scope || dragi.start_scope || dragi.move_scope || dragi.el, e);
-        }
-        drag = [];
-    };
-
-    $ = _raphael2['default']._createNode = function (el, attr) {
-        if (attr) {
-            if ((typeof el === 'undefined' ? 'undefined' : _typeof(el)) === STRING) {
-                el = $(el);
-            }
-            for (var key in attr) {
-                if (attr.hasOwnProperty(key)) {
-                    el.setAttribute(key, Str(attr[key]));
-                }
-            }
-        } else {
-            el = doc.createElement(el);
-        }
-        return el;
-    };
-
-    _raphael2['default']._getConnectedNodes = function (node) {
-        return {
-            above: [],
-            below: []
-        };
-    };
-
-    _raphael2['default']._getTargetNode = function (coords) {
-        var x = coords[0],
-            y = coords[1];
-    };
-
-    _raphael2['default']._containerEventHandler = function (event) {
-        event = event || win.event;
-
-        if (noHandle) {
-            return;
-        }
-
-        /** @todo: do not use offsetX and offsetY */
-        var x = event.offsetX,
-            //mathFloor(event.pageX || (event.clientX + doc.body.scrollLeft + doc.documentElement.scrollLeft) || 0),
-        y = event.offsetY,
-            //mathFloor(event.pageY || (event.clientY + doc.body.scrollTop + doc.documentElement.scrollTop) || 0),
-        type = event.type,
-            node = _raphael2['default']._getTargetNode([x, y]);
-
-        //console.log(type + ":: x: " + x + " y: " + y);
-
-        /*
-        if (typeof node.listeners[type] === 'function') {
-            node.listeners[type].call(node, e);
-        }*/
-    };
-
-    FauxNode = function FauxNode(parent) {
-        this.type = "basic";
-
-        this.owner = parent;
-
-        // Element reference needed to get attrs so that there is no need to
-        // maintain a redundant copy.
-        this._rElement = null;
-
-        // False if this element does not need mouse interactivity.
-        this.mouseInteractions = false;
-        this.matrix = null;
-
-        // An outline path that will be the outline of the shape or in case of
-        // text the rect that bounds the text.
-        this.outlinePath = null;
-
-        this.conf = {};
-    };
-
-    FauxNode.prototype = {
-
-        constructor: FauxNode,
-
-        /**
-         * This method does the complete rendering of the element, including
-         * (re)setting the bbox and image map.
-         *
-         * @returns {_L10.FauxNode.prototype}
-         */
-        render: function render() {
-
-            var o = this;
-
-            o.draw();
-            o.setBBox();
-
-            return o;
-        },
-
-        /**
-         * Applies the transforms and clipping to the context and draws the
-         * element.
-         *
-         * @returns {undefined}
-         */
-        draw: function draw() {
-            var o = this,
-                ctx = o.context,
-                el = o._rElement,
-                m = el.matrix,
-                isClipped = o.isClipped,
-                attrs = o.validateAttrs(),
-                cr,
-                end;
-
-            // After the validation the attributes need to be set to the element
-            // as validateAttrs works on a copy of the attrs object.
-            el.attrs = attrs;
-
-            ctx.save();
-
-            ctx.fillStyle = attrs.fill;
-            ctx.strokeStyle = attrs.stroke;
-            ctx.lineWidth = attrs['stroke-width'];
-
-            // Applying the clip before the context is transformed as is the case
-            // in case of SVG.
-            if (cr = attrs['clip-rect']) {
-                cr = cr.split(" ");
-                ctx.rect(cr[0], cr[1], cr[2], cr[3]);
-                ctx.clip();
-                isClipped = o.isClipped = true;
-            }
-
-            o.applyTransform(m);
-
-            o.paint();
-
-            ctx.restore();
-        },
-
-        /**
-         * Parse the attributes provided to paint the element shape using the
-         * canvas context.
-         *
-         * Overridden by individual derived FauxNodes
-         */
-        paint: function paint() {},
-
-        /**
-         * The redraw of the FauxNodes is to be handled by the CanvasObjectModel
-         * instance as it involves redrawing all the elements corresponsing to
-         * that canvas in the proper order.
-         */
-        redraw: function redraw() {
-            this.COMInstance.redraw(this);
-        },
-
-        /**
-         * Clears the rectangle corresponding to the bounding box of the node.
-         */
-        clear: function clear() {
-            var o = this,
-                ctx = o.context,
-                bbox = o._bbox;
-
-            /** @todo: while clearing the stroke-width also needs to be accounted for. */
-            if (bbox) {
-                ctx.clearRect(bbox.x, bbox.y, bbox.width, bbox.height);
-            }
-        },
-
-        /**
-         * Creates the area node in the image map so that mouse interactivity
-         * can be emulated using it.
-         */
-        addMouseInteractivity: function addMouseInteractivity() {
-            var o = this,
-                attrs = o._rElement.attrs,
-                bbox = o._bbox,
-                map = o.owner.wrapper._map,
-                shape = o.type === 'circle' ? 'circle' : 'rect',
-                coords = shape === 'circle' ? [attrs.cx, attrs.cy, attrs.r].join(",") : [bbox.x, bbox.y, bbox.x2, bbox.y2].join(","),
-                area,
-                end;
-
-            area = $('area', { shape: shape, coords: coords });
-            if (map.firstChild) {
-                map.insertBefore(area, map.firstChild);
-            } else {
-                map.appendChild(area);
-            }
-
-            /** @todo: should be put this check here */
-            o._mouseArea = area;
-
-            // Needed for paths.
-            o.eventListeners = {};
-        },
-
-        /**
-         * Update the coords of the area node (image map) corresponding to the FauxNode
-         * after it has been modified by changing attributes.
-         */
-        updateMapAreaCoords: function updateMapAreaCoords() {
-            var o = this,
-                oArea = o._mouseArea,
-                bbox = o._bbox;
-
-            if (oArea) {
-                //o.context.strokeRect(bbox.x, bbox.y, bbox.width, bbox.height);
-                if (o instanceof CircleFauxNode) {
-                    var r = bbox.width / 2;
-                    oArea.setAttribute('coords', [bbox.x + r, bbox.y + r, r].join(","));
-                } else {
-                    oArea.setAttribute('coords', [bbox.x, bbox.y, bbox.x2, bbox.y2].join(","));
-                }
-            }
-        },
-
-        /**
-         * Applies the transform given the transformation matrix to the context.
-         *
-         * @param {type} matrix
-         * @param {type} bbox
-         * @param {type} dontsetbbox
-         *
-         * @returns {_L10.FauxNode.prototype.transformBBox.tbox}
-         */
-        applyTransform: function applyTransform(m) {
-            var o = this,
-                ctx = o.context,
-                split;
-
-            if (m) {
-                split = m.split();
-                ctx.translate(split.dx, split.dy);
-                !split.noRotation && ctx.rotate(deg2rad * split.rotate);
-                ctx.scale(split.scalex, split.scaley);
-            }
-        },
-
-        /**
-         *
-         */
-        setBBox: function setBBox() {
-            var o = this,
-                el = o._rElement,
-                m = el.matrix,
-                parent = o.owner,
-                pm = parent.getTransformMatrix && parent.getTransformMatrix();
-
-            if (pm) {
-                pm = pm.clone();
-                pm.add(m);
-                m = pm;
-            }
-
-            if (o.outlinePath) {
-                o._bbox = _raphael2['default'].pathBBox(_raphael2['default'].transformPath(o.outlinePath, m.toTransformString()).toString());
-            } else {
-                o.setShapeBBox(m);
-            }
-
-            o._mouseArea && o.updateMapAreaCoords();
-        },
-
-        getBBox: function getBBox() {
-            return this._bbox;
-        },
-
-        drawPath: function drawPath(path) {
-            var o = this,
-                ctx = o.context,
-                len = path && path.length || 0,
-                pp = PathParser,
-                i = 0,
-                command,
-                x,
-                y,
-                end;
-
-            // The PathParser object has been borrowed from canvg. All 3rd party attributions implied.
-            pp.reset();
-            pp.setTokens(path);
-
-            //var bb = new BoundingBox();
-            if (ctx != null) {
-                ctx.beginPath();
-            }
-
-            while (!pp.isEnd()) {
-                pp.nextCommand();
-                switch (pp.command) {
-                    case 'M':
-                    case 'm':
-                        var p = pp.getAsCurrentPoint();
-                        pp.addMarker(p);
-                        //bb.addPoint(p.x, p.y);
-                        if (ctx != null) {
-                            ctx.moveTo(p.x, p.y);
-                        }
-                        pp.start = pp.current;
-                        while (!pp.isCommandOrEnd()) {
-                            var p = pp.getAsCurrentPoint();
-                            pp.addMarker(p, pp.start);
-                            //bb.addPoint(p.x, p.y);
-                            if (ctx != null) {
-                                ctx.lineTo(p.x, p.y);
-                            }
-                        }
-                        break;
-                    case 'L':
-                    case 'l':
-                        while (!pp.isCommandOrEnd()) {
-                            var c = pp.current;
-                            var p = pp.getAsCurrentPoint();
-                            pp.addMarker(p, c);
-                            //bb.addPoint(p.x, p.y);
-                            if (ctx != null) {
-                                ctx.lineTo(p.x, p.y);
-                            }
-                        }
-                        break;
-                    case 'H':
-                    case 'h':
-                        while (!pp.isCommandOrEnd()) {
-                            var newP = new Point((pp.isRelativeCommand() ? pp.current.x : 0) + pp.getScalar(), pp.current.y);
-                            pp.addMarker(newP, pp.current);
-                            pp.current = newP;
-                            //bb.addPoint(pp.current.x, pp.current.y);
-                            if (ctx != null) {
-                                ctx.lineTo(pp.current.x, pp.current.y);
-                            }
-                        }
-                        break;
-                    case 'V':
-                    case 'v':
-                        while (!pp.isCommandOrEnd()) {
-                            var newP = new Point(pp.current.x, (pp.isRelativeCommand() ? pp.current.y : 0) + pp.getScalar());
-                            pp.addMarker(newP, pp.current);
-                            pp.current = newP;
-                            //bb.addPoint(pp.current.x, pp.current.y);
-                            if (ctx != null) {
-                                ctx.lineTo(pp.current.x, pp.current.y);
-                            }
-                        }
-                        break;
-                    case 'C':
-                    case 'c':
-                        while (!pp.isCommandOrEnd()) {
-                            var curr = pp.current;
-                            var p1 = pp.getPoint();
-                            var cntrl = pp.getAsControlPoint();
-                            var cp = pp.getAsCurrentPoint();
-                            pp.addMarker(cp, cntrl, p1);
-                            //bb.addBezierCurve(curr.x, curr.y, p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
-                            if (ctx != null) {
-                                ctx.bezierCurveTo(p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
-                            }
-                        }
-                        break;
-                    case 'S':
-                    case 's':
-                        while (!pp.isCommandOrEnd()) {
-                            var curr = pp.current;
-                            var p1 = pp.getReflectedControlPoint();
-                            var cntrl = pp.getAsControlPoint();
-                            var cp = pp.getAsCurrentPoint();
-                            pp.addMarker(cp, cntrl, p1);
-                            //bb.addBezierCurve(curr.x, curr.y, p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
-                            if (ctx != null) {
-                                ctx.bezierCurveTo(p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
-                            }
-                        }
-                        break;
-                    case 'Q':
-                    case 'q':
-                        while (!pp.isCommandOrEnd()) {
-                            var curr = pp.current;
-                            var cntrl = pp.getAsControlPoint();
-                            var cp = pp.getAsCurrentPoint();
-                            pp.addMarker(cp, cntrl, cntrl);
-                            //bb.addQuadraticCurve(curr.x, curr.y, cntrl.x, cntrl.y, cp.x, cp.y);
-                            if (ctx != null) ctx.quadraticCurveTo(cntrl.x, cntrl.y, cp.x, cp.y);
-                        }
-                        break;
-                    case 'T':
-                    case 't':
-                        while (!pp.isCommandOrEnd()) {
-                            var curr = pp.current;
-                            var cntrl = pp.getReflectedControlPoint();
-                            pp.control = cntrl;
-                            var cp = pp.getAsCurrentPoint();
-                            pp.addMarker(cp, cntrl, cntrl);
-                            //bb.addQuadraticCurve(curr.x, curr.y, cntrl.x, cntrl.y, cp.x, cp.y);
-                            if (ctx != null) ctx.quadraticCurveTo(cntrl.x, cntrl.y, cp.x, cp.y);
-                        }
-                        break;
-                    case 'A':
-                    case 'a':
-                        while (!pp.isCommandOrEnd()) {
-                            var curr = pp.current;
-                            var rx = pp.getScalar();
-                            var ry = pp.getScalar();
-                            var xAxisRotation = pp.getScalar() * (Math.PI / 180.0);
-                            var largeArcFlag = pp.getScalar();
-                            var sweepFlag = pp.getScalar();
-                            var cp = pp.getAsCurrentPoint();
-
-                            // Conversion from endpoint to center parameterization
-                            // http://www.w3.org/TR/SVG11/implnote.html#ArcImplementationNotes
-                            // x1', y1'
-                            var currp = new Point(Math.cos(xAxisRotation) * (curr.x - cp.x) / 2.0 + Math.sin(xAxisRotation) * (curr.y - cp.y) / 2.0, -Math.sin(xAxisRotation) * (curr.x - cp.x) / 2.0 + Math.cos(xAxisRotation) * (curr.y - cp.y) / 2.0);
-                            // adjust radii
-                            var l = Math.pow(currp.x, 2) / Math.pow(rx, 2) + Math.pow(currp.y, 2) / Math.pow(ry, 2);
-                            if (l > 1) {
-                                rx *= Math.sqrt(l);
-                                ry *= Math.sqrt(l);
-                            }
-                            // cx', cy'
-                            var s = (largeArcFlag == sweepFlag ? -1 : 1) * Math.sqrt((Math.pow(rx, 2) * Math.pow(ry, 2) - Math.pow(rx, 2) * Math.pow(currp.y, 2) - Math.pow(ry, 2) * Math.pow(currp.x, 2)) / (Math.pow(rx, 2) * Math.pow(currp.y, 2) + Math.pow(ry, 2) * Math.pow(currp.x, 2)));
-                            if (isNaN(s)) s = 0;
-                            var cpp = new Point(s * rx * currp.y / ry, s * -ry * currp.x / rx);
-                            // cx, cy
-                            var centp = new Point((curr.x + cp.x) / 2.0 + Math.cos(xAxisRotation) * cpp.x - Math.sin(xAxisRotation) * cpp.y, (curr.y + cp.y) / 2.0 + Math.sin(xAxisRotation) * cpp.x + Math.cos(xAxisRotation) * cpp.y);
-                            // vector magnitude
-                            var m = function m(v) {
-                                return Math.sqrt(Math.pow(v[0], 2) + Math.pow(v[1], 2));
-                            };
-                            // ratio between two vectors
-                            var r = function r(u, v) {
-                                return (u[0] * v[0] + u[1] * v[1]) / (m(u) * m(v));
-                            };
-                            // angle between two vectors
-                            var a = function a(u, v) {
-                                return (u[0] * v[1] < u[1] * v[0] ? -1 : 1) * Math.acos(r(u, v));
-                            };
-                            // initial angle
-                            var a1 = a([1, 0], [(currp.x - cpp.x) / rx, (currp.y - cpp.y) / ry]);
-                            // angle delta
-                            var u = [(currp.x - cpp.x) / rx, (currp.y - cpp.y) / ry];
-                            var v = [(-currp.x - cpp.x) / rx, (-currp.y - cpp.y) / ry];
-                            var ad = a(u, v);
-                            if (r(u, v) <= -1) ad = Math.PI;
-                            if (r(u, v) >= 1) ad = 0;
-
-                            // for markers
-                            var dir = 1 - sweepFlag ? 1.0 : -1.0;
-                            var ah = a1 + dir * (ad / 2.0);
-                            var halfWay = new Point(centp.x + rx * Math.cos(ah), centp.y + ry * Math.sin(ah));
-                            pp.addMarkerAngle(halfWay, ah - dir * Math.PI / 2);
-                            pp.addMarkerAngle(cp, ah - dir * Math.PI);
-
-                            //bb.addPoint(cp.x, cp.y); // TODO: this is too naive, make it better
-                            if (ctx != null) {
-                                var r = rx > ry ? rx : ry;
-                                var sx = rx > ry ? 1 : rx / ry;
-                                var sy = rx > ry ? ry / rx : 1;
-
-                                ctx.translate(centp.x, centp.y);
-                                ctx.rotate(xAxisRotation);
-                                ctx.scale(sx, sy);
-                                ctx.arc(0, 0, r, a1, a1 + ad, 1 - sweepFlag);
-                                ctx.scale(1 / sx, 1 / sy);
-                                ctx.rotate(-xAxisRotation);
-                                ctx.translate(-centp.x, -centp.y);
-                            }
-                        }
-                        break;
-                    case 'Z':
-                    case 'z':
-                        if (ctx != null) ctx.closePath();
-                        pp.current = pp.start;
-                }
-            }
-
-            o.outlinePath = path;
-
-            return o;
-        },
-
-        /**
-         * Methods to add and remove event listeners emulating the DOM of
-         * standard browsers (and also the non-standard one).
-         */
-        addEventListener: function addEventListener() {
-            var o = this,
-                args = arguments,
-                eventName = args && args[0],
-                handler = args && args[1],
-                area,
-                checkPathHandler,
-                end;
-
-            if (!o._mouseArea) {
-                o.addMouseInteractivity();
-            }
-
-            area = o._mouseArea;
-
-            if (typeof eventName === 'string' && typeof handler === 'function') {
-                /*
-                 * If the shape has an associated path then we need to check if
-                 * the mouse is within the co-ordinates of the path.
-                 */
-                if (o._path) {
-
-                    /*
-                     * If the event being listened to is mouseover, mouseout or
-                     * mousemove then the mouse position has to be constantly
-                     * monitored and the event handler called explicitly when
-                     * appropriate.
-                     */
-                    if (eventName === 'mouseover' || eventName === 'mouseout' || eventName === 'mousemove') {
-
-                        if (!o._mousemoveAdded) {
-                            var startListening = function (node) {
-
-                                var isInside = false,
-                                    isOutside = true,
-                                    transition = false;
-
-                                return function (event) {
-                                    /** @todo: replace layerX and layerY with
-                                     * standard ways of determining mouse position.
-                                     */
-                                    var x = event.layerX,
-                                        y = event.layerY;
-
-                                    transition = false;
-                                    /*
-                                     * Check if the current position of the mouse
-                                     * pointer lies within the path or not.
-                                     */
-                                    if (_raphael2['default'].isPointInsidePath(node._transformPath, x, y)) {
-                                        /*
-                                         * @todo: fix isPointInsidePath to return the
-                                         * proper result when the mouse pointer is on
-                                         * the same horizontal/vertical lines as one
-                                         * of the vertices of the path.
-                                         */
-                                        isInside = true;
-                                        if (isOutside) {
-                                            isOutside = false;
-                                            transition = true;
-                                        }
-                                    } else {
-                                        isOutside = true;
-                                        if (isInside) {
-                                            isInside = false;
-                                            transition = true;
-                                        }
-                                    }
-
-                                    // Based on the state of the flags, fire the
-                                    // appropriate event handlers.
-                                    if (isOutside && transition && node.eventListeners['mouseout']) {
-                                        node.eventListeners['mouseout'].apply(this, arguments);
-                                    }
-                                    if (isInside) {
-                                        if (transition && node.eventListeners['mouseover']) {
-                                            node.eventListeners['mouseover'].apply(this, arguments);
-                                        }
-                                        if (node.eventListeners['mousemove']) {
-                                            node.eventListeners['mousemove'].apply(this, arguments);
-                                        }
-                                    }
-                                };
-                            }(o);
-
-                            area.addEventListener('mousemove', startListening, false);
-                            o._mousemoveAdded = true;
-                        }
-
-                        o.eventListeners[eventName] = handler;
-                    } else {
-                        var checkPathHandler = function (node, handler) {
-                            return function (event) {
-                                if (_raphael2['default'].isPointInsidePath(node._path, event.layerX, event.layerY)) {
-                                    handler.apply(this, arguments);
-                                }
-                            };
-                        }(o, handler);
-
-                        area.addEventListener(eventName, checkPathHandler, false);
-                    }
-                } else {
-                    area.addEventListener(eventName, handler, false);
-                }
-            }
-        },
-
-        removeEventListener: function removeEventListener() {
-            var o = this,
-                args = arguments,
-                eventName = args && args[0],
-                handler = args && args[1],
-                area,
-                end;
-
-            if (!o._mouseArea) {
-                return;
-            }
-            area = o._mouseArea;
-
-            if (typeof eventName === 'string' && typeof handler === 'function') {
-                area.removeEventListener(eventName, handler);
-            }
-        },
-
-        attachEvent: function attachEvent() {},
-
-        detachEvent: function detachEvent() {},
-
-        validateAttrs: function validateAttrs(attrs) {
-
-            var o = this,
-                elAttrs = clone(o._rElement.attrs),
-                attr,
-                val;
-
-            if (attrs === null) {
-                if (o._isValid) {
-                    return elAttrs;
-                } else {
-                    o._isValid = true;
-                }
-            }
-
-            attrs = attrs || elAttrs;
-
-            for (attr in attrs) {
-                val = attrs[attr];
-
-                switch (attr) {
-
-                    default:
-                        continue;
-                }
-            }
-
-            return attrs;
-        },
-
-        attrs: function attrs() {}
-    };
-
-    var NodeListItem = function NodeListItem(node) {
-        this.node = node;
-        this.next = null;
-        this.prev = null;
-    },
-        NodeList = function NodeList() {
-        this.top = null;
-        this.bottom = null;
-    };
-
-    NodeList.prototype = {
-
-        constructor: NodeList,
-
-        add: function add(node) {
-
-            node = new NodeListItem(node);
-
-            if (!this.bottom) {
-                this.bottom = node;
-            }
-            if (this.top) {
-                this.top.next = node;
-            }
-            node.next = null;
-            node.prev = this.top;
-
-            this.top = node;
-        },
-
-        addList: function addList(list) {
-            if (!this.bottom) {
-                this.bottom = list.bottom;
-            }
-
-            if (this.top) {
-                this.top.next = list.bottom;
-                list.bottom.prev = this.top;
-            }
-
-            this.top = list.top;
-        },
-
-        toFront: function toFront(node) {
-            if (this.top === node) {
-                return false;
-            }
-
-            if (this.bottom === node) {
-                this.bottom = node.next;
-            }
-
-            //var map = node.node.canvas._map,
-            //    area = node.node._mouseArea;
-
-            node.prev && (node.prev.next = node.next);
-            node.next && (node.next.prev = node.prev);
-
-            this.top.next = node;
-            node.prev = this.top;
-            node.next = null;
-
-            this.top = node;
-
-            /*if (map.firstChild) {
-                map.insertBefore(area, map.firstChild);
-            }
-            else {
-                map.appendChild(area);
-            }
-             node.redraw();*/
-        },
-
-        toBack: function toBack(node) {
-            if (this.bottom === node) {
-                return false;
-            }
-
-            if (this.top === node) {
-                this.top = node.prev;
-            }
-
-            //var map = node.canvas._map,
-            //    area = node._mouseArea;
-
-            node.prev && (node.prev.next = node.next);
-            node.next && (node.next.prev = node.prev);
-
-            this.bottom.prev = node;
-            node.prev = null;
-            node.next = this.bottom;
-
-            this.bottom = node;
-
-            /*map.appendChild(area);
-             node.redraw();*/
-        },
-
-        insertBefore: function insertBefore() {},
-
-        insertAfter: function insertAfter() {},
-
-        each: function each(fn, args) {
-            var item = this.bottom;
-
-            while (item) {
-                fn.apply(item.node, args);
-                item = item.next;
-            }
-        },
-
-        iterate: function iterate(fn, args) {
-            var item = this.bottom,
-                retVal = true;
-
-            while (item) {
-                retVal = fn.apply(item.node, args);
-
-                if (retVal === false) {
-                    break;
-                }
-
-                item = item.next;
-            }
-        },
-
-        dispose: function dispose() {
-
-            this.each(function () {
-                this.node.dispose && this.node.dispose();
-            });
-
-            this.top = null;
-            this.bottom = null;
-        }
-    };
-
-    /**
-     *
-        ncowner, a NodeCollection that corresponds to the collection of which
-        the layer neing created  is a part
-         above, a NodeCollection iterator, that indicated the collection the layer has to be rendered. If
-        not provided then this is the first layer of ncowner.
-     */
-    var CanvasLayer = function CanvasLayer(ncowner, canvas) {
-        this.items = new NodeList();
-
-        this.owner = ncowner;
-        //this.above = above;
-        this.element = null;
-
-        if (canvas) {
-            this.element = canvas;
-        } else {
-            this.init();
-        }
-    };
-
-    CanvasLayer.prototype = {
-        constructor: CanvasLayer,
-
-        appendChild: function appendChild() {
-            var o = this,
-                ownerWrapper = o.owner.wrapper,
-                ele = this.element;
-
-            if (ownerWrapper._image) {
-                ownerWrapper.insertBefore(ele, ownerWrapper._image);
-            } else {
-                ownerWrapper.appendChild(ele);
-            }
-        },
-
-        insertBefore: function insertBefore() {},
-
-        insertAfter: function insertAfter() {},
-
-        init: function init() {
-            this.element = $("canvas");
-            // CHECKPOINT: width and height in %?
-            $(this.element, {
-                width: this.owner.wrapper.offsetWidth,
-                height: this.owner.wrapper.offsetHeight
-            });
-
-            this.element.style.cssText = "position:absolute;left:0;top:0;";
-
-            this.appendChild();
-        },
-
-        getCanvas: function getCanvas() {
-            return this.element;
-        },
-
-        getContext: function getContext() {
-            return this.element.getContext('2d');
-        },
-
-        addToLayer: function addToLayer(node) {
-            this.items.add(node);
-        },
-
-        mergeWithLayerOnTop: function mergeWithLayerOnTop(layerObj) {
-            this.items.addList(layerObj.items);
-            layerObj.dispose(true);
-        },
-
-        mergeWithLayerOnBottom: function mergeWithLayerOnBottom(layerObj) {
-            layerObj.items.addList(this.items);
-            this.items = layerObj.items;
-            layerObj.dispose(true);
-        },
-
-        dispose: function dispose(softDispose) {
-
-            if (!softDispose) {
-                this.items.each(function () {
-                    this.dispose();
-                });
-            }
-
-            this.items = null;
-            this.owner = null;
-
-            this.element.parentNode.removeChild(this.element);
-            this.element = null;
-        }
-    };
-
-    var NodeCollection = function NodeCollection(parent, wrapper, canvas) {
-
-        this.nodeItems = new NodeList();
-        this.collectionItems = new NodeList();
-        this.layerItems = new NodeList();
-
-        this.owner = this.parent = parent;
-        this.layerOnTop = null;
-
-        this.currentLayer = null;
-        this.baseLayer = null;
-
-        if (wrapper) {
-            this.wrapper = wrapper;
-            this.currentLayer = this.baseLayer = new CanvasLayer(this, canvas);
-        } else {
-            this.init();
-        }
-    };
-
-    NodeCollection.prototype = {
-        constructor: NodeCollection,
-
-        init: function init() {
-
-            var o = this,
-                parent = o.parent,
-                imageMap = parent.wrapper._image,
-                wrapper = $("div");
-
-            // Hacky but need a refernce to the image map to addEventListeners.
-            wrapper.style.cssText = "width:100%;height:100%;position:absolute;left:0;top:0;";
-
-            wrapper._map = parent.wrapper._map;
-
-            if (imageMap) {
-                parent.wrapper.insertBefore(wrapper, imageMap);
-            } else {
-                parent.wrapper.appendChild(wrapper);
-            }
-
-            o.wrapper = wrapper;
-            o.currentLayer = o.baseLayer = new CanvasLayer(o);
-        },
-
-        getCurrentContext: function getCurrentContext() {
-            return this.currentLayer.getContext();
-        },
-
-        setLayerOnTop: function setLayerOnTop(layerObj) {
-            this.layerOnTop = layerObj;
-        },
-
-        getCurrentCanvas: function getCurrentCanvas() {
-            return this.currentLayer.getCanvas();
-        },
-
-        addNode: function addNode(node) {
-            this.nodeItems.add(node);
-
-            if (node.type === "group") {
-                this.addCollection(node);
-            } else {
-                this.currentLayer.addToLayer(node);
-            }
-        },
-
-        addCollection: function addCollection(collectionNode) {
-
-            collectionNode = collectionNode || new NodeCollection(this);
-
-            this.collectionItems.add(collectionNode);
-            this.currentLayer = new CanvasLayer(this);
-            this.layerItems.add(this.currentLayer);
-            collectionNode.setLayerOnTop(this.currentLayer);
-        },
-
-        dispose: function dispose() {
-            this.nodeItems.dispose();
-            this.collectionItems.dispose();
-            this.layerItems.dispose();
-            this.owner = this.parent = null;
-
-            this.ownerLayer = null;
-            this.currentLayer = null;
-            this.baseLayer = null;
-        }
-    };
-
-    /**
-     * The CanvasObjectModel will be a layer of abstraction above the individual
-     * FauxNodes created to emulate the DOM in case of canvas rendering.
-     * The engine will be the point of contact for Raphael._engine that will be
-     * the direct consumer of the FauxNodes.
-     */
-    var CanvasObjectModel = function CanvasObjectModel(cnvs, wrpr, width, height) {
-
-        var com = this,
-            root = new NodeCollection(null, wrpr, cnvs);
-
-        //root.set
-
-        com.width = width;
-        com.height = height;
-
-        com.createNode = function (type, parent) {
-
-            parent = parent || root;
-
-            var node,
-                nodeItems = parent.nodeItems,
-                layer = parent.currentLayer,
-                canvasEle = layer.getCanvas();
-
-            switch (type) {
-                case 'rect':
-                    node = new RectFauxNode(parent);
-                    break;
-
-                case 'circle':
-                    node = new CircleFauxNode(parent);
-                    break;
-
-                case 'path':
-                    node = new PathFauxNode(parent);
-                    break;
-
-                case 'text':
-                    node = new TextFauxNode(parent);
-                    break;
-
-                case 'group':
-                    node = new GroupFauxNode(parent);
-                    parent.addCollection(node);
-                    break;
-
-                default:
-                    node = new FauxNode(canvasEle);
-            }
-
-            node.COMInstance = this;
-            nodeItems.add(node);
-            layer.addToLayer(node);
-
-            return node;
-        };
-
-        /**
-         * This method is needed to redraw a node. Redraw is to be handled at the
-         * COM level as redrawing one node needs all the (connected) nodes to be
-         * redrawn in the right order.
-         *
-         * @param {type} node The node that needs to be redrawn.
-         *
-         * @returns {undefined}
-         */
-        com.redraw = function (node) {
-
-            // Check if node is a group or a shape.
-            var nodeList, childNode, layer;
-
-            if (node.type === "group") {
-                nodeList = node.nodeItems;
-                node.render();
-            } else {
-
-                layer = node.layer;
-                nodeList = layer.items;
-                childNode = nodeList.bottom;
-
-                // Clear the canvas.
-                layer.element.width = layer.element.width;
-
-                while (childNode) {
-                    fNode = childNode.node;
-                    fNode.type !== "group" && fNode.render();
-                    childNode = childNode.next;
-                }
-            }
-        };
-
-        com.insertBefore = function (node) {};
-
-        com.insertAfter = function (node) {};
-
-        com.removeNode = function (node) {};
-
-        com.refreshNode = function (node) {};
-
-        com.refreshAll = function () {};
-    };
-
-    Point = function Point(x, y) {
-        this.x = x;
-        this.y = y;
-    };
-
-    Point.prototype.angleTo = function (p) {
-        return Math.atan2(p.y - this.y, p.x - this.x);
-    };
-
-    Point.prototype.applyTransform = function (v) {
-        var xp = this.x * v[0] + this.y * v[2] + v[4];
-        var yp = this.x * v[1] + this.y * v[3] + v[5];
-        this.x = xp;
-        this.y = yp;
-    };
-
-    PathParser = new function () {
-
-        this.tokens = null;
-
-        this.setTokens = function (d) {
-            if (typeof d === 'string') {
-                this.tokens = d.split(' ');
-            } else {
-                this.tokens = d;
-            }
-        };
-
-        this.reset = function () {
-            this.i = -1;
-            this.command = '';
-            this.previousCommand = '';
-            this.start = new Point(0, 0);
-            this.control = new Point(0, 0);
-            this.current = new Point(0, 0);
-            this.points = [];
-            this.angles = [];
-        };
-
-        this.isEnd = function () {
-            return this.i >= this.tokens.length - 1;
-        };
-
-        this.isCommandOrEnd = function () {
-            if (this.isEnd()) {
-                return true;
-            }
-
-            return this.tokens[this.i + 1].toString().match(/^[A-Za-z]$/) != null;
-        };
-
-        this.isRelativeCommand = function () {
-            switch (this.command) {
-                case 'm':
-                case 'l':
-                case 'h':
-                case 'v':
-                case 'c':
-                case 's':
-                case 'q':
-                case 't':
-                case 'a':
-                case 'z':
-                    return true;
-                    break;
-            }
-            return false;
-        };
-
-        this.getToken = function () {
-            this.i++;
-            return this.tokens[this.i];
-        };
-
-        this.getScalar = function () {
-            return parseFloat(this.getToken());
-        };
-
-        this.nextCommand = function () {
-            this.previousCommand = this.command;
-            this.command = this.getToken();
-        };
-
-        this.getPoint = function () {
-            var p = new Point(this.getScalar(), this.getScalar());
-            return this.makeAbsolute(p);
-        };
-
-        this.getAsControlPoint = function () {
-            var p = this.getPoint();
-            this.control = p;
-            return p;
-        };
-
-        this.getAsCurrentPoint = function () {
-            var p = this.getPoint();
-            this.current = p;
-            return p;
-        };
-
-        this.getReflectedControlPoint = function () {
-            if (this.previousCommand.toLowerCase() != 'c' && this.previousCommand.toLowerCase() != 's' && this.previousCommand.toLowerCase() != 'q' && this.previousCommand.toLowerCase() != 't') {
-                return this.current;
-            }
-
-            // reflect point
-            var p = new Point(2 * this.current.x - this.control.x, 2 * this.current.y - this.control.y);
-            return p;
-        };
-
-        this.makeAbsolute = function (p) {
-            if (this.isRelativeCommand()) {
-                p.x += this.current.x;
-                p.y += this.current.y;
-            }
-            return p;
-        };
-
-        this.addMarker = function (p, from, priorTo) {
-            // if the last angle isn't filled in because we didn't have this point yet ...
-            if (priorTo != null && this.angles.length > 0 && this.angles[this.angles.length - 1] == null) {
-                this.angles[this.angles.length - 1] = this.points[this.points.length - 1].angleTo(priorTo);
-            }
-            this.addMarkerAngle(p, from == null ? null : from.angleTo(p));
-        };
-
-        this.addMarkerAngle = function (p, a) {
-            this.points.push(p);
-            this.angles.push(a);
-        };
-
-        this.getMarkerPoints = function () {
-            return this.points;
-        };
-
-        this.getMarkerAngles = function () {
-            for (var i = 0; i < this.angles.length; i++) {
-                if (this.angles[i] == null) {
-                    for (var j = i + 1; j < this.angles.length; j++) {
-                        if (this.angles[j] != null) {
-                            this.angles[i] = this.angles[j];
+exports['default'] = function (R) {
+    if (R.canvas) {
+        var win = R._g.win,
+            doc = R._g.doc,
+            g = R._g,
+            STRING = 'string',
+            PX = 'px',
+            separator = /[, ]+/,
+            Str = win.String,
+            toInt = win.parseInt,
+            toFloat = win.parseFloat,
+            math = win.Math,
+            mmax = math.max,
+            mmin = math.min,
+            pi = math.PI,
+            mathFloor = math.floor,
+            eve = R.eve,
+            paperproto = R.fn,
+            elproto = R.el,
+            setproto = R.st,
+            clone = R.clone,
+            deg2rad = pi / 180,
+            rad2deg = 180 / pi,
+            DEFAULT_FILL = "#fff",
+            DEFAULT_STROKE = "#000",
+            has = "hasOwnProperty",
+            S = " ",
+
+        /** @todo: detect touch */
+        supportsTouch = 'ontouchstart' in win || navigator.msMaxTouchPoints > 0,
+            events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchstart touchmove touchend touchcancel".split(S),
+            noHandle = false,
+            $,
+            FauxNode,
+            Element,
+            draggable = [],
+            drag = [],
+            dragMove = function dragMove(e) {
+            var x = e.clientX,
+                y = e.clientY,
+                scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
+                scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
+                dragi,
+                j = drag.length;
+            while (j--) {
+                dragi = drag[j];
+                if (supportsTouch) {
+                    var i = e.touches.length,
+                        touch;
+                    while (i--) {
+                        touch = e.touches[i];
+                        if (touch.identifier == dragi.el._drag.id) {
+                            x = touch.clientX;
+                            y = touch.clientY;
+                            (e.originalEvent ? e.originalEvent : e).preventDefault();
                             break;
                         }
                     }
-                }
-            }
-            return this.angles;
-        };
-    }();
-
-    /**
-     * The FauxNode is the adapter written to give DOM node like handling to the
-     * shapes that are create using canvas object model.
-     */
-
-    RectFauxNode = function RectFauxNode(parentObj) {
-        this.type = "rect";
-        this._isValid = false;
-
-        this.parent = this.owner = parentObj;
-        this.context = parentObj.getCurrentContext();
-        this.layer = parentObj.currentLayer;
-    };
-
-    RectFauxNode.prototype = _raphael2['default'].extend(new FauxNode(), {
-
-        constructor: RectFauxNode,
-
-        paint: function paint() {
-
-            var o = this,
-                ctx = o.context,
-
-            // CHECKPOINT 3. Rename validateAttrs to getValidAttrs?
-            attrs = o.validateAttrs(),
-                x = attrs.x,
-                y = attrs.y,
-                w = attrs.width,
-                h = attrs.height,
-                r = attrs.r,
-
-            /** @todo: provide support for rx, ry */
-            rx = r || attrs.rx,
-                ry = r || attrs.ry;
-
-            if (attrs.r) {
-                path = ["M", x + rx, y, "L", x + w - rx, y].concat(["A", rx, ry, 0, 0, 1, x + w, y + ry]).concat(["L", x + w, y + h - ry]).concat(["A", rx, ry, 0, 0, 1, x + w - rx, y + h]).concat(["L", x + rx, y + h]).concat(["A", rx, ry, 0, 0, 1, x, y + h - ry]).concat(["L", x, y + ry]).concat(["A", rx, ry, 0, 0, 1, x + rx, y, "Z"]);
-            } else {
-                path = ["M", x, y, "H", x + w, "V", y + h, "H", x, "V", y, "Z"];
-            }
-
-            o.drawPath(path);
-
-            if (attrs['stroke-width']) {
-                var strokeAlpha = attrs['stroke-opacity'] === undefined ? attrs['opacity'] : attrs['stroke-opacity'];
-                if (strokeAlpha !== undefined) {
-                    ctx.globalAlpha = strokeAlpha;
-                }
-                ctx.stroke();
-            }
-            var fillAlpha = attrs['fill-opacity'] === undefined ? attrs['opacity'] : attrs['fill-opacity'];
-            if (fillAlpha !== undefined) {
-                ctx.globalAlpha = fillAlpha;
-            }
-            ctx.fill();
-
-            return;
-        },
-
-        validateAttrs: function validateAttrs(attrs) {
-            var o = this,
-                elAttrs = clone(o._rElement.attrs),
-                attr,
-                val;
-
-            if (attrs === null) {
-                if (o._isValid) {
-                    return elAttrs;
                 } else {
-                    o._isValid = true;
+                    e.preventDefault();
                 }
+
+                //var node = dragi.el.node;
+                //o,
+                //next = node.nextSibling,
+                //parent = node.parentNode,
+                //display = node.style.display;
+
+                /** @todo: implement raphael.drag.over */
+
+                //g.win.opera && parent.removeChild(node);
+                //node.style.display = "none";
+                //o = dragi.el.paper.getElementByPoint(x, y);
+                //node.style.display = display;
+                //g.win.opera && (next ? parent.insertBefore(node, next) : parent.appendChild(node));
+                //o && eve("raphael.drag.over." + dragi.el.id, dragi.el, o);
+                x += scrollX;
+                y += scrollY;
+                eve("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, x - dragi.el._drag.x, y - dragi.el._drag.y, x, y, e);
+            }
+        },
+            dragUp = function dragUp(e) {
+            R.unmousemove(dragMove).unmouseup(dragUp);
+            var i = drag.length,
+                dragi;
+            while (i--) {
+                dragi = drag[i];
+                dragi.el._drag = {};
+                dragi.onendHandler && eve("raphael.drag.end." + dragi.el.id, dragi.end_scope || dragi.start_scope || dragi.move_scope || dragi.el, e);
+            }
+            drag = [];
+        };
+
+        $ = R._createNode = function (el, attr) {
+            if (attr) {
+                if ((typeof el === 'undefined' ? 'undefined' : _typeof(el)) === STRING) {
+                    el = $(el);
+                }
+                for (var key in attr) {
+                    if (attr.hasOwnProperty(key)) {
+                        el.setAttribute(key, Str(attr[key]));
+                    }
+                }
+            } else {
+                el = doc.createElement(el);
+            }
+            return el;
+        };
+
+        R._getConnectedNodes = function (node) {
+            return {
+                above: [],
+                below: []
+            };
+        };
+
+        R._getTargetNode = function (coords) {
+            var x = coords[0],
+                y = coords[1];
+        };
+
+        R._containerEventHandler = function (event) {
+            event = event || win.event;
+
+            if (noHandle) {
+                return;
             }
 
-            attrs = attrs || elAttrs;
+            /** @todo: do not use offsetX and offsetY */
+            var x = event.offsetX,
+                //mathFloor(event.pageX || (event.clientX + doc.body.scrollLeft + doc.documentElement.scrollLeft) || 0),
+            y = event.offsetY,
+                //mathFloor(event.pageY || (event.clientY + doc.body.scrollTop + doc.documentElement.scrollTop) || 0),
+            type = event.type,
+                node = R._getTargetNode([x, y]);
 
-            for (attr in attrs) {
-                val = attrs[attr];
+            //console.log(type + ":: x: " + x + " y: " + y);
 
-                switch (attr) {
-                    case "r":
-                        var w = elAttrs.width,
-                            h = elAttrs.height,
-                            maxR = mmin(w, h) / 2;
+            /*
+            if (typeof node.listeners[type] === 'function') {
+                node.listeners[type].call(node, e);
+            }*/
+        };
 
-                        if (val > maxR) {
-                            attrs.r = maxR;
+        FauxNode = function FauxNode(parent) {
+            this.type = "basic";
+
+            this.owner = parent;
+
+            // Element reference needed to get attrs so that there is no need to
+            // maintain a redundant copy.
+            this._rElement = null;
+
+            // False if this element does not need mouse interactivity.
+            this.mouseInteractions = false;
+            this.matrix = null;
+
+            // An outline path that will be the outline of the shape or in case of
+            // text the rect that bounds the text.
+            this.outlinePath = null;
+
+            this.conf = {};
+        };
+
+        FauxNode.prototype = {
+
+            constructor: FauxNode,
+
+            /**
+             * This method does the complete rendering of the element, including
+             * (re)setting the bbox and image map.
+             *
+             * @returns {_L10.FauxNode.prototype}
+             */
+            render: function render() {
+
+                var o = this;
+
+                o.draw();
+                o.setBBox();
+
+                return o;
+            },
+
+            /**
+             * Applies the transforms and clipping to the context and draws the
+             * element.
+             *
+             * @returns {undefined}
+             */
+            draw: function draw() {
+                var o = this,
+                    ctx = o.context,
+                    el = o._rElement,
+                    m = el.matrix,
+                    isClipped = o.isClipped,
+                    attrs = o.validateAttrs(),
+                    cr,
+                    end;
+
+                // After the validation the attributes need to be set to the element
+                // as validateAttrs works on a copy of the attrs object.
+                el.attrs = attrs;
+
+                ctx.save();
+
+                ctx.fillStyle = attrs.fill;
+                ctx.strokeStyle = attrs.stroke;
+                ctx.lineWidth = attrs['stroke-width'];
+
+                // Applying the clip before the context is transformed as is the case
+                // in case of SVG.
+                if (cr = attrs['clip-rect']) {
+                    cr = cr.split(" ");
+                    ctx.rect(cr[0], cr[1], cr[2], cr[3]);
+                    ctx.clip();
+                    isClipped = o.isClipped = true;
+                }
+
+                o.applyTransform(m);
+
+                o.paint();
+
+                ctx.restore();
+            },
+
+            /**
+             * Parse the attributes provided to paint the element shape using the
+             * canvas context.
+             *
+             * Overridden by individual derived FauxNodes
+             */
+            paint: function paint() {},
+
+            /**
+             * The redraw of the FauxNodes is to be handled by the CanvasObjectModel
+             * instance as it involves redrawing all the elements corresponsing to
+             * that canvas in the proper order.
+             */
+            redraw: function redraw() {
+                this.COMInstance.redraw(this);
+            },
+
+            /**
+             * Clears the rectangle corresponding to the bounding box of the node.
+             */
+            clear: function clear() {
+                var o = this,
+                    ctx = o.context,
+                    bbox = o._bbox;
+
+                /** @todo: while clearing the stroke-width also needs to be accounted for. */
+                if (bbox) {
+                    ctx.clearRect(bbox.x, bbox.y, bbox.width, bbox.height);
+                }
+            },
+
+            /**
+             * Creates the area node in the image map so that mouse interactivity
+             * can be emulated using it.
+             */
+            addMouseInteractivity: function addMouseInteractivity() {
+                var o = this,
+                    attrs = o._rElement.attrs,
+                    bbox = o._bbox,
+                    map = o.owner.wrapper._map,
+                    shape = o.type === 'circle' ? 'circle' : 'rect',
+                    coords = shape === 'circle' ? [attrs.cx, attrs.cy, attrs.r].join(",") : [bbox.x, bbox.y, bbox.x2, bbox.y2].join(","),
+                    area,
+                    end;
+
+                area = $('area', { shape: shape, coords: coords });
+                if (map.firstChild) {
+                    map.insertBefore(area, map.firstChild);
+                } else {
+                    map.appendChild(area);
+                }
+
+                /** @todo: should be put this check here */
+                o._mouseArea = area;
+
+                // Needed for paths.
+                o.eventListeners = {};
+            },
+
+            /**
+             * Update the coords of the area node (image map) corresponding to the FauxNode
+             * after it has been modified by changing attributes.
+             */
+            updateMapAreaCoords: function updateMapAreaCoords() {
+                var o = this,
+                    oArea = o._mouseArea,
+                    bbox = o._bbox;
+
+                if (oArea) {
+                    //o.context.strokeRect(bbox.x, bbox.y, bbox.width, bbox.height);
+                    if (o instanceof CircleFauxNode) {
+                        var r = bbox.width / 2;
+                        oArea.setAttribute('coords', [bbox.x + r, bbox.y + r, r].join(","));
+                    } else {
+                        oArea.setAttribute('coords', [bbox.x, bbox.y, bbox.x2, bbox.y2].join(","));
+                    }
+                }
+            },
+
+            /**
+             * Applies the transform given the transformation matrix to the context.
+             *
+             * @param {type} matrix
+             * @param {type} bbox
+             * @param {type} dontsetbbox
+             *
+             * @returns {_L10.FauxNode.prototype.transformBBox.tbox}
+             */
+            applyTransform: function applyTransform(m) {
+                var o = this,
+                    ctx = o.context,
+                    split;
+
+                if (m) {
+                    split = m.split();
+                    ctx.translate(split.dx, split.dy);
+                    !split.noRotation && ctx.rotate(deg2rad * split.rotate);
+                    ctx.scale(split.scalex, split.scaley);
+                }
+            },
+
+            /**
+             *
+             */
+            setBBox: function setBBox() {
+                var o = this,
+                    el = o._rElement,
+                    m = el.matrix,
+                    parent = o.owner,
+                    pm = parent.getTransformMatrix && parent.getTransformMatrix();
+
+                if (pm) {
+                    pm = pm.clone();
+                    pm.add(m);
+                    m = pm;
+                }
+
+                if (o.outlinePath) {
+                    o._bbox = R.pathBBox(R.transformPath(o.outlinePath, m.toTransformString()).toString());
+                } else {
+                    o.setShapeBBox(m);
+                }
+
+                o._mouseArea && o.updateMapAreaCoords();
+            },
+
+            getBBox: function getBBox() {
+                return this._bbox;
+            },
+
+            drawPath: function drawPath(path) {
+                var o = this,
+                    ctx = o.context,
+                    len = path && path.length || 0,
+                    pp = PathParser,
+                    i = 0,
+                    command,
+                    x,
+                    y,
+                    end;
+
+                // The PathParser object has been borrowed from canvg. All 3rd party attributions implied.
+                pp.reset();
+                pp.setTokens(path);
+
+                //var bb = new BoundingBox();
+                if (ctx != null) {
+                    ctx.beginPath();
+                }
+
+                while (!pp.isEnd()) {
+                    pp.nextCommand();
+                    switch (pp.command) {
+                        case 'M':
+                        case 'm':
+                            var p = pp.getAsCurrentPoint();
+                            pp.addMarker(p);
+                            //bb.addPoint(p.x, p.y);
+                            if (ctx != null) {
+                                ctx.moveTo(p.x, p.y);
+                            }
+                            pp.start = pp.current;
+                            while (!pp.isCommandOrEnd()) {
+                                var p = pp.getAsCurrentPoint();
+                                pp.addMarker(p, pp.start);
+                                //bb.addPoint(p.x, p.y);
+                                if (ctx != null) {
+                                    ctx.lineTo(p.x, p.y);
+                                }
+                            }
+                            break;
+                        case 'L':
+                        case 'l':
+                            while (!pp.isCommandOrEnd()) {
+                                var c = pp.current;
+                                var p = pp.getAsCurrentPoint();
+                                pp.addMarker(p, c);
+                                //bb.addPoint(p.x, p.y);
+                                if (ctx != null) {
+                                    ctx.lineTo(p.x, p.y);
+                                }
+                            }
+                            break;
+                        case 'H':
+                        case 'h':
+                            while (!pp.isCommandOrEnd()) {
+                                var newP = new Point((pp.isRelativeCommand() ? pp.current.x : 0) + pp.getScalar(), pp.current.y);
+                                pp.addMarker(newP, pp.current);
+                                pp.current = newP;
+                                //bb.addPoint(pp.current.x, pp.current.y);
+                                if (ctx != null) {
+                                    ctx.lineTo(pp.current.x, pp.current.y);
+                                }
+                            }
+                            break;
+                        case 'V':
+                        case 'v':
+                            while (!pp.isCommandOrEnd()) {
+                                var newP = new Point(pp.current.x, (pp.isRelativeCommand() ? pp.current.y : 0) + pp.getScalar());
+                                pp.addMarker(newP, pp.current);
+                                pp.current = newP;
+                                //bb.addPoint(pp.current.x, pp.current.y);
+                                if (ctx != null) {
+                                    ctx.lineTo(pp.current.x, pp.current.y);
+                                }
+                            }
+                            break;
+                        case 'C':
+                        case 'c':
+                            while (!pp.isCommandOrEnd()) {
+                                var curr = pp.current;
+                                var p1 = pp.getPoint();
+                                var cntrl = pp.getAsControlPoint();
+                                var cp = pp.getAsCurrentPoint();
+                                pp.addMarker(cp, cntrl, p1);
+                                //bb.addBezierCurve(curr.x, curr.y, p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
+                                if (ctx != null) {
+                                    ctx.bezierCurveTo(p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
+                                }
+                            }
+                            break;
+                        case 'S':
+                        case 's':
+                            while (!pp.isCommandOrEnd()) {
+                                var curr = pp.current;
+                                var p1 = pp.getReflectedControlPoint();
+                                var cntrl = pp.getAsControlPoint();
+                                var cp = pp.getAsCurrentPoint();
+                                pp.addMarker(cp, cntrl, p1);
+                                //bb.addBezierCurve(curr.x, curr.y, p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
+                                if (ctx != null) {
+                                    ctx.bezierCurveTo(p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
+                                }
+                            }
+                            break;
+                        case 'Q':
+                        case 'q':
+                            while (!pp.isCommandOrEnd()) {
+                                var curr = pp.current;
+                                var cntrl = pp.getAsControlPoint();
+                                var cp = pp.getAsCurrentPoint();
+                                pp.addMarker(cp, cntrl, cntrl);
+                                //bb.addQuadraticCurve(curr.x, curr.y, cntrl.x, cntrl.y, cp.x, cp.y);
+                                if (ctx != null) ctx.quadraticCurveTo(cntrl.x, cntrl.y, cp.x, cp.y);
+                            }
+                            break;
+                        case 'T':
+                        case 't':
+                            while (!pp.isCommandOrEnd()) {
+                                var curr = pp.current;
+                                var cntrl = pp.getReflectedControlPoint();
+                                pp.control = cntrl;
+                                var cp = pp.getAsCurrentPoint();
+                                pp.addMarker(cp, cntrl, cntrl);
+                                //bb.addQuadraticCurve(curr.x, curr.y, cntrl.x, cntrl.y, cp.x, cp.y);
+                                if (ctx != null) ctx.quadraticCurveTo(cntrl.x, cntrl.y, cp.x, cp.y);
+                            }
+                            break;
+                        case 'A':
+                        case 'a':
+                            while (!pp.isCommandOrEnd()) {
+                                var curr = pp.current;
+                                var rx = pp.getScalar();
+                                var ry = pp.getScalar();
+                                var xAxisRotation = pp.getScalar() * (Math.PI / 180.0);
+                                var largeArcFlag = pp.getScalar();
+                                var sweepFlag = pp.getScalar();
+                                var cp = pp.getAsCurrentPoint();
+
+                                // Conversion from endpoint to center parameterization
+                                // http://www.w3.org/TR/SVG11/implnote.html#ArcImplementationNotes
+                                // x1', y1'
+                                var currp = new Point(Math.cos(xAxisRotation) * (curr.x - cp.x) / 2.0 + Math.sin(xAxisRotation) * (curr.y - cp.y) / 2.0, -Math.sin(xAxisRotation) * (curr.x - cp.x) / 2.0 + Math.cos(xAxisRotation) * (curr.y - cp.y) / 2.0);
+                                // adjust radii
+                                var l = Math.pow(currp.x, 2) / Math.pow(rx, 2) + Math.pow(currp.y, 2) / Math.pow(ry, 2);
+                                if (l > 1) {
+                                    rx *= Math.sqrt(l);
+                                    ry *= Math.sqrt(l);
+                                }
+                                // cx', cy'
+                                var s = (largeArcFlag == sweepFlag ? -1 : 1) * Math.sqrt((Math.pow(rx, 2) * Math.pow(ry, 2) - Math.pow(rx, 2) * Math.pow(currp.y, 2) - Math.pow(ry, 2) * Math.pow(currp.x, 2)) / (Math.pow(rx, 2) * Math.pow(currp.y, 2) + Math.pow(ry, 2) * Math.pow(currp.x, 2)));
+                                if (isNaN(s)) s = 0;
+                                var cpp = new Point(s * rx * currp.y / ry, s * -ry * currp.x / rx);
+                                // cx, cy
+                                var centp = new Point((curr.x + cp.x) / 2.0 + Math.cos(xAxisRotation) * cpp.x - Math.sin(xAxisRotation) * cpp.y, (curr.y + cp.y) / 2.0 + Math.sin(xAxisRotation) * cpp.x + Math.cos(xAxisRotation) * cpp.y);
+                                // vector magnitude
+                                var m = function m(v) {
+                                    return Math.sqrt(Math.pow(v[0], 2) + Math.pow(v[1], 2));
+                                };
+                                // ratio between two vectors
+                                var r = function r(u, v) {
+                                    return (u[0] * v[0] + u[1] * v[1]) / (m(u) * m(v));
+                                };
+                                // angle between two vectors
+                                var a = function a(u, v) {
+                                    return (u[0] * v[1] < u[1] * v[0] ? -1 : 1) * Math.acos(r(u, v));
+                                };
+                                // initial angle
+                                var a1 = a([1, 0], [(currp.x - cpp.x) / rx, (currp.y - cpp.y) / ry]);
+                                // angle delta
+                                var u = [(currp.x - cpp.x) / rx, (currp.y - cpp.y) / ry];
+                                var v = [(-currp.x - cpp.x) / rx, (-currp.y - cpp.y) / ry];
+                                var ad = a(u, v);
+                                if (r(u, v) <= -1) ad = Math.PI;
+                                if (r(u, v) >= 1) ad = 0;
+
+                                // for markers
+                                var dir = 1 - sweepFlag ? 1.0 : -1.0;
+                                var ah = a1 + dir * (ad / 2.0);
+                                var halfWay = new Point(centp.x + rx * Math.cos(ah), centp.y + ry * Math.sin(ah));
+                                pp.addMarkerAngle(halfWay, ah - dir * Math.PI / 2);
+                                pp.addMarkerAngle(cp, ah - dir * Math.PI);
+
+                                //bb.addPoint(cp.x, cp.y); // TODO: this is too naive, make it better
+                                if (ctx != null) {
+                                    var r = rx > ry ? rx : ry;
+                                    var sx = rx > ry ? 1 : rx / ry;
+                                    var sy = rx > ry ? ry / rx : 1;
+
+                                    ctx.translate(centp.x, centp.y);
+                                    ctx.rotate(xAxisRotation);
+                                    ctx.scale(sx, sy);
+                                    ctx.arc(0, 0, r, a1, a1 + ad, 1 - sweepFlag);
+                                    ctx.scale(1 / sx, 1 / sy);
+                                    ctx.rotate(-xAxisRotation);
+                                    ctx.translate(-centp.x, -centp.y);
+                                }
+                            }
+                            break;
+                        case 'Z':
+                        case 'z':
+                            if (ctx != null) ctx.closePath();
+                            pp.current = pp.start;
+                    }
+                }
+
+                o.outlinePath = path;
+
+                return o;
+            },
+
+            /**
+             * Methods to add and remove event listeners emulating the DOM of
+             * standard browsers (and also the non-standard one).
+             */
+            addEventListener: function addEventListener() {
+                var o = this,
+                    args = arguments,
+                    eventName = args && args[0],
+                    handler = args && args[1],
+                    area,
+                    checkPathHandler,
+                    end;
+
+                if (!o._mouseArea) {
+                    o.addMouseInteractivity();
+                }
+
+                area = o._mouseArea;
+
+                if (typeof eventName === 'string' && typeof handler === 'function') {
+                    /*
+                    * If the shape has an associated path then we need to check if
+                    * the mouse is within the co-ordinates of the path.
+                    */
+                    if (o._path) {
+
+                        /*
+                        * If the event being listened to is mouseover, mouseout or
+                        * mousemove then the mouse position has to be constantly
+                        * monitored and the event handler called explicitly when
+                        * appropriate.
+                        */
+                        if (eventName === 'mouseover' || eventName === 'mouseout' || eventName === 'mousemove') {
+
+                            if (!o._mousemoveAdded) {
+                                var startListening = function (node) {
+
+                                    var isInside = false,
+                                        isOutside = true,
+                                        transition = false;
+
+                                    return function (event) {
+                                        /** @todo: replace layerX and layerY with
+                                         * standard ways of determining mouse position.
+                                         */
+                                        var x = event.layerX,
+                                            y = event.layerY;
+
+                                        transition = false;
+                                        /*
+                                        * Check if the current position of the mouse
+                                        * pointer lies within the path or not.
+                                        */
+                                        if (R.isPointInsidePath(node._transformPath, x, y)) {
+                                            /*
+                                            * @todo: fix isPointInsidePath to return the
+                                            * proper result when the mouse pointer is on
+                                            * the same horizontal/vertical lines as one
+                                            * of the vertices of the path.
+                                            */
+                                            isInside = true;
+                                            if (isOutside) {
+                                                isOutside = false;
+                                                transition = true;
+                                            }
+                                        } else {
+                                            isOutside = true;
+                                            if (isInside) {
+                                                isInside = false;
+                                                transition = true;
+                                            }
+                                        }
+
+                                        // Based on the state of the flags, fire the
+                                        // appropriate event handlers.
+                                        if (isOutside && transition && node.eventListeners['mouseout']) {
+                                            node.eventListeners['mouseout'].apply(this, arguments);
+                                        }
+                                        if (isInside) {
+                                            if (transition && node.eventListeners['mouseover']) {
+                                                node.eventListeners['mouseover'].apply(this, arguments);
+                                            }
+                                            if (node.eventListeners['mousemove']) {
+                                                node.eventListeners['mousemove'].apply(this, arguments);
+                                            }
+                                        }
+                                    };
+                                }(o);
+
+                                area.addEventListener('mousemove', startListening, false);
+                                o._mousemoveAdded = true;
+                            }
+
+                            o.eventListeners[eventName] = handler;
+                        } else {
+                            var checkPathHandler = function (node, handler) {
+                                return function (event) {
+                                    if (R.isPointInsidePath(node._path, event.layerX, event.layerY)) {
+                                        handler.apply(this, arguments);
+                                    }
+                                };
+                            }(o, handler);
+
+                            area.addEventListener(eventName, checkPathHandler, false);
                         }
+                    } else {
+                        area.addEventListener(eventName, handler, false);
+                    }
+                }
+            },
 
-                        if (val < 0) {
-                            attrs.r = 0;
-                        }
+            removeEventListener: function removeEventListener() {
+                var o = this,
+                    args = arguments,
+                    eventName = args && args[0],
+                    handler = args && args[1],
+                    area,
+                    end;
+
+                if (!o._mouseArea) {
+                    return;
+                }
+                area = o._mouseArea;
+
+                if (typeof eventName === 'string' && typeof handler === 'function') {
+                    area.removeEventListener(eventName, handler);
+                }
+            },
+
+            attachEvent: function attachEvent() {},
+
+            detachEvent: function detachEvent() {},
+
+            validateAttrs: function validateAttrs(attrs) {
+
+                var o = this,
+                    elAttrs = clone(o._rElement.attrs),
+                    attr,
+                    val;
+
+                if (attrs === null) {
+                    if (o._isValid) {
+                        return elAttrs;
+                    } else {
+                        o._isValid = true;
+                    }
+                }
+
+                attrs = attrs || elAttrs;
+
+                for (attr in attrs) {
+                    val = attrs[attr];
+
+                    switch (attr) {
+
+                        default:
+                            continue;
+                    }
+                }
+
+                return attrs;
+            },
+
+            attrs: function attrs() {}
+        };
+
+        var NodeListItem = function NodeListItem(node) {
+            this.node = node;
+            this.next = null;
+            this.prev = null;
+        },
+            NodeList = function NodeList() {
+            this.top = null;
+            this.bottom = null;
+        };
+
+        NodeList.prototype = {
+
+            constructor: NodeList,
+
+            add: function add(node) {
+
+                node = new NodeListItem(node);
+
+                if (!this.bottom) {
+                    this.bottom = node;
+                }
+                if (this.top) {
+                    this.top.next = node;
+                }
+                node.next = null;
+                node.prev = this.top;
+
+                this.top = node;
+            },
+
+            addList: function addList(list) {
+                if (!this.bottom) {
+                    this.bottom = list.bottom;
+                }
+
+                if (this.top) {
+                    this.top.next = list.bottom;
+                    list.bottom.prev = this.top;
+                }
+
+                this.top = list.top;
+            },
+
+            toFront: function toFront(node) {
+                if (this.top === node) {
+                    return false;
+                }
+
+                if (this.bottom === node) {
+                    this.bottom = node.next;
+                }
+
+                //var map = node.node.canvas._map,
+                //    area = node.node._mouseArea;
+
+                node.prev && (node.prev.next = node.next);
+                node.next && (node.next.prev = node.prev);
+
+                this.top.next = node;
+                node.prev = this.top;
+                node.next = null;
+
+                this.top = node;
+
+                /*if (map.firstChild) {
+                    map.insertBefore(area, map.firstChild);
+                }
+                else {
+                    map.appendChild(area);
+                }
+                 node.redraw();*/
+            },
+
+            toBack: function toBack(node) {
+                if (this.bottom === node) {
+                    return false;
+                }
+
+                if (this.top === node) {
+                    this.top = node.prev;
+                }
+
+                //var map = node.canvas._map,
+                //    area = node._mouseArea;
+
+                node.prev && (node.prev.next = node.next);
+                node.next && (node.next.prev = node.prev);
+
+                this.bottom.prev = node;
+                node.prev = null;
+                node.next = this.bottom;
+
+                this.bottom = node;
+
+                /*map.appendChild(area);
+                 node.redraw();*/
+            },
+
+            insertBefore: function insertBefore() {},
+
+            insertAfter: function insertAfter() {},
+
+            each: function each(fn, args) {
+                var item = this.bottom;
+
+                while (item) {
+                    fn.apply(item.node, args);
+                    item = item.next;
+                }
+            },
+
+            iterate: function iterate(fn, args) {
+                var item = this.bottom,
+                    retVal = true;
+
+                while (item) {
+                    retVal = fn.apply(item.node, args);
+
+                    if (retVal === false) {
+                        break;
+                    }
+
+                    item = item.next;
+                }
+            },
+
+            dispose: function dispose() {
+
+                this.each(function () {
+                    this.node.dispose && this.node.dispose();
+                });
+
+                this.top = null;
+                this.bottom = null;
+            }
+        };
+
+        /**
+         *
+            ncowner, a NodeCollection that corresponds to the collection of which
+            the layer neing created  is a part
+             above, a NodeCollection iterator, that indicated the collection the layer has to be rendered. If
+            not provided then this is the first layer of ncowner.
+        */
+        var CanvasLayer = function CanvasLayer(ncowner, canvas) {
+            this.items = new NodeList();
+
+            this.owner = ncowner;
+            //this.above = above;
+            this.element = null;
+
+            if (canvas) {
+                this.element = canvas;
+            } else {
+                this.init();
+            }
+        };
+
+        CanvasLayer.prototype = {
+            constructor: CanvasLayer,
+
+            appendChild: function appendChild() {
+                var o = this,
+                    ownerWrapper = o.owner.wrapper,
+                    ele = this.element;
+
+                if (ownerWrapper._image) {
+                    ownerWrapper.insertBefore(ele, ownerWrapper._image);
+                } else {
+                    ownerWrapper.appendChild(ele);
+                }
+            },
+
+            insertBefore: function insertBefore() {},
+
+            insertAfter: function insertAfter() {},
+
+            init: function init() {
+                this.element = $("canvas");
+                // CHECKPOINT: width and height in %?
+                $(this.element, {
+                    width: this.owner.wrapper.offsetWidth,
+                    height: this.owner.wrapper.offsetHeight
+                });
+
+                this.element.style.cssText = "position:absolute;left:0;top:0;";
+
+                this.appendChild();
+            },
+
+            getCanvas: function getCanvas() {
+                return this.element;
+            },
+
+            getContext: function getContext() {
+                return this.element.getContext('2d');
+            },
+
+            addToLayer: function addToLayer(node) {
+                this.items.add(node);
+            },
+
+            mergeWithLayerOnTop: function mergeWithLayerOnTop(layerObj) {
+                this.items.addList(layerObj.items);
+                layerObj.dispose(true);
+            },
+
+            mergeWithLayerOnBottom: function mergeWithLayerOnBottom(layerObj) {
+                layerObj.items.addList(this.items);
+                this.items = layerObj.items;
+                layerObj.dispose(true);
+            },
+
+            dispose: function dispose(softDispose) {
+
+                if (!softDispose) {
+                    this.items.each(function () {
+                        this.dispose();
+                    });
+                }
+
+                this.items = null;
+                this.owner = null;
+
+                this.element.parentNode.removeChild(this.element);
+                this.element = null;
+            }
+        };
+
+        var NodeCollection = function NodeCollection(parent, wrapper, canvas) {
+
+            this.nodeItems = new NodeList();
+            this.collectionItems = new NodeList();
+            this.layerItems = new NodeList();
+
+            this.owner = this.parent = parent;
+            this.layerOnTop = null;
+
+            this.currentLayer = null;
+            this.baseLayer = null;
+
+            if (wrapper) {
+                this.wrapper = wrapper;
+                this.currentLayer = this.baseLayer = new CanvasLayer(this, canvas);
+            } else {
+                this.init();
+            }
+        };
+
+        NodeCollection.prototype = {
+            constructor: NodeCollection,
+
+            init: function init() {
+
+                var o = this,
+                    parent = o.parent,
+                    imageMap = parent.wrapper._image,
+                    wrapper = $("div");
+
+                // Hacky but need a refernce to the image map to addEventListeners.
+                wrapper.style.cssText = "width:100%;height:100%;position:absolute;left:0;top:0;";
+
+                wrapper._map = parent.wrapper._map;
+
+                if (imageMap) {
+                    parent.wrapper.insertBefore(wrapper, imageMap);
+                } else {
+                    parent.wrapper.appendChild(wrapper);
+                }
+
+                o.wrapper = wrapper;
+                o.currentLayer = o.baseLayer = new CanvasLayer(o);
+            },
+
+            getCurrentContext: function getCurrentContext() {
+                return this.currentLayer.getContext();
+            },
+
+            setLayerOnTop: function setLayerOnTop(layerObj) {
+                this.layerOnTop = layerObj;
+            },
+
+            getCurrentCanvas: function getCurrentCanvas() {
+                return this.currentLayer.getCanvas();
+            },
+
+            addNode: function addNode(node) {
+                this.nodeItems.add(node);
+
+                if (node.type === "group") {
+                    this.addCollection(node);
+                } else {
+                    this.currentLayer.addToLayer(node);
+                }
+            },
+
+            addCollection: function addCollection(collectionNode) {
+
+                collectionNode = collectionNode || new NodeCollection(this);
+
+                this.collectionItems.add(collectionNode);
+                this.currentLayer = new CanvasLayer(this);
+                this.layerItems.add(this.currentLayer);
+                collectionNode.setLayerOnTop(this.currentLayer);
+            },
+
+            dispose: function dispose() {
+                this.nodeItems.dispose();
+                this.collectionItems.dispose();
+                this.layerItems.dispose();
+                this.owner = this.parent = null;
+
+                this.ownerLayer = null;
+                this.currentLayer = null;
+                this.baseLayer = null;
+            }
+        };
+
+        /**
+         * The CanvasObjectModel will be a layer of abstraction above the individual
+         * FauxNodes created to emulate the DOM in case of canvas rendering.
+         * The engine will be the point of contact for Raphael._engine that will be
+         * the direct consumer of the FauxNodes.
+         */
+        var CanvasObjectModel = function CanvasObjectModel(cnvs, wrpr, width, height) {
+
+            var com = this,
+                root = new NodeCollection(null, wrpr, cnvs);
+
+            //root.set
+
+            com.width = width;
+            com.height = height;
+
+            com.createNode = function (type, parent) {
+
+                parent = parent || root;
+
+                var node,
+                    nodeItems = parent.nodeItems,
+                    layer = parent.currentLayer,
+                    canvasEle = layer.getCanvas();
+
+                switch (type) {
+                    case 'rect':
+                        node = new RectFauxNode(parent);
                         break;
 
-                    case "width":
-                    case "height":
-                        if (val < 0) {
-                            attrs[attr] = 0;
-                        };
+                    case 'circle':
+                        node = new CircleFauxNode(parent);
+                        break;
+
+                    case 'path':
+                        node = new PathFauxNode(parent);
+                        break;
+
+                    case 'text':
+                        node = new TextFauxNode(parent);
+                        break;
+
+                    case 'group':
+                        node = new GroupFauxNode(parent);
+                        parent.addCollection(node);
                         break;
 
                     default:
-                        continue;
+                        node = new FauxNode(canvasEle);
                 }
-            }
 
-            return attrs;
-        },
+                node.COMInstance = this;
+                nodeItems.add(node);
+                layer.addToLayer(node);
 
-        setShapeBBox: function setShapeBBox(m) {
-            var o = this,
-                el = o._rElement,
-                attrs = el.attrs,
-                sX = m.get(0),
-                sY = m.get(3),
-                tX = m.get(4),
-                tY = m.get(5),
-                strokeW = attrs['stroke-width'];
-
-            o._bbox = {
-                x: attrs.x * sX + tX - strokeW,
-                y: attrs.y * sY + tY - strokeW,
-                width: attrs.width * sX + 2 * strokeW,
-                height: attrs.height * sY + 2 * strokeW
+                return node;
             };
 
-            o._bbox.x2 = o._bbox.x + o._bbox.width;
-            o._bbox.y2 = o._bbox.y + o._bbox.height;
+            /**
+             * This method is needed to redraw a node. Redraw is to be handled at the
+             * COM level as redrawing one node needs all the (connected) nodes to be
+             * redrawn in the right order.
+             *
+             * @param {type} node The node that needs to be redrawn.
+             *
+             * @returns {undefined}
+             */
+            com.redraw = function (node) {
 
-            o.X = o._bbox.x;
-            o.Y = o._bbox.y;
-            o.W = o._bbox.width;
-            o.H = o._bbox.height;
-        }
-    });
+                // Check if node is a group or a shape.
+                var nodeList, childNode, layer;
 
-    var CircleFauxNode = function CircleFauxNode(parentObj) {
-        this.type = "circle";
-        this._isValid = false;
+                if (node.type === "group") {
+                    nodeList = node.nodeItems;
+                    node.render();
+                } else {
 
-        this.parent = this.owner = parentObj;
-        this.context = parentObj.getCurrentContext();
-        this.layer = parentObj.currentLayer;
-    },
-        PathFauxNode = function PathFauxNode(parentObj) {
-        this.type = "path";
-        this._isValid = false;
+                    layer = node.layer;
+                    nodeList = layer.items;
+                    childNode = nodeList.bottom;
 
-        this.parent = this.owner = parentObj;
-        this.context = parentObj.getCurrentContext();
-        this.layer = parentObj.currentLayer;
-    },
-        TextFauxNode = function TextFauxNode(parentObj) {
-        this.type = "text";
-        this._isValid = false;
+                    // Clear the canvas.
+                    layer.element.width = layer.element.width;
 
-        this.parent = this.owner = parentObj;
-        this.context = parentObj.getCurrentContext();
-        this.layer = parentObj.currentLayer;
-    },
-        GroupFauxNode = function GroupFauxNode(parent, width, height) {
+                    while (childNode) {
+                        fNode = childNode.node;
+                        fNode.type !== "group" && fNode.render();
+                        childNode = childNode.next;
+                    }
+                }
+            };
 
-        this.type = "group";
+            com.insertBefore = function (node) {};
 
-        this.nodeItems = new NodeList();
-        this.collectionItems = new NodeList();
-        this.layerItems = new NodeList();
+            com.insertAfter = function (node) {};
 
-        this.owner = this.parent = parent;
-        this.layerOnTop = parent.currentLayer;
+            com.removeNode = function (node) {};
 
-        this.currentLayer = null;
-        this.baseLayer = null;
+            com.refreshNode = function (node) {};
 
-        this.init();
-    };
+            com.refreshAll = function () {};
+        };
 
-    CircleFauxNode.prototype = _raphael2['default'].extend(new FauxNode(), {
+        Point = function Point(x, y) {
+            this.x = x;
+            this.y = y;
+        };
 
-        constructor: CircleFauxNode,
+        Point.prototype.angleTo = function (p) {
+            return Math.atan2(p.y - this.y, p.x - this.x);
+        };
 
-        paint: function paint() {
-            var o = this,
-                ctx = o.context,
+        Point.prototype.applyTransform = function (v) {
+            var xp = this.x * v[0] + this.y * v[2] + v[4];
+            var yp = this.x * v[1] + this.y * v[3] + v[5];
+            this.x = xp;
+            this.y = yp;
+        };
+
+        PathParser = new function () {
+
+            this.tokens = null;
+
+            this.setTokens = function (d) {
+                if (typeof d === 'string') {
+                    this.tokens = d.split(' ');
+                } else {
+                    this.tokens = d;
+                }
+            };
+
+            this.reset = function () {
+                this.i = -1;
+                this.command = '';
+                this.previousCommand = '';
+                this.start = new Point(0, 0);
+                this.control = new Point(0, 0);
+                this.current = new Point(0, 0);
+                this.points = [];
+                this.angles = [];
+            };
+
+            this.isEnd = function () {
+                return this.i >= this.tokens.length - 1;
+            };
+
+            this.isCommandOrEnd = function () {
+                if (this.isEnd()) {
+                    return true;
+                }
+
+                return this.tokens[this.i + 1].toString().match(/^[A-Za-z]$/) != null;
+            };
+
+            this.isRelativeCommand = function () {
+                switch (this.command) {
+                    case 'm':
+                    case 'l':
+                    case 'h':
+                    case 'v':
+                    case 'c':
+                    case 's':
+                    case 'q':
+                    case 't':
+                    case 'a':
+                    case 'z':
+                        return true;
+                        break;
+                }
+                return false;
+            };
+
+            this.getToken = function () {
+                this.i++;
+                return this.tokens[this.i];
+            };
+
+            this.getScalar = function () {
+                return parseFloat(this.getToken());
+            };
+
+            this.nextCommand = function () {
+                this.previousCommand = this.command;
+                this.command = this.getToken();
+            };
+
+            this.getPoint = function () {
+                var p = new Point(this.getScalar(), this.getScalar());
+                return this.makeAbsolute(p);
+            };
+
+            this.getAsControlPoint = function () {
+                var p = this.getPoint();
+                this.control = p;
+                return p;
+            };
+
+            this.getAsCurrentPoint = function () {
+                var p = this.getPoint();
+                this.current = p;
+                return p;
+            };
+
+            this.getReflectedControlPoint = function () {
+                if (this.previousCommand.toLowerCase() != 'c' && this.previousCommand.toLowerCase() != 's' && this.previousCommand.toLowerCase() != 'q' && this.previousCommand.toLowerCase() != 't') {
+                    return this.current;
+                }
+
+                // reflect point
+                var p = new Point(2 * this.current.x - this.control.x, 2 * this.current.y - this.control.y);
+                return p;
+            };
+
+            this.makeAbsolute = function (p) {
+                if (this.isRelativeCommand()) {
+                    p.x += this.current.x;
+                    p.y += this.current.y;
+                }
+                return p;
+            };
+
+            this.addMarker = function (p, from, priorTo) {
+                // if the last angle isn't filled in because we didn't have this point yet ...
+                if (priorTo != null && this.angles.length > 0 && this.angles[this.angles.length - 1] == null) {
+                    this.angles[this.angles.length - 1] = this.points[this.points.length - 1].angleTo(priorTo);
+                }
+                this.addMarkerAngle(p, from == null ? null : from.angleTo(p));
+            };
+
+            this.addMarkerAngle = function (p, a) {
+                this.points.push(p);
+                this.angles.push(a);
+            };
+
+            this.getMarkerPoints = function () {
+                return this.points;
+            };
+
+            this.getMarkerAngles = function () {
+                for (var i = 0; i < this.angles.length; i++) {
+                    if (this.angles[i] == null) {
+                        for (var j = i + 1; j < this.angles.length; j++) {
+                            if (this.angles[j] != null) {
+                                this.angles[i] = this.angles[j];
+                                break;
+                            }
+                        }
+                    }
+                }
+                return this.angles;
+            };
+        }();
+
+        /**
+         * The FauxNode is the adapter written to give DOM node like handling to the
+         * shapes that are create using canvas object model.
+         */
+
+        RectFauxNode = function RectFauxNode(parentObj) {
+            this.type = "rect";
+            this._isValid = false;
+
+            this.parent = this.owner = parentObj;
+            this.context = parentObj.getCurrentContext();
+            this.layer = parentObj.currentLayer;
+        };
+
+        RectFauxNode.prototype = R.extend(new FauxNode(), {
+
+            constructor: RectFauxNode,
+
+            paint: function paint() {
+
+                var o = this,
+                    ctx = o.context,
+
+                // CHECKPOINT 3. Rename validateAttrs to getValidAttrs?
                 attrs = o.validateAttrs(),
-                x = attrs.cx,
-                y = attrs.cy,
-                r = attrs.r,
+                    x = attrs.x,
+                    y = attrs.y,
+                    w = attrs.width,
+                    h = attrs.height,
+                    r = attrs.r,
 
-            /** @todo: provide support for rx, ry */
-            rx = r || attrs.rx,
-                ry = r || attrs.ry;
+                /** @todo: provide support for rx, ry */
+                rx = r || attrs.rx,
+                    ry = r || attrs.ry;
 
-            if (attrs.r) {
+                if (attrs.r) {
+                    path = ["M", x + rx, y, "L", x + w - rx, y].concat(["A", rx, ry, 0, 0, 1, x + w, y + ry]).concat(["L", x + w, y + h - ry]).concat(["A", rx, ry, 0, 0, 1, x + w - rx, y + h]).concat(["L", x + rx, y + h]).concat(["A", rx, ry, 0, 0, 1, x, y + h - ry]).concat(["L", x, y + ry]).concat(["A", rx, ry, 0, 0, 1, x + rx, y, "Z"]);
+                } else {
+                    path = ["M", x, y, "H", x + w, "V", y + h, "H", x, "V", y, "Z"];
+                }
 
-                o.drawPath(["M", x + r, y, "A", rx, ry, 0, 1, 0, x - r, y, "A", rx, ry, 0, 1, 0, x + r, y, "Z"]);
+                o.drawPath(path);
 
                 if (attrs['stroke-width']) {
                     var strokeAlpha = attrs['stroke-opacity'] === undefined ? attrs['opacity'] : attrs['stroke-opacity'];
@@ -14866,1070 +14703,1225 @@ if (_raphael2['default'].canvas) {
                     ctx.globalAlpha = fillAlpha;
                 }
                 ctx.fill();
-            }
 
-            return;
-        },
+                return;
+            },
 
-        setShapeBBox: function setShapeBBox(m) {
-            var o = this,
-                el = o._rElement,
-                attrs = el.attrs,
-                sX = m.get(0),
-                sY = m.get(3),
-                tX = m.get(4),
-                tY = m.get(5),
-                strokeW = attrs['stroke-width'];
+            validateAttrs: function validateAttrs(attrs) {
+                var o = this,
+                    elAttrs = clone(o._rElement.attrs),
+                    attr,
+                    val;
 
-            o._bbox = {
-                x: tX + (attrs.cx - attrs.r) * sX - strokeW,
-                y: tY + (attrs.cy - attrs.r) * sY - strokeW,
-                width: 2 * (strokeW + attrs.r * sX),
-                height: 2 * (attrs.r * sY + strokeW)
-            };
-
-            o._bbox.x2 = o._bbox.x + o._bbox.width;
-            o._bbox.y2 = o._bbox.y + o._bbox.height;
-
-            o.X = o._bbox.x;
-            o.Y = o._bbox.y;
-            o.W = o._bbox.width;
-            o.H = o._bbox.height;
-        }
-    });
-
-    PathFauxNode.prototype = _raphael2['default'].extend(new FauxNode(), {
-
-        constructor: PathFauxNode,
-
-        paint: function paint() {
-            var o = this,
-                el = o._rElement,
-                attrs = el.attrs,
-                path = el.attr('path'),
-                m = el.matrix,
-                ctx = o.context;
-
-            // 1. Get the path from the path attribute
-            // 2. Accept paths in different array formats.
-            // 3. Optimize as this can potentially be a huge pain-point.
-            // 4. Draw path mapping M,L,H,V etc to canvas APIs
-            o.drawPath(path);
-            o._transformPath = _raphael2['default'].transformPath(path, m.toTransformString());
-
-            var strokeAlpha = attrs['stroke-opacity'] === undefined ? attrs['opacity'] : attrs['stroke-opacity'];
-            if (strokeAlpha !== undefined) {
-                ctx.globalAlpha = strokeAlpha;
-            }
-            ctx.stroke();
-            var fillAlpha = attrs['fill-opacity'] === undefined ? attrs['opacity'] : attrs['fill-opacity'];
-            if (fillAlpha !== undefined) {
-                ctx.globalAlpha = fillAlpha;
-            }
-            ctx.fill();
-
-            return;
-        }
-    });
-
-    TextFauxNode.prototype = _raphael2['default'].extend(new FauxNode(), {
-
-        constructor: TextFauxNode,
-
-        paint: function paint() {
-            var o = this,
-                el = o._rElement,
-                attrs = el.attr(),
-                text = attrs['text'],
-                stroke = attrs['stroke'],
-                valign = attrs['vertical-align'],
-                halign = attrs['text-anchor'],
-                x = attrs['x'],
-                y = attrs['y'],
-                m = el.matrix,
-                ctx = o.context,
-                path;
-
-            // apply the font styles, if any
-
-            // find the dimensions of the text using the given styles.
-            // All the dimensions should be present in the attrs user provided OR default.
-            var fontSize = attrs['font-size'] || 10,
-                lineHeight = attrs['line-height'] || toInt(fontSize, 10) * 1.2,
-                fontArr = ["normal", fontSize, attrs['font']];
-
-            // draw the text.
-            ctx.fillStyle = stroke;
-            ctx.font = fontArr.join(" ");
-
-            if (text) {
-                var texts = Str(text).split(/\n|<br\s*?\/?>/ig),
-                    totalHeight = texts.length * lineHeight,
-                    totalWidth = -Infinity,
-                    startX = Infinity,
-                    startY,
-                    width,
-                    textX,
-                    textY;
-
-                if (valign === "top") {
-                    startY = y + lineHeight;
-                } else if (valign === "middle") {
-                    startY = y - totalHeight / 2 + lineHeight / 2;
-                } else {
-                    // valign is bottom.
-                    startY = y - totalHeight + lineHeight;
+                if (attrs === null) {
+                    if (o._isValid) {
+                        return elAttrs;
+                    } else {
+                        o._isValid = true;
+                    }
                 }
 
-                for (var i = 0, ii = texts.length; i < ii; i += 1) {
+                attrs = attrs || elAttrs;
 
-                    text = texts[i];
-                    textY = startY + lineHeight * i;
-                    width = ctx.measureText(text).width;
+                for (attr in attrs) {
+                    val = attrs[attr];
 
-                    if (halign === "start") {
-                        textX = x;
-                    } else if (halign === "middle") {
-                        textX = x - width / 2;
+                    switch (attr) {
+                        case "r":
+                            var w = elAttrs.width,
+                                h = elAttrs.height,
+                                maxR = mmin(w, h) / 2;
+
+                            if (val > maxR) {
+                                attrs.r = maxR;
+                            }
+
+                            if (val < 0) {
+                                attrs.r = 0;
+                            }
+                            break;
+
+                        case "width":
+                        case "height":
+                            if (val < 0) {
+                                attrs[attr] = 0;
+                            };
+                            break;
+
+                        default:
+                            continue;
+                    }
+                }
+
+                return attrs;
+            },
+
+            setShapeBBox: function setShapeBBox(m) {
+                var o = this,
+                    el = o._rElement,
+                    attrs = el.attrs,
+                    sX = m.get(0),
+                    sY = m.get(3),
+                    tX = m.get(4),
+                    tY = m.get(5),
+                    strokeW = attrs['stroke-width'];
+
+                o._bbox = {
+                    x: attrs.x * sX + tX - strokeW,
+                    y: attrs.y * sY + tY - strokeW,
+                    width: attrs.width * sX + 2 * strokeW,
+                    height: attrs.height * sY + 2 * strokeW
+                };
+
+                o._bbox.x2 = o._bbox.x + o._bbox.width;
+                o._bbox.y2 = o._bbox.y + o._bbox.height;
+
+                o.X = o._bbox.x;
+                o.Y = o._bbox.y;
+                o.W = o._bbox.width;
+                o.H = o._bbox.height;
+            }
+        });
+
+        var CircleFauxNode = function CircleFauxNode(parentObj) {
+            this.type = "circle";
+            this._isValid = false;
+
+            this.parent = this.owner = parentObj;
+            this.context = parentObj.getCurrentContext();
+            this.layer = parentObj.currentLayer;
+        },
+            PathFauxNode = function PathFauxNode(parentObj) {
+            this.type = "path";
+            this._isValid = false;
+
+            this.parent = this.owner = parentObj;
+            this.context = parentObj.getCurrentContext();
+            this.layer = parentObj.currentLayer;
+        },
+            TextFauxNode = function TextFauxNode(parentObj) {
+            this.type = "text";
+            this._isValid = false;
+
+            this.parent = this.owner = parentObj;
+            this.context = parentObj.getCurrentContext();
+            this.layer = parentObj.currentLayer;
+        },
+            GroupFauxNode = function GroupFauxNode(parent, width, height) {
+
+            this.type = "group";
+
+            this.nodeItems = new NodeList();
+            this.collectionItems = new NodeList();
+            this.layerItems = new NodeList();
+
+            this.owner = this.parent = parent;
+            this.layerOnTop = parent.currentLayer;
+
+            this.currentLayer = null;
+            this.baseLayer = null;
+
+            this.init();
+        };
+
+        CircleFauxNode.prototype = R.extend(new FauxNode(), {
+
+            constructor: CircleFauxNode,
+
+            paint: function paint() {
+                var o = this,
+                    ctx = o.context,
+                    attrs = o.validateAttrs(),
+                    x = attrs.cx,
+                    y = attrs.cy,
+                    r = attrs.r,
+
+                /** @todo: provide support for rx, ry */
+                rx = r || attrs.rx,
+                    ry = r || attrs.ry;
+
+                if (attrs.r) {
+
+                    o.drawPath(["M", x + r, y, "A", rx, ry, 0, 1, 0, x - r, y, "A", rx, ry, 0, 1, 0, x + r, y, "Z"]);
+
+                    if (attrs['stroke-width']) {
+                        var strokeAlpha = attrs['stroke-opacity'] === undefined ? attrs['opacity'] : attrs['stroke-opacity'];
+                        if (strokeAlpha !== undefined) {
+                            ctx.globalAlpha = strokeAlpha;
+                        }
+                        ctx.stroke();
+                    }
+                    var fillAlpha = attrs['fill-opacity'] === undefined ? attrs['opacity'] : attrs['fill-opacity'];
+                    if (fillAlpha !== undefined) {
+                        ctx.globalAlpha = fillAlpha;
+                    }
+                    ctx.fill();
+                }
+
+                return;
+            },
+
+            setShapeBBox: function setShapeBBox(m) {
+                var o = this,
+                    el = o._rElement,
+                    attrs = el.attrs,
+                    sX = m.get(0),
+                    sY = m.get(3),
+                    tX = m.get(4),
+                    tY = m.get(5),
+                    strokeW = attrs['stroke-width'];
+
+                o._bbox = {
+                    x: tX + (attrs.cx - attrs.r) * sX - strokeW,
+                    y: tY + (attrs.cy - attrs.r) * sY - strokeW,
+                    width: 2 * (strokeW + attrs.r * sX),
+                    height: 2 * (attrs.r * sY + strokeW)
+                };
+
+                o._bbox.x2 = o._bbox.x + o._bbox.width;
+                o._bbox.y2 = o._bbox.y + o._bbox.height;
+
+                o.X = o._bbox.x;
+                o.Y = o._bbox.y;
+                o.W = o._bbox.width;
+                o.H = o._bbox.height;
+            }
+        });
+
+        PathFauxNode.prototype = R.extend(new FauxNode(), {
+
+            constructor: PathFauxNode,
+
+            paint: function paint() {
+                var o = this,
+                    el = o._rElement,
+                    attrs = el.attrs,
+                    path = el.attr('path'),
+                    m = el.matrix,
+                    ctx = o.context;
+
+                // 1. Get the path from the path attribute
+                // 2. Accept paths in different array formats.
+                // 3. Optimize as this can potentially be a huge pain-point.
+                // 4. Draw path mapping M,L,H,V etc to canvas APIs
+                o.drawPath(path);
+                o._transformPath = R.transformPath(path, m.toTransformString());
+
+                var strokeAlpha = attrs['stroke-opacity'] === undefined ? attrs['opacity'] : attrs['stroke-opacity'];
+                if (strokeAlpha !== undefined) {
+                    ctx.globalAlpha = strokeAlpha;
+                }
+                ctx.stroke();
+                var fillAlpha = attrs['fill-opacity'] === undefined ? attrs['opacity'] : attrs['fill-opacity'];
+                if (fillAlpha !== undefined) {
+                    ctx.globalAlpha = fillAlpha;
+                }
+                ctx.fill();
+
+                return;
+            }
+        });
+
+        TextFauxNode.prototype = R.extend(new FauxNode(), {
+
+            constructor: TextFauxNode,
+
+            paint: function paint() {
+                var o = this,
+                    el = o._rElement,
+                    attrs = el.attr(),
+                    text = attrs['text'],
+                    stroke = attrs['stroke'],
+                    valign = attrs['vertical-align'],
+                    halign = attrs['text-anchor'],
+                    x = attrs['x'],
+                    y = attrs['y'],
+                    m = el.matrix,
+                    ctx = o.context,
+                    path;
+
+                // apply the font styles, if any
+
+                // find the dimensions of the text using the given styles.
+                // All the dimensions should be present in the attrs user provided OR default.
+                var fontSize = attrs['font-size'] || 10,
+                    lineHeight = attrs['line-height'] || toInt(fontSize, 10) * 1.2,
+                    fontArr = ["normal", fontSize, attrs['font']];
+
+                // draw the text.
+                ctx.fillStyle = stroke;
+                ctx.font = fontArr.join(" ");
+
+                if (text) {
+                    var texts = Str(text).split(/\n|<br\s*?\/?>/ig),
+                        totalHeight = texts.length * lineHeight,
+                        totalWidth = -Infinity,
+                        startX = Infinity,
+                        startY,
+                        width,
+                        textX,
+                        textY;
+
+                    if (valign === "top") {
+                        startY = y + lineHeight;
+                    } else if (valign === "middle") {
+                        startY = y - totalHeight / 2 + lineHeight / 2;
                     } else {
-                        textX = x - width;
+                        // valign is bottom.
+                        startY = y - totalHeight + lineHeight;
                     }
 
-                    totalWidth = mmax(totalWidth, width);
-                    startX = mmin(startX, textX);
+                    for (var i = 0, ii = texts.length; i < ii; i += 1) {
 
-                    ctx.fillText(text, textX, textY);
+                        text = texts[i];
+                        textY = startY + lineHeight * i;
+                        width = ctx.measureText(text).width;
+
+                        if (halign === "start") {
+                            textX = x;
+                        } else if (halign === "middle") {
+                            textX = x - width / 2;
+                        } else {
+                            textX = x - width;
+                        }
+
+                        totalWidth = mmax(totalWidth, width);
+                        startX = mmin(startX, textX);
+
+                        ctx.fillText(text, textX, textY);
+                    }
+
+                    el._textdirty = false;
                 }
 
-                el._textdirty = false;
+                o.outlinePath = ["M", startX, startY - lineHeight / 1.4, "H", startX + totalWidth, "V", startY - lineHeight + totalHeight, "H", startX, "V", startY - lineHeight / 1.4];
+
+                return;
+            }
+        });
+
+        GroupFauxNode.prototype = R.extend(R.extend(new FauxNode(), NodeCollection.prototype), {
+
+            constructor: GroupFauxNode,
+
+            draw: function draw() {
+
+                // Clear the group canvas first.
+                this.layerItems.each(function () {
+                    this.element.width = this.element.width;
+                });
+
+                FauxNode.prototype.draw.apply(this, arguments);
+            },
+
+            /**
+             * This method does the complete rendering of the element, including
+             * (re)setting the bbox and image map.
+             *
+             * @returns {_L10.FauxNode.prototype}
+             */
+            render: function render() {
+
+                var o = this;
+
+                o.draw();
+                o.setBBox();
+
+                return o;
+            },
+
+            paint: function paint() {
+                var o = this,
+                    list = o.nodeList,
+                    el = o._rElement,
+                    canvas = o.canvas,
+                    attrs = el.attrs,
+                    childNode = list.bottom;
+
+                /** @todo: Clean this up */
+                if (attrs.opacity !== undefined) {
+                    this.layerItems.each(function () {
+                        this.getContext().globalAlpha = attrs.opacity;
+                    });
+                }
+
+                while (childNode) {
+                    childNode.render();
+                    childNode = childNode.next;
+                }
+            },
+
+            setBBox: function setBBox() {},
+
+            addMouseInteractivity: function addMouseInteractivity() {},
+
+            applyTransform: function applyTransform(m) {
+                var o = this,
+                    parent = o.parent,
+                    parentMatrix = parent.getTransformMatrix && parent.getTransformMatrix();
+
+                // Parent is a group element with a transformation applied to it.
+                if (parentMatrix) {
+                    o.matrixApplied = parentMatrix.clone();
+                    o.matrixApplied.add(m.a, m.b, m.c, m.d, m.e, m.f);
+                } else {
+                    o.matrixApplied = m;
+                }
+
+                this.layerItems.each(function () {
+                    FauxNode.prototype.applyTransform.apply(this, [o.matrixApplied]);
+                });
+            },
+
+            getTransformMatrix: function getTransformMatrix() {
+                return this.matrixApplied;
+            }
+        });
+
+        Element = function Element(node, paper, group) {
+            var o = this,
+                parent = group || paper;
+
+            o.node = o[0] = node;
+            node.raphael = true;
+            node.raphaelid = o.id = R._oid++;
+            node._rElement = o;
+
+            o.X = 0;
+            o.Y = 0;
+
+            o.attrs = o.attrs || {};
+            o.styles = o.styles || {};
+            o.followers = o.followers || [];
+
+            o.paper = paper;
+            o.com = parent.com;
+
+            o.ca = o.customAttributes = o.customAttributes || new paper._CustomAttributes();
+
+            o.matrix = R.matrix();
+            o._ = {
+                transform: [],
+                sx: 1,
+                sy: 1,
+                dx: 0,
+                dy: 0,
+                deg: 0
+            };
+
+            o.parent = parent;
+            !parent.bottom && (parent.bottom = o);
+
+            o.prev = parent.top || null;
+            parent.top && (parent.top.next = o);
+            parent.top = o;
+            o.next = null;
+        };
+
+        Element.prototype = elproto;
+        elproto.constructor = Element;
+
+        var repaint = function repaint(el, finalAttrs, positionChanged, dimensionChanged) {
+
+            var node = getNode(el),
+                preC = R._getConnectedNodes(node),
+                attrs = el.attrs,
+                elAbove = preC.above,
+                elBelow = preC.below,
+                len,
+                attr,
+                i;
+
+            for (attr in finalAttrs) {
+                attrs[attr] = finalAttrs[attr];
             }
 
-            o.outlinePath = ["M", startX, startY - lineHeight / 1.4, "H", startX + totalWidth, "V", startY - lineHeight + totalHeight, "H", startX, "V", startY - lineHeight / 1.4];
-
-            return;
-        }
-    });
-
-    GroupFauxNode.prototype = _raphael2['default'].extend(_raphael2['default'].extend(new FauxNode(), NodeCollection.prototype), {
-
-        constructor: GroupFauxNode,
-
-        draw: function draw() {
-
-            // Clear the group canvas first.
-            this.layerItems.each(function () {
-                this.element.width = this.element.width;
-            });
-
-            FauxNode.prototype.draw.apply(this, arguments);
+            node.redraw();
         },
+            setFillAndStroke = function setFillAndStroke(el, params) {
 
-        /**
-         * This method does the complete rendering of the element, including
-         * (re)setting the bbox and image map.
-         *
-         * @returns {_L10.FauxNode.prototype}
-         */
-        render: function render() {
+            var attrs = el.attrs,
+                node = el.node,
+                finalAttrs = {},
+                att,
+                val,
+                needsRepaint = false,
+                positionChanged = false,
+                dimensionChanged = false,
+                i;
 
-            var o = this;
+            for (att in params) {
+                if (params[has](att)) {
+                    if (!R._availableAttrs[has](att)) {
+                        continue;
+                    }
+                    val = params[att];
 
-            o.draw();
-            o.setBBox();
+                    switch (att) {
+
+                        case 'fill-opacity':
+                        case 'opacity':
+                        case 'stroke-opcaity':
+                        case 'stroke':
+                        case 'fill':
+                            finalAttrs[att] = val;
+                            needsRepaint = true;
+                            break;
+
+                        case 'stroke-width':
+                        case "cx":
+                        case "cy":
+                        case "x":
+                        case "y":
+                            finalAttrs[att] = val;
+                            positionChanged = true;
+                            break;
+
+                        case "width":
+                        case "height":
+                            finalAttrs[att] = val;
+                            dimensionChanged = true;
+                            break;
+
+                        case "clip-rect":
+                            finalAttrs[att] = val;
+                            needsRepaint = true;
+                            break;
+
+                        case "font-size":
+                        case "font":
+                        case "vertical-align":
+                        case "text-anchor":
+                            finalAttrs[att] = val;
+                            needsRepaint = true;
+
+                        default:
+                            continue;
+                    }
+                }
+            }
+
+            tuneText(el, params, finalAttrs);
+
+            finalAttrs = node.validateAttrs(finalAttrs);
+
+            if (needsRepaint || positionChanged || dimensionChanged) {
+                repaint(el, finalAttrs, positionChanged, dimensionChanged);
+            }
+        },
+            leading = 1.2,
+            tuneText = function tuneText(el, params, finalAttrs) {
+            if (el.type != "text" || !(params[has]("text") || params[has]("font") || params[has]("font-size") || params[has]("x") || params[has]("y") || params[has]("line-height") || params[has]("vertical-align"))) {
+                return;
+            }
+
+            var a = el.attr(),
+                fontSize = params['font-size'] || a['font-size'] || 10,
+                lineHeight = toFloat(params['line-height'] || a['line-height']) || toInt(fontSize, 10) * leading,
+                valign = params["vertical-align"] || a["vertical-align"] || "middle";
+
+            if (isNaN(lineHeight)) {
+                lineHeight = fontSize * leading;
+            }
+
+            finalAttrs['font-size'] = toInt(fontSize, 10) + "px";
+            finalAttrs['font'] = params['font'] || a['font'] || 'Verdana';
+            finalAttrs['vertical-align'] = valign;
+            finalAttrs['x'] = params['x'] || a['x'] || 0;
+            finalAttrs['y'] = params['y'] || a['y'] || 0;
+            finalAttrs['line-height'] = toInt(lineHeight, 10);
+            finalAttrs['text-anchor'] = params['text-anchor'] || a['text-anchor'] || 'middle';
+        };
+
+        R._engine.initWin = function (win) {
+            win = win;
+            doc = win.document;
+        };
+
+        R._engine.setSize = function (w, h) {
+            var paper = this,
+                cs = paper.canvas.style;
+
+            cs.width = (paper.width = +w || paper.width) + PX;
+            cs.height = (paper.height = +h || paper.height) + PX;
+            /** @todo call setViewBox from setSize() */
+            return paper;
+        };
+        /** @todo implement setViewBox() */
+        R._engine.create = function () {
+            var con = R._getContainer.apply(0, arguments) || {},
+                container = con.container,
+                x = con.x,
+                y = con.y,
+                width = con.width,
+                height = con.height,
+
+            //handler = R._containerEventHandler,
+            wrapper,
+                cssText,
+                image,
+                mmap,
+                i,
+                paper,
+                canvas;
+
+            if (!container) {
+                throw new Error("Canvas container not found.");
+            }
+
+            paper = new R._Paper();
+            paper.canvas = wrapper = $("div");
+
+            x = x || 0;
+            y = y || 0;
+            paper.width = width = width || 512;
+            paper.height = height = height || 342;
+            paper.left = paper.top = 0;
+
+            if (container == 1) {
+                wrapper.style.cssText = cssText + R.format(";width:100%;height:100%;position:absolute;left:{0}px;top:{1}px;", [x, y]);
+                doc.body.appendChild(wrapper);
+            } else {
+                wrapper.style.cssText = cssText + ";width:100%;height:100%;position:absolute";
+                if (container.firstChild) {
+                    container.insertBefore(wrapper, container.firstChild);
+                } else {
+                    container.appendChild(wrapper);
+                }
+            }
+
+            cssText = "overflow:hidden;-webkit-tap-highlight-color:rgba(0,0,0,0);" + "-webkit-user-select:none;-moz-user-select:-moz-none;" + "-khtml-user-select:none;-ms-user-select:none;user-select:none;" + "-o-user-select:none;cursor:default;" + R.format("width:{0}px;height:{1}px;", [width, height]);
+
+            // Create the canvas element and set it to occupy full space. Retain a
+            // reference to its context.
+            canvas = $("canvas");
+            canvas.style.cssText = "position:absolute;left:0;top:0";
+            canvas.setAttribute('width', paper.width);
+            canvas.setAttribute('height', paper.height);
+
+            paper.com = new CanvasObjectModel(canvas, wrapper, paper.width, paper.height);
+
+            wrapper.appendChild(canvas);
+
+            image = $("img");
+
+            // Easter egg idea! :)
+            image.src = "image1.png";
+
+            image.style.cssText = "opacity: 0;z-index: 100;background: transparent;position: absolute;left: 0;top: 0;width: " + width + "px;height: " + height + "px";
+            wrapper.appendChild(image);
+
+            mmap = $("map");
+
+            mmap.setAttribute("name", "mousemap");
+            mmap.setAttribute("id", "mousemap"); // Needed for FF.
+
+            wrapper.appendChild(mmap);
+
+            image.setAttribute("usemap", "#mousemap");
+            wrapper._image = image;
+            wrapper._map = mmap;
+
+            return paper;
+        };
+
+        var getNode = R._engine.getNode = function (el) {
+            return el.node || el[0].node;
+        };
+
+        R._engine.getLastNode = function (el) {
+            return el.node || el[el.length - 1].node;
+        };
+
+        R._engine.rect = function (paper, x, y, w, h, r, group) {
+
+            var node = paper.com.createNode('rect', group && group.node),
+                el = new Element(node, paper, group),
+                attrs = el.attrs;
+
+            attrs.x = x;
+            attrs.y = y;
+            attrs.width = w;
+            attrs.height = h;
+            attrs.fill = "#fff";
+            attrs.stroke = "#000";
+            attrs['stroke-width'] = 1;
+            attrs.r = r || 0;
+            attrs.rx = r || 0;
+            attrs.ry = r || 0;
+
+            el.type = "rect";
+
+            node.render();
+            return el;
+        };
+
+        R._engine.circle = function (paper, x, y, r, group) {
+            var node = paper.com.createNode('circle', group && group.node),
+                el = new Element(node, paper, group),
+                attrs = el.attrs;
+
+            attrs.cx = x;
+            attrs.cy = y;
+            attrs.r = r;
+            attrs.fill = 'none';
+            attrs.stroke = '#000';
+            attrs['stroke-width'] = 1;
+
+            el.type = "circle";
+
+            node.render();
+            return el;
+        };
+
+        R._engine.ellipse = function (paper, x, y, rx, ry, group) {
+            var node = new FauxNode(),
+                el = new Element(node, paper, group);
+
+            el.type = "ellipse";
+            return el;
+        };
+
+        R._engine.image = function (paper, src, x, y, w, h, group) {
+            var node = new FauxNode(),
+                el = new Element(node, paper, group);
+
+            el.type = "image";
+            return el;
+        };
+
+        R._engine.text = function (paper, x, y, text, group) {
+            var node = paper.com.createNode('text', group && group.node),
+                el = new Element(node, paper, group),
+                attrs = el.attrs;
+
+            attrs.x = x;
+            attrs.y = y;
+            attrs.text = text;
+            attrs.fill = 'none';
+            attrs.stroke = '#000';
+            attrs.font = 'Verdana';
+            attrs['font-size'] = '12px';
+            attrs['vertical-align'] = 'middle';
+            attrs['text-anchor'] = 'middle';
+
+            el.type = "text";
+            node.render();
+            return el;
+        };
+
+        R._engine.path = function (pathString, paper, group) {
+            var node = paper.com.createNode('path', group && group.node),
+                el = new Element(node, paper, group),
+                attrs = el.attrs;
+
+            attrs.path = pathString;
+            attrs.fill = "#fff";
+            attrs.stroke = "#000";
+            attrs['stroke-width'] = 1;
+
+            el.type = "path";
+
+            node.render();
+
+            return el;
+        };
+
+        R._engine.group = function (paper, id, group) {
+
+            var node = paper.com.createNode('group', group && group.node),
+                el = new Element(node, paper, group),
+                wrapper = node.wrapper;
+
+            id && wrapper.setAttribute('class', ['red', id].join('-'));
+
+            el.canvas = wrapper;
+
+            //(group && group.canvas.appendChild(wrapper)) || paper.canvas.appendChild(wrapper);
+
+            el.type = "group";
+            return el;
+        };
+
+        elproto._getBBox = function () {
+            if (this.removed) {
+                return {};
+            }
+
+            return {
+                x: this.X + (this.bbx || 0) - this.W / 2,
+                y: this.Y + (this.bby || 0) - this.H / 2,
+                width: this.W,
+                height: this.H
+            };
+        };
+
+        /***** ELEMENT REORDERING / RESTRUCTING *****/
+
+        elproto.toFront = function () {
+            if (this.removed) {
+                return this;
+            }
+
+            var o = this,
+                thisNode = o.node,
+                parent = o.parent,
+                parentNode = thisNode.owner,
+                followers = o.followers,
+                follower,
+                i,
+                ii;
+
+            if (R._tofront(o, parent)) {
+                if (elproto.type === "group") {
+                    parent.canvas.appendChild(thisNode);
+                } else {
+                    parentNode.nodeList.tofront(thisNode);
+                }
+            }
+
+            for (i = 0, ii = followers.length; i < ii; i++) {
+                (follower = followers[i]).stalk && follower.el[follower.stalk](o);
+            }
 
             return o;
-        },
+        };
 
-        paint: function paint() {
+        elproto.toBack = function () {
+            if (this.removed) {
+                return this;
+            }
+
             var o = this,
-                list = o.nodeList,
-                el = o._rElement,
-                canvas = o.canvas,
-                attrs = el.attrs,
-                childNode = list.bottom;
+                thisNode = o.node,
+                parent = o.parent,
+                parentNode = thisNode.owner,
+                followers = o.followers,
+                follower,
+                i,
+                ii;
 
-            /** @todo: Clean this up */
-            if (attrs.opacity !== undefined) {
-                this.layerItems.each(function () {
-                    this.getContext().globalAlpha = attrs.opacity;
+            if (R._toback(o, parent)) {
+                if (elproto.type === "group") {
+                    parent.canvas.appendChild(thisNode);
+                } else {
+                    parentNode.nodeList.toback(thisNode);
+                }
+            }
+
+            for (i = 0, ii = followers.length; i < ii; i++) {
+                (follower = followers[i]).stalk && follower.el[follower.stalk](o);
+            }
+
+            return o;
+        };
+
+        elproto.insertAfter = function (element) {
+            if (this.removed) {
+                return this;
+            }
+
+            var o = this,
+                thisNode = o.node,
+                thatNode = element.node,
+                parentNode = thatNode.owner,
+                followers = o.followers,
+                follower,
+                i,
+                ii;
+
+            if (thatNode.next) {
+                parentNode.nodeList.insertBefore(thisNode, thatNode.next);
+            } else {
+                parentNode.appendChild(thisNode);
+            }
+
+            R._insertafter(o, element, o.parent, element.parent);
+
+            for (i = 0, ii = followers.length; i < ii; i++) {
+                (follower = followers[i]).stalk && follower.el[follower.stalk](element);
+            }
+
+            return o;
+        };
+
+        elproto.insertBefore = function (element) {
+            if (this.removed) {
+                return this;
+            }
+
+            var o = this,
+                thisNode = o.node,
+                thatNode = element.node,
+                parentNode = thatNode.owner,
+                followers = o.followers,
+                follower,
+                i,
+                ii;
+
+            if (thatNode) {
+                parentNode.nodeList.insertBefore(thisNode, thatNode);
+            } else {
+                parentNode.appendChild(thisNode);
+            }
+
+            R._insertafter(o, element, o.parent, element.parent);
+
+            for (i = 0, ii = followers.length; i < ii; i++) {
+                (follower = followers[i]).stalk && follower.el[follower.stalk](element);
+            }
+
+            return o;
+        };
+
+        elproto.appendChild = function (element) {
+            return this;
+        };
+
+        elproto.removeChild = function (element) {
+            return this;
+        };
+
+        /***** ELEMENT REORDERING / RESTRUCTING *****/
+
+        elproto.attr = function (name, value) {
+            if (this.removed) {
+                return this;
+            }
+
+            var o = this,
+                attrs = o.attrs,
+                ca = o.ca,
+                names,
+                params,
+                par,
+                res,
+                key,
+                out,
+                subkey,
+                delkeys,
+                follower,
+                ii,
+                i;
+
+            // fetch a copy of all attributes
+            if (name == null) {
+                res = {};
+                for (key in attrs) {
+                    if (attrs.hasOwnProperty(key)) {
+                        res[key] = attrs[key];
+                    }
+                }res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
+                res.transform = o._.transform;
+                /** @todo res.visibility = o.node.style.display === "none" ? "hidden" : "visible"; */
+                return res;
+            }
+
+            // fetch a single value
+            if (value == null && R.is(name, "string")) {
+                if (name == "fill" && attrs.fill == "none" && attrs.gradient) {
+                    return attrs.gradient;
+                }
+                if (name == "transform") {
+                    return o._.transform;
+                }
+                /** @todo if (name == "visibility") {
+                    return this.node.style.display === "none" ? "hidden" : "visible";
+                }*/
+
+                names = name.split(separator), out = {};
+
+                for (i = 0, ii = names.length; i < ii; i++) {
+                    name = names[i];
+                    if (name in attrs) {
+                        out[name] = attrs[name];
+                    } else if (R.is(ca[name], "function")) {
+                        out[name] = ca[name].def;
+                    } else {
+                        out[name] = R._availableAttrs[name];
+                    }
+                }
+                return ii - 1 ? out : out[names[0]];
+            }
+
+            // fetch specific attributes
+            if (value == null && R.is(name, "array")) {
+                out = {};
+                for (i = 0, ii = name.length; i < ii; i++) {
+                    out[name[i]] = o.attr(name[i]);
+                }
+                return out;
+            }
+
+            // prepare setter params
+            if (value != null) {
+                params = {};
+                params[name] = value;
+            } else if (name != null && R.is(name, "object")) {
+                params = name;
+            }
+
+            if (R.stopEvent !== false) {
+                for (key in params) {
+                    eve("raphael.attr." + key + "." + o.id, o, params[key], key);
+                }
+            }
+
+            delkeys = {};
+            for (key in ca) {
+
+                if (ca[key] && params.hasOwnProperty(key) && R.is(ca[key], "function") && !ca['_invoked' + key]) {
+
+                    ca['_invoked' + key] = true; // prevent recursion
+                    par = ca[key].apply(o, [].concat(params[key]));
+                    delete ca['_invoked' + key];
+
+                    for (subkey in par) {
+                        if (par.hasOwnProperty(subkey)) {
+                            params[subkey] = par[subkey];
+                        }
+                    }
+                    attrs[key] = params[key];
+                    if (par === false) {
+                        delkeys[key] = params[key];
+                        delete params[key];
+                    }
+                }
+            }
+
+            setFillAndStroke(this, params);
+
+            for (i = 0, ii = o.followers.length; i < ii; i++) {
+                follower = o.followers[i];
+                follower.cb && !follower.cb.call(follower.el, params, o) || follower.el.attr(params);
+            }
+
+            for (subkey in delkeys) {
+                params[subkey] = delkeys[subkey];
+            }
+            return this;
+        };
+
+        /**************** Drag *********************/
+        elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_scope) {
+
+            function start(e) {
+                (e.originalEvent || e).preventDefault();
+                var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
+                    scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft;
+                this._drag.x = e.clientX + scrollX;
+                this._drag.y = e.clientY + scrollY;
+                this._drag.id = e.identifier;
+                !drag.length && R.mousemove(dragMove).mouseup(dragUp);
+                drag.push({
+                    el: this,
+                    move_scope: move_scope,
+                    start_scope: start_scope,
+                    end_scope: end_scope,
+                    onmoveHandler: onmove,
+                    onstartHandler: onstart,
+                    onendHandler: onend
+                });
+                onstart && eve.on("raphael.drag.start." + this.id, onstart);
+                onmove && eve.on("raphael.drag.move." + this.id, onmove);
+                onend && eve.on("raphael.drag.end." + this.id, onend);
+                onstart && eve("raphael.drag.start." + this.id, start_scope || move_scope || this, e.clientX + scrollX, e.clientY + scrollY, e);
+            }
+            this._drag = {};
+            draggable.push({
+                el: this,
+                start: start
+            });
+            this.mousedown(start);
+            return this;
+        };
+
+        elproto.undrag = function () {
+            var i = draggable.length;
+            while (i--) {
+                if (draggable[i].el == this) {
+                    this.unmousedown(draggable[i].start);
+                    draggable.splice(i, 1);
+                    eve.unbind("raphael.drag.*." + this.id);
+                }
+            }!draggable.length && R.unmousemove(dragMove).unmouseup(dragUp);
+        };
+
+        /***************** Drag *****************/
+        /************ TRANSFORMATIONS *************/
+
+        elproto.rotate = function (deg, cx, cy) {
+
+            var o = this,
+                bbox;
+            if (o.removed) {
+                return o;
+            }
+            deg = Str(deg).split(separator);
+            if (deg.length - 1) {
+                cx = toFloat(deg[1]);
+                cy = toFloat(deg[2]);
+            }
+            deg = toFloat(deg[0]);
+            cy == null && (cx = cy);
+            if (cx == null || cy == null) {
+                bbox = o.getBBox(1);
+                cx = bbox.x + bbox.width / 2;
+                cy = bbox.y + bbox.height / 2;
+            }
+            o.transform(o._.transform.concat([["r", deg, cx, cy]]));
+            return o;
+        };
+
+        elproto.scale = function (sx, sy, cx, cy) {
+            var o = this,
+                bbox;
+            if (o.removed) {
+                return o;
+            }
+            sx = Str(sx).split(separator);
+            if (sx.length - 1) {
+                sy = toFloat(sx[1]);
+                cx = toFloat(sx[2]);
+                cy = toFloat(sx[3]);
+            }
+            sx = toFloat(sx[0]);
+            sy == null && (sy = sx);
+            cy == null && (cx = cy);
+            if (cx == null || cy == null) {
+                bbox = o.getBBox(1);
+            }
+            cx = cx == null ? bbox.x + bbox.width / 2 : cx;
+            cy = cy == null ? bbox.y + bbox.height / 2 : cy;
+            o.transform(o._.transform.concat([["s", sx, sy, cx, cy]]));
+
+            return o;
+        };
+
+        elproto.translate = function (dx, dy) {
+            var o = this;
+            if (o.removed) {
+                return o;
+            }
+            dx = Str(dx).split(separator);
+            if (dx.length - 1) {
+                dy = toFloat(dx[1]);
+            }
+            dx = toFloat(dx[0]) || 0;
+            dy = +dy || 0;
+            o.transform(o._.transform.concat([["t", dx, dy]]));
+
+            return o;
+        };
+
+        elproto.transform = function (tstr) {
+
+            var o = this,
+                _ = o._,
+                sw;
+
+            if (tstr === null) {
+                return _.transform;
+            }
+
+            R._extractTransform(o, tstr);
+
+            /** @todo: what changes to be made here in the context of canvas */
+            /*o.clip && !_.clipispath && $(o.clip, {
+                transform: o.matrix.invert()
+            });
+            o.pattern && updatePosition(o); */
+            if (_.sx != 1 || _.sy != 1) {
+                sw = o.attrs[has]("stroke-width") ? o.attrs["stroke-width"] : 1;
+                o.attr({
+                    "stroke-width": sw
                 });
             }
 
-            while (childNode) {
-                childNode.render();
-                childNode = childNode.next;
-            }
-        },
+            o.node && o.node.redraw();
 
-        setBBox: function setBBox() {},
-
-        addMouseInteractivity: function addMouseInteractivity() {},
-
-        applyTransform: function applyTransform(m) {
-            var o = this,
-                parent = o.parent,
-                parentMatrix = parent.getTransformMatrix && parent.getTransformMatrix();
-
-            // Parent is a group element with a transformation applied to it.
-            if (parentMatrix) {
-                o.matrixApplied = parentMatrix.clone();
-                o.matrixApplied.add(m.a, m.b, m.c, m.d, m.e, m.f);
-            } else {
-                o.matrixApplied = m;
-            }
-
-            this.layerItems.each(function () {
-                FauxNode.prototype.applyTransform.apply(this, [o.matrixApplied]);
-            });
-        },
-
-        getTransformMatrix: function getTransformMatrix() {
-            return this.matrixApplied;
-        }
-    });
-
-    Element = function Element(node, paper, group) {
-        var o = this,
-            parent = group || paper;
-
-        o.node = o[0] = node;
-        node.raphael = true;
-        node.raphaelid = o.id = _raphael2['default']._oid++;
-        node._rElement = o;
-
-        o.X = 0;
-        o.Y = 0;
-
-        o.attrs = o.attrs || {};
-        o.styles = o.styles || {};
-        o.followers = o.followers || [];
-
-        o.paper = paper;
-        o.com = parent.com;
-
-        o.ca = o.customAttributes = o.customAttributes || new paper._CustomAttributes();
-
-        o.matrix = _raphael2['default'].matrix();
-        o._ = {
-            transform: [],
-            sx: 1,
-            sy: 1,
-            dx: 0,
-            dy: 0,
-            deg: 0
+            return o;
         };
 
-        o.parent = parent;
-        !parent.bottom && (parent.bottom = o);
+        /************ TRANSFORMATIONS *************/
 
-        o.prev = parent.top || null;
-        parent.top && (parent.top.next = o);
-        parent.top = o;
-        o.next = null;
-    };
-
-    Element.prototype = elproto;
-    elproto.constructor = Element;
-
-    var repaint = function repaint(el, finalAttrs, positionChanged, dimensionChanged) {
-
-        var node = getNode(el),
-            preC = _raphael2['default']._getConnectedNodes(node),
-            attrs = el.attrs,
-            elAbove = preC.above,
-            elBelow = preC.below,
-            len,
-            attr,
-            i;
-
-        for (attr in finalAttrs) {
-            attrs[attr] = finalAttrs[attr];
-        }
-
-        node.redraw();
-    },
-        setFillAndStroke = function setFillAndStroke(el, params) {
-
-        var attrs = el.attrs,
-            node = el.node,
-            finalAttrs = {},
-            att,
-            val,
-            needsRepaint = false,
-            positionChanged = false,
-            dimensionChanged = false,
-            i;
-
-        for (att in params) {
-            if (params[has](att)) {
-                if (!_raphael2['default']._availableAttrs[has](att)) {
-                    continue;
-                }
-                val = params[att];
-
-                switch (att) {
-
-                    case 'fill-opacity':
-                    case 'opacity':
-                    case 'stroke-opcaity':
-                    case 'stroke':
-                    case 'fill':
-                        finalAttrs[att] = val;
-                        needsRepaint = true;
-                        break;
-
-                    case 'stroke-width':
-                    case "cx":
-                    case "cy":
-                    case "x":
-                    case "y":
-                        finalAttrs[att] = val;
-                        positionChanged = true;
-                        break;
-
-                    case "width":
-                    case "height":
-                        finalAttrs[att] = val;
-                        dimensionChanged = true;
-                        break;
-
-                    case "clip-rect":
-                        finalAttrs[att] = val;
-                        needsRepaint = true;
-                        break;
-
-                    case "font-size":
-                    case "font":
-                    case "vertical-align":
-                    case "text-anchor":
-                        finalAttrs[att] = val;
-                        needsRepaint = true;
-
-                    default:
-                        continue;
-                }
-            }
-        }
-
-        tuneText(el, params, finalAttrs);
-
-        finalAttrs = node.validateAttrs(finalAttrs);
-
-        if (needsRepaint || positionChanged || dimensionChanged) {
-            repaint(el, finalAttrs, positionChanged, dimensionChanged);
-        }
-    },
-        leading = 1.2,
-        tuneText = function tuneText(el, params, finalAttrs) {
-        if (el.type != "text" || !(params[has]("text") || params[has]("font") || params[has]("font-size") || params[has]("x") || params[has]("y") || params[has]("line-height") || params[has]("vertical-align"))) {
-            return;
-        }
-
-        var a = el.attr(),
-            fontSize = params['font-size'] || a['font-size'] || 10,
-            lineHeight = toFloat(params['line-height'] || a['line-height']) || toInt(fontSize, 10) * leading,
-            valign = params["vertical-align"] || a["vertical-align"] || "middle";
-
-        if (isNaN(lineHeight)) {
-            lineHeight = fontSize * leading;
-        }
-
-        finalAttrs['font-size'] = toInt(fontSize, 10) + "px";
-        finalAttrs['font'] = params['font'] || a['font'] || 'Verdana';
-        finalAttrs['vertical-align'] = valign;
-        finalAttrs['x'] = params['x'] || a['x'] || 0;
-        finalAttrs['y'] = params['y'] || a['y'] || 0;
-        finalAttrs['line-height'] = toInt(lineHeight, 10);
-        finalAttrs['text-anchor'] = params['text-anchor'] || a['text-anchor'] || 'middle';
-    };
-
-    _raphael2['default']._engine.initWin = function (win) {
-        win = win;
-        doc = win.document;
-    };
-
-    _raphael2['default']._engine.setSize = function (w, h) {
-        var paper = this,
-            cs = paper.canvas.style;
-
-        cs.width = (paper.width = +w || paper.width) + PX;
-        cs.height = (paper.height = +h || paper.height) + PX;
-        /** @todo call setViewBox from setSize() */
-        return paper;
-    };
-    /** @todo implement setViewBox() */
-    _raphael2['default']._engine.create = function () {
-        var con = _raphael2['default']._getContainer.apply(0, arguments) || {},
-            container = con.container,
-            x = con.x,
-            y = con.y,
-            width = con.width,
-            height = con.height,
-
-        //handler = R._containerEventHandler,
-        wrapper,
-            cssText,
-            image,
-            mmap,
-            i,
-            paper,
-            canvas;
-
-        if (!container) {
-            throw new Error("Canvas container not found.");
-        }
-
-        paper = new _raphael2['default']._Paper();
-        paper.canvas = wrapper = $("div");
-
-        x = x || 0;
-        y = y || 0;
-        paper.width = width = width || 512;
-        paper.height = height = height || 342;
-        paper.left = paper.top = 0;
-
-        if (container == 1) {
-            wrapper.style.cssText = cssText + _raphael2['default'].format(";width:100%;height:100%;position:absolute;left:{0}px;top:{1}px;", [x, y]);
-            doc.body.appendChild(wrapper);
-        } else {
-            wrapper.style.cssText = cssText + ";width:100%;height:100%;position:absolute";
-            if (container.firstChild) {
-                container.insertBefore(wrapper, container.firstChild);
-            } else {
-                container.appendChild(wrapper);
-            }
-        }
-
-        cssText = "overflow:hidden;-webkit-tap-highlight-color:rgba(0,0,0,0);" + "-webkit-user-select:none;-moz-user-select:-moz-none;" + "-khtml-user-select:none;-ms-user-select:none;user-select:none;" + "-o-user-select:none;cursor:default;" + _raphael2['default'].format("width:{0}px;height:{1}px;", [width, height]);
-
-        // Create the canvas element and set it to occupy full space. Retain a
-        // reference to its context.
-        canvas = $("canvas");
-        canvas.style.cssText = "position:absolute;left:0;top:0";
-        canvas.setAttribute('width', paper.width);
-        canvas.setAttribute('height', paper.height);
-
-        paper.com = new CanvasObjectModel(canvas, wrapper, paper.width, paper.height);
-
-        wrapper.appendChild(canvas);
-
-        image = $("img");
-
-        // Easter egg idea! :)
-        image.src = "image1.png";
-
-        image.style.cssText = "opacity: 0;z-index: 100;background: transparent;position: absolute;left: 0;top: 0;width: " + width + "px;height: " + height + "px";
-        wrapper.appendChild(image);
-
-        mmap = $("map");
-
-        mmap.setAttribute("name", "mousemap");
-        mmap.setAttribute("id", "mousemap"); // Needed for FF.
-
-        wrapper.appendChild(mmap);
-
-        image.setAttribute("usemap", "#mousemap");
-        wrapper._image = image;
-        wrapper._map = mmap;
-
-        return paper;
-    };
-
-    var getNode = _raphael2['default']._engine.getNode = function (el) {
-        return el.node || el[0].node;
-    };
-
-    _raphael2['default']._engine.getLastNode = function (el) {
-        return el.node || el[el.length - 1].node;
-    };
-
-    _raphael2['default']._engine.rect = function (paper, x, y, w, h, r, group) {
-
-        var node = paper.com.createNode('rect', group && group.node),
-            el = new Element(node, paper, group),
-            attrs = el.attrs;
-
-        attrs.x = x;
-        attrs.y = y;
-        attrs.width = w;
-        attrs.height = h;
-        attrs.fill = "#fff";
-        attrs.stroke = "#000";
-        attrs['stroke-width'] = 1;
-        attrs.r = r || 0;
-        attrs.rx = r || 0;
-        attrs.ry = r || 0;
-
-        el.type = "rect";
-
-        node.render();
-        return el;
-    };
-
-    _raphael2['default']._engine.circle = function (paper, x, y, r, group) {
-        var node = paper.com.createNode('circle', group && group.node),
-            el = new Element(node, paper, group),
-            attrs = el.attrs;
-
-        attrs.cx = x;
-        attrs.cy = y;
-        attrs.r = r;
-        attrs.fill = 'none';
-        attrs.stroke = '#000';
-        attrs['stroke-width'] = 1;
-
-        el.type = "circle";
-
-        node.render();
-        return el;
-    };
-
-    _raphael2['default']._engine.ellipse = function (paper, x, y, rx, ry, group) {
-        var node = new FauxNode(),
-            el = new Element(node, paper, group);
-
-        el.type = "ellipse";
-        return el;
-    };
-
-    _raphael2['default']._engine.image = function (paper, src, x, y, w, h, group) {
-        var node = new FauxNode(),
-            el = new Element(node, paper, group);
-
-        el.type = "image";
-        return el;
-    };
-
-    _raphael2['default']._engine.text = function (paper, x, y, text, group) {
-        var node = paper.com.createNode('text', group && group.node),
-            el = new Element(node, paper, group),
-            attrs = el.attrs;
-
-        attrs.x = x;
-        attrs.y = y;
-        attrs.text = text;
-        attrs.fill = 'none';
-        attrs.stroke = '#000';
-        attrs.font = 'Verdana';
-        attrs['font-size'] = '12px';
-        attrs['vertical-align'] = 'middle';
-        attrs['text-anchor'] = 'middle';
-
-        el.type = "text";
-        node.render();
-        return el;
-    };
-
-    _raphael2['default']._engine.path = function (pathString, paper, group) {
-        var node = paper.com.createNode('path', group && group.node),
-            el = new Element(node, paper, group),
-            attrs = el.attrs;
-
-        attrs.path = pathString;
-        attrs.fill = "#fff";
-        attrs.stroke = "#000";
-        attrs['stroke-width'] = 1;
-
-        el.type = "path";
-
-        node.render();
-
-        return el;
-    };
-
-    _raphael2['default']._engine.group = function (paper, id, group) {
-
-        var node = paper.com.createNode('group', group && group.node),
-            el = new Element(node, paper, group),
-            wrapper = node.wrapper;
-
-        id && wrapper.setAttribute('class', ['red', id].join('-'));
-
-        el.canvas = wrapper;
-
-        //(group && group.canvas.appendChild(wrapper)) || paper.canvas.appendChild(wrapper);
-
-        el.type = "group";
-        return el;
-    };
-
-    elproto._getBBox = function () {
-        if (this.removed) {
-            return {};
-        }
-
-        return {
-            x: this.X + (this.bbx || 0) - this.W / 2,
-            y: this.Y + (this.bby || 0) - this.H / 2,
-            width: this.W,
-            height: this.H
+        elproto.hide = function () {
+            return this;
         };
-    };
 
-    /***** ELEMENT REORDERING / RESTRUCTING *****/
-
-    elproto.toFront = function () {
-        if (this.removed) {
+        elproto.show = function () {
             return this;
-        }
+        };
 
-        var o = this,
-            thisNode = o.node,
-            parent = o.parent,
-            parentNode = thisNode.owner,
-            followers = o.followers,
-            follower,
-            i,
-            ii;
-
-        if (_raphael2['default']._tofront(o, parent)) {
-            if (elproto.type === "group") {
-                parent.canvas.appendChild(thisNode);
-            } else {
-                parentNode.nodeList.tofront(thisNode);
-            }
-        }
-
-        for (i = 0, ii = followers.length; i < ii; i++) {
-            (follower = followers[i]).stalk && follower.el[follower.stalk](o);
-        }
-
-        return o;
-    };
-
-    elproto.toBack = function () {
-        if (this.removed) {
+        elproto.blur = function (size) {
             return this;
-        }
+        };
 
-        var o = this,
-            thisNode = o.node,
-            parent = o.parent,
-            parentNode = thisNode.owner,
-            followers = o.followers,
-            follower,
-            i,
-            ii;
+        elproto.on = function (eventType, handler) {
+            var el = this,
+                listeners = el.listeners;
 
-        if (_raphael2['default']._toback(o, parent)) {
-            if (elproto.type === "group") {
-                parent.canvas.appendChild(thisNode);
-            } else {
-                parentNode.nodeList.toback(thisNode);
+            if (!listeners) {
+                listeners = el.listeners = {};
             }
-        }
 
-        for (i = 0, ii = followers.length; i < ii; i++) {
-            (follower = followers[i]).stalk && follower.el[follower.stalk](o);
-        }
+            if (!listeners[eventType]) {
+                listeners[eventType] = [];
+            }
 
-        return o;
-    };
+            listeners[eventType].push(handler);
+        };
 
-    elproto.insertAfter = function (element) {
-        if (this.removed) {
+        elproto.remove = function () {
             return this;
-        }
+        };
 
-        var o = this,
-            thisNode = o.node,
-            thatNode = element.node,
-            parentNode = thatNode.owner,
-            followers = o.followers,
-            follower,
-            i,
-            ii;
-
-        if (thatNode.next) {
-            parentNode.nodeList.insertBefore(thisNode, thatNode.next);
-        } else {
-            parentNode.appendChild(thisNode);
-        }
-
-        _raphael2['default']._insertafter(o, element, o.parent, element.parent);
-
-        for (i = 0, ii = followers.length; i < ii; i++) {
-            (follower = followers[i]).stalk && follower.el[follower.stalk](element);
-        }
-
-        return o;
-    };
-
-    elproto.insertBefore = function (element) {
-        if (this.removed) {
+        paperproto.clear = function () {
+            eve("raphael.clear", this);
             return this;
-        }
+        };
 
-        var o = this,
-            thisNode = o.node,
-            thatNode = element.node,
-            parentNode = thatNode.owner,
-            followers = o.followers,
-            follower,
-            i,
-            ii;
-
-        if (thatNode) {
-            parentNode.nodeList.insertBefore(thisNode, thatNode);
-        } else {
-            parentNode.appendChild(thisNode);
-        }
-
-        _raphael2['default']._insertafter(o, element, o.parent, element.parent);
-
-        for (i = 0, ii = followers.length; i < ii; i++) {
-            (follower = followers[i]).stalk && follower.el[follower.stalk](element);
-        }
-
-        return o;
-    };
-
-    elproto.appendChild = function (element) {
-        return this;
-    };
-
-    elproto.removeChild = function (element) {
-        return this;
-    };
-
-    /***** ELEMENT REORDERING / RESTRUCTING *****/
-
-    elproto.attr = function (name, value) {
-        if (this.removed) {
-            return this;
-        }
-
-        var o = this,
-            attrs = o.attrs,
-            ca = o.ca,
-            names,
-            params,
-            par,
-            res,
-            key,
-            out,
-            subkey,
-            delkeys,
-            follower,
-            ii,
-            i;
-
-        // fetch a copy of all attributes
-        if (name == null) {
-            res = {};
-            for (key in attrs) {
-                if (attrs.hasOwnProperty(key)) {
-                    res[key] = attrs[key];
-                }
-            }res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
-            res.transform = o._.transform;
-            /** @todo res.visibility = o.node.style.display === "none" ? "hidden" : "visible"; */
-            return res;
-        }
-
-        // fetch a single value
-        if (value == null && _raphael2['default'].is(name, "string")) {
-            if (name == "fill" && attrs.fill == "none" && attrs.gradient) {
-                return attrs.gradient;
+        paperproto.remove = function () {
+            if (this.removed) {
+                return;
             }
-            if (name == "transform") {
-                return o._.transform;
+
+            var paper = this,
+                canvas = paper.canvas,
+                pn = canvas.parentNode,
+                i;
+
+            eve("raphael.remove", paper);
+            pn.removeChild(canvas);
+
+            for (i in paper) {
+                paper[i] = typeof paper[i] == "function" ? R._removedFactory(i) : null;
             }
-            /** @todo if (name == "visibility") {
-                return this.node.style.display === "none" ? "hidden" : "visible";
-            }*/
 
-            names = name.split(separator), out = {};
+            this.removed = true;
+        };
 
-            for (i = 0, ii = names.length; i < ii; i++) {
-                name = names[i];
-                if (name in attrs) {
-                    out[name] = attrs[name];
-                } else if (_raphael2['default'].is(ca[name], "function")) {
-                    out[name] = ca[name].def;
-                } else {
-                    out[name] = _raphael2['default']._availableAttrs[name];
-                }
+        R.toString = function () {
+            return "Your browser supports canvas.\nYou are running RedRaphael " + R.version;
+        };
+
+        for (var method in elproto) {
+            if (elproto.hasOwnProperty(method) && !setproto.hasOwnProperty(method)) {
+                setproto[method] = function (methodname) {
+                    return function () {
+                        var arg = arguments;
+                        return this.forEach(function (el) {
+                            el[methodname].apply(el, arg);
+                        });
+                    };
+                }(method);
             }
-            return ii - 1 ? out : out[names[0]];
-        }
+        };
+    }
+};
 
-        // fetch specific attributes
-        if (value == null && _raphael2['default'].is(name, "array")) {
-            out = {};
-            for (i = 0, ii = name.length; i < ii; i++) {
-                out[name[i]] = o.attr(name[i]);
-            }
-            return out;
-        }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-        // prepare setter params
-        if (value != null) {
-            params = {};
-            params[name] = value;
-        } else if (name != null && _raphael2['default'].is(name, "object")) {
-            params = name;
-        }
-
-        if (_raphael2['default'].stopEvent !== false) {
-            for (key in params) {
-                eve("raphael.attr." + key + "." + o.id, o, params[key], key);
-            }
-        }
-
-        delkeys = {};
-        for (key in ca) {
-
-            if (ca[key] && params.hasOwnProperty(key) && _raphael2['default'].is(ca[key], "function") && !ca['_invoked' + key]) {
-
-                ca['_invoked' + key] = true; // prevent recursion
-                par = ca[key].apply(o, [].concat(params[key]));
-                delete ca['_invoked' + key];
-
-                for (subkey in par) {
-                    if (par.hasOwnProperty(subkey)) {
-                        params[subkey] = par[subkey];
-                    }
-                }
-                attrs[key] = params[key];
-                if (par === false) {
-                    delkeys[key] = params[key];
-                    delete params[key];
-                }
-            }
-        }
-
-        setFillAndStroke(this, params);
-
-        for (i = 0, ii = o.followers.length; i < ii; i++) {
-            follower = o.followers[i];
-            follower.cb && !follower.cb.call(follower.el, params, o) || follower.el.attr(params);
-        }
-
-        for (subkey in delkeys) {
-            params[subkey] = delkeys[subkey];
-        }
-        return this;
-    };
-
-    /**************** Drag *********************/
-    elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_scope) {
-
-        function start(e) {
-            (e.originalEvent || e).preventDefault();
-            var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
-                scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft;
-            this._drag.x = e.clientX + scrollX;
-            this._drag.y = e.clientY + scrollY;
-            this._drag.id = e.identifier;
-            !drag.length && _raphael2['default'].mousemove(dragMove).mouseup(dragUp);
-            drag.push({
-                el: this,
-                move_scope: move_scope,
-                start_scope: start_scope,
-                end_scope: end_scope,
-                onmoveHandler: onmove,
-                onstartHandler: onstart,
-                onendHandler: onend
-            });
-            onstart && eve.on("raphael.drag.start." + this.id, onstart);
-            onmove && eve.on("raphael.drag.move." + this.id, onmove);
-            onend && eve.on("raphael.drag.end." + this.id, onend);
-            onstart && eve("raphael.drag.start." + this.id, start_scope || move_scope || this, e.clientX + scrollX, e.clientY + scrollY, e);
-        }
-        this._drag = {};
-        draggable.push({
-            el: this,
-            start: start
-        });
-        this.mousedown(start);
-        return this;
-    };
-
-    elproto.undrag = function () {
-        var i = draggable.length;
-        while (i--) {
-            if (draggable[i].el == this) {
-                this.unmousedown(draggable[i].start);
-                draggable.splice(i, 1);
-                eve.unbind("raphael.drag.*." + this.id);
-            }
-        }!draggable.length && _raphael2['default'].unmousemove(dragMove).unmouseup(dragUp);
-    };
-
-    /***************** Drag *****************/
-    /************ TRANSFORMATIONS *************/
-
-    elproto.rotate = function (deg, cx, cy) {
-
-        var o = this,
-            bbox;
-        if (o.removed) {
-            return o;
-        }
-        deg = Str(deg).split(separator);
-        if (deg.length - 1) {
-            cx = toFloat(deg[1]);
-            cy = toFloat(deg[2]);
-        }
-        deg = toFloat(deg[0]);
-        cy == null && (cx = cy);
-        if (cx == null || cy == null) {
-            bbox = o.getBBox(1);
-            cx = bbox.x + bbox.width / 2;
-            cy = bbox.y + bbox.height / 2;
-        }
-        o.transform(o._.transform.concat([["r", deg, cx, cy]]));
-        return o;
-    };
-
-    elproto.scale = function (sx, sy, cx, cy) {
-        var o = this,
-            bbox;
-        if (o.removed) {
-            return o;
-        }
-        sx = Str(sx).split(separator);
-        if (sx.length - 1) {
-            sy = toFloat(sx[1]);
-            cx = toFloat(sx[2]);
-            cy = toFloat(sx[3]);
-        }
-        sx = toFloat(sx[0]);
-        sy == null && (sy = sx);
-        cy == null && (cx = cy);
-        if (cx == null || cy == null) {
-            bbox = o.getBBox(1);
-        }
-        cx = cx == null ? bbox.x + bbox.width / 2 : cx;
-        cy = cy == null ? bbox.y + bbox.height / 2 : cy;
-        o.transform(o._.transform.concat([["s", sx, sy, cx, cy]]));
-
-        return o;
-    };
-
-    elproto.translate = function (dx, dy) {
-        var o = this;
-        if (o.removed) {
-            return o;
-        }
-        dx = Str(dx).split(separator);
-        if (dx.length - 1) {
-            dy = toFloat(dx[1]);
-        }
-        dx = toFloat(dx[0]) || 0;
-        dy = +dy || 0;
-        o.transform(o._.transform.concat([["t", dx, dy]]));
-
-        return o;
-    };
-
-    elproto.transform = function (tstr) {
-
-        var o = this,
-            _ = o._,
-            sw;
-
-        if (tstr === null) {
-            return _.transform;
-        }
-
-        _raphael2['default']._extractTransform(o, tstr);
-
-        /** @todo: what changes to be made here in the context of canvas */
-        /*o.clip && !_.clipispath && $(o.clip, {
-            transform: o.matrix.invert()
-        });
-        o.pattern && updatePosition(o); */
-        if (_.sx != 1 || _.sy != 1) {
-            sw = o.attrs[has]("stroke-width") ? o.attrs["stroke-width"] : 1;
-            o.attr({
-                "stroke-width": sw
-            });
-        }
-
-        o.node && o.node.redraw();
-
-        return o;
-    };
-
-    /************ TRANSFORMATIONS *************/
-
-    elproto.hide = function () {
-        return this;
-    };
-
-    elproto.show = function () {
-        return this;
-    };
-
-    elproto.blur = function (size) {
-        return this;
-    };
-
-    elproto.on = function (eventType, handler) {
-        var el = this,
-            listeners = el.listeners;
-
-        if (!listeners) {
-            listeners = el.listeners = {};
-        }
-
-        if (!listeners[eventType]) {
-            listeners[eventType] = [];
-        }
-
-        listeners[eventType].push(handler);
-    };
-
-    elproto.remove = function () {
-        return this;
-    };
-
-    paperproto.clear = function () {
-        eve("raphael.clear", this);
-        return this;
-    };
-
-    paperproto.remove = function () {
-        if (this.removed) {
-            return;
-        }
-
-        var paper = this,
-            canvas = paper.canvas,
-            pn = canvas.parentNode,
-            i;
-
-        eve("raphael.remove", paper);
-        pn.removeChild(canvas);
-
-        for (i in paper) {
-            paper[i] = typeof paper[i] == "function" ? _raphael2['default']._removedFactory(i) : null;
-        }
-
-        this.removed = true;
-    };
-
-    _raphael2['default'].toString = function () {
-        return "Your browser supports canvas.\nYou are running RedRaphael " + _raphael2['default'].version;
-    };
-
-    for (var method in elproto) {
-        if (elproto.hasOwnProperty(method) && !setproto.hasOwnProperty(method)) {
-            setproto[method] = function (methodname) {
-                return function () {
-                    var arg = arguments;
-                    return this.forEach(function (el) {
-                        el[methodname].apply(el, arg);
-                    });
-                };
-            }(method);
-        }
-    };
-}
-
-exports['default'] = _raphael2['default'];
 module.exports = exports['default'];
 
 /***/ })

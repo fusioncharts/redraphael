@@ -30,6 +30,9 @@ export default function (R) {
             eve = R.eve,
             E = "",
             S = " ",
+            none = "none",
+            black = "#000",
+            capStyle = "butt",
             xlink = "http://www.w3.org/1999/xlink",
             markers = {
                 block: "M5,0 0,2.5 5,5z",
@@ -206,8 +209,8 @@ export default function (R) {
             var paper = this,
                 args = arguments,
                 group = R._lastArgIfGroup(args, true),
-                paperConfig = paper.config,
-                capStyle = (paperConfig && paperConfig["stroke-linecap"]) || "butt",
+                // paperConfig = paper.config,
+                // capStyle = (paperConfig && paperConfig["stroke-linecap"]) || "butt",
                 attrs = serializeArgs(args),
                     // "path", E,
                     // "fill", none,
@@ -2008,7 +2011,23 @@ export default function (R) {
                 height: height,
                 version: 1.1,
                 width: width,
-                xmlns: "http://www.w3.org/2000/svg"
+                xmlns: "http://www.w3.org/2000/svg",
+                // List of default attributes
+                x: 0,
+                y: 0,
+                text: E,
+                stroke: none,
+                fill: none,
+                path: E,
+                cx: 0,
+                cy: 0,
+                rx: 0,
+                ry: 0,
+                r: 0,
+                "text-anchor": "middle",
+                "vertical-align": "middle",
+                "stroke-linecap": capStyle,
+                src: ""
             });
             if (container == 1) {
                 cnvs.style.cssText = css + "position:absolute;left:" + x + "px;top:" + y + "px";

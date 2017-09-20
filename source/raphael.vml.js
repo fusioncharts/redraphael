@@ -670,43 +670,55 @@ export default function (R) {
             customGroupUpdate = function (attributes) {
                 var group = this,
                     childElem,
+                    info,
                     ownAttr = group.ownAttr;
 
-                if (attributes) {
-                    group.ownAttr = ownAttr ? R.extend(ownAttr, attributes) : attributes;
-                }
-                info = getApplicableGroupAttributes(group);
-                group.customAttr = info.customAttr;
-                group.inheritAttr = info.inheritAttr;
+                if (typeof attributes === 'object') {
+                    if (attributes) {
+                        group.ownAttr = ownAttr ? R.extend(ownAttr, attributes) : attributes;
+                    }
+                    info = getApplicableGroupAttributes(group);
+                    group.customAttr = info.customAttr;
+                    group.inheritAttr = info.inheritAttr;
 
-                // Applying the group properties to all its child element
-                childElem = group.bottom;
-                while(childElem) {
-                    childElem.attr();
-                    childElem = childElem.next;
+                    // Applying the group properties to all its child element
+                    childElem = group.bottom;
+                    while(childElem) {
+                        childElem.attr();
+                        childElem = childElem.next;
+                    }
+                    return attributes && elproto.attr.call(group, attributes);
                 }
-                return attributes && elproto.attr.call(group, attributes);
+                else {
+                    return elproto.attr.apply(group, arguments);
+                }
             },
 
             /*
              * Function to over-write the default attr() function of an element so that the individual properties of group
              * can be applied to the child.
              */
-            customElementUpdate = function (attributes) {
+            customElementUpdate = function customElementUpdate(attributes) {
                 var element = this,
                     parent = element.parent,
                     ownAttr = element.ownAttr;
 
-                if (attributes) {
+                if (typeof attributes === 'object') {
+                    if (attributes) {
                     element.ownAttr = ownAttr ? R.extend(ownAttr, attributes) : attributes;
+                    }
+
+                    attributes = getApplicableAttributes(parent, attributes, element);
+
+                    element.inheritAttrFromGroup = parent && parent.inheritAttr;
+                    element.customAttrFromGroup = parent && parent.customAttr;
+
+                    return elproto.attr.call(element, attributes);
+                }
+                else {
+                    return elproto.attr.apply(element, arguments);
                 }
 
-                attributes = getApplicableAttributes(parent, attributes, element);
-
-                element.inheritAttrFromGroup = parent && parent.inheritAttr;
-                element.customAttrFromGroup = parent && parent.customAttr;
-
-                return elproto.attr.call(element, attributes);
             },
 
             /*
@@ -716,6 +728,9 @@ export default function (R) {
                 var parent = group && group.parent,
                     customAttr = {},
                     inheritAttr = {},
+                    ownAttr,
+                    parentCustomAttr,
+                    parentInheritAttr,
                     attr;
 
                 ownAttr = group && group.ownAttr;
@@ -791,8 +806,6 @@ export default function (R) {
             var paper = this,
                 args = arguments,
                 group = R._lastArgIfGroup(args, true),
-                attrs,
-                info,
                 out;
 
             out = R._engine.group(paper, args[0], group);
@@ -821,12 +834,18 @@ export default function (R) {
             var paper = this,
                 args = arguments,
                 group = R._lastArgIfGroup(args, true),
-                attrs = serializeArgs(args),
+                ownAttr = serializeArgs(args),
+                attrs,
                 out;
 
-            attrs = getApplicableAttributes(group, attrs);
+            attrs = getApplicableAttributes(group, ownAttr);
             out = R._engine.circle(paper, attrs, group);
+
             out.attr = customElementUpdate;
+            out.ownAttr = ownAttr;
+            out.inheritAttrFromGroup = group.inheritAttr;
+            out.customAttrFromGroup = group.customAttr;
+
             return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
         };
 
@@ -865,8 +884,8 @@ export default function (R) {
 
             out.attr = customElementUpdate;
             out.ownAttr = ownAttr;
-            out.inheritAttrFromGroup = group.inheritAttr;
-            out.customAttrFromGroup = group.customAttr;
+            out.inheritAttrFromGroup = group ? group.inheritAttr : {};
+            out.customAttrFromGroup = group ? group.customAttr : {};
 
             return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
         };
@@ -892,12 +911,18 @@ export default function (R) {
             var paper = this,
                 args = arguments,
                 group = R._lastArgIfGroup(args, true),
-                attrs = serializeArgs(args),
+                ownAttr = serializeArgs(args),
+                attrs,
                 out;
 
-            attrs = getApplicableAttributes(group, attrs);
-            out = R._engine.ellipse(this, attrs, group);
+            attrs = getApplicableAttributes(group, ownAttr);
+            out = R._engine.ellipse(paper, attrs, group);
+
             out.attr = customElementUpdate;
+            out.ownAttr = ownAttr;
+            out.inheritAttrFromGroup = group ? group.inheritAttr : {};
+            out.customAttrFromGroup = group ? group.customAttr : {};
+
             return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
         };
 
@@ -937,14 +962,18 @@ export default function (R) {
             var paper = this,
                 args = arguments,
                 group = R._lastArgIfGroup(args, true),
-                paperConfig = paper.config,
-                capStyle = (paperConfig && paperConfig["stroke-linecap"]) || "butt",
-                attrs = serializeArgs(args),
+                ownAttr = serializeArgs(args),
+                attrs,
                 out;
 
-            attrs = getApplicableAttributes(group, attrs);
+            attrs = getApplicableAttributes(group, ownAttr);
             out = R._engine.path(paper, attrs, group);
+
             out.attr = customElementUpdate;
+            out.ownAttr = ownAttr;
+            out.inheritAttrFromGroup = group ? group.inheritAttr : {};
+            out.customAttrFromGroup = group ? group.customAttr : {};
+
             return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
         };
 
@@ -970,12 +999,18 @@ export default function (R) {
             var paper = this,
                 args = arguments,
                 group = R._lastArgIfGroup(args, true),
-                attrs = serializeArgs(args),
+                ownAttr = serializeArgs(args),
+                attrs,
                 out;
 
-            attrs = getApplicableAttributes(group, attrs);
+            attrs = getApplicableAttributes(group, ownAttr);
             out = R._engine.image(paper, attrs, group);
+
             out.attr = customElementUpdate;
+            out.ownAttr = ownAttr;
+            out.inheritAttrFromGroup = group ? group.inheritAttr : {};
+            out.customAttrFromGroup = group ? group.customAttr : {};
+
             return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
         };
 
@@ -999,11 +1034,18 @@ export default function (R) {
             var paper = this,
                 args = arguments,
                 group = R._lastArgIfGroup(args, true),
-                attrs = serializeArgs(args),
+                ownAttr = serializeArgs(args),
+                attrs,
                 out;
 
-            attrs = getApplicableAttributes(group, attrs);
-            out = R._engine.text(paper, attrs, group, args[1]);
+            attrs = getApplicableAttributes(group, ownAttr);
+            out = R._engine.text(paper, attrs, group);
+
+            out.attr = customElementUpdate;
+            out.ownAttr = ownAttr;
+            out.inheritAttrFromGroup = group ? group.inheritAttr : {};
+            out.customAttrFromGroup = group ? group.customAttr : {};
+
             return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
         };
 

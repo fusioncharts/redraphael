@@ -97,7 +97,7 @@ module.exports = function(it, key){
 
 // to indexed object, toObject with fallback for non-array-like ES3 strings
 var IObject = __webpack_require__(49)
-  , defined = __webpack_require__(14);
+  , defined = __webpack_require__(15);
 module.exports = function(it){
   return IObject(defined(it));
 };
@@ -120,8 +120,8 @@ module.exports = __webpack_require__(5) ? function(object, key, value){
 /***/ (function(module, exports, __webpack_require__) {
 
 var anObject       = __webpack_require__(7)
-  , IE8_DOM_DEFINE = __webpack_require__(30)
-  , toPrimitive    = __webpack_require__(17)
+  , IE8_DOM_DEFINE = __webpack_require__(31)
+  , toPrimitive    = __webpack_require__(18)
   , dP             = Object.defineProperty;
 
 exports.f = __webpack_require__(5) ? Object.defineProperty : function defineProperty(O, P, Attributes){
@@ -149,7 +149,7 @@ module.exports = !__webpack_require__(9)(function(){
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var store      = __webpack_require__(20)('wks')
+var store      = __webpack_require__(21)('wks')
   , uid        = __webpack_require__(12)
   , Symbol     = __webpack_require__(0).Symbol
   , USE_SYMBOL = typeof Symbol == 'function';
@@ -209,8 +209,8 @@ module.exports = function(bitmap, value){
 /***/ (function(module, exports, __webpack_require__) {
 
 // 19.1.2.14 / 15.2.3.14 Object.keys(O)
-var $keys       = __webpack_require__(34)
-  , enumBugKeys = __webpack_require__(21);
+var $keys       = __webpack_require__(35)
+  , enumBugKeys = __webpack_require__(22);
 
 module.exports = Object.keys || function keys(O){
   return $keys(O, enumBugKeys);
@@ -228,6 +228,12 @@ module.exports = function(key){
 
 /***/ }),
 /* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = { "default": __webpack_require__(42), __esModule: true };
+
+/***/ }),
+/* 14 */
 /***/ (function(module, exports) {
 
 // 7.1.4 ToInteger
@@ -238,7 +244,7 @@ module.exports = function(it){
 };
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports) {
 
 // 7.2.1 RequireObjectCoercible(argument)
@@ -248,20 +254,20 @@ module.exports = function(it){
 };
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports) {
 
 module.exports = true;
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports) {
 
 var core = module.exports = {version: '2.4.0'};
 if(typeof __e == 'number')__e = core; // eslint-disable-line no-undef
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.1.1 ToPrimitive(input [, PreferredType])
@@ -278,23 +284,23 @@ module.exports = function(it, S){
 };
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports) {
 
 module.exports = {};
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var shared = __webpack_require__(20)('keys')
+var shared = __webpack_require__(21)('keys')
   , uid    = __webpack_require__(12);
 module.exports = function(key){
   return shared[key] || (shared[key] = uid(key));
 };
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var global = __webpack_require__(0)
@@ -305,7 +311,7 @@ module.exports = function(key){
 };
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports) {
 
 // IE 8- don't enum bug keys
@@ -314,7 +320,7 @@ module.exports = (
 ).split(',');
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var def = __webpack_require__(4).f
@@ -326,19 +332,25 @@ module.exports = function(it, tag, stat){
 };
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports.f = __webpack_require__(6);
 
 /***/ }),
-/* 24 */
+/* 25 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = { "default": __webpack_require__(60), __esModule: true };
+
+/***/ }),
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var global         = __webpack_require__(0)
-  , core           = __webpack_require__(16)
-  , LIBRARY        = __webpack_require__(15)
-  , wksExt         = __webpack_require__(23)
+  , core           = __webpack_require__(17)
+  , LIBRARY        = __webpack_require__(16)
+  , wksExt         = __webpack_require__(24)
   , defineProperty = __webpack_require__(4).f;
 module.exports = function(name){
   var $Symbol = core.Symbol || (core.Symbol = LIBRARY ? {} : global.Symbol || {});
@@ -346,13 +358,13 @@ module.exports = function(name){
 };
 
 /***/ }),
-/* 25 */
+/* 27 */
 /***/ (function(module, exports) {
 
 exports.f = {}.propertyIsEnumerable;
 
 /***/ }),
-/* 26 */
+/* 28 */
 /***/ (function(module, exports) {
 
 var g;
@@ -379,25 +391,19 @@ module.exports = g;
 
 
 /***/ }),
-/* 27 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = { "default": __webpack_require__(42), __esModule: true };
-
-/***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-var LIBRARY        = __webpack_require__(15)
-  , $export        = __webpack_require__(29)
-  , redefine       = __webpack_require__(32)
+var LIBRARY        = __webpack_require__(16)
+  , $export        = __webpack_require__(30)
+  , redefine       = __webpack_require__(33)
   , hide           = __webpack_require__(3)
   , has            = __webpack_require__(1)
-  , Iterators      = __webpack_require__(18)
+  , Iterators      = __webpack_require__(19)
   , $iterCreate    = __webpack_require__(47)
-  , setToStringTag = __webpack_require__(22)
+  , setToStringTag = __webpack_require__(23)
   , getPrototypeOf = __webpack_require__(54)
   , ITERATOR       = __webpack_require__(6)('iterator')
   , BUGGY          = !([].keys && 'next' in [].keys()) // Safari has buggy iterators w/o `next`
@@ -461,11 +467,11 @@ module.exports = function(Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCED
 };
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var global    = __webpack_require__(0)
-  , core      = __webpack_require__(16)
+  , core      = __webpack_require__(17)
   , ctx       = __webpack_require__(45)
   , hide      = __webpack_require__(3)
   , PROTOTYPE = 'prototype';
@@ -527,15 +533,15 @@ $export.R = 128; // real proto method for `library`
 module.exports = $export;
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = !__webpack_require__(5) && !__webpack_require__(9)(function(){
-  return Object.defineProperty(__webpack_require__(31)('div'), 'a', {get: function(){ return 7; }}).a != 7;
+  return Object.defineProperty(__webpack_require__(32)('div'), 'a', {get: function(){ return 7; }}).a != 7;
 });
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var isObject = __webpack_require__(8)
@@ -547,27 +553,27 @@ module.exports = function(it){
 };
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__(3);
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
 var anObject    = __webpack_require__(7)
   , dPs         = __webpack_require__(48)
-  , enumBugKeys = __webpack_require__(21)
-  , IE_PROTO    = __webpack_require__(19)('IE_PROTO')
+  , enumBugKeys = __webpack_require__(22)
+  , IE_PROTO    = __webpack_require__(20)('IE_PROTO')
   , Empty       = function(){ /* empty */ }
   , PROTOTYPE   = 'prototype';
 
 // Create object with fake `null` prototype: use iframe Object with cleared prototype
 var createDict = function(){
   // Thrash, waste and sodomy: IE GC bug
-  var iframe = __webpack_require__(31)('iframe')
+  var iframe = __webpack_require__(32)('iframe')
     , i      = enumBugKeys.length
     , lt     = '<'
     , gt     = '>'
@@ -600,13 +606,13 @@ module.exports = Object.create || function create(O, Properties){
 
 
 /***/ }),
-/* 34 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var has          = __webpack_require__(1)
   , toIObject    = __webpack_require__(2)
   , arrayIndexOf = __webpack_require__(50)(false)
-  , IE_PROTO     = __webpack_require__(19)('IE_PROTO');
+  , IE_PROTO     = __webpack_require__(20)('IE_PROTO');
 
 module.exports = function(object, names){
   var O      = toIObject(object)
@@ -622,7 +628,7 @@ module.exports = function(object, names){
 };
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, exports) {
 
 var toString = {}.toString;
@@ -630,12 +636,6 @@ var toString = {}.toString;
 module.exports = function(it){
   return toString.call(it).slice(8, -1);
 };
-
-/***/ }),
-/* 36 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = { "default": __webpack_require__(60), __esModule: true };
 
 /***/ }),
 /* 37 */
@@ -648,8 +648,8 @@ exports.f = Object.getOwnPropertySymbols;
 /***/ (function(module, exports, __webpack_require__) {
 
 // 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
-var $keys      = __webpack_require__(34)
-  , hiddenKeys = __webpack_require__(21).concat('length', 'prototype');
+var $keys      = __webpack_require__(35)
+  , hiddenKeys = __webpack_require__(22).concat('length', 'prototype');
 
 exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O){
   return $keys(O, hiddenKeys);
@@ -710,11 +710,11 @@ module.exports = exports['default'];
 
 exports.__esModule = true;
 
-var _iterator = __webpack_require__(27);
+var _iterator = __webpack_require__(13);
 
 var _iterator2 = _interopRequireDefault(_iterator);
 
-var _symbol = __webpack_require__(36);
+var _symbol = __webpack_require__(25);
 
 var _symbol2 = _interopRequireDefault(_symbol);
 
@@ -8313,7 +8313,7 @@ _eve2["default"].on("raphael.DOMload", function () {
 
 exports["default"] = R;
 module.exports = exports["default"];
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(26)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
 
 /***/ }),
 /* 42 */
@@ -8321,7 +8321,7 @@ module.exports = exports["default"];
 
 __webpack_require__(43);
 __webpack_require__(56);
-module.exports = __webpack_require__(23).f('iterator');
+module.exports = __webpack_require__(24).f('iterator');
 
 /***/ }),
 /* 43 */
@@ -8332,7 +8332,7 @@ module.exports = __webpack_require__(23).f('iterator');
 var $at  = __webpack_require__(44)(true);
 
 // 21.1.3.27 String.prototype[@@iterator]()
-__webpack_require__(28)(String, 'String', function(iterated){
+__webpack_require__(29)(String, 'String', function(iterated){
   this._t = String(iterated); // target
   this._i = 0;                // next index
 // 21.1.5.2.1 %StringIteratorPrototype%.next()
@@ -8350,8 +8350,8 @@ __webpack_require__(28)(String, 'String', function(iterated){
 /* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var toInteger = __webpack_require__(13)
-  , defined   = __webpack_require__(14);
+var toInteger = __webpack_require__(14)
+  , defined   = __webpack_require__(15);
 // true  -> String#at
 // false -> String#codePointAt
 module.exports = function(TO_STRING){
@@ -8408,9 +8408,9 @@ module.exports = function(it){
 
 "use strict";
 
-var create         = __webpack_require__(33)
+var create         = __webpack_require__(34)
   , descriptor     = __webpack_require__(10)
-  , setToStringTag = __webpack_require__(22)
+  , setToStringTag = __webpack_require__(23)
   , IteratorPrototype = {};
 
 // 25.1.2.1.1 %IteratorPrototype%[@@iterator]()
@@ -8444,7 +8444,7 @@ module.exports = __webpack_require__(5) ? Object.defineProperties : function def
 /***/ (function(module, exports, __webpack_require__) {
 
 // fallback for non-array-like ES3 and non-enumerable old V8 strings
-var cof = __webpack_require__(35);
+var cof = __webpack_require__(36);
 module.exports = Object('z').propertyIsEnumerable(0) ? Object : function(it){
   return cof(it) == 'String' ? it.split('') : Object(it);
 };
@@ -8480,7 +8480,7 @@ module.exports = function(IS_INCLUDES){
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.1.15 ToLength
-var toInteger = __webpack_require__(13)
+var toInteger = __webpack_require__(14)
   , min       = Math.min;
 module.exports = function(it){
   return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
@@ -8490,7 +8490,7 @@ module.exports = function(it){
 /* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var toInteger = __webpack_require__(13)
+var toInteger = __webpack_require__(14)
   , max       = Math.max
   , min       = Math.min;
 module.exports = function(index, length){
@@ -8511,7 +8511,7 @@ module.exports = __webpack_require__(0).document && document.documentElement;
 // 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
 var has         = __webpack_require__(1)
   , toObject    = __webpack_require__(55)
-  , IE_PROTO    = __webpack_require__(19)('IE_PROTO')
+  , IE_PROTO    = __webpack_require__(20)('IE_PROTO')
   , ObjectProto = Object.prototype;
 
 module.exports = Object.getPrototypeOf || function(O){
@@ -8527,7 +8527,7 @@ module.exports = Object.getPrototypeOf || function(O){
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.1.13 ToObject(argument)
-var defined = __webpack_require__(14);
+var defined = __webpack_require__(15);
 module.exports = function(it){
   return Object(defined(it));
 };
@@ -8539,7 +8539,7 @@ module.exports = function(it){
 __webpack_require__(57);
 var global        = __webpack_require__(0)
   , hide          = __webpack_require__(3)
-  , Iterators     = __webpack_require__(18)
+  , Iterators     = __webpack_require__(19)
   , TO_STRING_TAG = __webpack_require__(6)('toStringTag');
 
 for(var collections = ['NodeList', 'DOMTokenList', 'MediaList', 'StyleSheetList', 'CSSRuleList'], i = 0; i < 5; i++){
@@ -8558,14 +8558,14 @@ for(var collections = ['NodeList', 'DOMTokenList', 'MediaList', 'StyleSheetList'
 
 var addToUnscopables = __webpack_require__(58)
   , step             = __webpack_require__(59)
-  , Iterators        = __webpack_require__(18)
+  , Iterators        = __webpack_require__(19)
   , toIObject        = __webpack_require__(2);
 
 // 22.1.3.4 Array.prototype.entries()
 // 22.1.3.13 Array.prototype.keys()
 // 22.1.3.29 Array.prototype.values()
 // 22.1.3.30 Array.prototype[@@iterator]()
-module.exports = __webpack_require__(28)(Array, 'Array', function(iterated, kind){
+module.exports = __webpack_require__(29)(Array, 'Array', function(iterated, kind){
   this._t = toIObject(iterated); // target
   this._i = 0;                   // next index
   this._k = kind;                // kind
@@ -8612,7 +8612,7 @@ __webpack_require__(61);
 __webpack_require__(68);
 __webpack_require__(69);
 __webpack_require__(70);
-module.exports = __webpack_require__(16).Symbol;
+module.exports = __webpack_require__(17).Symbol;
 
 /***/ }),
 /* 61 */
@@ -8624,24 +8624,24 @@ module.exports = __webpack_require__(16).Symbol;
 var global         = __webpack_require__(0)
   , has            = __webpack_require__(1)
   , DESCRIPTORS    = __webpack_require__(5)
-  , $export        = __webpack_require__(29)
-  , redefine       = __webpack_require__(32)
+  , $export        = __webpack_require__(30)
+  , redefine       = __webpack_require__(33)
   , META           = __webpack_require__(62).KEY
   , $fails         = __webpack_require__(9)
-  , shared         = __webpack_require__(20)
-  , setToStringTag = __webpack_require__(22)
+  , shared         = __webpack_require__(21)
+  , setToStringTag = __webpack_require__(23)
   , uid            = __webpack_require__(12)
   , wks            = __webpack_require__(6)
-  , wksExt         = __webpack_require__(23)
-  , wksDefine      = __webpack_require__(24)
+  , wksExt         = __webpack_require__(24)
+  , wksDefine      = __webpack_require__(26)
   , keyOf          = __webpack_require__(63)
   , enumKeys       = __webpack_require__(64)
   , isArray        = __webpack_require__(65)
   , anObject       = __webpack_require__(7)
   , toIObject      = __webpack_require__(2)
-  , toPrimitive    = __webpack_require__(17)
+  , toPrimitive    = __webpack_require__(18)
   , createDesc     = __webpack_require__(10)
-  , _create        = __webpack_require__(33)
+  , _create        = __webpack_require__(34)
   , gOPNExt        = __webpack_require__(66)
   , $GOPD          = __webpack_require__(67)
   , $DP            = __webpack_require__(4)
@@ -8769,10 +8769,10 @@ if(!USE_NATIVE){
   $GOPD.f = $getOwnPropertyDescriptor;
   $DP.f   = $defineProperty;
   __webpack_require__(38).f = gOPNExt.f = $getOwnPropertyNames;
-  __webpack_require__(25).f  = $propertyIsEnumerable;
+  __webpack_require__(27).f  = $propertyIsEnumerable;
   __webpack_require__(37).f = $getOwnPropertySymbols;
 
-  if(DESCRIPTORS && !__webpack_require__(15)){
+  if(DESCRIPTORS && !__webpack_require__(16)){
     redefine(ObjectProto, 'propertyIsEnumerable', $propertyIsEnumerable, true);
   }
 
@@ -8935,7 +8935,7 @@ module.exports = function(object, el){
 // all enumerable object keys, includes symbols
 var getKeys = __webpack_require__(11)
   , gOPS    = __webpack_require__(37)
-  , pIE     = __webpack_require__(25);
+  , pIE     = __webpack_require__(27);
 module.exports = function(it){
   var result     = getKeys(it)
     , getSymbols = gOPS.f;
@@ -8953,7 +8953,7 @@ module.exports = function(it){
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.2.2 IsArray(argument)
-var cof = __webpack_require__(35);
+var cof = __webpack_require__(36);
 module.exports = Array.isArray || function isArray(arg){
   return cof(arg) == 'Array';
 };
@@ -8987,12 +8987,12 @@ module.exports.f = function getOwnPropertyNames(it){
 /* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var pIE            = __webpack_require__(25)
+var pIE            = __webpack_require__(27)
   , createDesc     = __webpack_require__(10)
   , toIObject      = __webpack_require__(2)
-  , toPrimitive    = __webpack_require__(17)
+  , toPrimitive    = __webpack_require__(18)
   , has            = __webpack_require__(1)
-  , IE8_DOM_DEFINE = __webpack_require__(30)
+  , IE8_DOM_DEFINE = __webpack_require__(31)
   , gOPD           = Object.getOwnPropertyDescriptor;
 
 exports.f = __webpack_require__(5) ? gOPD : function getOwnPropertyDescriptor(O, P){
@@ -9014,13 +9014,13 @@ exports.f = __webpack_require__(5) ? gOPD : function getOwnPropertyDescriptor(O,
 /* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(24)('asyncIterator');
+__webpack_require__(26)('asyncIterator');
 
 /***/ }),
 /* 70 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(24)('observable');
+__webpack_require__(26)('observable');
 
 /***/ }),
 /* 71 */
@@ -9479,7 +9479,7 @@ exports["default"] = function (glob) {
 }(typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : null);
 
 module.exports = exports["default"];
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(26)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28)))
 
 /***/ }),
 /* 72 */
@@ -11648,6 +11648,29 @@ module.exports = exports["default"]; /**
 
 exports.__esModule = true;
 
+var _iterator = __webpack_require__(13);
+
+var _iterator2 = _interopRequireDefault(_iterator);
+
+var _symbol = __webpack_require__(25);
+
+var _symbol2 = _interopRequireDefault(_symbol);
+
+var _typeof = typeof _symbol2["default"] === "function" && typeof _iterator2["default"] === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof _symbol2["default"] === "function" && obj.constructor === _symbol2["default"] && obj !== _symbol2["default"].prototype ? "symbol" : typeof obj; }; /**
+                                                                                                                                                                                                                                                                                                                                        * !
+                                                                                                                                                                                                                                                                                                                                        * RedRaphael 1.0.0 - JavaScript Vector Library VML Module
+                                                                                                                                                                                                                                                                                                                                        * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
+                                                                                                                                                                                                                                                                                                                                        *
+                                                                                                                                                                                                                                                                                                                                        * Raphael 2.1.0 - JavaScript Vector Library VML Module
+                                                                                                                                                                                                                                                                                                                                        * Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
+                                                                                                                                                                                                                                                                                                                                        * Copyright © 2008-2012 Sencha Labs <http://sencha.com>
+                                                                                                                                                                                                                                                                                                                                        *
+                                                                                                                                                                                                                                                                                                                                        * Licensed under the MIT license.
+                                                                                                                                                                                                                                                                                                                                        */
+// Define _window as window object in case of indivual file inclusion.
+//
+
+
 exports["default"] = function (R) {
     if (R.vml) {
         var has = "hasOwnProperty",
@@ -12284,22 +12307,27 @@ exports["default"] = function (R) {
         customGroupUpdate = function customGroupUpdate(attributes) {
             var group = this,
                 childElem,
+                info,
                 ownAttr = group.ownAttr;
 
-            if (attributes) {
-                group.ownAttr = ownAttr ? R.extend(ownAttr, attributes) : attributes;
-            }
-            info = getApplicableGroupAttributes(group);
-            group.customAttr = info.customAttr;
-            group.inheritAttr = info.inheritAttr;
+            if ((typeof attributes === "undefined" ? "undefined" : _typeof(attributes)) === 'object') {
+                if (attributes) {
+                    group.ownAttr = ownAttr ? R.extend(ownAttr, attributes) : attributes;
+                }
+                info = getApplicableGroupAttributes(group);
+                group.customAttr = info.customAttr;
+                group.inheritAttr = info.inheritAttr;
 
-            // Applying the group properties to all its child element
-            childElem = group.bottom;
-            while (childElem) {
-                childElem.attr();
-                childElem = childElem.next;
+                // Applying the group properties to all its child element
+                childElem = group.bottom;
+                while (childElem) {
+                    childElem.attr();
+                    childElem = childElem.next;
+                }
+                return attributes && elproto.attr.call(group, attributes);
+            } else {
+                elproto.attr.apply(group, arguments);
             }
-            return attributes && elproto.attr.call(group, attributes);
         },
 
 
@@ -12312,16 +12340,20 @@ exports["default"] = function (R) {
                 parent = element.parent,
                 ownAttr = element.ownAttr;
 
-            if (attributes) {
-                element.ownAttr = ownAttr ? R.extend(ownAttr, attributes) : attributes;
+            if ((typeof attributes === "undefined" ? "undefined" : _typeof(attributes)) === 'object') {
+                if (attributes) {
+                    element.ownAttr = ownAttr ? R.extend(ownAttr, attributes) : attributes;
+                }
+
+                attributes = getApplicableAttributes(parent, attributes, element);
+
+                element.inheritAttrFromGroup = parent && parent.inheritAttr;
+                element.customAttrFromGroup = parent && parent.customAttr;
+
+                return elproto.attr.call(element, attributes);
+            } else {
+                elproto.attr.apply(element, arguments);
             }
-
-            attributes = getApplicableAttributes(parent, attributes, element);
-
-            element.inheritAttrFromGroup = parent && parent.inheritAttr;
-            element.customAttrFromGroup = parent && parent.customAttr;
-
-            return elproto.attr.call(element, attributes);
         },
 
 
@@ -13324,19 +13356,9 @@ exports["default"] = function (R) {
     }
 };
 
-module.exports = exports["default"]; /**
-                                     * !
-                                     * RedRaphael 1.0.0 - JavaScript Vector Library VML Module
-                                     * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
-                                     *
-                                     * Raphael 2.1.0 - JavaScript Vector Library VML Module
-                                     * Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
-                                     * Copyright © 2008-2012 Sencha Labs <http://sencha.com>
-                                     *
-                                     * Licensed under the MIT license.
-                                     */
-// Define _window as window object in case of indivual file inclusion.
-//
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+module.exports = exports["default"];
 
 /***/ }),
 /* 74 */
@@ -13347,11 +13369,11 @@ module.exports = exports["default"]; /**
 
 exports.__esModule = true;
 
-var _iterator = __webpack_require__(27);
+var _iterator = __webpack_require__(13);
 
 var _iterator2 = _interopRequireDefault(_iterator);
 
-var _symbol = __webpack_require__(36);
+var _symbol = __webpack_require__(25);
 
 var _symbol2 = _interopRequireDefault(_symbol);
 

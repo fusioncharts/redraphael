@@ -4447,6 +4447,229 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
     };
 
     /*\
+     * Paper._createDOMNodes
+     [ method ]
+     **
+     * Create DOM nodes with nested children
+     **
+     > Parameters
+     **
+     - parentElem (object) parent element node
+     - elemObj (object) nested input object to create elements
+     - returnObj (object) object reference which will be returned
+     **
+     > Usage
+     | paper._createDOMNodes(parentElementNode, {
+     |       tagName: 'filter',
+     |       id: 'filter-0',
+     |       width: '200%',
+     |       height: '200%',
+     |       children: [{
+     |           tagName: 'feOffset',
+     |           result: 'offOut',
+     |           in: 'SourceGraphic',
+     |           dx: '1',
+     |           dy: '1'
+     |       }, {
+     |           tagName: 'feColorMatrix',
+     |           result: 'matrixOut',
+     |           in: 'offOut',
+     |           type: 'matrix',
+     |           values: '0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.3 0'
+     |       }, {
+     |           tagName: 'feGaussianBlur',
+     |           result: 'blurOut',
+     |           in: 'matrixOut',
+     |           stdDeviation: '1'
+     |       }, {
+     |           tagName: 'feComposite',
+     |           in: 'SourceGraphic',
+     |           in2: 'blurOut',
+     |           operator: 'over'
+     |       }]
+     |   });
+    \*/
+    paperproto._createDOMNodes = function(parentElem, elementObj, returnObj) {
+        var paper = this,
+            ele,
+            i,
+            len,
+            attr = {},
+            attrKey,
+            createNode = R._createNode,
+            tagName = elementObj.tagName,
+            children = elementObj.children || [];
+        !returnObj && (returnObj = {});
+        for (attrKey in elementObj) {
+            if (attrKey !== 'tagName' && attrKey !== 'children') {
+                attr[attrKey] = elementObj[attrKey];
+            }
+        }
+
+        !attr.id && (attr.id = R.getElementID(R.createUUID()));
+
+        if (!R._g.doc.getElementById(attr.id) && tagName) {
+            ele = parentElem.appendChild(createNode(tagName, attr));
+            returnObj.element = ele;
+            returnObj.id = attr.id;
+            len = children.length;
+            (len > 0) && (returnObj.children = []);
+            for (i = 0; i < len; i++) {
+                returnObj.children[i] = {};
+                paper._createDOMNodes(ele, children[i], returnObj.children[i]);
+            }
+        }
+        return returnObj;
+    };
+
+    /*\
+     * Paper.addDefs
+     [ method ]
+     **
+     * Add definitions in paper
+     **
+     > Parameters
+     **
+     - elemObj (object) nested input object to create elements
+     **
+     > Usage
+     | var ob = paper.addDefs({
+     |   filter0: { // key
+     |       tagName: 'filter',
+     |       id: 'filter-0',
+     |       width: '200%',
+     |       height: '200%',
+     |       children: [{
+     |           tagName: 'feOffset',
+     |           result: 'offOut',
+     |           in: 'SourceGraphic',
+     |           dx: '1',
+     |           dy: '1'
+     |       }, {
+     |           tagName: 'feColorMatrix',
+     |           result: 'matrixOut',
+     |           in: 'offOut',
+     |           type: 'matrix',
+     |           values: '0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.3 0'
+     |       }, {
+     |           tagName: 'feGaussianBlur',
+     |           result: 'blurOut',
+     |           in: 'matrixOut',
+     |           stdDeviation: '1'
+     |       }, {
+     |           tagName: 'feComposite',
+     |           in: 'SourceGraphic',
+     |           in2: 'blurOut',
+     |           operator: 'over'
+     |       }]
+     |   }
+     | });
+     | // Creates a 'filter' definition element of id, 'filter-0', with width, height as it's attributes
+     | // Creates feOffset, feColorMatrix, feGaussianBlur, feComposite as children elements
+     | // under the 'filter' definition element
+    \*/
+    paperproto.addDefs = function (elemObj) {
+        if (!R.svg) {
+            return;
+        }
+        var paper = this,
+            key,
+            returnObj = {},
+            defs = paper.defs;
+
+        for (key in elemObj) {
+            returnObj[key] = {};
+            paper._createDOMNodes(defs, elemObj[key], returnObj[key]);
+        }
+        return returnObj;
+    };
+
+    /*\
+     * Paper.removeDefs
+     [ method ]
+     **
+     * Remove a particular definition of given id from paper
+     **
+     > Parameters
+     **
+     - id (string) id of the element to remove
+     **
+     > Usage
+     | paper.removeDefs(id);
+    \*/
+    paperproto.removeDefs = function (id) {
+        if (!R.svg) {
+            return;
+        }
+        var element = R._g.doc.getElementById(id);
+        element && element.remove();
+    };
+
+    /*\
+     * Paper.updateDefs
+     [ method ]
+     **
+     * Update definitions in paper
+     **
+     > Parameters
+     **
+     - id (string or object) id of the element or the element node itself
+     - attrObj (object) attribute of the element object with it's children attributes nested
+     - hardUpdateChildren (boolean) determines whether to create new children if child elements are less than
+       the children in attrObj or remove children in same manner
+     **
+     > Usage
+     | paper.updateDefs(id, {
+     |      width: '100%',
+     |      height: '100%',
+     |      children: [{
+     |          dx: '2'
+     |      }]
+     |   }, true);
+     | // Updates element of given id
+     | // Updates the child element if present and create new child if found less than the children in attrObj
+     | // and delete a child in same manner according to value of 'hardUpdateChildren'
+    \*/
+    paperproto.updateDefs = function (id, attrObj, hardUpdateChildren) {
+        if (!R.svg) {
+            return;
+        }
+        var paper = this,
+            element = !(id instanceof Node) ? R._g.doc.getElementById(id) : id,
+            attrKey,
+            i,
+            diff,
+            len,
+            children = attrObj.children || [],
+            elemChildren,
+            childId,
+            attr = {};
+
+        (hardUpdateChildren === undefined) && (hardUpdateChildren = true);
+
+        if (element) {
+            for (attrKey in attrObj) {
+                if (attrKey !== 'tagName' && attrKey !== 'children') {
+                    element.setAttribute(attrKey, attrObj[attrKey]);
+                }
+            }
+            elemChildren = element.children;
+            for (i = 0, len = children.length; i < len; i++) {
+                childId = children[i].id;
+                elemChildren[i] ? paper.updateDefs(childId || elemChildren[i], children[i]) :
+                    hardUpdateChildren && paper._createDOMNodes(element, children[i]);
+            }
+            if (hardUpdateChildren) {
+                diff = elemChildren.length - i;
+                while (diff > 0) {
+                    elemChildren[elemChildren.length - 1].remove();
+                    diff--;
+                }
+            }
+        }
+    };
+
+    /*\
      * Paper.setStart
      [ method ]
      **
@@ -4821,12 +5044,44 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
      = (object) clone of a given element
      **
     \*/
-    elproto.clone = function() {
+    // elproto.clone = function() {
+    //     if (this.removed) {
+    //         return null;
+    //     }
+    //     var o = this,
+    //         out = o.paper[o.type]().attr(o.attr());
+    //     o.__set__ && o.__set__.push(out);
+    //     return out;
+    // };
+
+    /*\
+     * Element.clone
+     [ method ]
+     **
+      > Parameters
+     **
+     - attrObj (object) set of attributes
+     - group (object) parent node
+     = (object) clone of a given element
+     **
+    \*/
+    elproto.clone = function(attrObj, group) {
         if (this.removed) {
             return null;
         }
         var o = this,
-            out = o.paper[o.type]().attr(o.attr());
+            attr = o.attr(),
+            key,
+            out;
+
+        if (!attrObj) {
+            out = o.paper[o.type]().attr(attr);
+        } else {
+            for (key in attrObj) {
+                attr[key] = attrObj[key];
+            }
+            out = o.paper[o.type](attr, group);
+        }
         o.__set__ && o.__set__.push(out);
         return out;
     };

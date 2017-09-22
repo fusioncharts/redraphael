@@ -12641,7 +12641,7 @@ exports["default"] = function (R) {
                 // Direct attributes from parent
                 for (attr in parentCustomAttr) {
                     if (parentCustomAttr[has](attr)) {
-                        inheritAttr[attr] = parentCustomAttr[attr];
+                        !customAttr[attr] && (customAttr[attr] = parentCustomAttr[attr]);
                     }
                 }
 
@@ -12672,6 +12672,9 @@ exports["default"] = function (R) {
 
                 for (attr in customAttr) {
                     if (customAttr[has](attr)) {
+                        if (attr === 'fill-opacity' && customAttr.fill && R.getRGB(customAttr.fill).opacity !== undefined) {
+                            continue;
+                        }
                         !elemAttr[attr] && (elemAttr[attr] = customAttr[attr]);
                     }
                 }

@@ -737,7 +737,7 @@ export default function (R) {
                 // Segregating the custom group attributes
                 if (ownAttr) {
                     for (attr in ownAttr) {
-                        if (notApplicableGroupAttrs[attr]) {
+                        if (ownAttr[has](attr) && notApplicableGroupAttrs[attr]) {
                             customAttr[attr] = ownAttr[attr];
                         }
                     }
@@ -750,12 +750,16 @@ export default function (R) {
 
                     // Direct attributes from parent
                     for (attr in parentCustomAttr) {
-                        inheritAttr[attr] = parentCustomAttr[attr];
+                        if (parentCustomAttr[has](attr)) {
+                            inheritAttr[attr] = parentCustomAttr[attr];
+                        }
                     }
 
                     // Inherited attributes from parent
                     for (attr in parentInheritAttr) {
-                        !inheritAttr[attr] && (inheritAttr[attr] = parentInheritAttr[attr]);
+                        if (parentInheritAttr[has](attr)) {
+                            !inheritAttr[attr] && (inheritAttr[attr] = parentInheritAttr[attr]);
+                        }
                     }
                 }
 
@@ -772,17 +776,21 @@ export default function (R) {
                 var customAttr,
                     inheritAttr,
                     attr;
-                elemAttr = elemAttr || R.extend({}, elem.ownAttr);
+                elemAttr = elemAttr ? R.extend({}, elemAttr) : R.extend({}, elem.ownAttr);
                 if (group) {
                     customAttr = group.customAttr;
                     inheritAttr = group.inheritAttr;
 
                     for (attr in customAttr) {
-                        !elemAttr[attr] && (elemAttr[attr] = customAttr[attr]);
+                        if (customAttr[has](attr)) {
+                            !elemAttr[attr] && (elemAttr[attr] = customAttr[attr]);
+                        }
                     }
 
                     for (attr in inheritAttr) {
-                        !elemAttr[attr] && (elemAttr[attr] = inheritAttr[attr]);
+                        if (inheritAttr[has](attr)) {
+                            !elemAttr[attr] && (elemAttr[attr] = inheritAttr[attr]);
+                        }
                     }
                 }
                 return elemAttr;

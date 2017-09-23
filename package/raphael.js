@@ -12554,6 +12554,38 @@ exports["default"] = function (R) {
             opacity: true
         },
 
+
+        /*
+         * Function to get the group attrs applicable to its child.
+         */
+        getApplicableAttributes = function getApplicableAttributes(group, ownAttr) {
+            var customAttr,
+                inheritAttr,
+                attr,
+                elemAttr = R.extend({}, ownAttr);
+            if (group) {
+                customAttr = group.customAttr;
+                inheritAttr = group.inheritAttr;
+
+                for (attr in customAttr) {
+                    if (customAttr[has](attr)) {
+                        if (attr === 'fill-opacity' && customAttr.fill && R.getRGB(customAttr.fill).opacity !== undefined) {
+                            continue;
+                        }
+                        !elemAttr[attr] && (elemAttr[attr] = customAttr[attr]);
+                    }
+                }
+
+                for (attr in inheritAttr) {
+                    if (inheritAttr[has](attr)) {
+                        !elemAttr[attr] && (elemAttr[attr] = inheritAttr[attr]);
+                    }
+                }
+            }
+            return elemAttr;
+        },
+
+
         /*
          * Function to over-write the default attr() function of group so that the individual properties of group
          * can be applied to its child.
@@ -12599,7 +12631,7 @@ exports["default"] = function (R) {
                     element.ownAttr = ownAttr ? R.extend(ownAttr, attributes) : attributes;
                 }
 
-                attributes = getApplicableAttributes(parent, attributes, element);
+                attributes = getApplicableAttributes(parent, element.ownAttr);
 
                 element.inheritAttrFromGroup = parent && parent.inheritAttr;
                 element.customAttrFromGroup = parent && parent.customAttr;
@@ -12657,35 +12689,6 @@ exports["default"] = function (R) {
                 customAttr: customAttr,
                 inheritAttr: inheritAttr
             };
-        },
-
-
-        /*
-         * Function to get the group attrs applicable to its child.
-         */
-        getApplicableAttributes = function getApplicableAttributes(group, elemAttr, elem) {
-            var customAttr, inheritAttr, attr;
-            elemAttr = elemAttr ? R.extend({}, elemAttr) : R.extend({}, elem.ownAttr);
-            if (group) {
-                customAttr = group.customAttr;
-                inheritAttr = group.inheritAttr;
-
-                for (attr in customAttr) {
-                    if (customAttr[has](attr)) {
-                        if (attr === 'fill-opacity' && customAttr.fill && R.getRGB(customAttr.fill).opacity !== undefined) {
-                            continue;
-                        }
-                        !elemAttr[attr] && (elemAttr[attr] = customAttr[attr]);
-                    }
-                }
-
-                for (attr in inheritAttr) {
-                    if (inheritAttr[has](attr)) {
-                        !elemAttr[attr] && (elemAttr[attr] = inheritAttr[attr]);
-                    }
-                }
-            }
-            return elemAttr;
         };
 
         /*\

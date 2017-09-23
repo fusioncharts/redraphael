@@ -663,6 +663,38 @@ export default function (R) {
                 'fill-opacity' : true,
                 opacity : true
             },
+
+            /*
+             * Function to get the group attrs applicable to its child.
+             */
+            getApplicableAttributes = function (group, ownAttr) {
+                var customAttr,
+                    inheritAttr,
+                    attr,
+                    elemAttr = R.extend({}, ownAttr);
+                if (group) {
+                    customAttr = group.customAttr;
+                    inheritAttr = group.inheritAttr;
+
+                    for (attr in customAttr) {
+                        if (customAttr[has](attr)) {
+                            if (attr === 'fill-opacity' && customAttr.fill &&
+                                R.getRGB(customAttr.fill).opacity !== undefined) {
+                                continue;
+                            }
+                            !elemAttr[attr] && (elemAttr[attr] = customAttr[attr]);
+                        }
+                    }
+
+                    for (attr in inheritAttr) {
+                        if (inheritAttr[has](attr)) {
+                            !elemAttr[attr] && (elemAttr[attr] = inheritAttr[attr]);
+                        }
+                    }
+                }
+                return elemAttr;
+            },
+
             /*
              * Function to over-write the default attr() function of group so that the individual properties of group
              * can be applied to its child.
@@ -698,7 +730,7 @@ export default function (R) {
              * Function to over-write the default attr() function of an element so that the individual properties of group
              * can be applied to the child.
              */
-            customElementUpdate = function customElementUpdate(attributes) {
+            customElementUpdate = function(attributes) {
                 var element = this,
                     parent = element.parent,
                     ownAttr = element.ownAttr;
@@ -708,7 +740,7 @@ export default function (R) {
                     element.ownAttr = ownAttr ? R.extend(ownAttr, attributes) : attributes;
                     }
 
-                    attributes = getApplicableAttributes(parent, attributes, element);
+                    attributes = getApplicableAttributes(parent, element.ownAttr);
 
                     element.inheritAttrFromGroup = parent && parent.inheritAttr;
                     element.customAttrFromGroup = parent && parent.customAttr;
@@ -718,7 +750,6 @@ export default function (R) {
                 else {
                     return elproto.attr.apply(element, arguments);
                 }
-
             },
 
             /*
@@ -767,37 +798,6 @@ export default function (R) {
                     customAttr : customAttr,
                     inheritAttr : inheritAttr
                 }
-            },
-
-            /*
-             * Function to get the group attrs applicable to its child.
-             */
-            getApplicableAttributes = function (group, elemAttr, elem) {
-                var customAttr,
-                    inheritAttr,
-                    attr;
-                elemAttr = elemAttr ? R.extend({}, elemAttr) : R.extend({}, elem.ownAttr);
-                if (group) {
-                    customAttr = group.customAttr;
-                    inheritAttr = group.inheritAttr;
-
-                    for (attr in customAttr) {
-                        if (customAttr[has](attr)) {
-                            if (attr === 'fill-opacity' && customAttr.fill &&
-                                R.getRGB(customAttr.fill).opacity !== undefined) {
-                                continue;
-                            }
-                            !elemAttr[attr] && (elemAttr[attr] = customAttr[attr]);
-                        }
-                    }
-
-                    for (attr in inheritAttr) {
-                        if (inheritAttr[has](attr)) {
-                            !elemAttr[attr] && (elemAttr[attr] = inheritAttr[attr]);
-                        }
-                    }
-                }
-                return elemAttr;
             };
 
         /*\

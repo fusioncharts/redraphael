@@ -12607,7 +12607,7 @@ exports["default"] = function (R) {
                 // Applying the group properties to all its child element
                 childElem = group.bottom;
                 while (childElem) {
-                    childElem.attr();
+                    childElem.attr({});
                     childElem = childElem.next;
                 }
                 return attributes && elproto.attr.call(group, attributes);

@@ -414,6 +414,7 @@ export default function (R) {
                 params["stroke-width"] == null && (width = a["stroke-width"]);
                 params["stroke-width"] && (stroke.weight = width);
                 width && width < 1 && (opacity *= width) && (stroke.weight = 1);
+                // stroke-opacity should be applied only if stroke color is provided.
                 stroke.opacity = (a.stroke !== 'none') ? opacity : 0;
                 params["stroke-linejoin"] && (stroke.joinstyle = params["stroke-linejoin"]) || newstroke && (newstroke.joinstyle = 'miter');
                 stroke.miterlimit = params["stroke-miterlimit"] || 8;

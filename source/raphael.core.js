@@ -4284,7 +4284,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
 
         !attr.id && (attr.id = R.getElementID(R.createUUID()));
 
-        if (!R._g.doc.getElementById(attr.id) && tagName) {
+        if (!paper.canvas.getElementById(attr.id) && tagName) {
             ele = parentElem.appendChild(createNode(tagName, attr));
             returnObj.element = ele;
             returnObj.id = attr.id;

@@ -1309,20 +1309,7 @@ _window.Raphael && _window.Raphael.svg && function(R) {
                     document.getElementsByTagName('svg')[0].appendChild(txtElem);
                 }
                 txtElem.setAttribute('style', 'font-family :' + fontFamily + '; font-size :' + fontSize);
-
-                /**
-                 * In firefox, there is an issue of 'getBBox'
-                 * Reference - 'https://bugzilla.mozilla.org/show_bug.cgi?id=612118'
-                 * Thus, 'getBoundingClientRect' is exclusively used instead of 'getBBox' for firefox
-                 */
-                if (isFireFox) {
-                    paperBBox = o.paper.canvas.getBoundingClientRect();
-                    bbox = txtElem.getBoundingClientRect();
-                    bbox.x = bbox.left - paperBBox.left;
-                    bbox.y = bbox.top - paperBBox.top;
-                } else {
-                    bbox = txtElem.getBBox();
-                }
+                bbox = txtElem.getBBox();
                 availableFontFamily[fontSize] = availableFontSize = [];
                 availableFontSize.push(bbox.height);
                 availableFontSize.push(bbox.y);

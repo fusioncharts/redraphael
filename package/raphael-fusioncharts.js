@@ -8770,6 +8770,30 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
         }
     },
 
+    /*
+    * Normalize text anchor for mixed LTR & RTL text
+    * Browsers are not able to render the text correctly when text-anchor is end or middle for mixed RTL & LTR text 
+    * so to fix this we are changing the text-anchor attribute to start and re-adjusting the x position of the text
+    */
+    normalizeTextAnchor = function (o) {
+        var anchor = o.attr('text-anchor'),
+            x = o.attrs.x;
+
+        switch (anchor) {
+            case "end":
+                x = x - o.getBBox().width;
+                break;
+            case "middle":
+                x = x - (o.getBBox().width * 0.5);
+                break;
+        }
+
+        o.attr({
+            'text-anchor': 'start',
+            'x': x
+        });
+    },
+
     setFillAndStroke = R._setFillAndStroke = function(o, params, group) {
         if (!o.paper.canvas) {
             return;
@@ -9980,14 +10004,20 @@ if (typeof _window === 'undefined' && typeof window === 'object') {
     };
     R._engine.text = function(svg, attrs, group, css) {
         var el = $("text"),
-            res = new Element(el, svg, group);
+            res = new Element(el, svg, group),
+            config = svg.config;
         res.type = "text";
         res._textdirty = true;
         // Ideally this code should not be here as .css() is not a function of rapheal.
         css && res.css && res.css(css, undefined, true);
 
+        
         setFillAndStroke(res, attrs, group);
         applyCustomAttributes(res, attrs);
+
+        // Fix for RTL & LTR mixed text
+        (config && config.hasRTLText) && normalizeTextAnchor(res);
+
         return res;
     };
 

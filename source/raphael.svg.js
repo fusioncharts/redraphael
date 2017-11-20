@@ -513,6 +513,34 @@ _window.Raphael && _window.Raphael.svg && function(R) {
         }
     },
 
+    /*
+    * Normalize text anchor for mixed LTR & RTL text
+    * Browsers are not able to render the text correctly when text-anchor is end or middle for mixed RTL & LTR text
+    * so to fix this we are changing the text-anchor attribute to start and re-adjusting the x position of the text
+    */
+    normalizeTextAnchor = function (o) {
+        var anchor = o.attr('text-anchor', undefined, true),
+            x = o.attr('x', undefined, true);
+
+        if (isNaN(x) || x == undefined || x == null || !x) {
+            return;
+        }
+
+        switch (anchor) {
+            case "end":
+                x = x - o.getBBox().width;
+                break;
+            case "middle":
+                x -= (o.getBBox().width * 0.5);
+                break;
+        }
+
+        o.attr({
+            'text-anchor': 'start',
+            'x': x
+        }, undefined, true);
+    },
+
     setFillAndStroke = R._setFillAndStroke = function(o, params, group) {
         if (!o.paper.canvas) {
             return;
@@ -1403,7 +1431,7 @@ _window.Raphael && _window.Raphael.svg && function(R) {
         return bbox;
     };
 
-    elproto.attr = function(name, value) {
+    elproto.attr = function(name, value, isSet) {
         if (this.removed) {
             return this;
         }
@@ -1492,6 +1520,10 @@ _window.Raphael && _window.Raphael.svg && function(R) {
 
         for (subkey in todel) {
             params[subkey] = todel[subkey];
+        }
+
+        if (this.type === 'text' && !isSet && this.paper.config.hasRTLText && this.attr('text') !== undefined) {
+            normalizeTextAnchor(this);
         }
         return this;
     };
@@ -1723,7 +1755,8 @@ _window.Raphael && _window.Raphael.svg && function(R) {
     };
     R._engine.text = function(svg, attrs, group, css) {
         var el = $("text"),
-            res = new Element(el, svg, group);
+            res = new Element(el, svg, group),
+            config = svg.config;
         res.type = "text";
         res._textdirty = true;
         // Ideally this code should not be here as .css() is not a function of rapheal.
@@ -1731,6 +1764,8 @@ _window.Raphael && _window.Raphael.svg && function(R) {
 
         setFillAndStroke(res, attrs, group);
         applyCustomAttributes(res, attrs);
+
+        (config && config.hasRTLText) && normalizeTextAnchor(res);
         return res;
     };
 

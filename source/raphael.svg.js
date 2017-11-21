@@ -520,12 +520,29 @@ _window.Raphael && _window.Raphael.svg && function(R) {
     */
     normalizeTextAnchor = function (o) {
         var anchor = o.attr('text-anchor', undefined, true),
-            x = o.attr('x', undefined, true);
+            x = o.attr('x', undefined, true),
+            transform = o.attr('transform');
+            
+        transform = (transform && transform[0] || []);
+
+        // if (transform[1] == '270') {
+            // Write logic to fix the mixed text in rotate mode
+            // o.attr({
+            //     'text-anchor': 'start',
+            //     x: o.attr('x') - (o.getBBox().height * 1)
+            // }, undefined, true)
+            // return;
+        // }
+            
 
         if (isNaN(x) || x == undefined || x == null || !x) {
             return;
         }
 
+        o.attr({
+            'text-anchor': 'start'
+        }, undefined, true);
+        
         switch (anchor) {
             case "end":
                 x = x - o.getBBox().width;
@@ -536,7 +553,6 @@ _window.Raphael && _window.Raphael.svg && function(R) {
         }
 
         o.attr({
-            'text-anchor': 'start',
             'x': x
         }, undefined, true);
     },

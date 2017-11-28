@@ -16,6 +16,9 @@ export default function (R) {
             Str = String,
             toFloat = parseFloat,
             toInt = parseInt,
+            theMSG,
+            randomPos = -100,
+            txtElem,
             math = Math,
             mmax = math.max,
             abs = math.abs,
@@ -41,7 +44,7 @@ export default function (R) {
             updateReferenceUrl = function () {
                 return R._url = R._g.win.location.href.replace(/#.*?$/, E);
             },
-            createDT = function (paper) {
+            createDummyText = function (paper) {
                 txtElem = paper.txtElem = document.createElementNS('http://www.w3.org/2000/svg', 'text')
                 txtElem.setAttribute('x', randomPos)
                 txtElem.setAttribute('y', randomPos)
@@ -1278,7 +1281,7 @@ export default function (R) {
                 cachedFontHeight,
                 txtElem,
                 theText,
-                theMSG,
+                paper,
                 availableFontFamily,
                 availableFontSize,
                 info,
@@ -1776,7 +1779,7 @@ export default function (R) {
                 id: "raphael-paper-" + container.id
             });
             container.clear();
-            createDT(container);
+            createDummyText(container);
             container._left = container._top = 0;
             isFloating && (container.renderfix = function() {
                 });

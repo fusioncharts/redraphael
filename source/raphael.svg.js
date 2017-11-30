@@ -16,6 +16,9 @@ export default function (R) {
             Str = String,
             toFloat = parseFloat,
             toInt = parseInt,
+            theMSG,
+            randomPos = -100,
+            txtElem,
             math = Math,
             mmax = math.max,
             abs = math.abs,
@@ -40,6 +43,14 @@ export default function (R) {
             markerCounter = {},
             updateReferenceUrl = function () {
                 return R._url = R._g.win.location.href.replace(/#.*?$/, E);
+            },
+            createDummyText = function (paper) {
+                txtElem = paper.txtElem = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+                txtElem.setAttribute('x', randomPos)
+                txtElem.setAttribute('y', randomPos)
+                theMSG = document.createTextNode('abcdefhiklmnopqrstuvwxyz')
+                txtElem.appendChild(theMSG)
+                document.getElementsByTagName('svg')[0].appendChild(txtElem)
             };
 
         R.cachedFontHeight = {};
@@ -1270,7 +1281,7 @@ export default function (R) {
                 cachedFontHeight,
                 txtElem,
                 theText,
-                theMSG,
+                paper,
                 availableFontFamily,
                 availableFontSize,
                 info,
@@ -1291,24 +1302,14 @@ export default function (R) {
 
             if (isText) {
                 cachedFontHeight = R.cachedFontHeight;
-                txtElem = cachedFontHeight.txtElem;
+                paper = this.paper;
+                txtElem = paper.txtElem;
                 availableFontFamily = cachedFontHeight[fontFamily] || (cachedFontHeight[fontFamily] = {});
                 availableFontSize = availableFontFamily[fontSize];
                 randomPos = -100;
 
                 if (!availableFontSize) {
-                    if (!txtElem) {
-                        txtElem = cachedFontHeight.txtElem = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                        txtElem.setAttribute('x', randomPos);
-                        txtElem.setAttribute('y', randomPos);
-
-                        theMSG = document.createTextNode('abcdefhiklmnopqrstuvwxyz');
-                        txtElem.appendChild(theMSG);
-
-                        document.getElementsByTagName('svg')[0].appendChild(txtElem);
-                    }
                     txtElem.setAttribute('style', 'font-family :' + fontFamily + '; font-size :' + fontSize);
-
                     bbox = txtElem.getBBox();
                     availableFontFamily[fontSize] = availableFontSize = [];
                     availableFontSize.push(bbox.height);
@@ -1778,6 +1779,7 @@ export default function (R) {
                 id: "raphael-paper-" + container.id
             });
             container.clear();
+            createDummyText(container);
             container._left = container._top = 0;
             isFloating && (container.renderfix = function() {
                 });

@@ -5096,7 +5096,7 @@ paperproto._createDOMNodes = function (parentElem, elementObj, returnObj) {
 
     !attr.id && (attr.id = R.getElementID(R.createUUID()));
 
-    if (!R._g.doc.getElementById(attr.id) && tagName) {
+    if (!paper.canvas.getElementById(attr.id) && tagName) {
         ele = parentElem.appendChild(createNode(tagName, attr));
         returnObj.element = ele;
         returnObj.id = attr.id;
@@ -12198,8 +12198,8 @@ exports["default"] = function (R) {
                 params["stroke-width"] == null && (width = a["stroke-width"]);
                 params["stroke-width"] && (stroke.weight = width);
                 width && width < 1 && (opacity *= width) && (stroke.weight = 1);
-                stroke.opacity = opacity;
-
+                // stroke-opacity should be applied only if stroke color is provided.
+                stroke.opacity = a.stroke !== 'none' ? opacity : 0;
                 params["stroke-linejoin"] && (stroke.joinstyle = params["stroke-linejoin"]) || newstroke && (newstroke.joinstyle = 'miter');
                 stroke.miterlimit = params["stroke-miterlimit"] || 8;
                 params["stroke-linecap"] && (stroke.endcap = params["stroke-linecap"] == "butt" ? "flat" : params["stroke-linecap"] == "square" ? "square" : "round");

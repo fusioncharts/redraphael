@@ -8141,7 +8141,11 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                 // Check if namesake ca exists and apply it
                 if (element.ca[name]) {
                     R._lastArgIfGroup(args, true); // purge group
-                    args.length && element.attr(arraySlice.call(args))
+                    if (args.length) {
+                        // If name attribute is present then the received argument is an object with the customAttribute and other
+                        // common attributes. Else it is just the customAttributes that is to be applied.
+                        args[0][name] ? element.attr(arraySlice.call(args)): element.attr(name, arraySlice.call(args));
+                    }
                 }
             }
 

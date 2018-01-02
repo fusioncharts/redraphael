@@ -1892,17 +1892,17 @@ export default function (R) {
             }
             this.removed = true;
         };
-        var setproto = R.st;
-        for (var method in elproto)
-            if (elproto[has](method) && !setproto[has](method)) {
-                setproto[method] = (function(methodname) {
-                    return function() {
-                        var arg = arguments;
-                        return this.forEach(function(el) {
-                            el[methodname].apply(el, arg);
-                        });
-                    };
-                })(method);
-            }
+        // var setproto = R.st;
+        // for (var method in elproto)
+        //     if (elproto[has](method) && !setproto[has](method)) {
+        //         setproto[method] = (function(methodname) {
+        //             return function() {
+        //                 var arg = arguments;
+        //                 return this.forEach(function(el) {
+        //                     el[methodname].apply(el, arg);
+        //                 });
+        //             };
+        //         })(method);
+        //     }
     }
 }

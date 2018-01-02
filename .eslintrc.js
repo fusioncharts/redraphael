@@ -5,6 +5,20 @@ module.exports = {
         'promise'
     ],
     'rules': {
-    	'indent': ['error', 4]
+    	'indent': ['error', 4],
+    	"semi": [
+	        "error",
+	        "always"
+	      ],
+	    "one-var": [
+	        "error",
+	        {
+	          "initialized": "always",
+	          "uninitialized": "always"
+	        }
+	    ],
+	    "block-scoped-var": [
+	    	"error"
+	    ]
     }
 };

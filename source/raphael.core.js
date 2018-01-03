@@ -10,6 +10,7 @@
  */
 
 import eve from './eve/eve';
+import extend, {merge} from './raphael.lib';
 
 var _win = (typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : null);
 
@@ -107,10 +108,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         undef,
         E = "",
         S = " ",
-        UNIT_INTERVAL = 40,
-        proto = "prototype",
         has = "hasOwnProperty",
-        appendChild = "appendChild",
         apply = "apply",
         concat = "concat",
         nu = "number",
@@ -118,20 +116,11 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         array = "array",
         object = "object",
         finite = "finite",
-        toString = "toString",
-        fillString = "fill",
-        push = "push",
-        setAttribute = "setAttribute",
         split = "split",
         none = "none",
         black = "#000",
-        OBJECTSTRING = "object",
-        arrayToStr = "[object Array]",
-        objectToStr = "[object Object]",
         arraySlice = Array.prototype.slice,
         arraySplice = Array.prototype.splice,
-        arrayShift = Array.prototype.shift,
-        arrayPop = Array.prototype.pop,
         hasPrototypeBug = (function () {
             var a = function () {};
             return a.hasOwnProperty("prototype");
@@ -184,15 +173,6 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
              | c.attr({hsb: "0.5 .8 1"});
              | c.animate({hsb: [1, 0, 0.5]}, 1e3);
             \*/
-        },
-        pluck = function (checkWith) {
-            var i = 1,
-                ii = arguments.length;
-            for (; i < ii; ++i) {
-                if (arguments[i] !== checkWith) {
-                    return arguments[i]
-                }
-            }
         },
         caproto = R.ca = R.customAttributes = CustomAttributes.prototype,
 
@@ -265,15 +245,6 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         \*/
         paperproto = R.fn = Paper.prototype = R.prototype,
 
-        elements = {
-            circle: 1,
-            rect: 1,
-            path: 1,
-            ellipse: 1,
-            text: 1,
-            image: 1,
-            group: 1
-        },
         // Add new dragstart, dragmove and dragend events in order to support touch drag in both touch and hybrid devices
         events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchstart touchmove touchend touchcancel dragstart dragmove dragend"[split](S),
         touchMap = R._touchMap = {
@@ -306,20 +277,16 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         lowerCase = Str.prototype.toLowerCase,
         upperCase = Str.prototype.toUpperCase,
         objectToString = Object.prototype.toString,
-        paper = {},
 
         separator = /[, ]+/,
         formatrg = /\{(\d+)\}/g,
-        ISURL = R._ISURL = /^url\(['"]?([^\)]+?)['"]?\)$/i,
         colourRegExp = /^\s*((#[a-f\d]{6})|(#[a-f\d]{3})|rgba?\(\s*([\d\.]+%?\s*,\s*[\d\.]+%?\s*,\s*[\d\.]+%?(?:\s*,\s*[\d\.]+%?)?)\s*\)|hsba?\(\s*([\d\.]+(?:deg|\xb0|%)?\s*,\s*[\d\.]+%?\s*,\s*[\d\.]+(?:%?\s*,\s*[\d\.]+)?)%?\s*\)|hsla?\(\s*([\d\.]+(?:deg|\xb0|%)?\s*,\s*[\d\.]+%?\s*,\s*[\d\.]+(?:%?\s*,\s*[\d\.]+)?)%?\s*\))\s*$/i,
         bezierrg = /^(?:cubic-)?bezier\(([^,]+),([^,]+),([^,]+),([^\)]+)\)/,
-        whitespace = /[\x09\x0a\x0b\x0c\x0d\x20\xa0\u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u202f\u205f\u3000\u2028\u2029]/g,
         commaSpaces = /[\x09\x0a\x0b\x0c\x0d\x20\xa0\u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u202f\u205f\u3000\u2028\u2029]*,[\x09\x0a\x0b\x0c\x0d\x20\xa0\u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u202f\u205f\u3000\u2028\u2029]*/,
         p2s = /,?([achlmqrstvxz]),?/gi,
         pathCommand = /([achlmrqstvz])[\x09\x0a\x0b\x0c\x0d\x20\xa0\u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u202f\u205f\u3000\u2028\u2029,]*((-?\d*\.?\d*(?:e[\-+]?\d+)?[\x09\x0a\x0b\x0c\x0d\x20\xa0\u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u202f\u205f\u3000\u2028\u2029]*,?[\x09\x0a\x0b\x0c\x0d\x20\xa0\u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u202f\u205f\u3000\u2028\u2029]*)+)/ig,
         tCommand = /([rstm])[\x09\x0a\x0b\x0c\x0d\x20\xa0\u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u202f\u205f\u3000\u2028\u2029,]*((-?\d*\.?\d*(?:e[\-+]?\d+)?[\x09\x0a\x0b\x0c\x0d\x20\xa0\u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u202f\u205f\u3000\u2028\u2029]*,?[\x09\x0a\x0b\x0c\x0d\x20\xa0\u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u202f\u205f\u3000\u2028\u2029]*)+)/ig,
         pathValues = /(-?\d*\.?\d*(?:e[\-+]?\d+)?)[\x09\x0a\x0b\x0c\x0d\x20\xa0\u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u202f\u205f\u3000\u2028\u2029]*,?[\x09\x0a\x0b\x0c\x0d\x20\xa0\u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u202f\u205f\u3000\u2028\u2029]*/ig,
-        radial_gradient = R._radial_gradient = /^x?r(?:\(([^\)]*?)\))?/,
 
         isnan = {
             "NaN": 1,
@@ -406,9 +373,6 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         },
         eldata = {},
 
-        sortByKey = function(a, b) {
-            return a.key - b.key;
-        },
         sortByNumber = function(a, b) {
             return toFloat(a) - toFloat(b);
         },
@@ -496,23 +460,6 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             return path;
         },
 
-        /*\
-         * Raphael.pick
-         [ method ]
-         **
-         * Returns the first truthy argument.
-        \*/
-        pick = R.pick = function() {
-            for (var arg, i = 0, ii = arguments.length; i < ii; i += 1) {
-                arg = arguments[i];
-                if (!arg && arg !== false && arg !== 0) {
-                    continue;
-                }
-                return arg;
-            }
-            return undef;
-        },
-
         lastArgIfGroup = R._lastArgIfGroup = function (args, clear) {
             var last = args.length - 1,
                 arg = args[last];
@@ -559,123 +506,6 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             return attrs;
         },
 
-        merge = R.merge = function (obj1, obj2, skipUndef, tgtArr, srcArr) {
-            var item,
-                srcVal,
-                tgtVal,
-                str,
-                cRef;
-            //check whether obj2 is an array
-            //if array then iterate through it's index
-            //**** MOOTOOLS precution
-
-            if (!srcArr) {
-                tgtArr = [obj1];
-                srcArr = [obj2];
-            }
-            else {
-                tgtArr.push(obj1);
-                srcArr.push(obj2);
-            }
-
-            if (obj2 instanceof Array) {
-                for (item = 0; item < obj2.length; item += 1) {
-                    try {
-                        srcVal = obj1[item];
-                        tgtVal = obj2[item];
-                    }
-                    catch (e) {
-                        continue;
-                    }
-
-                    if (typeof tgtVal !== OBJECTSTRING) {
-                        if (!(skipUndef && tgtVal === undefined)) {
-                            obj1[item] = tgtVal;
-                        }
-                    }
-                    else {
-                        if (srcVal === null || typeof srcVal !== OBJECTSTRING) {
-                            srcVal = obj1[item] = tgtVal instanceof Array ? [] : {};
-                        }
-                        cRef = checkCyclicRef(tgtVal, srcArr);
-                        if (cRef !== -1) {
-                            srcVal = obj1[item] = tgtArr[cRef];
-                        }
-                        else {
-                            merge(srcVal, tgtVal, skipUndef, tgtArr, srcArr);
-                        }
-                    }
-                }
-            }
-            else {
-                for (item in obj2) {
-                    try {
-                        srcVal = obj1[item];
-                        tgtVal = obj2[item];
-                    }
-                    catch (e) {
-                        continue;
-                    }
-
-                    if (tgtVal !== null && typeof tgtVal === OBJECTSTRING) {
-                        // Fix for issue BUG: FWXT-602
-                        // IE < 9 Object.prototype.toString.call(null) gives
-                        // "[object Object]" instead of "[object Null]"
-                        // that's why null value becomes Object in IE < 9
-                        str = objectToString.call(tgtVal);
-                        if (str === objectToStr) {
-                            if (srcVal === null || typeof srcVal !== OBJECTSTRING) {
-                                srcVal = obj1[item] = {};
-                            }
-                            cRef = checkCyclicRef(tgtVal, srcArr);
-                            if (cRef !== -1) {
-                                srcVal = obj1[item] = tgtArr[cRef];
-                            }
-                            else {
-                                merge(srcVal, tgtVal, skipUndef, tgtArr, srcArr);
-                            }
-                        }
-                        else if (str === arrayToStr) {
-                            if (srcVal === null || !(srcVal instanceof Array)) {
-                                srcVal = obj1[item] = [];
-                            }
-                            cRef = checkCyclicRef(tgtVal, srcArr);
-                            if (cRef !== -1) {
-                                srcVal = obj1[item] = tgtArr[cRef];
-                            }
-                            else {
-                                merge(srcVal, tgtVal, skipUndef, tgtArr, srcArr);
-                            }
-                        }
-                        else {
-                            obj1[item] = tgtVal;
-                        }
-                    }
-                    else {
-                        obj1[item] = tgtVal;
-                    }
-                }
-            }
-            return obj1;
-        },
-
-        extend = R.extend = function (obj1, obj2, skipUndef) {
-            if (typeof obj1 !== OBJECTSTRING && typeof obj2 !== OBJECTSTRING) {//if none of the arguments are object then return back
-                return null;
-            }
-
-            if (typeof obj2 !== OBJECTSTRING || obj2 === null) {
-                return obj1;
-            }
-
-            if (typeof obj1 !== OBJECTSTRING) {
-                obj1 = obj2 instanceof Array ? [] : {};
-            }
-            merge(obj1, obj2, skipUndef);
-            return obj1;
-
-        },
-
         /*\
          * Raphael.is
          [ method ]
@@ -703,31 +533,6 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                 (type == object && o === Object(o)) ||
                 (type == "array" && Array.isArray && Array.isArray(o)) ||
                 objectToString.call(o).slice(8, -1).toLowerCase() == type;
-        },
-        /*\
-          * Raphael.createUUID
-          [ method ]
-          **
-          * Returns RFC4122, version 4 ID
-         \*/
-        createUUID = R.createUUID = (function(uuidRegEx, uuidReplacer) {
-            return function() {
-                return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(uuidRegEx, uuidReplacer).toUpperCase();
-            };
-        })(/[xy]/g, function(c) {
-            var r = math.random() * 16 | 0,
-                v = c == "x" ? r : (r & 3 | 8);
-            return v.toString(16);
-        }),
-
-        /*\
-          * Raphael.getElementID
-          [ method ]
-          **
-          * Add 'rr-' prefix before created IDs
-         \*/
-        getElementID = R.getElementID = function (id) {
-            return "rr-" + id;
         },
 
         /*\
@@ -769,6 +574,36 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         };
 
     R._g = g;
+    R.merge = merge;
+    R.extend = extend;
+    /*
+      * Raphael.createUUID
+      [ method ]
+      **
+      * Returns RFC4122, version 4 ID
+     */
+    R.createUUID = (function(uuidRegEx, uuidReplacer) {
+        return function() {
+            return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(uuidRegEx, uuidReplacer).toUpperCase();
+        };
+    })(/[xy]/g, function(c) {
+        var r = math.random() * 16 | 0,
+            v = c == "x" ? r : (r & 3 | 8);
+        return v.toString(16);
+    });
+
+    R._radial_gradient = /^x?r(?:\(([^\)]*?)\))?/;
+    R._ISURL = /^url\(['"]?([^\)]+?)['"]?\)$/i;
+
+    /*
+      * Raphael.getElementID
+      [ method ]
+      **
+      * Add 'rr-' prefix before created IDs
+     */
+    R.getElementID = function (id) {
+        return "rr-" + id;
+    };
 
     // PriorityQueue Function Declaration
     function PriorityQueue(comparator) {
@@ -941,47 +776,6 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
     \*/
     R.deg = function (rad) {
         return rad * rad2deg % 360;
-    };
-
-    /*\
-     * Raphael.snapTo
-     [ method ]
-     **
-     * Snaps given value to given grid.
-     > Parameters
-     - values (array|number) given array of values or step of the grid
-     - value (number) value to adjust
-     - tolerance (number) #optional tolerance for snapping. Default is `10`.
-     = (number) adjusted value.
-    \*/
-    R.snapTo = function (values, value, tolerance) {
-        var rem,
-            i;
-
-        if (!is(tolerance, finite)) {
-            tolerance = 10;
-        }
-
-        if (is(values, array)) {
-            i = values.length;
-            while (i--) {
-                if (abs(values[i] - value) <= tolerance) {
-                    return values[i];
-                }
-            }
-        }
-        else {
-            values = +values;
-            rem = value % values;
-
-            if (rem < tolerance) {
-                return value - rem;
-            }
-            if (rem > values - tolerance) {
-                return value - rem + values;
-            }
-        }
-        return value;
     };
 
     /*\

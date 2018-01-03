@@ -14,6 +14,7 @@ export default function (R) {
         array = 'array',
         string = 'string',
         split = 'split',
+        finite = 'finite',
         separator = /[, ]+/,
         oldRaphael = {
             was: Object.prototype[has].call(g.win, 'Raphael'),
@@ -75,6 +76,46 @@ export default function (R) {
      | paper.set(paper.circle(100, 100, 20), paper.circle(110, 100, 20)).red();
     */
     R.st = setproto;
+
+    /*
+     * Raphael.snapTo
+     [ method ]
+     **
+     * Snaps given value to given grid.
+     > Parameters
+     - values (array|number) given array of values or step of the grid
+     - value (number) value to adjust
+     - tolerance (number) #optional tolerance for snapping. Default is `10`.
+     = (number) adjusted value.
+    */
+    R.snapTo = function (values, value, tolerance) {
+        var rem,
+            i;
+
+        if (!R.is(tolerance, finite)) {
+            tolerance = 10;
+        }
+
+        if (R.is(values, array)) {
+            i = values.length;
+            while (i--) {
+                if (Math.abs(values[i] - value) <= tolerance) {
+                    return values[i];
+                }
+            }
+        } else {
+            values = +values;
+            rem = value % values;
+
+            if (rem < tolerance) {
+                return value - rem;
+            }
+            if (rem > values - tolerance) {
+                return value - rem + values;
+            }
+        }
+        return value;
+    };
 
     /*
      * Raphael.registerFont

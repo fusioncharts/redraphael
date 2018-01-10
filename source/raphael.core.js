@@ -5708,7 +5708,6 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         }
         var a = params instanceof Animation ? params : R.animation(params, ms, easing, callback),
         x, y;
-
         configObject.start = checkPercentage(configObject.start || 0);
         configObject.end = checkPercentage(configObject.end || 1);
         if (configObject.start >= configObject.end){
@@ -7044,6 +7043,8 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                 json = true;
                 p[attr] = params[attr];
             }
+        // Enabling the callback to be called even if attr is not provided
+        callback && (json = true);
         if (!json) {
             return new Animation(params, ms);
         } else {

@@ -7434,6 +7434,11 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         return group;
     };
 
+    // Reverse application of appendChild
+    elproto.appendTo = function (group) {
+        return group.appendChild(this);
+    }
+
     elproto.removeChild = function (element) {
         if (this.removed || this.type !== 'group' || element.parent !== this) {
             return this;

@@ -5904,7 +5904,6 @@ elproto.animateWith = function (el, anim, params, ms, easing, callback, configOb
     var a = params instanceof Animation ? params : R.animation(params, ms, easing, callback),
         x,
         y;
-
     configObject.start = checkPercentage(configObject.start || 0);
     configObject.end = checkPercentage(configObject.end || 1);
     if (configObject.start >= configObject.end) {
@@ -7221,7 +7220,9 @@ R.animation = function (params, ms, easing, callback, event) {
             json = true;
             p[attr] = params[attr];
         }
-    }if (!json) {
+    } // Enabling the callback to be called even if attr is not provided
+    callback && (json = true);
+    if (!json) {
         return new Animation(params, ms);
     } else {
         easing && (p.easing = easing);
@@ -7576,6 +7577,11 @@ elproto.appendChild = function (element) {
     }
 
     return group;
+};
+
+// Reverse application of appendChild
+elproto.appendTo = function (group) {
+    return group.appendChild(this);
 };
 
 elproto.removeChild = function (element) {

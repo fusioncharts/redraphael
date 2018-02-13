@@ -894,7 +894,7 @@ export default function (R) {
                 params[name] = value;
             }
             value == null && R.is(name, "object") && (params = name);
-            if (!R.stopEventPropagation) {
+            if (!R.stopPartialEventPropagation) {
                 for (var key in params) {
                     eve("raphael.attr." + key + "." + this.id, this, params[key], key);
                 }

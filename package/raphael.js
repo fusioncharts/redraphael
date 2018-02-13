@@ -5648,7 +5648,7 @@ animation = function animation() {
             now,
             origms,
             init = {},
-            executeEvent = !R.stopEventPropagation,
+            executeEvent = !R.stopPartialEventPropagation,
             key,
             i = 0,
             peekVal = e.el && e.el.animElements && e.el.animElements.peek();
@@ -7183,7 +7183,7 @@ function runAnimation(anim, element, percent, status, totalOrigin, times, parent
         isInAnim.initstatus = status;
         isInAnim.start = new Date() - isInAnim.ms * status;
     }
-    !R.stopEventPropagation && (0, _eve2['default'])("raphael.anim.start." + element.id, element, anim);
+    (0, _eve2['default'])("raphael.anim.start." + element.id, element, anim);
 }
 
 /*\
@@ -7202,7 +7202,7 @@ function runAnimation(anim, element, percent, status, totalOrigin, times, parent
  **
  = (object) @Animation
 \*/
-R.animation = function (params, ms, easing, callback, stopEventPropagation) {
+R.animation = function (params, ms, easing, callback, stopPartialEventPropagation) {
     if (params instanceof Animation) {
         return params;
     }
@@ -7210,7 +7210,7 @@ R.animation = function (params, ms, easing, callback, stopEventPropagation) {
         callback = callback || easing || null;
         easing = null;
     }
-    R.stopEventPropagation = stopEventPropagation;
+    R.stopPartialEventPropagation = stopPartialEventPropagation;
     params = Object(params);
     ms = +ms || 0;
     var p = {},
@@ -11499,7 +11499,7 @@ exports["default"] = function (R) {
             } else if (name != null && R.is(name, "object")) {
                 params = name;
             }
-            if (!R.stopEventPropagation) {
+            if (!R.stopPartialEventPropagation) {
                 for (var key in params) {
                     eve("raphael.attr." + key + "." + this.id, this, params[key], key);
                 }
@@ -12811,7 +12811,7 @@ exports["default"] = function (R) {
                 params[name] = value;
             }
             value == null && R.is(name, "object") && (params = name);
-            if (!R.stopEventPropagation) {
+            if (!R.stopPartialEventPropagation) {
                 for (var key in params) {
                     eve("raphael.attr." + key + "." + this.id, this, params[key], key);
                 }

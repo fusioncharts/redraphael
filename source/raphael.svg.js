@@ -40,10 +40,15 @@ export default function (R) {
                 open: "M6,1 1,3.5 6,6",
                 oval: "M2.5,0A2.5,2.5,0,0,1,2.5,5 2.5,2.5,0,0,1,2.5,0z"
             },
-            markerCounter = {},
-            updateReferenceUrl = function () {
-                return R._url = R._g.win.location.href.replace(/#.*?$/, E);
+            shapeRenderingAttrs = {
+                speed: 'optimizeSpeed',
+                crisp: 'crispEdges',
+                precision: 'geometricPrecision'
             },
+            markerCounter = {},
+            // updateReferenceUrl = function () {
+            //     return R._url = R._g.win.location.href.replace(/#.*?$/, E);
+            // },
             createDummyText = function (paper) {
                 txtElem = paper.txtElem = document.createElementNS('http://www.w3.org/2000/svg', 'text')
                 txtElem.setAttribute('x', randomPos)
@@ -885,6 +890,11 @@ export default function (R) {
                             });
                             s.fillOpacity = value;
                             break;
+                        case "shape-rendering":
+                            o.attrs[att] = value = shapeRenderingAttrs[value] || value || 'auto';
+                            node.setAttribute(att, value);
+                            node.style.shapeRendering = value;
+                            break;
                         default:
                             att == "font-size" && (value = toInt(value, 10) + "px");
                             var cssrule = att.replace(/(\-.)/g, function(w) {
@@ -1443,7 +1453,7 @@ export default function (R) {
             } else if (name != null && R.is(name, "object")) {
                 params = name;
             }
-            if (R.stopEvent !== false) {
+            if (!R.stopEventPropagation) {
                 for (var key in params) {
                     eve("raphael.attr." + key + "." + this.id, this, params[key], key);
                 }

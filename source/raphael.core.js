@@ -341,6 +341,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             width: 0,
             x: 0,
             y: 0,
+            "shape-rendering": "auto",
             alpha: nu
         },
         availableAnimAttrs = R._availableAnimAttrs = {
@@ -4970,7 +4971,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             now,
             origms,
             init = {},
-            executeEvent = R.stopEvent !== false,
+            executeEvent = !R.stopEventPropagation,
             key,
             i = 0,
             peekVal = e.el && e.el.animElements &&
@@ -6544,7 +6545,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             isInAnim.initstatus = status;
             isInAnim.start = new Date - isInAnim.ms * status;
         }
-        R.stopEvent !== false && eve("raphael.anim.start." + element.id, element, anim);
+        !R.stopEventPropagation && eve("raphael.anim.start." + element.id, element, anim);
     }
 
     /*\
@@ -6563,7 +6564,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
      **
      = (object) @Animation
     \*/
-    R.animation = function(params, ms, easing, callback, event) {
+    R.animation = function(params, ms, easing, callback, stopEventPropagation) {
         if (params instanceof Animation) {
             return params;
         }
@@ -6571,7 +6572,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             callback = callback || easing || null;
             easing = null;
         }
-        R.stopEvent === undefined &&  (R.stopEvent = event);
+        R.stopEventPropagation = stopEventPropagation;
         params = Object(params);
         ms = +ms || 0;
         var p = {},

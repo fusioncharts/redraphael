@@ -1099,6 +1099,7 @@ events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchsta
     width: 0,
     x: 0,
     y: 0,
+    "shape-rendering": "auto",
     alpha: nu
 },
     availableAnimAttrs = R._availableAnimAttrs = {
@@ -5647,7 +5648,7 @@ animation = function animation() {
             now,
             origms,
             init = {},
-            executeEvent = R.stopEvent !== false,
+            executeEvent = !R.stopEventPropagation,
             key,
             i = 0,
             peekVal = e.el && e.el.animElements && e.el.animElements.peek();
@@ -7182,7 +7183,7 @@ function runAnimation(anim, element, percent, status, totalOrigin, times, parent
         isInAnim.initstatus = status;
         isInAnim.start = new Date() - isInAnim.ms * status;
     }
-    R.stopEvent !== false && (0, _eve2['default'])("raphael.anim.start." + element.id, element, anim);
+    !R.stopEventPropagation && (0, _eve2['default'])("raphael.anim.start." + element.id, element, anim);
 }
 
 /*\
@@ -7201,7 +7202,7 @@ function runAnimation(anim, element, percent, status, totalOrigin, times, parent
  **
  = (object) @Animation
 \*/
-R.animation = function (params, ms, easing, callback, event) {
+R.animation = function (params, ms, easing, callback, stopEventPropagation) {
     if (params instanceof Animation) {
         return params;
     }
@@ -7209,7 +7210,7 @@ R.animation = function (params, ms, easing, callback, event) {
         callback = callback || easing || null;
         easing = null;
     }
-    R.stopEvent === undefined && (R.stopEvent = event);
+    R.stopEventPropagation = stopEventPropagation;
     params = Object(params);
     ms = +ms || 0;
     var p = {},
@@ -10144,11 +10145,17 @@ exports["default"] = function (R) {
             open: "M6,1 1,3.5 6,6",
             oval: "M2.5,0A2.5,2.5,0,0,1,2.5,5 2.5,2.5,0,0,1,2.5,0z"
         },
-            markerCounter = {},
-            updateReferenceUrl = function updateReferenceUrl() {
-            return R._url = R._g.win.location.href.replace(/#.*?$/, E);
+            shapeRenderingAttrs = {
+            speed: 'optimizeSpeed',
+            crisp: 'crispEdges',
+            precision: 'geometricPrecision'
         },
-            createDummyText = function createDummyText(paper) {
+            markerCounter = {},
+
+        // updateReferenceUrl = function () {
+        //     return R._url = R._g.win.location.href.replace(/#.*?$/, E);
+        // },
+        createDummyText = function createDummyText(paper) {
             txtElem = paper.txtElem = document.createElementNS('http://www.w3.org/2000/svg', 'text');
             txtElem.setAttribute('x', randomPos);
             txtElem.setAttribute('y', randomPos);
@@ -10972,6 +10979,11 @@ exports["default"] = function (R) {
                             });
                             s.fillOpacity = value;
                             break;
+                        case "shape-rendering":
+                            o.attrs[att] = value = shapeRenderingAttrs[value] || value || 'auto';
+                            node.setAttribute(att, value);
+                            node.style.shapeRendering = value;
+                            break;
                         default:
                             att == "font-size" && (value = toInt(value, 10) + "px");
                             var cssrule = att.replace(/(\-.)/g, function (w) {
@@ -11487,7 +11499,7 @@ exports["default"] = function (R) {
             } else if (name != null && R.is(name, "object")) {
                 params = name;
             }
-            if (R.stopEvent !== false) {
+            if (!R.stopEventPropagation) {
                 for (var key in params) {
                     eve("raphael.attr." + key + "." + this.id, this, params[key], key);
                 }
@@ -12224,6 +12236,10 @@ exports["default"] = function (R) {
                     }
                 }
             }
+
+            if ("shape-rendering" in params) {
+                node.style.antialias = params["shape-rendering"] !== 'crisp';
+            }
             // Css styles will be applied in element or group.
             if (o.textpath || isGroup) {
                 var textpathStyle = isGroup ? node.style : o.textpath.style;
@@ -12795,7 +12811,7 @@ exports["default"] = function (R) {
                 params[name] = value;
             }
             value == null && R.is(name, "object") && (params = name);
-            if (R.stopEvent !== false) {
+            if (!R.stopEventPropagation) {
                 for (var key in params) {
                     eve("raphael.attr." + key + "." + this.id, this, params[key], key);
                 }
@@ -13240,19 +13256,18 @@ exports["default"] = function (R) {
             return true;
         };
 
-        var setproto = R.st;
-        for (var method in elproto) {
-            if (elproto[has](method) && !setproto[has](method)) {
-                setproto[method] = function (methodname) {
-                    return function () {
-                        var arg = arguments;
-                        return this.forEach(function (el) {
-                            el[methodname].apply(el, arg);
-                        });
-                    };
-                }(method);
-            }
-        }
+        // var setproto = R.st;
+        // for (var method in elproto)
+        //     if (elproto[has](method) && !setproto[has](method)) {
+        //         setproto[method] = (function(methodname) {
+        //             return function() {
+        //                 var arg = arguments;
+        //                 return this.forEach(function(el) {
+        //                     el[methodname].apply(el, arg);
+        //                 });
+        //             };
+        //         })(method);
+        //     }
     }
 };
 

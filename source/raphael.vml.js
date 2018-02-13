@@ -299,6 +299,10 @@ export default function (R) {
                     }
                 }
             }
+
+            if ("shape-rendering" in params) {
+                node.style.antialias = (params["shape-rendering"] !== 'crisp');
+            }
             // Css styles will be applied in element or group.
             if (o.textpath || isGroup) {
             var textpathStyle = isGroup ? node.style : o.textpath.style;
@@ -890,7 +894,7 @@ export default function (R) {
                 params[name] = value;
             }
             value == null && R.is(name, "object") && (params = name);
-            if (R.stopEvent !== false) {
+            if (!R.stopEventPropagation) {
                 for (var key in params) {
                     eve("raphael.attr." + key + "." + this.id, this, params[key], key);
                 }
@@ -1340,17 +1344,17 @@ export default function (R) {
             return true;
         };
 
-        var setproto = R.st;
-        for (var method in elproto)
-            if (elproto[has](method) && !setproto[has](method)) {
-                setproto[method] = (function(methodname) {
-                    return function() {
-                        var arg = arguments;
-                        return this.forEach(function(el) {
-                            el[methodname].apply(el, arg);
-                        });
-                    };
-                })(method);
-            }
+        // var setproto = R.st;
+        // for (var method in elproto)
+        //     if (elproto[has](method) && !setproto[has](method)) {
+        //         setproto[method] = (function(methodname) {
+        //             return function() {
+        //                 var arg = arguments;
+        //                 return this.forEach(function(el) {
+        //                     el[methodname].apply(el, arg);
+        //                 });
+        //             };
+        //         })(method);
+        //     }
     }
 }

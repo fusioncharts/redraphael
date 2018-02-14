@@ -196,7 +196,7 @@ export default function (R) {
             res = o;
             oriOp = res.oriOp || (res.oriOp = {});
             for (var par in params)
-                if (params[has](par)) {
+                if (params[has](par) && params[par] !== '') {
                     a[par] = params[par];
                 }
             if (newpath) {

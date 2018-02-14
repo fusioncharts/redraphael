@@ -557,6 +557,11 @@ export default function (R) {
                     }
                     var value = params[att];
                     attrs[att] = value;
+                    if (value === '') {
+                        delete o.attrs[att];
+                        node.removeAttribute(att);
+                        continue;
+                    }
                     switch (att) {
                         case "blur":
                             o.blur(value);

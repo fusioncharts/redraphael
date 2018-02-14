@@ -10652,6 +10652,11 @@ exports["default"] = function (R) {
                     }
                     var value = params[att];
                     attrs[att] = value;
+                    if (value === '') {
+                        delete o.attrs[att];
+                        node.removeAttribute(att);
+                        continue;
+                    }
                     switch (att) {
                         case "blur":
                             o.blur(value);
@@ -12137,7 +12142,7 @@ exports["default"] = function (R) {
                 res = o;
             oriOp = res.oriOp || (res.oriOp = {});
             for (var par in params) {
-                if (params[has](par)) {
+                if (params[has](par) && params[par] !== '') {
                     a[par] = params[par];
                 }
             }if (newpath) {

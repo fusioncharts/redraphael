@@ -3289,7 +3289,6 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             }
 
             var node = R._engine.getNode(dragi.el),
-                o,
                 next = node.nextSibling,
                 parent = node.parentNode,
                 display = node.style.display;
@@ -3297,10 +3296,8 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             g.win.opera && parent.removeChild(node);
 
             node.style.display = "none";
-            o = dragi.el.paper.getElementByPoint(x, y);
             node.style.display = display;
             g.win.opera && (next ? parent.insertBefore(node, next) : parent.appendChild(node));
-            o && eve("raphael.drag.over." + dragi.el.id, dragi.el, o);
             x += scrollX;
             y += scrollY;
             for (key in e) {

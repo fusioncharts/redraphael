@@ -5410,8 +5410,8 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
     */
     function colorNormalizer(c1, c2, getRGB) {
         "use strict";
-        var colorAr1 = c1.split('-'),
-            colorAr2 = c2.split('-'),
+        var colorAr1,
+            colorAr2,
             i = 0,
             ii = 0,
             j = 0,
@@ -5420,6 +5420,13 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             temp = {},
             pos = 0,
             uniqArr = [];
+
+        c1 = c1.constructor === Array ? c1[0]: c1;
+        c2 = c2.constructor === Array ? c2[0]: c2;
+
+        colorAr1 = c1.split('-');
+        colorAr2 = c2.split('-');
+
         if (colorAr1.length === 1 && colorAr2.length === 1) {
             return [c1, c2];
         }

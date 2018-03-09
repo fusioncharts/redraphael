@@ -6569,7 +6569,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             callback = callback || easing || null;
             easing = null;
         }
-        R.stopPartialEventPropagation = stopPartialEventPropagation;
+        !R.stopPartialEventPropagation && (R.stopPartialEventPropagation = stopPartialEventPropagation);
         params = Object(params);
         ms = +ms || 0;
         var p = {},

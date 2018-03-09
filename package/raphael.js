@@ -113,7 +113,7 @@ module.exports = __webpack_require__(4) ? function (object, key, value) {
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var anObject = __webpack_require__(7);
+var anObject = __webpack_require__(8);
 var IE8_DOM_DEFINE = __webpack_require__(31);
 var toPrimitive = __webpack_require__(18);
 var dP = Object.defineProperty;
@@ -172,21 +172,21 @@ $exports.store = store;
 
 /***/ }),
 /* 7 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-var isObject = __webpack_require__(8);
 module.exports = function (it) {
-  if (!isObject(it)) throw TypeError(it + ' is not an object!');
-  return it;
+  return typeof it === 'object' ? it !== null : typeof it === 'function';
 };
 
 
 /***/ }),
 /* 8 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
+var isObject = __webpack_require__(7);
 module.exports = function (it) {
-  return typeof it === 'object' ? it !== null : typeof it === 'function';
+  if (!isObject(it)) throw TypeError(it + ' is not an object!');
+  return it;
 };
 
 
@@ -295,7 +295,7 @@ module.exports = true;
 /* 17 */
 /***/ (function(module, exports) {
 
-var core = module.exports = { version: '2.5.1' };
+var core = module.exports = { version: '2.5.3' };
 if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
 
 
@@ -304,7 +304,7 @@ if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.1.1 ToPrimitive(input [, PreferredType])
-var isObject = __webpack_require__(8);
+var isObject = __webpack_require__(7);
 // instead of the ES6 spec version, we didn't implement @@toPrimitive case
 // and the second argument - flag - preferred type is a string
 module.exports = function (it, S) {
@@ -455,7 +455,7 @@ module.exports = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCE
   var VALUES_BUG = false;
   var proto = Base.prototype;
   var $native = proto[ITERATOR] || proto[FF_ITERATOR] || DEFAULT && proto[DEFAULT];
-  var $default = $native || getMethod(DEFAULT);
+  var $default = (!BUGGY && $native) || getMethod(DEFAULT);
   var $entries = DEFAULT ? !DEF_VALUES ? $default : getMethod('entries') : undefined;
   var $anyNative = NAME == 'Array' ? proto.entries || $native : $native;
   var methods, key, IteratorPrototype;
@@ -575,7 +575,7 @@ module.exports = !__webpack_require__(4) && !__webpack_require__(9)(function () 
 /* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isObject = __webpack_require__(8);
+var isObject = __webpack_require__(7);
 var document = __webpack_require__(0).document;
 // typeof document.createElement is 'object' in old IE
 var is = isObject(document) && isObject(document.createElement);
@@ -596,7 +596,7 @@ module.exports = __webpack_require__(2);
 /***/ (function(module, exports, __webpack_require__) {
 
 // 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
-var anObject = __webpack_require__(7);
+var anObject = __webpack_require__(8);
 var dPs = __webpack_require__(48);
 var enumBugKeys = __webpack_require__(23);
 var IE_PROTO = __webpack_require__(21)('IE_PROTO');
@@ -3973,7 +3973,6 @@ var preventDefault = function preventDefault() {
         }
 
         var node = R._engine.getNode(dragi.el),
-            o,
             next = node.nextSibling,
             parent = node.parentNode,
             display = node.style.display;
@@ -3981,10 +3980,8 @@ var preventDefault = function preventDefault() {
         g.win.opera && parent.removeChild(node);
 
         node.style.display = "none";
-        o = dragi.el.paper.getElementByPoint(x, y);
         node.style.display = display;
         g.win.opera && (next ? parent.insertBefore(node, next) : parent.appendChild(node));
-        o && (0, _eve2['default'])("raphael.drag.over." + dragi.el.id, dragi.el, o);
         x += scrollX;
         y += scrollY;
         for (key in e) {
@@ -7210,7 +7207,7 @@ R.animation = function (params, ms, easing, callback, stopPartialEventPropagatio
         callback = callback || easing || null;
         easing = null;
     }
-    R.stopPartialEventPropagation = stopPartialEventPropagation;
+    !R.stopPartialEventPropagation && (R.stopPartialEventPropagation = stopPartialEventPropagation);
     params = Object(params);
     ms = +ms || 0;
     var p = {},
@@ -7912,7 +7909,7 @@ module.exports = function (Constructor, NAME, next) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var dP = __webpack_require__(3);
-var anObject = __webpack_require__(7);
+var anObject = __webpack_require__(8);
 var getKeys = __webpack_require__(20);
 
 module.exports = __webpack_require__(4) ? Object.defineProperties : function defineProperties(O, Properties) {
@@ -8145,7 +8142,8 @@ var wksExt = __webpack_require__(25);
 var wksDefine = __webpack_require__(27);
 var enumKeys = __webpack_require__(63);
 var isArray = __webpack_require__(64);
-var anObject = __webpack_require__(7);
+var anObject = __webpack_require__(8);
+var isObject = __webpack_require__(7);
 var toIObject = __webpack_require__(5);
 var toPrimitive = __webpack_require__(18);
 var createDesc = __webpack_require__(10);
@@ -8338,15 +8336,14 @@ $JSON && $export($export.S + $export.F * (!USE_NATIVE || $fails(function () {
   return _stringify([S]) != '[null]' || _stringify({ a: S }) != '{}' || _stringify(Object(S)) != '{}';
 })), 'JSON', {
   stringify: function stringify(it) {
-    if (it === undefined || isSymbol(it)) return; // IE8 returns string on undefined
     var args = [it];
     var i = 1;
     var replacer, $replacer;
     while (arguments.length > i) args.push(arguments[i++]);
-    replacer = args[1];
-    if (typeof replacer == 'function') $replacer = replacer;
-    if ($replacer || !isArray(replacer)) replacer = function (key, value) {
-      if ($replacer) value = $replacer.call(this, key, value);
+    $replacer = replacer = args[1];
+    if (!isObject(replacer) && it === undefined || isSymbol(it)) return; // IE8 returns string on undefined
+    if (!isArray(replacer)) replacer = function (key, value) {
+      if (typeof $replacer == 'function') value = $replacer.call(this, key, value);
       if (!isSymbol(value)) return value;
     };
     args[1] = replacer;
@@ -8369,7 +8366,7 @@ setToStringTag(global.JSON, 'JSON', true);
 /***/ (function(module, exports, __webpack_require__) {
 
 var META = __webpack_require__(11)('meta');
-var isObject = __webpack_require__(8);
+var isObject = __webpack_require__(7);
 var has = __webpack_require__(1);
 var setDesc = __webpack_require__(3).f;
 var id = 0;

@@ -3225,9 +3225,9 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                     }
                     return fn.call(element, e, e.clientX + scrollX, e.clientY + scrollY);
                 };
-                obj.addEventListener(realName, f, false);
+                obj.addEventListener(realName, f, {passive: false, capture:false});
                 return function() {
-                    obj.removeEventListener(realName, f, false);
+                    obj.removeEventListener(realName, f, {passive: false, capture:false});
                     return true;
                 };
             };

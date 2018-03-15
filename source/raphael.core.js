@@ -4146,7 +4146,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             args = arguments,
             group = lastArgIfGroup(args, true),
             attrs = serializeArgs(args,
-                "src", "",
+                // "src", "",
                 "x", 0,
                 "y", 0,
                 "width", 0,

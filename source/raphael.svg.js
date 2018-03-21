@@ -810,7 +810,7 @@ export default function (R) {
                                             $(stops[stops.length - 1], {
                                                 "stop-opacity": ("opacity" in attrs ? attrs.opacity : 1) * ("fill-opacity" in attrs ? attrs["fill-opacity"] : 1)
                                             });
-                                        } else {
+                                        } else if ("fill-opacity" in params) {
                                             $(stops[stops.length - 1], {
                                                 "stop-opacity": ("fill-opacity" in attrs ? attrs["fill-opacity"] : 1)
                                             });

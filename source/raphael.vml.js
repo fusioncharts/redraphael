@@ -387,9 +387,11 @@ export default function (R) {
                     if (oriOp.opacity1 !== undefined) {
                         fill.opacity = oriOp.opacity1 * opacity;
                         fill['o:opacity2'] = oriOp.opacity2 * opacity;
-                    } else {
+                    } else if ("opacity" in params) {
                         // multiply with the original non gradient color opacity with the opacity to preserve the ratio of the opacity
                         fill.opacity = opacity * (oriOp.nonGradOpacity === undefined ? 1 : oriOp.nonGradOpacity);
+                    } else {
+                        fill.opacity = opacity;                    
                     }
                     if (fill.src) {
                         fill.color = "none";

@@ -370,7 +370,8 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             "color": "colour",
             "borderColor": "colour",
             "borderWidth": nu,
-            alpha: nu
+            alpha: nu,
+            "text-bound": "text-bound"
         },
         eldata = {},
 
@@ -5100,6 +5101,9 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                                         now[i] = +from[attr][i] + pos * ms * diff[attr][i];
                                     }
                                 }
+                                break;
+                            case "text-bound":
+                                now = [][concat](from[attr]);
                                 break;
                             default:
                                 var from2 = [][concat](from[attr]);

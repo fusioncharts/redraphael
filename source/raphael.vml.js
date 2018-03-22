@@ -980,11 +980,16 @@ export default function (R) {
                 this.drag(null, null, handler);
                 return this;
             }
-            if (this.node.attachEvent) {
-                this.node.attachEvent('on'+ eventType, handler);
+            if (this._ && this._.RefImg) {
+                node = this._.RefImg;
+            } else {
+                node = this.node;
+            }
+            if (node.attachEvent) {
+                node.attachEvent('on'+ eventType, handler);
             }
             else {
-                this.node['on'+ eventType] = function() {
+                node['on'+ eventType] = function() {
                     var evt = R._g.win.event;
                     evt.target = evt.srcElement;
                     handler(evt);

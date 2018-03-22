@@ -1611,6 +1611,7 @@ export default function (R) {
             fn,
             i,
             l,
+            node,
             oldEventType;
             if (this.removed) {
                 return this;

@@ -1128,7 +1128,8 @@ events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchsta
     "color": "colour",
     "borderColor": "colour",
     "borderWidth": nu,
-    alpha: nu
+    alpha: nu,
+    "text-bound": "text-bound"
 },
     eldata = {},
     sortByNumber = function sortByNumber(a, b) {
@@ -5768,6 +5769,9 @@ animation = function animation() {
                                     now[i] = +from[attr][i] + pos * ms * diff[attr][i];
                                 }
                             }
+                            break;
+                        case "text-bound":
+                            now = [][concat](from[attr]);
                             break;
                         default:
                             var from2 = [][concat](from[attr]);

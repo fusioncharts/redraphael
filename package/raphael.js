@@ -11213,10 +11213,12 @@ exports["default"] = function (R) {
                 transform: o.matrix
             });
 
-            sw = o.attrs[has]("stroke-width") ? o.attrs["stroke-width"] : 1;
-            o.attr({
-                "stroke-width": sw
-            });
+            if (_.sx != 1 || _.sy != 1) {
+                sw = o.attrs["stroke-width"];
+                sw && o.attr({
+                    "stroke-width": sw
+                });
+            }
 
             return o;
         };

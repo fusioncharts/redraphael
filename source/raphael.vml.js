@@ -336,6 +336,7 @@ export default function (R) {
                 fill = fill && fill[0];
                 !fill && (newfill = fill = createNode(fillString));
                 if (o.type == "image" && params.src) {
+                    LoadRefImage(o, params);
                     fill.src = params.src;
                 }
                 params.fill && (fill.on = true);
@@ -1144,6 +1145,22 @@ export default function (R) {
             res.Y = a.y - a.r;
             res.W = res.H = a.r * 2;
             return res;
+        };
+        function LoadRefImage (element, attrs) {
+            var src = attrs.src,
+                parent = element._.group,
+                node = element.node,
+                RefImg = element._.RefImg;
+
+            if (!RefImg) {
+                RefImg = element._.RefImg = new Image();
+            }
+
+            if (attrs.src === undefined) {
+                return;
+            }
+            RefImg.src = src;
+            element._.RefImg = RefImg;
         };
         R._engine.image = function(vml, attrs, group) {
             var path = R._rectPath(attrs.x, attrs.y, attrs.w, attrs.h);

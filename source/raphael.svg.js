@@ -802,7 +802,9 @@ export default function (R) {
                                 o.gradient && updateGradientReference(o);
                             }
                             else if ((o.type == "circle" || o.type == "ellipse" || Str(value).charAt() != "r") && addGradientFill(o, value)) {
-                                if ("opacity" in attrs || "fill-opacity" in attrs) {
+                                // The reason for this block of code is not known, hence it is commented out as it is causeing issues in 
+                                // IE8 browser for gradient color
+                                /*if ("opacity" in attrs || "fill-opacity" in attrs) {
                                     var gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\(#|\)$/g, E));
                                     if (gradient) {
                                         var stops = gradient.getElementsByTagName("stop");
@@ -810,7 +812,7 @@ export default function (R) {
                                             "stop-opacity": ("opacity" in attrs ? attrs.opacity : 1) * ("fill-opacity" in attrs ? attrs["fill-opacity"] : 1)
                                         });
                                     }
-                                }
+                                }*/
                                 attrs.gradient = value;
                                 // attrs.fill = "none";
                                 s.fill = E;

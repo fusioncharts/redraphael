@@ -806,9 +806,15 @@ export default function (R) {
                                     var gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\(#|\)$/g, E));
                                     if (gradient) {
                                         var stops = gradient.getElementsByTagName("stop");
-                                        $(stops[stops.length - 1], {
-                                            "stop-opacity": ("opacity" in attrs ? attrs.opacity : 1) * ("fill-opacity" in attrs ? attrs["fill-opacity"] : 1)
-                                        });
+                                        if ("fill-opacity" in params && "opacity" in params) {
+                                            $(stops[stops.length - 1], {
+                                                "stop-opacity": ("opacity" in attrs ? attrs.opacity : 1) * ("fill-opacity" in attrs ? attrs["fill-opacity"] : 1)
+                                            });
+                                        } else if ("fill-opacity" in params) {
+                                            $(stops[stops.length - 1], {
+                                                "stop-opacity": ("fill-opacity" in attrs ? attrs["fill-opacity"] : 1)
+                                            });
+                                        }
                                     }
                                 }
                                 attrs.gradient = value;

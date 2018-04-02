@@ -3199,6 +3199,41 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
     stopTouch = function() {
         return this.originalEvent.stopPropagation();
     },
+    eventCopyList = {
+        stopPropagation: 'fn',
+        stopImmediatePropagation: 'fn',
+        preventDefault: 'fn',
+        type: true,
+        clientX: true,
+        clientY: true,
+        pageX: true,
+        pageY: true,
+        bubbles: true,
+        cancelable: true,
+        touches: true,
+        target: true,
+        originalTarget: true,
+        srcElement: true,
+        relatedTarget: true,
+        fromElement: true,
+        changedTouches: true,
+        layerX: true,
+        layerY: true
+    },
+    makeSelectiveCopy = function (target, source) {
+        for (let eve in eventCopyList) {
+            if (eventCopyList[eve] === 'fn') {
+                target[eve] = (function () {
+                    return function () {
+                        source[eve]();
+                    }
+                })(source);
+            } else {
+                target[eve] = source[eve];
+            }
+        }
+        target.originalEvent = source;
+    },
     addEvent = R.addEvent = (function() {
         if (g.doc.addEventListener) {
             return function(obj, type, fn, element) {
@@ -3301,13 +3336,10 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             g.win.opera && (next ? parent.insertBefore(node, next) : parent.appendChild(node));
             x += scrollX;
             y += scrollY;
-            for (key in e) {
-                if (typeof e[key] === 'function') {
-                    dummyEve[key] = e[key].bind(e);
-                } else {
-                    dummyEve[key] = e[key];
-                }
-            }
+
+            //Function to copy some properties of the actual event into the dummy event 
+            makeSelectiveCopy(dummyEve, e);
+
             data = dummyEve.data = [x - dragi.el._drag.x, y - dragi.el._drag.y, x, y];
             eve("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, dummyEve, data);
         }
@@ -3768,25 +3800,22 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             !drag.length && R.mousemove(dragMove).mouseup(dragUp);
 
 
-            drag = [{
+            drag.push({
                 el: this,
                 move_scope: move_scope,
                 start_scope: start_scope,
                 end_scope: end_scope
-            }];
-            for (key in e) {
-                if (typeof e[key] === 'function') {
-                    dummyEve[key] = e[key].bind(e);
-                } else {
-                    dummyEve[key] = e[key];
-                }
-            }
+            });
+
+            //Function to copy some properties of the actual event into the dummy event 
+            makeSelectiveCopy(dummyEve, e);
+
             data = dummyEve.data = [e.clientX + scrollX, e.clientY + scrollY];
-            onstart && onstart.call(start_scope || move_scope || this, dummyEve, data);
-            // onstart && eve.on("raphael.drag.start." + this.id, onstart);
+            // onstart && onstart.call(start_scope || move_scope || this, dummyEve, data);
+            onstart && eve.on("raphael.drag.start." + this.id, onstart);
             onmove && eve.on("raphael.drag.move." + this.id, onmove);
             onend && eve.on("raphael.drag.end." + this.id, onend);
-            // onstart && eve("raphael.drag.start." + this.id, start_scope || move_scope || this, e.clientX + scrollX, e.clientY + scrollY, e);
+            onstart && eve("raphael.drag.start." + this.id, start_scope || move_scope || this, dummyEve, data);
         }
         this._drag = {};
         draggable.push({

@@ -1761,7 +1761,8 @@ export default function (R) {
             x = con.x,
             y = con.y,
             width = con.width,
-            height = con.height;
+            height = con.height,
+            paper;
             if (!container) {
                 throw new Error("SVG container not found.");
             }
@@ -1783,7 +1784,9 @@ export default function (R) {
             });
             if (container == 1) {
                 cnvs.style.cssText = css + "position:absolute;left:" + x + "px;top:" + y + "px";
-                R._g.doc.body.appendChild(cnvs);
+                // Store body as the container
+                container = R._g.doc.body;
+                container.appendChild(cnvs);
                 isFloating = 1;
             } else {
                 cnvs.style.cssText = css + "position:relative";
@@ -1793,20 +1796,23 @@ export default function (R) {
                     container.appendChild(cnvs);
                 }
             }
-            container = new R._Paper;
-            container.width = width;
-            container.height = height;
-            container.canvas = cnvs;
+            paper = new R._Paper;
+            paper.width = width;
+            paper.height = height;
+            paper.canvas = cnvs;
+            // Store the container for further detachment and attachment
+            paper.container = container;
+
             $(cnvs, {
-                id: "raphael-paper-" + container.id
+                id: "raphael-paper-" + paper.id
             });
-            container.clear();
-            createDummyText(container);
-            container._left = container._top = 0;
-            isFloating && (container.renderfix = function() {
+            paper.clear();
+            createDummyText(paper);
+            paper._left = paper._top = 0;
+            isFloating && (paper.renderfix = function() {
                 });
-            container.renderfix();
-            return container;
+            paper.renderfix();
+            return paper;
         };
         R._engine.setViewBox = function(x, y, w, h, fit) {
             eve("raphael.setViewBox", this, this._viewBox, [x, y, w, h, fit]);
@@ -1841,6 +1847,26 @@ export default function (R) {
             this._viewBox = [x, y, w, h, !!fit];
             return this;
         };
+
+        /**
+         * Function to remove the paper form the DOM tree
+         */
+        R.prototype.detachPaper = function () {
+            if (this._detached !== false) {
+                this.container.removeChild(this.canvas);
+                this._detached = true;
+            }
+        }
+        /**
+         * Function to append the paper in the DOM tree
+         * @note: This might change the order of the child elements.
+         */
+        R.prototype.attachPaper = function () {
+            if (this._detached) {
+                this.container.appendChild(this.canvas);
+                this._detached = false;
+            }
+        }
 
         R.prototype.renderfix = function() {
             var cnvs = this.canvas,

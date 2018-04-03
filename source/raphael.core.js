@@ -3782,12 +3782,21 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
      = (object) @Element
     \*/
     elproto.drag = function(onmove, onstart, onend, move_scope, start_scope, end_scope) {
-        function start(e) {
+        var dragInfo = this.dragInfo || (this.dragInfo = {});
+        onmove && (dragInfo.onmove = onmove);
+        onstart && (dragInfo.onstart = onstart);
+        onend && (dragInfo.onend = onend);
+        move_scope && (dragInfo.move_scope = move_scope);
+        start_scope && (dragInfo.start_scope = start_scope);
+        end_scope && (dragInfo.end_scope = end_scope);
+
+        this.dragFn = this.dragFn || function (e) {
             var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
                 scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
                 key,
                 dummyEve = {},
-                data;
+                data,
+                dragInfo = this.dragInfo;
 
             this._drag.x = e.clientX + scrollX;
             this._drag.y = e.clientY + scrollY;
@@ -3812,24 +3821,28 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
 
             data = dummyEve.data = [e.clientX + scrollX, e.clientY + scrollY];
             // onstart && onstart.call(start_scope || move_scope || this, dummyEve, data);
-            onstart && eve.on("raphael.drag.start." + this.id, onstart);
-            onmove && eve.on("raphael.drag.move." + this.id, onmove);
-            onend && eve.on("raphael.drag.end." + this.id, onend);
-            onstart && eve("raphael.drag.start." + this.id, start_scope || move_scope || this, dummyEve, data);
+            dragInfo.onstart && eve.on("raphael.drag.start." + this.id, dragInfo.onstart);
+            dragInfo.onmove && eve.on("raphael.drag.move." + this.id, dragInfo.onmove);
+            dragInfo.onend && eve.on("raphael.drag.end." + this.id, dragInfo.onend);
+            dragInfo.onstart && eve("raphael.drag.start." + this.id, dragInfo.start_scope || dragInfo.move_scope || this,
+                dummyEve, data);
         }
         this._drag = {};
         draggable.push({
             el: this,
-            start: start,
+            start: this.dragFn,
             onstart: onstart,
             onmove: onmove,
             onend: onend
         });
-        // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
-        if (supportsTouch && !supportsOnlyTouch) {
-            this.dragstart(start);
+
+        if (onstart) {
+            // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
+            if (supportsTouch && !supportsOnlyTouch) {
+                this.dragstart(this.dragFn);
+            }
+            this.mousedown(this.dragFn);
         }
-        this.mousedown(start);
 
         return this;
     };
@@ -3859,6 +3872,8 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                 this.unmousedown(draggable[i].start);
                 draggable.splice(i, 1);
                 eve.unbind("raphael.drag.*." + this.id);
+                this.dragInfo = undefined;
+                this.dragFn = undefined;
             }
         }
 
@@ -3876,9 +3891,9 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         var i = draggable.length;
         while (i--) {
             if (draggable[i].el == this && draggable[i].onmove) {
-                this.unmousedown(draggable[i].start);
                 draggable.splice(i, 1);
                 eve.unbind("raphael.drag.move." + this.id);
+                this.dragInfo.onmove = undefined;
             }
         }
 
@@ -3895,9 +3910,9 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         var i = draggable.length;
         while (i--) {
             if (draggable[i].el == this && draggable[i].onend) {
-                this.unmousedown(draggable[i].start);
                 draggable.splice(i, 1);
                 eve.unbind("raphael.drag.end." + this.id);
+                this.dragInfo.onend = undefined;
             }
         }
 
@@ -3918,6 +3933,8 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                 draggable.splice(i, 1);
                 eve.unbind("raphael.drag.start." + this.id);
                 this._dragstart = false;
+                this.dragInfo.onstart = undefined;
+                this.dragFn = undefined;
             }
         }
 

@@ -3988,16 +3988,18 @@ var preventDefault = function preventDefault() {
         data,
         dummyEve = {},
         key,
+        el,
         j = drag.length;
 
     while (j--) {
         dragi = drag[j];
+        el = dragi.el;
         if (supportsTouch && e.type === 'touchmove') {
             var i = e.touches.length,
                 touch;
             while (i--) {
                 touch = e.touches[i];
-                if (touch.identifier == dragi.el._drag.id) {
+                if (touch.identifier == el._drag.id) {
                     x = touch.clientX;
                     y = touch.clientY;
                     (e.originalEvent ? e.originalEvent : e).preventDefault();
@@ -4008,11 +4010,17 @@ var preventDefault = function preventDefault() {
             e.preventDefault();
         }
 
-        if (dragi.el.removed) {
+        if (el.removed) {
             continue;
         }
 
-        var node = R._engine.getNode(dragi.el),
+        if (el.dragStartFn) {
+            el.dragStartFn();
+            el.dragStartFn = undefined;
+            el.dragInfo._dragmove = true;
+        }
+
+        var node = R._engine.getNode(el),
             next = node.nextSibling,
             parent = node.parentNode,
             display = node.style.display;
@@ -4028,18 +4036,25 @@ var preventDefault = function preventDefault() {
         //Function to copy some properties of the actual event into the dummy event 
         makeSelectiveCopy(dummyEve, e);
 
-        data = dummyEve.data = [x - dragi.el._drag.x, y - dragi.el._drag.y, x, y];
-        (0, _eve3['default'])("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, dummyEve, data);
+        data = dummyEve.data = [x - el._drag.x, y - el._drag.y, x, y];
+        (0, _eve3['default'])("raphael.drag.move." + el.id, dragi.move_scope || el, dummyEve, data);
     }
 },
     dragUp = function dragUp(e) {
     R.undragmove(dragMove).undragend(dragUp);
     R.unmousemove(dragMove).unmouseup(dragUp);
     var i = drag.length,
+        el,
         dragi;
 
     while (i--) {
         dragi = drag[i];
+        el = dragi.el;
+        if (!el.dragInfo._dragmove) {
+            continue;
+        } else {
+            el.dragInfo._dragmove = undefined;
+        }
         dragi.el._drag = {};
         (0, _eve3['default'])("raphael.drag.end." + dragi.el.id, dragi.end_scope || dragi.start_scope || dragi.move_scope || dragi.el, e);
     }
@@ -4469,13 +4484,19 @@ var draggable = [];
  = (object) @Element
 \*/
 elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_scope) {
-    var dragInfo = this.dragInfo || (this.dragInfo = {});
-    onmove && (dragInfo.onmove = onmove);
-    onstart && (dragInfo.onstart = onstart);
-    onend && (dragInfo.onend = onend);
-    move_scope && (dragInfo.move_scope = move_scope);
-    start_scope && (dragInfo.start_scope = start_scope);
-    end_scope && (dragInfo.end_scope = end_scope);
+    var dragInfo = this.dragInfo || (this.dragInfo = {
+        // Store all the callbacks for various eventListeners on the same element
+        onmove: [],
+        onstart: [],
+        onend: [],
+        move_scope: [],
+        start_scope: [],
+        end_scope: []
+    });
+    onmove && dragInfo.onmove.push(onmove);
+    onstart && dragInfo.onstart.push(onstart);
+    onend && dragInfo.onend.push(onend);
+    // Scopes are not stored as when called via element.on, there is no provision for provifing scope
 
     this.dragFn = this.dragFn || function (e) {
         var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
@@ -4483,6 +4504,12 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
             key,
             dummyEve = {},
             data,
+            i,
+            j,
+            k,
+            ii,
+            jj,
+            kk,
             dragInfo = this.dragInfo;
 
         this._drag.x = e.clientX + scrollX;
@@ -4506,11 +4533,31 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
         makeSelectiveCopy(dummyEve, e);
 
         data = dummyEve.data = [e.clientX + scrollX, e.clientY + scrollY];
-        // onstart && onstart.call(start_scope || move_scope || this, dummyEve, data);
-        dragInfo.onstart && _eve3['default'].on("raphael.drag.start." + this.id, dragInfo.onstart);
-        dragInfo.onmove && _eve3['default'].on("raphael.drag.move." + this.id, dragInfo.onmove);
-        dragInfo.onend && _eve3['default'].on("raphael.drag.end." + this.id, dragInfo.onend);
-        dragInfo.onstart && (0, _eve3['default'])("raphael.drag.start." + this.id, dragInfo.start_scope || dragInfo.move_scope || this, dummyEve, data);
+
+        // Attaching handlers for various events
+        for (i = 0, ii = dragInfo.onstart.length; i < ii; i++) {
+            _eve3['default'].on("raphael.drag.start." + this.id, dragInfo.onstart[i]);
+        }
+
+        for (j = 0, jj = dragInfo.onmove.length; j < jj; j++) {
+            _eve3['default'].on("raphael.drag.move." + this.id, dragInfo.onmove[j]);
+        }
+
+        for (k = 0, kk = dragInfo.onend.length; k < kk; k++) {
+            _eve3['default'].on("raphael.drag.end." + this.id, dragInfo.onend[k]);
+        }
+
+        // Where there is no dragStart but there is dragEnd or dragMove handler
+        if (!ii && (jj || kk)) {
+            _eve3['default'].on("raphael.drag.end." + this.id, function () {
+                this.undragmove();
+            });
+        }
+
+        // Queuing up the dragStartFn. It is fired if dragmove is fired after dragStart
+        this.dragStartFn = function () {
+            (0, _eve3['default'])("raphael.drag.start." + this.id, drag.start_scope || drag.move_scope || this, dummyEve, data);
+        };
     };
     this._drag = {};
     draggable.push({
@@ -4521,12 +4568,13 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
         onend: onend
     });
 
-    if (onstart) {
+    if (onstart && !this.startHandlerAttached) {
         // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
         if (supportsTouch && !supportsOnlyTouch) {
             this.dragstart(this.dragFn);
         }
         this.mousedown(this.dragFn);
+        this.startHandlerAttached = true;
     }
 
     return this;
@@ -4559,6 +4607,7 @@ elproto.undrag = function () {
             _eve3['default'].unbind("raphael.drag.*." + this.id);
             this.dragInfo = undefined;
             this.dragFn = undefined;
+            this.startHandlerAttached = undefined;
         }
     }
 

@@ -24,6 +24,7 @@ export default function (R) {
             abs = math.abs,
             pow = math.pow,
             sqrt = math.sqrt,
+            xlinkRegx = /^xlink\:/,
             separator = /[, ]+/,
             arrayShift = Array.prototype.shift,
             zeroStrokeFix = !!(/AppleWebKit/.test(R._g.win.navigator.userAgent) &&
@@ -33,6 +34,8 @@ export default function (R) {
             E = "",
             S = " ",
             xlink = "http://www.w3.org/1999/xlink",
+            svgNSStr = "http://www.w3.org/2000/svg",
+            typeStringSTR = "string",
             markers = {
                 block: "M5,0 0,2.5 5,5z",
                 classic: "M5,0 0,2.5 5,5 3.5,3 3.5,2z",
@@ -50,7 +53,7 @@ export default function (R) {
             //     return R._url = R._g.win.location.href.replace(/#.*?$/, E);
             // },
             createDummyText = function (paper) {
-                txtElem = paper.txtElem = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+                txtElem = paper.txtElem = document.createElementNS(svgNSStr, 'text')
                 txtElem.setAttribute('x', randomPos)
                 txtElem.setAttribute('y', randomPos)
                 theMSG = document.createTextNode('abcdefhiklmnopqrstuvwxyz')
@@ -103,20 +106,23 @@ export default function (R) {
         };
 
         var $ = R._createNode = function(el, attr) {
+            // Create the element
+            if (typeof el == typeStringSTR) {
+                el = R._g.doc.createElementNS(svgNSStr, el);
+            } 
+            // else {
+                
+            // }
             if (attr) {
-                if (typeof el == "string") {
-                    el = $(el);
-                }
-                for (var key in attr)
+                var key;
+                for (key in attr)
                     if (attr[has](key)) {
-                        if (key.substring(0, 6) == "xlink:") {
-                            el.setAttributeNS(xlink, key.substring(6), Str(attr[key]));
+                        if (xlinkRegx.test(key)) {
+                            el.setAttributeNS(xlink, key.replace(xlinkRegx, E), attr[key]);
                         } else {
-                            el.setAttribute(key, Str(attr[key]));
+                            el.setAttribute(key, attr[key]);
                         }
                     }
-            } else {
-                el = R._g.doc.createElementNS("http://www.w3.org/2000/svg", el);
             }
             return el;
         },
@@ -434,7 +440,7 @@ export default function (R) {
                     o._.arrows[se + "Marker"] = markerId;
                     o._.arrows[se + "dx"] = delta;
                     o._.arrows[se + "Type"] = type;
-                    o._.arrows[se + "String"] = value;
+                    o._.arrows[se + typeStringSTR] = value;
                 } else {
                     if (isEnd) {
                         from = o._.arrows.startdx * stroke || 0;
@@ -450,7 +456,7 @@ export default function (R) {
                     delete o._.arrows[se + "Marker"];
                     delete o._.arrows[se + "dx"];
                     delete o._.arrows[se + "Type"];
-                    delete o._.arrows[se + "String"];
+                    delete o._.arrows[se + typeStringSTR];
                 }
                 for (attr in markerCounter)
                     if (markerCounter[has](attr) && !markerCounter[attr]) {
@@ -1425,7 +1431,7 @@ export default function (R) {
                 res.visibility = this.node.style.display === "none" ? "hidden" : "visible";
                 return res;
             }
-            if (value == null && R.is(name, "string")) {
+            if (value == null && R.is(name, typeStringSTR)) {
                 if (name == "fill" && this.attrs.fill == "none" && this.attrs.gradient) {
                     return this.attrs.gradient;
                 }
@@ -1780,7 +1786,7 @@ export default function (R) {
                 height: height,
                 version: 1.1,
                 width: width,
-                xmlns: "http://www.w3.org/2000/svg"
+                xmlns: svgNSStr
             });
             if (container == 1) {
                 cnvs.style.cssText = css + "position:absolute;left:" + x + "px;top:" + y + "px";
@@ -1903,7 +1909,7 @@ export default function (R) {
                     desc.removeChild(desc.firstChild);
                 }
             }
-            desc.appendChild(R._g.doc.createTextNode(R.is(txt, "string") ? txt : ("Created with Red Rapha\xebl " +
+            desc.appendChild(R._g.doc.createTextNode(R.is(txt, typeStringSTR) ? txt : ("Created with Red Rapha\xebl " +
                 R.version)));
         };
 

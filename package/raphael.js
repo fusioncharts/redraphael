@@ -4020,16 +4020,18 @@ var preventDefault = function preventDefault() {
             el.dragInfo._dragmove = true;
         }
 
-        var node = R._engine.getNode(el),
-            next = node.nextSibling,
-            parent = node.parentNode,
-            display = node.style.display;
+        if (g.win.opera) {
+            var node = R._engine.getNode(el),
+                next = node.nextSibling,
+                parent = node.parentNode,
+                display = node.style.display;
 
-        g.win.opera && parent.removeChild(node);
+            parent.removeChild(node);
 
-        node.style.display = "none";
-        node.style.display = display;
-        g.win.opera && (next ? parent.insertBefore(node, next) : parent.appendChild(node));
+            node.style.display = "none";
+            node.style.display = display;
+            next ? parent.insertBefore(node, next) : parent.appendChild(node);
+        }
         x += scrollX;
         y += scrollY;
 

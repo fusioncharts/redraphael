@@ -527,14 +527,7 @@ export default function (R) {
             }
         },
 
-        applyCustomAttributes = function (o, attrs) {
-            for (var key in attrs) {
-                eve("raphael.attr." + key + "." + o.id, o, attrs[key], key);
-                o.ca[key] && o.attr(key, attrs[key]);
-            }
-        },
-
-        setFillAndStroke = R._setFillAndStroke = function(o, params, group) {
+        setFillAndStroke = R._setFillAndStroke = function(o, params) {
             if (!o.paper.canvas) {
                 return;
             }
@@ -920,7 +913,7 @@ export default function (R) {
                     }
                 }
             }
-            (o.type === 'text' && !params["_do-not-tune"]) && tuneText(o, params, group);
+            (o.type === 'text' && !params["_do-not-tune"]) && tuneText(o, params);
             s.visibility = vis;
         },
         /*
@@ -943,19 +936,20 @@ export default function (R) {
             }
         },
         leading = 1.2,
-        tuneText = function(el, params, group) {
+        tuneText = function(el, params) {
             if (el.type != "text" || !(params[has]("text") || params[has]("font") ||
                     params[has]("font-size") || params[has]("x") || params[has]("y") ||
                     params[has]("line-height") || params[has]("vertical-align"))) {
                 return;
             }
             var a = el.attrs,
+                group = el.parent,
                 node = el.node,
                 computedStyle = node.firstChild && R._g.doc.defaultView.getComputedStyle(node.firstChild, E),
                 fontSize = params['fontSize'] || params['font-size'] || a['font-size'] || (group && group.attrs.fontSize),
                 lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading,
                 actualValign = a[has]("vertical-align") ? a["vertical-align"] : "middle",
-                direction = params["direction"] || (group && group.attrs.direction) || "initial",
+                direction = params.direction || a.direction || (group && group.attrs.direction) || "initial",
                 isIE = /*@cc_on!@*/false || !!document.documentMode,
                 valign,
                 fontFamily = params['fontFamily'] || params['font-family'] || a['font-family'] ||
@@ -1420,7 +1414,6 @@ export default function (R) {
             if (this.removed) {
                 return this;
             }
-
             var todel = {},
                 key,
                 finalParam = {},
@@ -1441,71 +1434,72 @@ export default function (R) {
                 res.transform = this._.transform;
                 res.visibility = this.node.style.display === "none" ? "hidden" : "visible";
                 return res;
-            }
-            // get one, return teh value of the given attribute
-            if (value == null && R.is(name, typeStringSTR)) {
-                if (name == "fill" && this.attrs.fill == "none" && this.attrs.gradient) {
-                    return this.attrs.gradient;
-                }
-                if (name == "transform") {
-                    return this._.transform;
-                }
-                if (name == "visibility") {
-                    return this.node.style.display === "none" ? "hidden" : "visible";
-                }
-            
-                if (name in this.attrs) {
-                    return this.attrs[name];
-                } else if (R.is(this.ca[name], "function")) {
-                    return this.ca[name].def;
-                }
-                return R._availableAttrs[name];
-            }
-            // key value provided seperately
-            if (value != null) {
-                params = {};
-                params[name] = value;
-            } else if (name != null && R.is(name, "object")) { // Provided as an opject
-                params = name;
-            }
-            if (!R.stopPartialEventPropagation) {
-                for (key in params) {
-                    eve("raphael.attr." + key + "." + this.id, this, params[key], key);
-                }
-            }
-
-            // For each param
-            for (key in params) {
-                // check if that is a Custom attribute or not
-                if (this.ca[key] && params[has](key) && R.is(this.ca[key], "function") && !this.ca['_invoked' + key]) {
-
-                    this.ca['_invoked'+key] = true; // prevent recursion
-                    par = this.ca[key].apply(this, [].concat(params[key]));
-                    delete this.ca['_invoked'+key];
-
-                    // If the custom attribute create another set of attribute to be updated
-                    // Then add them in the attribute list
-                    for (subkey in par) {
-                        if (par[has](subkey)) {
-                            finalParam[subkey] = par[subkey];
+            } else {
+                if (value == null) {
+                    if (R.is(name, "object")) { // Provided as an object
+                        params = name;
+                    } else if(R.is(name, typeStringSTR)) { // get one, return the value of the given attribute
+                        if (name == "fill" && this.attrs.fill == "none" && this.attrs.gradient) {
+                            return this.attrs.gradient;
                         }
+                        if (name == "transform") {
+                            return this._.transform;
+                        }
+                        if (name == "visibility") {
+                            return this.node.style.display === "none" ? "hidden" : "visible";
+                        }
+                    
+                        if (name in this.attrs) {
+                            return this.attrs[name];
+                        } else if (R.is(this.ca[name], "function")) {
+                            return this.ca[name].def;
+                        }
+                        return R._availableAttrs[name];
                     }
-                    // Add the attribute in attrs
-                    this.attrs[key] = params[key];
-                } else {
-                    finalParam[key] = params[key];
+                } else { // key value provided seperately
+                    params = {};
+                    params[name] = value;
                 }
+                
+                if (!R.stopPartialEventPropagation) {
+                    for (key in params) {
+                        eve("raphael.attr." + key + "." + this.id, this, params[key], key);
+                    }
+                }
+    
+                // For each param
+                for (key in params) {
+                    // check if that is a Custom attribute or not
+                    if (this.ca[key] && params[has](key) && R.is(this.ca[key], "function") && !this.ca['_invoked' + key]) {
+    
+                        this.ca['_invoked'+key] = true; // prevent recursion
+                        par = this.ca[key].apply(this, [].concat(params[key]));
+                        delete this.ca['_invoked'+key];
+    
+                        // If the custom attribute create another set of attribute to be updated
+                        // Then add them in the attribute list
+                        for (subkey in par) {
+                            if (par[has](subkey)) {
+                                finalParam[subkey] = par[subkey];
+                            }
+                        }
+                        // Add the attribute in attrs
+                        this.attrs[key] = params[key];
+                    } else {
+                        finalParam[key] = params[key];
+                    }
+                }
+    
+                setFillAndStroke(this, finalParam);
+                
+                for (i = 0, ii = this.followers.length; i < ii; i++) {
+                    follower = this.followers[i];
+                    (follower.cb && !follower.cb.call(follower.el, finalParam, this)) ||
+                        follower.el.attr(finalParam);
+                }
+    
+                return this;
             }
-
-            setFillAndStroke(this, finalParam);
-            
-            for (i = 0, ii = this.followers.length; i < ii; i++) {
-                follower = this.followers[i];
-                (follower.cb && !follower.cb.call(follower.el, finalParam, this)) ||
-                    follower.el.attr(finalParam);
-            }
-
-            return this;
         };
 
         elproto.blur = function(size) {
@@ -1664,8 +1658,8 @@ export default function (R) {
                 res = new Element(el, svg, group);
 
             res.type = "path";
-            setFillAndStroke(res, attrs);
-            applyCustomAttributes(res, attrs);
+            // Apply the attribute if provided
+            attrs && res.attr(attrs);
             return res;
         };
 
@@ -1686,8 +1680,8 @@ export default function (R) {
                 res = new Element(el, svg, group);
 
             res.type = "circle";
-            setFillAndStroke(res, attrs);
-            applyCustomAttributes(res, attrs);
+            // Apply the attribute if provided
+            attrs && res.attr(attrs);
             return res;
         };
         R._engine.rect = function(svg, attrs, group) {
@@ -1696,8 +1690,8 @@ export default function (R) {
 
             res.type = "rect";
             attrs.rx = attrs.ry = attrs.r;
-            setFillAndStroke(res, attrs);
-            applyCustomAttributes(res, attrs);
+            // Apply the attribute if provided
+            attrs && res.attr(attrs);
             return res;
         };
         R._engine.ellipse = function(svg, attrs, group) {
@@ -1705,8 +1699,8 @@ export default function (R) {
                 res = new Element(el, svg, group);
 
             res.type = "ellipse";
-            setFillAndStroke(res, attrs);
-            applyCustomAttributes(res, attrs);
+            // Apply the attribute if provided
+            attrs && res.attr(attrs);
             return res;
         };
         function LoadRefImage (element, attrs) {
@@ -1733,8 +1727,8 @@ export default function (R) {
             res._.group = group || svg;
             res.type = "image";
             el.setAttribute("preserveAspectRatio", "none");
-            setFillAndStroke(res, attrs);
-            applyCustomAttributes(res, attrs);
+            // Apply the attribute if provided
+            attrs && res.attr(attrs);
             return res;
         };
         R._engine.text = function(svg, attrs, group, css) {
@@ -1744,9 +1738,8 @@ export default function (R) {
             res._textdirty = true;
             // Ideally this code should not be here as .css() is not a function of rapheal.
             css && res.css && res.css(css, undefined, true);
-
-            setFillAndStroke(res, attrs, group);
-            applyCustomAttributes(res, attrs);
+            // Apply the attribute if provided
+            attrs && res.attr(attrs);
             return res;
         };
 

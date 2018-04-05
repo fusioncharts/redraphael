@@ -7046,7 +7046,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             attrs = o.attrs,
             key,
             attr = {},
-            values = o.attr(['x', 'y', 'width', 'height', 'stroke-width']);
+            values = o.attr();
 
         values = R.crispBound(values.x, values.y, values.width, values.height,
             values['stroke-width']);

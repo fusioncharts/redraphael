@@ -1420,17 +1420,29 @@ export default function (R) {
             if (this.removed) {
                 return this;
             }
+
+            var todel = {},
+                key,
+                finalParam = {},
+                i,
+                ii,
+                params,
+                subkey,
+                par,
+                follower;
+            // get all, return all applied attributes
             if (name == null) {
                 var res = {};
-                for (var a in this.attrs)
-                    if (this.attrs[has](a)) {
-                        res[a] = this.attrs[a];
+                for (key in this.attrs)
+                    if (this.attrs[has](key)) {
+                        res[key] = this.attrs[key];
                     }
                 res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
                 res.transform = this._.transform;
                 res.visibility = this.node.style.display === "none" ? "hidden" : "visible";
                 return res;
             }
+            // get one, return teh value of the given attribute
             if (value == null && R.is(name, typeStringSTR)) {
                 if (name == "fill" && this.attrs.fill == "none" && this.attrs.gradient) {
                     return this.attrs.gradient;
@@ -1441,71 +1453,58 @@ export default function (R) {
                 if (name == "visibility") {
                     return this.node.style.display === "none" ? "hidden" : "visible";
                 }
-                var names = name.split(separator),
-                out = {};
-                for (var i = 0, ii = names.length; i < ii; i++) {
-                    name = names[i];
-                    if (name in this.attrs) {
-                        out[name] = this.attrs[name];
-                    } else if (R.is(this.ca[name], "function")) {
-                        out[name] = this.ca[name].def;
-                    } else {
-                        out[name] = R._availableAttrs[name];
-                    }
+            
+                if (name in this.attrs) {
+                    return this.attrs[name];
+                } else if (R.is(this.ca[name], "function")) {
+                    return this.ca[name].def;
                 }
-                return ii - 1 ? out : out[names[0]];
+                return R._availableAttrs[name];
             }
-            if (value == null && R.is(name, "array")) {
-                out = {};
-                for (i = 0, ii = name.length; i < ii; i++) {
-                    out[name[i]] = this.attr(name[i]);
-                }
-                return out;
-            }
+            // key value provided seperately
             if (value != null) {
-                var params = {};
+                params = {};
                 params[name] = value;
-            } else if (name != null && R.is(name, "object")) {
+            } else if (name != null && R.is(name, "object")) { // Provided as an opject
                 params = name;
             }
             if (!R.stopPartialEventPropagation) {
-                for (var key in params) {
+                for (key in params) {
                     eve("raphael.attr." + key + "." + this.id, this, params[key], key);
                 }
             }
-            var todel = {};
-            for (key in this.ca) {
+
+            // For each param
+            for (key in params) {
+                // check if that is a Custom attribute or not
                 if (this.ca[key] && params[has](key) && R.is(this.ca[key], "function") && !this.ca['_invoked' + key]) {
 
                     this.ca['_invoked'+key] = true; // prevent recursion
-                    var par = this.ca[key].apply(this, [].concat(params[key]));
+                    par = this.ca[key].apply(this, [].concat(params[key]));
                     delete this.ca['_invoked'+key];
 
-                    for (var subkey in par) {
+                    // If the custom attribute create another set of attribute to be updated
+                    // Then add them in the attribute list
+                    for (subkey in par) {
                         if (par[has](subkey)) {
-                            params[subkey] = par[subkey];
+                            finalParam[subkey] = par[subkey];
                         }
                     }
+                    // Add the attribute in attrs
                     this.attrs[key] = params[key];
-                    if (par === false) {
-                        todel[key] = params[key];
-                        delete params[key];
-                    }
+                } else {
+                    finalParam[key] = params[key];
                 }
             }
 
-            setFillAndStroke(this, params);
-
-            var follower;
+            setFillAndStroke(this, finalParam);
+            
             for (i = 0, ii = this.followers.length; i < ii; i++) {
                 follower = this.followers[i];
-                (follower.cb && !follower.cb.call(follower.el, params, this)) ||
-                    follower.el.attr(params);
+                (follower.cb && !follower.cb.call(follower.el, finalParam, this)) ||
+                    follower.el.attr(finalParam);
             }
 
-            for (subkey in todel) {
-                params[subkey] = todel[subkey];
-            }
             return this;
         };
 

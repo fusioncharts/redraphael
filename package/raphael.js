@@ -12276,7 +12276,13 @@ exports["default"] = function (R) {
                 res = o;
             oriOp = res.oriOp || (res.oriOp = {});
             for (var par in params) {
-                if (params[has](par) && params[par] !== '') {
+                // Not setting any black property
+                if (params[par] === '') {
+                    node.removeAttribute(par);
+                    delete a[par];
+                    delete params[par];
+                    continue;
+                } else if (params[has](par)) {
                     a[par] = params[par];
                 }
             }if (newpath) {

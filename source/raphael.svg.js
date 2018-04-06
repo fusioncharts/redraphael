@@ -946,14 +946,14 @@ export default function (R) {
                 group = el.parent,
                 node = el.node,
                 computedStyle = node.firstChild && R._g.doc.defaultView.getComputedStyle(node.firstChild, E),
-                fontSize = params['fontSize'] || params['font-size'] || a['font-size'] || (group && group.attrs.fontSize),
+                fontSize = params['fontSize'] || params['font-size'] || a['font-size'] || (group && group.attrs && group.attrs.fontSize),
                 lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading,
                 actualValign = a[has]("vertical-align") ? a["vertical-align"] : "middle",
-                direction = params.direction || a.direction || (group && group.attrs.direction) || "initial",
+                direction = params.direction || a.direction || (group && group.attrs && group.attrs.direction) || "initial",
                 isIE = /*@cc_on!@*/false || !!document.documentMode,
                 valign,
                 fontFamily = params['fontFamily'] || params['font-family'] || a['font-family'] ||
-                    (group && group.attrs.fontFamily) || 'Verdana,sans';
+                    (group && group.attrs && group.attrs.fontFamily) || 'Verdana,sans';
 
             fontSize = fontSize === undefined ? (lineHeight / 1.2 || 10) :
                 fontSize.toString().replace(/px/, '');

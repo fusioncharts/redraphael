@@ -769,9 +769,9 @@ var _typeof = typeof _symbol2['default'] === "function" && typeof _iterator2['de
                                                                                                                                                                                                                                                                                                                                          * Licensed under the MIT license.
                                                                                                                                                                                                                                                                                                                                          */
 
-var _eve = __webpack_require__(70);
+var _eve2 = __webpack_require__(70);
 
-var _eve2 = _interopRequireDefault(_eve);
+var _eve3 = _interopRequireDefault(_eve2);
 
 var _raphael = __webpack_require__(71);
 
@@ -847,14 +847,14 @@ function R(first) {
     }
 
     if (R.is(first, "function")) {
-        return loaded ? first() : _eve2['default'].on("raphael.DOMload", first);
+        return loaded ? first() : _eve3['default'].on("raphael.DOMload", first);
     } else if (R.is(first, array)) {
         return R._engine.create[apply](R, first.splice(0, 3 + R.is(first[0], nu))).add(first);
     } else {
         args = Array.prototype.slice.call(arguments, 0);
         if (R.is(args[args.length - 1], "function")) {
             f = args.pop();
-            return loaded ? f.call(R._engine.create[apply](R, args)) : _eve2['default'].on("raphael.DOMload", function () {
+            return loaded ? f.call(R._engine.create[apply](R, args)) : _eve3['default'].on("raphael.DOMload", function () {
                 f.call(R._engine.create[apply](R, args));
             });
         } else {
@@ -865,7 +865,7 @@ function R(first) {
 
 R.upgrade = "1.0.0";
 R.version = "2.1.0";
-R.eve = _eve2['default'];
+R.eve = _eve3['default'];
 // RedRaphael = R;
 
 var loaded,
@@ -974,7 +974,7 @@ supportsOnlyTouch = R.supportsOnlyTouch = supportsTouch && !(win.navigator.maxTo
     this._CustomAttributes.prototype = this.ca;
     this._elementsById = {};
     this.id = R._oid++;
-    (0, _eve2['default'])('raphael.new', this);
+    (0, _eve3['default'])('raphael.new', this);
 },
 
 
@@ -1529,7 +1529,7 @@ R.deg = function (rad) {
  - newwin (window) new window object
 \*/
 R.setWindow = function (newwin) {
-    (0, _eve2['default'])("raphael.setWindow", R, g.win, newwin);
+    (0, _eve3['default'])("raphael.setWindow", R, g.win, newwin);
     win = g.win = newwin;
     doc = g.doc = g.win.document;
     if (R._engine.initWin) {
@@ -2696,7 +2696,7 @@ R.isPointInsidePath = function (path, x, y) {
 };
 R._removedFactory = function (methodname) {
     return function () {
-        (0, _eve2['default'])("raphael.log", null, 'Rapha\xEBl: you are calling to method \u201C' + methodname + '\u201D of removed object', methodname);
+        (0, _eve3['default'])("raphael.log", null, 'Rapha\xEBl: you are calling to method \u201C' + methodname + '\u201D of removed object', methodname);
     };
 };
 
@@ -3885,6 +3885,45 @@ var preventDefault = function preventDefault() {
     stopTouch = function stopTouch() {
     return this.originalEvent.stopPropagation();
 },
+    eventCopyList = {
+    stopPropagation: 'fn',
+    stopImmediatePropagation: 'fn',
+    preventDefault: 'fn',
+    type: true,
+    clientX: true,
+    clientY: true,
+    pageX: true,
+    pageY: true,
+    bubbles: true,
+    cancelable: true,
+    touches: true,
+    target: true,
+    originalTarget: true,
+    srcElement: true,
+    relatedTarget: true,
+    fromElement: true,
+    changedTouches: true,
+    layerX: true,
+    layerY: true
+},
+    makeSelectiveCopy = function makeSelectiveCopy(target, source) {
+    var _loop = function _loop(_eve) {
+        if (eventCopyList[_eve] === 'fn') {
+            target[_eve] = function () {
+                return function () {
+                    source[_eve]();
+                };
+            }(source);
+        } else {
+            target[_eve] = source[_eve];
+        }
+    };
+
+    for (var _eve in eventCopyList) {
+        _loop(_eve);
+    }
+    target.originalEvent = source;
+},
     addEvent = R.addEvent = function () {
     if (g.doc.addEventListener) {
         return function (obj, type, fn, element) {
@@ -3949,16 +3988,18 @@ var preventDefault = function preventDefault() {
         data,
         dummyEve = {},
         key,
+        el,
         j = drag.length;
 
     while (j--) {
         dragi = drag[j];
+        el = dragi.el;
         if (supportsTouch && e.type === 'touchmove') {
             var i = e.touches.length,
                 touch;
             while (i--) {
                 touch = e.touches[i];
-                if (touch.identifier == dragi.el._drag.id) {
+                if (touch.identifier == el._drag.id) {
                     x = touch.clientX;
                     y = touch.clientY;
                     (e.originalEvent ? e.originalEvent : e).preventDefault();
@@ -3969,43 +4010,55 @@ var preventDefault = function preventDefault() {
             e.preventDefault();
         }
 
-        if (dragi.el.removed) {
+        if (el.removed) {
             continue;
         }
 
-        var node = R._engine.getNode(dragi.el),
-            next = node.nextSibling,
-            parent = node.parentNode,
-            display = node.style.display;
+        if (el.dragStartFn) {
+            el.dragStartFn();
+            el.dragStartFn = undefined;
+            el.dragInfo._dragmove = true;
+        }
 
-        g.win.opera && parent.removeChild(node);
+        if (g.win.opera) {
+            var node = R._engine.getNode(el),
+                next = node.nextSibling,
+                parent = node.parentNode,
+                display = node.style.display;
 
-        node.style.display = "none";
-        node.style.display = display;
-        g.win.opera && (next ? parent.insertBefore(node, next) : parent.appendChild(node));
+            parent.removeChild(node);
+
+            node.style.display = "none";
+            node.style.display = display;
+            next ? parent.insertBefore(node, next) : parent.appendChild(node);
+        }
         x += scrollX;
         y += scrollY;
-        for (key in e) {
-            if (typeof e[key] === 'function') {
-                dummyEve[key] = e[key].bind(e);
-            } else {
-                dummyEve[key] = e[key];
-            }
-        }
-        data = dummyEve.data = [x - dragi.el._drag.x, y - dragi.el._drag.y, x, y];
-        (0, _eve2['default'])("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, dummyEve, data);
+
+        //Function to copy some properties of the actual event into the dummy event 
+        makeSelectiveCopy(dummyEve, e);
+
+        data = dummyEve.data = [x - el._drag.x, y - el._drag.y, x, y];
+        (0, _eve3['default'])("raphael.drag.move." + el.id, dragi.move_scope || el, dummyEve, data);
     }
 },
     dragUp = function dragUp(e) {
     R.undragmove(dragMove).undragend(dragUp);
     R.unmousemove(dragMove).unmouseup(dragUp);
     var i = drag.length,
+        el,
         dragi;
 
     while (i--) {
         dragi = drag[i];
+        el = dragi.el;
+        if (!el.dragInfo._dragmove) {
+            continue;
+        } else {
+            el.dragInfo._dragmove = undefined;
+        }
         dragi.el._drag = {};
-        (0, _eve2['default'])("raphael.drag.end." + dragi.el.id, dragi.end_scope || dragi.start_scope || dragi.move_scope || dragi.el, e);
+        (0, _eve3['default'])("raphael.drag.end." + dragi.el.id, dragi.end_scope || dragi.start_scope || dragi.move_scope || dragi.el, e);
     }
     drag = [];
 },
@@ -4296,11 +4349,11 @@ elproto.data = function (key, value) {
                 }
             }return this;
         }
-        (0, _eve2['default'])("raphael.data.get." + this.id, this, data[key], key);
+        (0, _eve3['default'])("raphael.data.get." + this.id, this, data[key], key);
         return data[key];
     }
     data[key] = value;
-    (0, _eve2['default'])("raphael.data.set." + this.id, this, value, key);
+    (0, _eve3['default'])("raphael.data.set." + this.id, this, value, key);
     return this;
 };
 
@@ -4433,12 +4486,33 @@ var draggable = [];
  = (object) @Element
 \*/
 elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_scope) {
-    function start(e) {
+    var dragInfo = this.dragInfo || (this.dragInfo = {
+        // Store all the callbacks for various eventListeners on the same element
+        onmove: [],
+        onstart: [],
+        onend: [],
+        move_scope: [],
+        start_scope: [],
+        end_scope: []
+    });
+    onmove && dragInfo.onmove.push(onmove);
+    onstart && dragInfo.onstart.push(onstart);
+    onend && dragInfo.onend.push(onend);
+    // Scopes are not stored as when called via element.on, there is no provision for provifing scope
+
+    this.dragFn = this.dragFn || function (e) {
         var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
             scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
             key,
             dummyEve = {},
-            data;
+            data,
+            i,
+            j,
+            k,
+            ii,
+            jj,
+            kk,
+            dragInfo = this.dragInfo;
 
         this._drag.x = e.clientX + scrollX;
         this._drag.y = e.clientY + scrollY;
@@ -4450,39 +4524,60 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
         }
         !drag.length && R.mousemove(dragMove).mouseup(dragUp);
 
-        drag = [{
+        drag.push({
             el: this,
             move_scope: move_scope,
             start_scope: start_scope,
             end_scope: end_scope
-        }];
-        for (key in e) {
-            if (typeof e[key] === 'function') {
-                dummyEve[key] = e[key].bind(e);
-            } else {
-                dummyEve[key] = e[key];
-            }
-        }
+        });
+
+        //Function to copy some properties of the actual event into the dummy event 
+        makeSelectiveCopy(dummyEve, e);
+
         data = dummyEve.data = [e.clientX + scrollX, e.clientY + scrollY];
-        onstart && onstart.call(start_scope || move_scope || this, dummyEve, data);
-        // onstart && eve.on("raphael.drag.start." + this.id, onstart);
-        onmove && _eve2['default'].on("raphael.drag.move." + this.id, onmove);
-        onend && _eve2['default'].on("raphael.drag.end." + this.id, onend);
-        // onstart && eve("raphael.drag.start." + this.id, start_scope || move_scope || this, e.clientX + scrollX, e.clientY + scrollY, e);
-    }
+
+        // Attaching handlers for various events
+        for (i = 0, ii = dragInfo.onstart.length; i < ii; i++) {
+            _eve3['default'].on("raphael.drag.start." + this.id, dragInfo.onstart[i]);
+        }
+
+        for (j = 0, jj = dragInfo.onmove.length; j < jj; j++) {
+            _eve3['default'].on("raphael.drag.move." + this.id, dragInfo.onmove[j]);
+        }
+
+        for (k = 0, kk = dragInfo.onend.length; k < kk; k++) {
+            _eve3['default'].on("raphael.drag.end." + this.id, dragInfo.onend[k]);
+        }
+
+        // Where there is no dragStart but there is dragEnd or dragMove handler
+        if (!ii && (jj || kk)) {
+            _eve3['default'].on("raphael.drag.end." + this.id, function () {
+                this.undragmove();
+            });
+        }
+
+        // Queuing up the dragStartFn. It is fired if dragmove is fired after dragStart
+        this.dragStartFn = function () {
+            (0, _eve3['default'])("raphael.drag.start." + this.id, drag.start_scope || drag.move_scope || this, dummyEve, data);
+        };
+    };
     this._drag = {};
     draggable.push({
         el: this,
-        start: start,
+        start: this.dragFn,
         onstart: onstart,
         onmove: onmove,
         onend: onend
     });
-    // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
-    if (supportsTouch && !supportsOnlyTouch) {
-        this.dragstart(start);
+
+    if (onstart && !this.startHandlerAttached) {
+        // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
+        if (supportsTouch && !supportsOnlyTouch) {
+            this.dragstart(this.dragFn);
+        }
+        this.mousedown(this.dragFn);
+        this.startHandlerAttached = true;
     }
-    this.mousedown(start);
 
     return this;
 };
@@ -4496,7 +4591,7 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
  - f (function) handler for event, first argument would be the element you are dragging over
 \*/
 elproto.onDragOver = function (f) {
-    f ? _eve2['default'].on("raphael.drag.over." + this.id, f) : _eve2['default'].unbind("raphael.drag.over." + this.id);
+    f ? _eve3['default'].on("raphael.drag.over." + this.id, f) : _eve3['default'].unbind("raphael.drag.over." + this.id);
 };
 
 /*\
@@ -4511,7 +4606,10 @@ elproto.undrag = function () {
         if (draggable[i].el == this) {
             this.unmousedown(draggable[i].start);
             draggable.splice(i, 1);
-            _eve2['default'].unbind("raphael.drag.*." + this.id);
+            _eve3['default'].unbind("raphael.drag.*." + this.id);
+            this.dragInfo = undefined;
+            this.dragFn = undefined;
+            this.startHandlerAttached = undefined;
         }
     }
 
@@ -4529,9 +4627,9 @@ elproto.undragmove = function () {
     var i = draggable.length;
     while (i--) {
         if (draggable[i].el == this && draggable[i].onmove) {
-            this.unmousedown(draggable[i].start);
             draggable.splice(i, 1);
-            _eve2['default'].unbind("raphael.drag.move." + this.id);
+            _eve3['default'].unbind("raphael.drag.move." + this.id);
+            this.dragInfo.onmove = undefined;
         }
     }
 
@@ -4548,9 +4646,9 @@ elproto.undragend = function () {
     var i = draggable.length;
     while (i--) {
         if (draggable[i].el == this && draggable[i].onend) {
-            this.unmousedown(draggable[i].start);
             draggable.splice(i, 1);
-            _eve2['default'].unbind("raphael.drag.end." + this.id);
+            _eve3['default'].unbind("raphael.drag.end." + this.id);
+            this.dragInfo.onend = undefined;
         }
     }
 
@@ -4569,8 +4667,10 @@ elproto.undragstart = function () {
         if (draggable[i].el == this && draggable[i].onstart) {
             this.unmousedown(draggable[i].start);
             draggable.splice(i, 1);
-            _eve2['default'].unbind("raphael.drag.start." + this.id);
+            _eve3['default'].unbind("raphael.drag.start." + this.id);
             this._dragstart = false;
+            this.dragInfo.onstart = undefined;
+            this.dragFn = undefined;
         }
     }
 
@@ -5788,15 +5888,15 @@ animation = function animation() {
             if (executeEvent) {
                 (function (id, that, anim) {
                     setTimeout(function () {
-                        (0, _eve2['default'])("raphael.anim.frame." + id, that, anim);
+                        (0, _eve3['default'])("raphael.anim.frame." + id, that, anim);
                     });
                 })(that.id, that, e.anim);
             }
         } else {
             (function (f, el, a) {
                 setTimeout(function () {
-                    executeEvent && (0, _eve2['default'])("raphael.anim.frame." + el.id, el, a);
-                    executeEvent && (0, _eve2['default'])("raphael.anim.finish." + el.id, el, a);
+                    executeEvent && (0, _eve3['default'])("raphael.anim.frame." + el.id, el, a);
+                    executeEvent && (0, _eve3['default'])("raphael.anim.finish." + el.id, el, a);
                     R.is(f, "function") && f.call(el);
                 });
             })(e.callback, that, e.anim);
@@ -6002,7 +6102,7 @@ function CubicBezierAtTime(t, p1x, p1y, p2x, p2y, duration) {
     return solve(t, 1 / (200 * duration));
 }
 elproto.onAnimation = function (f) {
-    f ? _eve2['default'].on("raphael.anim.frame." + this.id, f) : _eve2['default'].unbind("raphael.anim.frame." + this.id);
+    f ? _eve3['default'].on("raphael.anim.frame." + this.id, f) : _eve3['default'].unbind("raphael.anim.frame." + this.id);
     return this;
 };
 function Animation(anim, ms) {
@@ -7193,7 +7293,7 @@ function runAnimation(anim, element, percent, status, totalOrigin, times, parent
         isInAnim.initstatus = status;
         isInAnim.start = new Date() - isInAnim.ms * status;
     }
-    (0, _eve2['default'])("raphael.anim.start." + element.id, element, anim);
+    (0, _eve3['default'])("raphael.anim.start." + element.id, element, anim);
 }
 
 /*\
@@ -7343,7 +7443,7 @@ elproto.pause = function (anim, pauseChildAnimation) {
         e = animationElements[i];
         // @todo - need a scope to implement the logic for nested animations.
         if ((e.el.id === this.id || pauseChildAnimation && e.parentEl && e.parentEl.e.el && e.parentEl.e.el.id === this.id) && (!anim || e.anim == anim)) {
-            if ((0, _eve2['default'])("raphael.anim.pause." + this.id, this, e.anim) !== false) {
+            if ((0, _eve3['default'])("raphael.anim.pause." + this.id, this, e.anim) !== false) {
                 e.paused = true;
                 e.pauseStart = now;
             }
@@ -7373,7 +7473,7 @@ elproto.resume = function (anim, resumeChildAnimation) {
         e = animationElements[i];
         // @todo - need a scope to implement the logic for nested animations.
         if ((e.el.id === this.id || resumeChildAnimation && e.parentEl && e.parentEl.e.el && e.parentEl.e.el.id === this.id) && (!anim || e.anim == anim)) {
-            if ((0, _eve2['default'])("raphael.anim.resume." + this.id, this, e.anim) !== false) {
+            if ((0, _eve3['default'])("raphael.anim.resume." + this.id, this, e.anim) !== false) {
                 delete e.paused;
                 e.el.status(e.anim, e.status);
                 e.pauseEnd = now;
@@ -7417,7 +7517,7 @@ elproto.stop = function (anim, stopChildAnimation, jumpToEnd) {
         for (var i = 0; i < animationElements.length; i++) {
             e = animationElements[i];
             if (e.el.id === this.id && (!anim || e.anim === anim)) {
-                if ((0, _eve2['default'])("raphael.anim.stop." + this.id, this, e.anim) !== false) {
+                if ((0, _eve3['default'])("raphael.anim.stop." + this.id, this, e.anim) !== false) {
                     animationElements.splice(i--, 1);
                 }
             }
@@ -7449,8 +7549,8 @@ function stopAnimation(paper) {
         }
     }
 }
-_eve2['default'].on("raphael.remove", stopAnimation);
-_eve2['default'].on("raphael.clear", stopAnimation);
+_eve3['default'].on("raphael.remove", stopAnimation);
+_eve3['default'].on("raphael.clear", stopAnimation);
 elproto.toString = function () {
     return 'Rapha\xEBl\u2019s object';
 };
@@ -7792,7 +7892,7 @@ R.define = function (name, init, ca, fn, e, data) {
     isLoaded();
 })(doc, "DOMContentLoaded");
 
-_eve2['default'].on("raphael.DOMload", function () {
+_eve3['default'].on("raphael.DOMload", function () {
     loaded = true;
 });
 
@@ -12176,7 +12276,13 @@ exports["default"] = function (R) {
                 res = o;
             oriOp = res.oriOp || (res.oriOp = {});
             for (var par in params) {
-                if (params[has](par) && params[par] !== '') {
+                // Not setting any black property
+                if (params[par] === '') {
+                    node.removeAttribute(par);
+                    delete a[par];
+                    delete params[par];
+                    continue;
+                } else if (params[has](par)) {
                     a[par] = params[par];
                 }
             }if (newpath) {

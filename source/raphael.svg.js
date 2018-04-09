@@ -13,12 +13,26 @@
 export default function (R) {
     if (R.svg) {
         var has = "hasOwnProperty",
+            tSpanStr = "tspan",
+            vAignStr = "vertical-align",
+            lineHeightStr = "line-height",
+            fontSizeStr = 'font-size',
+            fontFamilyStr = 'font-family',
+            textStr = "text",
+            rtlStr = 'rtl',
+            arrayStr = 'array',
+            middleStr = 'middle',
+            IESplTspanAttr = {
+                    visibility: "hidden",
+                    "font-size": "0px"
+                },
             Str = String,
             toFloat = parseFloat,
             toInt = parseInt,
             theMSG,
             randomPos = -100,
             txtElem,
+            isIE = /*@cc_on!@*/false || !!document.documentMode,
             math = Math,
             mmax = math.max,
             abs = math.abs,
@@ -519,7 +533,7 @@ export default function (R) {
                     }
                 }
 
-                if (R.is(value, 'array')) {
+                if (R.is(value, arrayStr)) {
                     $(o.node, {
                         "stroke-dasharray": calculatedValues.join(",")
                     });
@@ -556,7 +570,7 @@ export default function (R) {
                     }
                     var value = params[att];
                     attrs[att] = value;
-                    if (value === '') {
+                    if (value === E) {
                         delete o.attrs[att];
                         node.removeAttribute(att);
                         continue;
@@ -592,7 +606,7 @@ export default function (R) {
                             o.transform(value);
                             break;
                         case "rotation":
-                            if (R.is(value, "array")) {
+                            if (R.is(value, arrayStr)) {
                                 o.rotate.apply(o, value);
                             }
                             else {
@@ -902,7 +916,7 @@ export default function (R) {
                             node.style.shapeRendering = value;
                             break;
                         default:
-                            att == "font-size" && (value = toInt(value, 10) + "px");
+                            att == fontSizeStr && (value = toInt(value, 10) + "px");
                             var cssrule = att.replace(/(\-.)/g, function(w) {
                                 return w.substring(1).toUpperCase();
                             });
@@ -937,122 +951,127 @@ export default function (R) {
         },
         leading = 1.2,
         tuneText = function(el, params) {
-            if (el.type != "text" || !(params[has]("text") || params[has]("font") ||
-                    params[has]("font-size") || params[has]("x") || params[has]("y") ||
-                    params[has]("line-height") || params[has]("vertical-align"))) {
+            if (el.type != textStr || !(params[has](textStr) || params[has]("font") ||
+                    params[has](fontSizeStr) || params[has]("x") || params[has]("y") ||
+                    params[has](lineHeightStr) || params[has](vAignStr))) {
                 return;
             }
             var a = el.attrs,
                 group = el.parent,
                 node = el.node,
-                computedStyle = node.firstChild && R._g.doc.defaultView.getComputedStyle(node.firstChild, E),
-                fontSize = params['fontSize'] || params['font-size'] || a['font-size'] || (group && group.attrs && group.attrs.fontSize),
-                lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading,
-                actualValign = a[has]("vertical-align") ? a["vertical-align"] : "middle",
+                fontSize,
+                lineHeight = toFloat(params[lineHeightStr] || a[lineHeightStr]),
+                actualValign,
                 direction = params.direction || a.direction || (group && group.attrs && group.attrs.direction) || "initial",
-                isIE = /*@cc_on!@*/false || !!document.documentMode,
                 valign,
-                fontFamily = params['fontFamily'] || params['font-family'] || a['font-family'] ||
-                    (group && group.attrs && group.attrs.fontFamily) || 'Verdana,sans';
+                nodeAttr = {},
+                updateNode,
+                tspanAttr = {},
+                updateTspan,
+                i,
+                ii,
+                // For rtl text in IE there is a blank tspan to fix RTL rendering issues in IE.
+                // So there will twice the amount of tSpan
+                j = !isIE && direction === rtlStr ? 2 : 1,
+                texts,
+                tempIESpan,
+                tspan,
+                oldAttr = el._oldAttr = el._oldAttr || {},
+                updateAlignment,
+                tspans,
+                text;
 
-            fontSize = fontSize === undefined ? (lineHeight / 1.2 || 10) :
-                fontSize.toString().replace(/px/, '');
-
-            if (isNaN(lineHeight)) {
+            // If line height is not valid (0, NaN, undefuned), then derive it from fontSize
+            if (!lineHeight) {
+                fontSize = params.fontSize || params[fontSizeStr] || a[fontSizeStr] || (group && group.attrs && group.attrs.fontSize);
+                fontSize = fontSize ?  fontSize.toString().replace(/px/, E) : 10;
                 lineHeight = fontSize * leading;
             }
 
-            if (R.is(params.text, 'array')) {
-                params.text = params.text.join('<br>');
+            if (params[has]("x") && oldAttr.x != params.x){ // X change
+                // If the x is getting changed, then node and the tspan both needs to be updated
+                oldAttr.x = tspanAttr.x = nodeAttr.x = a.x;
+                updateNode = true;
+                updateTspan = true;
+            }
+            if (params[has]("y") && oldAttr.y != params.y) { // Y change
+                oldAttr.y = nodeAttr.y = a.y;
+                updateNode = true;
             }
 
-            valign = actualValign === 'top' ? -0.5 : (actualValign === 'bottom' ? 0.5 : 0);
+            if (lineHeight != oldAttr.lineHeight) { // lineHeight change
+                oldAttr.lineHeight = tspanAttr.dy = lineHeight;
+                updateTspan = true;
+                updateAlignment = true;
+                oldAttr.baseLineDiff = lineHeight * 0.75; //Aprox calculation
+            }
 
-            if (params[has]("text") && (params.text !== a.text || el._textdirty)) {
-                a.text = params.text;
-                while (node.firstChild) {
-                    node.removeChild(node.firstChild);
+            if (params[has](vAignStr)) { // vAlign change
+                actualValign = a[has](vAignStr) ? a[vAignStr] : middleStr;
+                valign = actualValign === 'top' ? 0 : (actualValign === 'bottom' ? -1 : -0.5);
+                if (valign != oldAttr.valign) {
+                    oldAttr.valign = valign;
+                    updateAlignment = true;
                 }
-                var texts = Str(params.text).split(/\n|<br\s*?\/?>/ig),
-                tspans = [],
-                tspan;
-                for (var i = 0, ii = texts.length; i < ii; i++) {
-                    tspan = $("tspan");
-                    if (i) {
-                        $(tspan, {
-                            dy: lineHeight,
-                            x: a.x
-                        });
-                    } else {
-                        $(tspan, {
-                            dy: lineHeight * texts.length * valign,
-                            x: a.x
-                        });
-                    }
-                    if (!texts[i]) { // preserve blank lines
-                        tspan.setAttributeNS("http://www.w3.org/XML/1998/namespace",
-                            "xml:space","preserve");
-                        texts[i] = " ";
-                    }
-                    tspan.appendChild(R._g.doc.createTextNode(texts[i]));
-                    node.appendChild(tspan);
-                    tspans[i] = tspan;
+            }
 
-                    if (!isIE && direction === "rtl" && i < ii - 1) {
-                        tspan = $("tspan");
-                        $(tspan, {
-                            visibility: "hidden",
-                            "font-size": "0px"
-                        });
-                        tspan.appendChild(R._g.doc.createTextNode("i"));
-                        node.appendChild(tspan);
+            // If the containing text got changed
+            if (params[has](textStr)) {
+                // If the text is an arra then join with <br>
+                text = R.is(params.text, arrayStr) ? params.text.join('<br>') : params.text;
+                // If it is a new text applied
+                if (text !==  oldAttr.text) {
+                    oldAttr.text = a.text = text;
+                    texts = Str(text).split(/\n|<br\s*?\/?>/ig);
+                    ii = oldAttr.lineCount = texts.length;
+                    if (oldAttr.lineCount != ii) {
+                        oldAttr.lineCount = ii;
+                        updateAlignment = true;
                     }
-                }
-                el._textdirty = false;
-            } else {
-                tspans = node.getElementsByTagName("tspan");
-                var obj,
-                    numDummyTspans = 0;
-
-                for (i = 0, ii = tspans.length; i < ii; i++) {
-                    tspan = tspans[i];
-                    obj = tspan.attributes[0];
-
-                    if (obj && (obj.name === "visibility" || obj.nodeName === "visibility") &&
-                            (obj.value === "hidden" || obj.nodeValue === "hidden")) {
-                        continue;
-                    }
-
-                    if (i) {
-                        $(tspan, {
-                            dy: lineHeight,
-                            x: a.x
-                        });
-                    } else {
-                        obj = tspans[1] && tspans[1].attributes[0];
-                        if (obj && (obj.name === "visibility" || obj.nodeName === "visibility") &&
-                                (obj.value === "hidden" || obj.nodeValue === "hidden")) {
-                            numDummyTspans = math.floor(tspans.length * 0.5);
+                    tspans = node.getElementsByTagName(tSpanStr);
+                    for (i = 0; i < ii; i++) {
+                        if (tspan = tspans[i * j]) { // If already there is a tspan then remove the text
+                            tspan.innerHTML = E;
+                        } else { // Else create a new span
+                            tspan = $(tSpanStr);
+                            node.appendChild(tspan);
+                            // Special fix for RTL texts in IE-SVG browsers
+                            if (!isIE && direction === rtlStr) {
+                                tempIESpan = $(tSpanStr, IESplTspanAttr);
+                                tempIESpan.appendChild(R._g.doc.createTextNode("i"));
+                                node.appendChild(tempIESpan);
+                            }
                         }
-
-                        $(tspans[0], {
-                            dy: lineHeight * (tspans.length - numDummyTspans) * valign,
-                            x: a.x
-                        });
+                        // If it is a blank line, preserve it
+                        if (!texts[i]) {
+                            tspan.setAttributeNS("http://www.w3.org/XML/1998/namespace", "xml:space","preserve");
+                            texts[i] = " ";
+                        }
+                        tspan.appendChild(R._g.doc.createTextNode(texts[i]));
                     }
                 }
             }
-            $(node, {
-                x: a.x,
-                y: a.y
-            });
-            el._.dirty = 1;
-            var bb = el._getCustomBBox(fontFamily, fontSize + 'px', actualValign, i),
-            dif = bb.diff;
 
-            dif && R.is(dif, "finite") && tspans[0] && $(tspans[0], {
-                dy: dif
-            });
+            // the tspans needs to be updated
+            if (updateTspan) {
+                tspans = node.getElementsByTagName(tSpanStr); // @note: don't count on tspan, rather store the previous count
+                ii = tspans.length;
+
+                for (i = 0; i < ii; i += j) {
+                    $(tspans[i], tspanAttr);
+                }
+            }
+
+            // Update the node's attribute
+            if (updateNode){
+                $(node, nodeAttr);
+            }
+
+            if (updateAlignment) {
+                $(node.getElementsByTagName(tSpanStr)[0], {
+                    dy: oldAttr.baseLineDiff + (oldAttr.lineCount * oldAttr.lineHeight * oldAttr.valign)
+                });
+            }
         },
         Element = function(node, svg, group/*, dontAppend*/) {
             var o = this,
@@ -1295,8 +1314,7 @@ export default function (R) {
                 o = this,
                 node = o.node,
                 hide,
-                isText = (o.type === "text"),
-                isIE = /*@cc_on!@*/false || !!document.documentMode,
+                isText = (o.type === textStr),
                 cachedFontHeight,
                 txtElem,
                 theText,
@@ -1366,8 +1384,7 @@ export default function (R) {
                 a = o.attrs,
                 align,
                 hide,
-                isText = (o.type === "text"),
-                isIE = /*@cc_on!@*/false || !!document.documentMode;
+                isText = (o.type === textStr);
             if (isIE && isText) {
                 fn = showRecursively(o);
             }
@@ -1390,14 +1407,14 @@ export default function (R) {
                         bbox.isCalculated = true;
                         align = a['text-anchor'];
                         bbox.x = (a.x || 0) - (bbox.width * ((align === "start") ?
-                            0 : (align === "middle") ? 0.5 : 1));
+                            0 : (align === middleStr) ? 0.5 : 1));
                     }
 
                     if (bbox.y === undefined) {
                         bbox.isCalculated = true;
-                        align = a['vertical-align'];
+                        align = a[vAignStr];
                         bbox.y = (a.y || 0) - (bbox.height * ((align === "bottom") ?
-                            1 : (align === "middle") ? 0.5 : 0));
+                            1 : (align === middleStr) ? 0.5 : 0));
                     }
                 }
 
@@ -1732,10 +1749,9 @@ export default function (R) {
             return res;
         };
         R._engine.text = function(svg, attrs, group, css) {
-            var el = $("text"),
+            var el = $(textStr),
                 res = new Element(el, svg, group);
-            res.type = "text";
-            res._textdirty = true;
+            res.type = textStr;
             // Ideally this code should not be here as .css() is not a function of rapheal.
             css && res.css && res.css(css, undefined, true);
             // Apply the attribute if provided

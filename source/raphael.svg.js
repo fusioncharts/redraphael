@@ -24,6 +24,7 @@ export default function (R) {
             abs = math.abs,
             pow = math.pow,
             sqrt = math.sqrt,
+            xlinkRegx = /^xlink\:/,
             separator = /[, ]+/,
             arrayShift = Array.prototype.shift,
             zeroStrokeFix = !!(/AppleWebKit/.test(R._g.win.navigator.userAgent) &&
@@ -33,6 +34,8 @@ export default function (R) {
             E = "",
             S = " ",
             xlink = "http://www.w3.org/1999/xlink",
+            svgNSStr = "http://www.w3.org/2000/svg",
+            typeStringSTR = "string",
             markers = {
                 block: "M5,0 0,2.5 5,5z",
                 classic: "M5,0 0,2.5 5,5 3.5,3 3.5,2z",
@@ -50,7 +53,7 @@ export default function (R) {
             //     return R._url = R._g.win.location.href.replace(/#.*?$/, E);
             // },
             createDummyText = function (paper) {
-                txtElem = paper.txtElem = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+                txtElem = paper.txtElem = document.createElementNS(svgNSStr, 'text')
                 txtElem.setAttribute('x', randomPos)
                 txtElem.setAttribute('y', randomPos)
                 theMSG = document.createTextNode('abcdefhiklmnopqrstuvwxyz')
@@ -103,20 +106,23 @@ export default function (R) {
         };
 
         var $ = R._createNode = function(el, attr) {
+            // Create the element
+            if (typeof el == typeStringSTR) {
+                el = R._g.doc.createElementNS(svgNSStr, el);
+            } 
+            // else {
+                
+            // }
             if (attr) {
-                if (typeof el == "string") {
-                    el = $(el);
-                }
-                for (var key in attr)
+                var key;
+                for (key in attr)
                     if (attr[has](key)) {
-                        if (key.substring(0, 6) == "xlink:") {
-                            el.setAttributeNS(xlink, key.substring(6), Str(attr[key]));
+                        if (xlinkRegx.test(key)) {
+                            el.setAttributeNS(xlink, key.replace(xlinkRegx, E), attr[key]);
                         } else {
-                            el.setAttribute(key, Str(attr[key]));
+                            el.setAttribute(key, attr[key]);
                         }
                     }
-            } else {
-                el = R._g.doc.createElementNS("http://www.w3.org/2000/svg", el);
             }
             return el;
         },
@@ -434,7 +440,7 @@ export default function (R) {
                     o._.arrows[se + "Marker"] = markerId;
                     o._.arrows[se + "dx"] = delta;
                     o._.arrows[se + "Type"] = type;
-                    o._.arrows[se + "String"] = value;
+                    o._.arrows[se + typeStringSTR] = value;
                 } else {
                     if (isEnd) {
                         from = o._.arrows.startdx * stroke || 0;
@@ -450,7 +456,7 @@ export default function (R) {
                     delete o._.arrows[se + "Marker"];
                     delete o._.arrows[se + "dx"];
                     delete o._.arrows[se + "Type"];
-                    delete o._.arrows[se + "String"];
+                    delete o._.arrows[se + typeStringSTR];
                 }
                 for (attr in markerCounter)
                     if (markerCounter[has](attr) && !markerCounter[attr]) {
@@ -521,14 +527,7 @@ export default function (R) {
             }
         },
 
-        applyCustomAttributes = function (o, attrs) {
-            for (var key in attrs) {
-                eve("raphael.attr." + key + "." + o.id, o, attrs[key], key);
-                o.ca[key] && o.attr(key, attrs[key]);
-            }
-        },
-
-        setFillAndStroke = R._setFillAndStroke = function(o, params, group) {
+        setFillAndStroke = R._setFillAndStroke = function(o, params) {
             if (!o.paper.canvas) {
                 return;
             }
@@ -914,7 +913,7 @@ export default function (R) {
                     }
                 }
             }
-            (o.type === 'text' && !params["_do-not-tune"]) && tuneText(o, params, group);
+            (o.type === 'text' && !params["_do-not-tune"]) && tuneText(o, params);
             s.visibility = vis;
         },
         /*
@@ -937,23 +936,24 @@ export default function (R) {
             }
         },
         leading = 1.2,
-        tuneText = function(el, params, group) {
+        tuneText = function(el, params) {
             if (el.type != "text" || !(params[has]("text") || params[has]("font") ||
                     params[has]("font-size") || params[has]("x") || params[has]("y") ||
                     params[has]("line-height") || params[has]("vertical-align"))) {
                 return;
             }
             var a = el.attrs,
+                group = el.parent,
                 node = el.node,
                 computedStyle = node.firstChild && R._g.doc.defaultView.getComputedStyle(node.firstChild, E),
-                fontSize = params['fontSize'] || params['font-size'] || a['font-size'] || (group && group.attrs.fontSize),
+                fontSize = params['fontSize'] || params['font-size'] || a['font-size'] || (group && group.attrs && group.attrs.fontSize),
                 lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading,
                 actualValign = a[has]("vertical-align") ? a["vertical-align"] : "middle",
-                direction = params["direction"] || (group && group.attrs.direction) || "initial",
+                direction = params.direction || a.direction || (group && group.attrs && group.attrs.direction) || "initial",
                 isIE = /*@cc_on!@*/false || !!document.documentMode,
                 valign,
                 fontFamily = params['fontFamily'] || params['font-family'] || a['font-family'] ||
-                    (group && group.attrs.fontFamily) || 'Verdana,sans';
+                    (group && group.attrs && group.attrs.fontFamily) || 'Verdana,sans';
 
             fontSize = fontSize === undefined ? (lineHeight / 1.2 || 10) :
                 fontSize.toString().replace(/px/, '');
@@ -1414,93 +1414,92 @@ export default function (R) {
             if (this.removed) {
                 return this;
             }
+            var todel = {},
+                key,
+                finalParam = {},
+                i,
+                ii,
+                params,
+                subkey,
+                par,
+                follower;
+            // get all, return all applied attributes
             if (name == null) {
                 var res = {};
-                for (var a in this.attrs)
-                    if (this.attrs[has](a)) {
-                        res[a] = this.attrs[a];
+                for (key in this.attrs)
+                    if (this.attrs[has](key)) {
+                        res[key] = this.attrs[key];
                     }
                 res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
                 res.transform = this._.transform;
                 res.visibility = this.node.style.display === "none" ? "hidden" : "visible";
                 return res;
-            }
-            if (value == null && R.is(name, "string")) {
-                if (name == "fill" && this.attrs.fill == "none" && this.attrs.gradient) {
-                    return this.attrs.gradient;
-                }
-                if (name == "transform") {
-                    return this._.transform;
-                }
-                if (name == "visibility") {
-                    return this.node.style.display === "none" ? "hidden" : "visible";
-                }
-                var names = name.split(separator),
-                out = {};
-                for (var i = 0, ii = names.length; i < ii; i++) {
-                    name = names[i];
-                    if (name in this.attrs) {
-                        out[name] = this.attrs[name];
-                    } else if (R.is(this.ca[name], "function")) {
-                        out[name] = this.ca[name].def;
-                    } else {
-                        out[name] = R._availableAttrs[name];
-                    }
-                }
-                return ii - 1 ? out : out[names[0]];
-            }
-            if (value == null && R.is(name, "array")) {
-                out = {};
-                for (i = 0, ii = name.length; i < ii; i++) {
-                    out[name[i]] = this.attr(name[i]);
-                }
-                return out;
-            }
-            if (value != null) {
-                var params = {};
-                params[name] = value;
-            } else if (name != null && R.is(name, "object")) {
-                params = name;
-            }
-            if (!R.stopPartialEventPropagation) {
-                for (var key in params) {
-                    eve("raphael.attr." + key + "." + this.id, this, params[key], key);
-                }
-            }
-            var todel = {};
-            for (key in this.ca) {
-                if (this.ca[key] && params[has](key) && R.is(this.ca[key], "function") && !this.ca['_invoked' + key]) {
-
-                    this.ca['_invoked'+key] = true; // prevent recursion
-                    var par = this.ca[key].apply(this, [].concat(params[key]));
-                    delete this.ca['_invoked'+key];
-
-                    for (var subkey in par) {
-                        if (par[has](subkey)) {
-                            params[subkey] = par[subkey];
+            } else {
+                if (value == null) {
+                    if (R.is(name, "object")) { // Provided as an object
+                        params = name;
+                    } else if(R.is(name, typeStringSTR)) { // get one, return the value of the given attribute
+                        if (name == "fill" && this.attrs.fill == "none" && this.attrs.gradient) {
+                            return this.attrs.gradient;
                         }
+                        if (name == "transform") {
+                            return this._.transform;
+                        }
+                        if (name == "visibility") {
+                            return this.node.style.display === "none" ? "hidden" : "visible";
+                        }
+                    
+                        if (name in this.attrs) {
+                            return this.attrs[name];
+                        } else if (R.is(this.ca[name], "function")) {
+                            return this.ca[name].def;
+                        }
+                        return R._availableAttrs[name];
                     }
-                    this.attrs[key] = params[key];
-                    if (par === false) {
-                        todel[key] = params[key];
-                        delete params[key];
+                } else { // key value provided seperately
+                    params = {};
+                    params[name] = value;
+                }
+                
+                if (!R.stopPartialEventPropagation) {
+                    for (key in params) {
+                        eve("raphael.attr." + key + "." + this.id, this, params[key], key);
                     }
                 }
+    
+                // For each param
+                for (key in params) {
+                    // check if that is a Custom attribute or not
+                    if (this.ca[key] && params[has](key) && R.is(this.ca[key], "function") && !this.ca['_invoked' + key]) {
+    
+                        this.ca['_invoked'+key] = true; // prevent recursion
+                        par = this.ca[key].apply(this, [].concat(params[key]));
+                        delete this.ca['_invoked'+key];
+    
+                        // If the custom attribute create another set of attribute to be updated
+                        // Then add them in the attribute list
+                        for (subkey in par) {
+                            if (par[has](subkey)) {
+                                finalParam[subkey] = par[subkey];
+                            }
+                        }
+                        // Add the attribute in attrs
+                        this.attrs[key] = params[key];
+                    } else {
+                        finalParam[key] = params[key];
+                    }
+                }
+    
+                setFillAndStroke(this, finalParam);
+                
+                for (i = 0, ii = this.followers.length; i < ii; i++) {
+                    follower = this.followers[i];
+                    (follower.cb && !follower.cb.call(follower.el, finalParam, this)) ||
+                        follower.el.attr(finalParam);
+                }
+    
+                return this;
             }
-
-            setFillAndStroke(this, params);
-
-            var follower;
-            for (i = 0, ii = this.followers.length; i < ii; i++) {
-                follower = this.followers[i];
-                (follower.cb && !follower.cb.call(follower.el, params, this)) ||
-                    follower.el.attr(params);
-            }
-
-            for (subkey in todel) {
-                params[subkey] = todel[subkey];
-            }
-            return this;
         };
 
         elproto.blur = function(size) {
@@ -1659,8 +1658,8 @@ export default function (R) {
                 res = new Element(el, svg, group);
 
             res.type = "path";
-            setFillAndStroke(res, attrs);
-            applyCustomAttributes(res, attrs);
+            // Apply the attribute if provided
+            attrs && res.attr(attrs);
             return res;
         };
 
@@ -1681,8 +1680,8 @@ export default function (R) {
                 res = new Element(el, svg, group);
 
             res.type = "circle";
-            setFillAndStroke(res, attrs);
-            applyCustomAttributes(res, attrs);
+            // Apply the attribute if provided
+            attrs && res.attr(attrs);
             return res;
         };
         R._engine.rect = function(svg, attrs, group) {
@@ -1691,8 +1690,8 @@ export default function (R) {
 
             res.type = "rect";
             attrs.rx = attrs.ry = attrs.r;
-            setFillAndStroke(res, attrs);
-            applyCustomAttributes(res, attrs);
+            // Apply the attribute if provided
+            attrs && res.attr(attrs);
             return res;
         };
         R._engine.ellipse = function(svg, attrs, group) {
@@ -1700,8 +1699,8 @@ export default function (R) {
                 res = new Element(el, svg, group);
 
             res.type = "ellipse";
-            setFillAndStroke(res, attrs);
-            applyCustomAttributes(res, attrs);
+            // Apply the attribute if provided
+            attrs && res.attr(attrs);
             return res;
         };
         function LoadRefImage (element, attrs) {
@@ -1728,8 +1727,8 @@ export default function (R) {
             res._.group = group || svg;
             res.type = "image";
             el.setAttribute("preserveAspectRatio", "none");
-            setFillAndStroke(res, attrs);
-            applyCustomAttributes(res, attrs);
+            // Apply the attribute if provided
+            attrs && res.attr(attrs);
             return res;
         };
         R._engine.text = function(svg, attrs, group, css) {
@@ -1739,9 +1738,8 @@ export default function (R) {
             res._textdirty = true;
             // Ideally this code should not be here as .css() is not a function of rapheal.
             css && res.css && res.css(css, undefined, true);
-
-            setFillAndStroke(res, attrs, group);
-            applyCustomAttributes(res, attrs);
+            // Apply the attribute if provided
+            attrs && res.attr(attrs);
             return res;
         };
 
@@ -1761,7 +1759,8 @@ export default function (R) {
             x = con.x,
             y = con.y,
             width = con.width,
-            height = con.height;
+            height = con.height,
+            paper;
             if (!container) {
                 throw new Error("SVG container not found.");
             }
@@ -1779,11 +1778,13 @@ export default function (R) {
                 height: height,
                 version: 1.1,
                 width: width,
-                xmlns: "http://www.w3.org/2000/svg"
+                xmlns: svgNSStr
             });
             if (container == 1) {
                 cnvs.style.cssText = css + "position:absolute;left:" + x + "px;top:" + y + "px";
-                R._g.doc.body.appendChild(cnvs);
+                // Store body as the container
+                container = R._g.doc.body;
+                container.appendChild(cnvs);
                 isFloating = 1;
             } else {
                 cnvs.style.cssText = css + "position:relative";
@@ -1793,20 +1794,23 @@ export default function (R) {
                     container.appendChild(cnvs);
                 }
             }
-            container = new R._Paper;
-            container.width = width;
-            container.height = height;
-            container.canvas = cnvs;
+            paper = new R._Paper;
+            paper.width = width;
+            paper.height = height;
+            paper.canvas = cnvs;
+            // Store the container for further detachment and attachment
+            paper.container = container;
+
             $(cnvs, {
-                id: "raphael-paper-" + container.id
+                id: "raphael-paper-" + paper.id
             });
-            container.clear();
-            createDummyText(container);
-            container._left = container._top = 0;
-            isFloating && (container.renderfix = function() {
+            paper.clear();
+            createDummyText(paper);
+            paper._left = paper._top = 0;
+            isFloating && (paper.renderfix = function() {
                 });
-            container.renderfix();
-            return container;
+            paper.renderfix();
+            return paper;
         };
         R._engine.setViewBox = function(x, y, w, h, fit) {
             eve("raphael.setViewBox", this, this._viewBox, [x, y, w, h, fit]);
@@ -1841,6 +1845,26 @@ export default function (R) {
             this._viewBox = [x, y, w, h, !!fit];
             return this;
         };
+
+        /**
+         * Function to remove the paper form the DOM tree
+         */
+        R.prototype.detachPaper = function () {
+            if (this._detached !== false) {
+                this.container.removeChild(this.canvas);
+                this._detached = true;
+            }
+        }
+        /**
+         * Function to append the paper in the DOM tree
+         * @note: This might change the order of the child elements.
+         */
+        R.prototype.attachPaper = function () {
+            if (this._detached) {
+                this.container.appendChild(this.canvas);
+                this._detached = false;
+            }
+        }
 
         R.prototype.renderfix = function() {
             var cnvs = this.canvas,
@@ -1877,7 +1901,7 @@ export default function (R) {
                     desc.removeChild(desc.firstChild);
                 }
             }
-            desc.appendChild(R._g.doc.createTextNode(R.is(txt, "string") ? txt : ("Created with Red Rapha\xebl " +
+            desc.appendChild(R._g.doc.createTextNode(R.is(txt, typeStringSTR) ? txt : ("Created with Red Rapha\xebl " +
                 R.version)));
         };
 

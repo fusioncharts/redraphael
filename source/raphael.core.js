@@ -7143,7 +7143,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             attrs = o.attrs,
             key,
             attr = {},
-            values = o.attr(['x', 'y', 'width', 'height', 'stroke-width']);
+            values = o.attr();
 
         values = R.crispBound(values.x, values.y, values.width, values.height,
             values['stroke-width']);
@@ -7222,7 +7222,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                     if (args.length) {
                         // If name attribute is present then the received argument is an object with the customAttribute and other
                         // common attributes. Else it is just the customAttributes that is to be applied.
-                        args[0][name] ? element.attr(arraySlice.call(args)): element.attr(name, arraySlice.call(args));
+                        args[0][name] ? element.attr.apply(element, args): element.attr(name, args[0]);
                     }
                 }
             }

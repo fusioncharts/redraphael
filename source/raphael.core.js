@@ -1098,11 +1098,21 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
     };
 
     function repush(array, item) {
-        for (var i = 0, ii = array.length; i < ii; i++) {
-            if (array[i] === item) {
-                return array.push(array.splice(i, 1)[0]);
+        var found = false,
+            i,
+            len,
+            ret = [];
+
+        for (i = 0, len = array.length; i < len; i++) {
+            if (array[i] === item && !found) {
+                found = true;
+                continue;
             }
+            ret.push(array[i]);
         }
+        found && ret.push(item);
+
+        return ret;
     }
 
     var cacher = R._cacher = function (f, scope, postprocessor) {
@@ -1112,7 +1122,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             cache = cachedfunction.cache = cachedfunction.cache || {},
             count = cachedfunction.count = cachedfunction.count || [];
             if (cache[has](args)) {
-                repush(count, args);
+                count = cachedfunction.count = repush(count, args);
                 return postprocessor ? postprocessor(cache[args]) : cache[args];
             }
             count.length >= 1e3 && delete cache[count.shift()];

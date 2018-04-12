@@ -605,8 +605,10 @@ export default function (R) {
              * standard browsers (and also the non-standard one).
              */
             addEventListener: function () {
+                for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+                    args[i] = arguments[i];
+                }
                 var o = this,
-                    args = arguments,
                     eventName = args && args[0],
                     handler = args && args[1],
                     area,
@@ -677,14 +679,14 @@ export default function (R) {
                                         // Based on the state of the flags, fire the
                                         // appropriate event handlers.
                                         if (isOutside && transition && node.eventListeners['mouseout']) {
-                                            node.eventListeners['mouseout'].apply(this, arguments);
+                                            node.eventListeners['mouseout'].apply(this, args);
                                         }
                                         if (isInside) {
                                             if (transition && node.eventListeners['mouseover']) {
-                                                node.eventListeners['mouseover'].apply(this, arguments);
+                                                node.eventListeners['mouseover'].apply(this, args);
                                             }
                                             if (node.eventListeners['mousemove']) {
-                                                node.eventListeners['mousemove'].apply(this, arguments);
+                                                node.eventListeners['mousemove'].apply(this, args);
                                             }
                                         }
                                     };
@@ -700,7 +702,7 @@ export default function (R) {
                             var checkPathHandler = (function (node, handler) {
                                 return function (event) {
                                     if (R.isPointInsidePath(node._path, event.layerX, event.layerY)) {
-                                        handler.apply(this, arguments);
+                                        handler.apply(this, args);
                                     }
                                 };
                             }(o, handler));
@@ -715,8 +717,10 @@ export default function (R) {
             },
 
             removeEventListener: function () {
+                for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+                    args[i] = arguments[i];
+                }
                 var o = this,
-                    args = arguments,
                     eventName = args && args[0],
                     handler = args && args[1],
                     area,
@@ -1775,7 +1779,10 @@ export default function (R) {
                     this.element.width = this.element.width;
                 });
 
-                FauxNode.prototype.draw.apply(this, arguments);
+                for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+                    args[i] = arguments[i];
+                }
+                FauxNode.prototype.draw.apply(this, args);
             },
 
             /**
@@ -2024,7 +2031,10 @@ export default function (R) {
         };
         /** @todo implement setViewBox() */
         R._engine.create = function () {
-            var con = R._getContainer.apply(0, arguments) || {},
+            for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+                args[i] = arguments[i];
+            }
+            var con = R._getContainer.apply(0, args) || {},
                 container = con.container,
                 x = con.x,
                 y = con.y,
@@ -2719,6 +2729,9 @@ export default function (R) {
                 !setproto.hasOwnProperty(method)) {
             setproto[method] = (function (methodname) {
                 return function () {
+                    for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+                        args[i] = arguments[i];
+                    }
                     var arg = arguments;
                     return this.forEach(function (el) {
                         el[methodname].apply(el, arg);

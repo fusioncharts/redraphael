@@ -532,7 +532,10 @@ export default function (R) {
      | st.attr({fill: 'red'}); // changes the fill of both circles
     */
     paperproto.set = function (itemsArray) {
-        !R.is(itemsArray, 'array') && (itemsArray = Array.prototype.splice.call(arguments, 0, arguments.length));
+        for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+            args[i] = arguments[i];
+        }
+        !R.is(itemsArray, 'array') && (itemsArray = Array.prototype.splice.call(args, 0, args.length));
         var out = new Set(itemsArray);
         this.__set__ && this.__set__.push(out);
         return out;
@@ -723,9 +726,11 @@ export default function (R) {
         if (elproto[has](method)) {
             setproto[method] = (function (methodname) {
                 return function () {
-                    var arg = arguments;
+                    for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+                        args[i] = arguments[i];
+                    }        
                     return this.forEach(function (el) {
-                        el[methodname][apply](el, arg);
+                        el[methodname][apply](el, args);
                     });
                 };
             })(method);

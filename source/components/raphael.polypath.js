@@ -26,7 +26,10 @@ _window.Raphael && _window.Raphael.define && function (R) {
 
         // args: sides, cx, cy, r, angle, dip, group
         polypath: function () {
-            return this.path(undefined, R._lastArgIfGroup(arguments));
+            for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+                args[i] = arguments[i];
+            }    
+            return this.path(undefined, R._lastArgIfGroup(args));
         },
 
         ca: {

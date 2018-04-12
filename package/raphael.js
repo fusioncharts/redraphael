@@ -100,7 +100,7 @@ module.exports = function (it, key) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var dP = __webpack_require__(3);
-var createDesc = __webpack_require__(10);
+var createDesc = __webpack_require__(11);
 module.exports = __webpack_require__(4) ? function (object, key, value) {
   return dP.f(object, key, createDesc(1, value));
 } : function (object, key, value) {
@@ -115,7 +115,7 @@ module.exports = __webpack_require__(4) ? function (object, key, value) {
 
 var anObject = __webpack_require__(8);
 var IE8_DOM_DEFINE = __webpack_require__(31);
-var toPrimitive = __webpack_require__(18);
+var toPrimitive = __webpack_require__(19);
 var dP = Object.defineProperty;
 
 exports.f = __webpack_require__(4) ? Object.defineProperty : function defineProperty(O, P, Attributes) {
@@ -136,7 +136,7 @@ exports.f = __webpack_require__(4) ? Object.defineProperty : function defineProp
 /***/ (function(module, exports, __webpack_require__) {
 
 // Thank's IE8 for his funny defineProperty
-module.exports = !__webpack_require__(9)(function () {
+module.exports = !__webpack_require__(10)(function () {
   return Object.defineProperty({}, 'a', { get: function () { return 7; } }).a != 7;
 });
 
@@ -147,7 +147,7 @@ module.exports = !__webpack_require__(9)(function () {
 
 // to indexed object, toObject with fallback for non-array-like ES3 strings
 var IObject = __webpack_require__(49);
-var defined = __webpack_require__(15);
+var defined = __webpack_require__(16);
 module.exports = function (it) {
   return IObject(defined(it));
 };
@@ -157,8 +157,8 @@ module.exports = function (it) {
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var store = __webpack_require__(22)('wks');
-var uid = __webpack_require__(11);
+var store = __webpack_require__(23)('wks');
+var uid = __webpack_require__(12);
 var Symbol = __webpack_require__(0).Symbol;
 var USE_SYMBOL = typeof Symbol == 'function';
 
@@ -172,18 +172,15 @@ $exports.store = store;
 
 /***/ }),
 /* 7 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-module.exports = function (it) {
-  return typeof it === 'object' ? it !== null : typeof it === 'function';
-};
-
+module.exports = { "default": __webpack_require__(42), __esModule: true };
 
 /***/ }),
 /* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isObject = __webpack_require__(7);
+var isObject = __webpack_require__(9);
 module.exports = function (it) {
   if (!isObject(it)) throw TypeError(it + ' is not an object!');
   return it;
@@ -192,6 +189,15 @@ module.exports = function (it) {
 
 /***/ }),
 /* 9 */
+/***/ (function(module, exports) {
+
+module.exports = function (it) {
+  return typeof it === 'object' ? it !== null : typeof it === 'function';
+};
+
+
+/***/ }),
+/* 10 */
 /***/ (function(module, exports) {
 
 module.exports = function (exec) {
@@ -204,7 +210,7 @@ module.exports = function (exec) {
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports) {
 
 module.exports = function (bitmap, value) {
@@ -218,7 +224,7 @@ module.exports = function (bitmap, value) {
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports) {
 
 var id = 0;
@@ -229,7 +235,13 @@ module.exports = function (key) {
 
 
 /***/ }),
-/* 12 */
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = { "default": __webpack_require__(60), __esModule: true };
+
+/***/ }),
+/* 14 */
 /***/ (function(module, exports) {
 
 var g;
@@ -256,13 +268,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = { "default": __webpack_require__(42), __esModule: true };
-
-/***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports) {
 
 // 7.1.4 ToInteger
@@ -274,7 +280,7 @@ module.exports = function (it) {
 
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports) {
 
 // 7.2.1 RequireObjectCoercible(argument)
@@ -285,26 +291,26 @@ module.exports = function (it) {
 
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports) {
 
 module.exports = true;
 
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports) {
 
-var core = module.exports = { version: '2.5.3' };
+var core = module.exports = { version: '2.5.1' };
 if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.1.1 ToPrimitive(input [, PreferredType])
-var isObject = __webpack_require__(7);
+var isObject = __webpack_require__(9);
 // instead of the ES6 spec version, we didn't implement @@toPrimitive case
 // and the second argument - flag - preferred type is a string
 module.exports = function (it, S) {
@@ -318,19 +324,19 @@ module.exports = function (it, S) {
 
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports) {
 
 module.exports = {};
 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // 19.1.2.14 / 15.2.3.14 Object.keys(O)
 var $keys = __webpack_require__(35);
-var enumBugKeys = __webpack_require__(23);
+var enumBugKeys = __webpack_require__(24);
 
 module.exports = Object.keys || function keys(O) {
   return $keys(O, enumBugKeys);
@@ -338,18 +344,18 @@ module.exports = Object.keys || function keys(O) {
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var shared = __webpack_require__(22)('keys');
-var uid = __webpack_require__(11);
+var shared = __webpack_require__(23)('keys');
+var uid = __webpack_require__(12);
 module.exports = function (key) {
   return shared[key] || (shared[key] = uid(key));
 };
 
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var global = __webpack_require__(0);
@@ -361,7 +367,7 @@ module.exports = function (key) {
 
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports) {
 
 // IE 8- don't enum bug keys
@@ -371,7 +377,7 @@ module.exports = (
 
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var def = __webpack_require__(3).f;
@@ -384,26 +390,20 @@ module.exports = function (it, tag, stat) {
 
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports.f = __webpack_require__(6);
 
 
 /***/ }),
-/* 26 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = { "default": __webpack_require__(60), __esModule: true };
-
-/***/ }),
 /* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var global = __webpack_require__(0);
-var core = __webpack_require__(17);
-var LIBRARY = __webpack_require__(16);
-var wksExt = __webpack_require__(25);
+var core = __webpack_require__(18);
+var LIBRARY = __webpack_require__(17);
+var wksExt = __webpack_require__(26);
 var defineProperty = __webpack_require__(3).f;
 module.exports = function (name) {
   var $Symbol = core.Symbol || (core.Symbol = LIBRARY ? {} : global.Symbol || {});
@@ -424,14 +424,14 @@ exports.f = {}.propertyIsEnumerable;
 
 "use strict";
 
-var LIBRARY = __webpack_require__(16);
+var LIBRARY = __webpack_require__(17);
 var $export = __webpack_require__(30);
 var redefine = __webpack_require__(33);
 var hide = __webpack_require__(2);
 var has = __webpack_require__(1);
-var Iterators = __webpack_require__(19);
+var Iterators = __webpack_require__(20);
 var $iterCreate = __webpack_require__(47);
-var setToStringTag = __webpack_require__(24);
+var setToStringTag = __webpack_require__(25);
 var getPrototypeOf = __webpack_require__(54);
 var ITERATOR = __webpack_require__(6)('iterator');
 var BUGGY = !([].keys && 'next' in [].keys()); // Safari has buggy iterators w/o `next`
@@ -455,7 +455,7 @@ module.exports = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCE
   var VALUES_BUG = false;
   var proto = Base.prototype;
   var $native = proto[ITERATOR] || proto[FF_ITERATOR] || DEFAULT && proto[DEFAULT];
-  var $default = (!BUGGY && $native) || getMethod(DEFAULT);
+  var $default = $native || getMethod(DEFAULT);
   var $entries = DEFAULT ? !DEF_VALUES ? $default : getMethod('entries') : undefined;
   var $anyNative = NAME == 'Array' ? proto.entries || $native : $native;
   var methods, key, IteratorPrototype;
@@ -500,7 +500,7 @@ module.exports = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCE
 /***/ (function(module, exports, __webpack_require__) {
 
 var global = __webpack_require__(0);
-var core = __webpack_require__(17);
+var core = __webpack_require__(18);
 var ctx = __webpack_require__(45);
 var hide = __webpack_require__(2);
 var PROTOTYPE = 'prototype';
@@ -566,7 +566,7 @@ module.exports = $export;
 /* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = !__webpack_require__(4) && !__webpack_require__(9)(function () {
+module.exports = !__webpack_require__(4) && !__webpack_require__(10)(function () {
   return Object.defineProperty(__webpack_require__(32)('div'), 'a', { get: function () { return 7; } }).a != 7;
 });
 
@@ -575,7 +575,7 @@ module.exports = !__webpack_require__(4) && !__webpack_require__(9)(function () 
 /* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isObject = __webpack_require__(7);
+var isObject = __webpack_require__(9);
 var document = __webpack_require__(0).document;
 // typeof document.createElement is 'object' in old IE
 var is = isObject(document) && isObject(document.createElement);
@@ -598,8 +598,8 @@ module.exports = __webpack_require__(2);
 // 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
 var anObject = __webpack_require__(8);
 var dPs = __webpack_require__(48);
-var enumBugKeys = __webpack_require__(23);
-var IE_PROTO = __webpack_require__(21)('IE_PROTO');
+var enumBugKeys = __webpack_require__(24);
+var IE_PROTO = __webpack_require__(22)('IE_PROTO');
 var Empty = function () { /* empty */ };
 var PROTOTYPE = 'prototype';
 
@@ -645,7 +645,7 @@ module.exports = Object.create || function create(O, Properties) {
 var has = __webpack_require__(1);
 var toIObject = __webpack_require__(5);
 var arrayIndexOf = __webpack_require__(50)(false);
-var IE_PROTO = __webpack_require__(21)('IE_PROTO');
+var IE_PROTO = __webpack_require__(22)('IE_PROTO');
 
 module.exports = function (object, names) {
   var O = toIObject(object);
@@ -685,7 +685,7 @@ exports.f = Object.getOwnPropertySymbols;
 
 // 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
 var $keys = __webpack_require__(35);
-var hiddenKeys = __webpack_require__(23).concat('length', 'prototype');
+var hiddenKeys = __webpack_require__(24).concat('length', 'prototype');
 
 exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
   return $keys(O, hiddenKeys);
@@ -750,11 +750,11 @@ module.exports = exports['default'];
 
 exports.__esModule = true;
 
-var _iterator = __webpack_require__(13);
+var _iterator = __webpack_require__(7);
 
 var _iterator2 = _interopRequireDefault(_iterator);
 
-var _symbol = __webpack_require__(26);
+var _symbol = __webpack_require__(13);
 
 var _symbol2 = _interopRequireDefault(_symbol);
 
@@ -851,7 +851,10 @@ function R(first) {
     } else if (R.is(first, array)) {
         return R._engine.create[apply](R, first.splice(0, 3 + R.is(first[0], nu))).add(first);
     } else {
-        args = Array.prototype.slice.call(arguments, 0);
+        for (var i = 0, len = arguments.length, arg = new Array(len); i < len; i++) {
+            arg[i] = arguments[i];
+        }
+        args = Array.prototype.slice.call(arg, 0);
         if (R.is(args[args.length - 1], "function")) {
             f = args.pop();
             return loaded ? f.call(R._engine.create[apply](R, args)) : _eve3['default'].on("raphael.DOMload", function () {
@@ -1838,7 +1841,10 @@ function repush(array, item) {
 
 var cacher = R._cacher = function (f, scope, postprocessor) {
     function cachedfunction() {
-        var arg = arraySlice.call(arguments, 0),
+        for (var i = 0, len = arguments.length, _args = new Array(len); i < len; i++) {
+            _args[i] = arguments[i];
+        }
+        var arg = arraySlice.call(_args, 0),
             args = arg.join('\u2400'),
             cache = cachedfunction.cache = cachedfunction.cache || {},
             count = cachedfunction.count = cachedfunction.count || [];
@@ -4392,13 +4398,19 @@ var downables = [],
     this.untrack = addEvent(g.doc, 'mouseup', mouseUp, this);
 },
     mouseUp = function mouseUp() {
+    for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+        args[i] = arguments[i];
+    }
     this.untrack();
     this.untrack = null;
-    return this.fn && this.fn.apply(this.scope || this.el, arguments);
+    return this.fn && this.fn.apply(this.scope || this.el, args);
 };
 elproto.mouseup = function (fn, scope, track) {
     if (!track) {
-        return R.mouseup.apply(this, arguments);
+        for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+            args[i] = arguments[i];
+        }
+        return R.mouseup.apply(this, args);
     }
     downables.push(track = {
         el: this,
@@ -4421,7 +4433,10 @@ elproto.unmouseup = function (fn) {
             downables.splice(i, 1);
         }
     }
-    return undowned ? this : R.unmouseup.apply(this, arguments);
+    for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+        args[i] = arguments[i];
+    }
+    return undowned ? this : R.unmouseup.apply(this, args);
 };
 
 /*\
@@ -4750,8 +4765,10 @@ paperproto.show = function () {
 \*/
 paperproto.group = function () {
     // id
+    for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+        args[i] = arguments[i];
+    }
     var paper = this,
-        args = arguments,
         group = lastArgIfGroup(args, true),
         out = R._engine.group(paper, args[0], group);
     return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
@@ -4775,8 +4792,10 @@ paperproto.group = function () {
 \*/
 paperproto.circle = function () {
     // x, y, r
+    for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+        args[i] = arguments[i];
+    }
     var paper = this,
-        args = arguments,
         group = lastArgIfGroup(args, true),
         attrs = serializeArgs(args, "cx", 0, "cy", 0, "r", 0, "fill", none, "stroke", black),
         out = R._engine.circle(paper, attrs, group);
@@ -4806,8 +4825,10 @@ paperproto.circle = function () {
  | var c = paper.rect(40, 40, 50, 50, 10);
 \*/
 paperproto.rect = function () {
+    for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+        args[i] = arguments[i];
+    }
     var paper = this,
-        args = arguments,
         group = lastArgIfGroup(args, true),
         attrs = serializeArgs(args, "x", 0, "y", 0, "width", 0, "height", 0, "r", 0, "fill", none, "stroke", black),
         out = R._engine.rect(paper, attrs, group);
@@ -4833,8 +4854,10 @@ paperproto.rect = function () {
  | var c = paper.ellipse(50, 50, 40, 20);
 \*/
 paperproto.ellipse = function () {
+    for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+        args[i] = arguments[i];
+    }
     var paper = this,
-        args = arguments,
         group = lastArgIfGroup(args, true),
         attrs = serializeArgs(args, "x", 0, "y", 0, "rx", 0, "ry", 0, "fill", none, "stroke", black),
         out = R._engine.ellipse(this, attrs, group);
@@ -4875,8 +4898,10 @@ paperproto.ellipse = function () {
  * For example of path strings, check out these icons: http://raphaeljs.com/icons/
 \*/
 paperproto.path = function () {
+    for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+        args[i] = arguments[i];
+    }
     var paper = this,
-        args = arguments,
         group = lastArgIfGroup(args, true),
         paperConfig = paper.config,
         capStyle = paperConfig && paperConfig["stroke-linecap"] || "butt",
@@ -4904,8 +4929,10 @@ paperproto.path = function () {
  | var c = paper.image("apple.png", 10, 10, 80, 80);
 \*/
 paperproto.image = function () {
+    for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+        args[i] = arguments[i];
+    }
     var paper = this,
-        args = arguments,
         group = lastArgIfGroup(args, true),
         attrs = serializeArgs(args,
     // "src", "",
@@ -4931,8 +4958,10 @@ paperproto.image = function () {
  | var t = paper.text(50, 50, "Raphaël\nkicks\nbutt!");
 \*/
 paperproto.text = function () {
+    for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+        args[i] = arguments[i];
+    }
     var paper = this,
-        args = arguments,
         group = lastArgIfGroup(args, true),
         attrs = serializeArgs(args, "x", 0, "y", 0, "text", E, "stroke", none, "fill", black, "text-anchor", "middle", "vertical-align", "middle"),
         out = R._engine.text(paper, attrs, group, args[1]);
@@ -7738,7 +7767,10 @@ elproto.removeChild = function (element) {
  | paper.path(Raphael.format("M{0},{1}h{2}v{3}h{4}z", x, y, width, height, -width));
 \*/
 R.format = function (token, params) {
-    var args = R.is(params, array) ? [0][concat](params) : arguments;
+    for (var i = 0, len = arguments.length, arg = new Array(len); i < len; i++) {
+        arg[i] = arguments[i];
+    }
+    var args = R.is(params, array) ? [0][concat](params) : arg;
     token && R.is(token, string) && args.length - 1 && (token = token.replace(formatrg, function (str, i) {
         return args[++i] == null ? E : args[i];
     }));
@@ -7777,7 +7809,7 @@ elproto.crisp = function () {
         attrs = o.attrs,
         key,
         attr = {},
-        values = o.attr(['x', 'y', 'width', 'height', 'stroke-width']);
+        values = o.attr();
 
     values = R.crispBound(values.x, values.y, values.width, values.height, values['stroke-width']);
 
@@ -7823,8 +7855,10 @@ R.define = function (name, init, ca, fn, e, data) {
             }
 
     R.fn[name] = function () {
-        var args = arguments,
-            element = init.apply(this, args),
+        for (var i = 0, len = arguments.length, arg = new Array(len); i < len; i++) {
+            arg[i] = arguments[i];
+        }
+        var element = init.apply(this, arg),
             key;
 
         if (fn && R.is(fn, object)) {
@@ -7854,7 +7888,7 @@ R.define = function (name, init, ca, fn, e, data) {
                 if (args.length) {
                     // If name attribute is present then the received argument is an object with the customAttribute and other
                     // common attributes. Else it is just the customAttributes that is to be applied.
-                    args[0][name] ? element.attr(arraySlice.call(args)) : element.attr(name, arraySlice.call(args));
+                    args[0][name] ? element.attr.apply(element, args) : element.attr(name, args[0]);
                 }
             }
         }
@@ -7903,7 +7937,7 @@ _eve3['default'].on("raphael.DOMload", function () {
 
 exports['default'] = R;
 module.exports = exports['default'];
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14)))
 
 /***/ }),
 /* 42 */
@@ -7911,7 +7945,7 @@ module.exports = exports['default'];
 
 __webpack_require__(43);
 __webpack_require__(56);
-module.exports = __webpack_require__(25).f('iterator');
+module.exports = __webpack_require__(26).f('iterator');
 
 
 /***/ }),
@@ -7942,8 +7976,8 @@ __webpack_require__(29)(String, 'String', function (iterated) {
 /* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var toInteger = __webpack_require__(14);
-var defined = __webpack_require__(15);
+var toInteger = __webpack_require__(15);
+var defined = __webpack_require__(16);
 // true  -> String#at
 // false -> String#codePointAt
 module.exports = function (TO_STRING) {
@@ -8004,8 +8038,8 @@ module.exports = function (it) {
 "use strict";
 
 var create = __webpack_require__(34);
-var descriptor = __webpack_require__(10);
-var setToStringTag = __webpack_require__(24);
+var descriptor = __webpack_require__(11);
+var setToStringTag = __webpack_require__(25);
 var IteratorPrototype = {};
 
 // 25.1.2.1.1 %IteratorPrototype%[@@iterator]()
@@ -8023,7 +8057,7 @@ module.exports = function (Constructor, NAME, next) {
 
 var dP = __webpack_require__(3);
 var anObject = __webpack_require__(8);
-var getKeys = __webpack_require__(20);
+var getKeys = __webpack_require__(21);
 
 module.exports = __webpack_require__(4) ? Object.defineProperties : function defineProperties(O, Properties) {
   anObject(O);
@@ -8082,7 +8116,7 @@ module.exports = function (IS_INCLUDES) {
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.1.15 ToLength
-var toInteger = __webpack_require__(14);
+var toInteger = __webpack_require__(15);
 var min = Math.min;
 module.exports = function (it) {
   return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
@@ -8093,7 +8127,7 @@ module.exports = function (it) {
 /* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var toInteger = __webpack_require__(14);
+var toInteger = __webpack_require__(15);
 var max = Math.max;
 var min = Math.min;
 module.exports = function (index, length) {
@@ -8117,7 +8151,7 @@ module.exports = document && document.documentElement;
 // 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
 var has = __webpack_require__(1);
 var toObject = __webpack_require__(55);
-var IE_PROTO = __webpack_require__(21)('IE_PROTO');
+var IE_PROTO = __webpack_require__(22)('IE_PROTO');
 var ObjectProto = Object.prototype;
 
 module.exports = Object.getPrototypeOf || function (O) {
@@ -8134,7 +8168,7 @@ module.exports = Object.getPrototypeOf || function (O) {
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.1.13 ToObject(argument)
-var defined = __webpack_require__(15);
+var defined = __webpack_require__(16);
 module.exports = function (it) {
   return Object(defined(it));
 };
@@ -8147,7 +8181,7 @@ module.exports = function (it) {
 __webpack_require__(57);
 var global = __webpack_require__(0);
 var hide = __webpack_require__(2);
-var Iterators = __webpack_require__(19);
+var Iterators = __webpack_require__(20);
 var TO_STRING_TAG = __webpack_require__(6)('toStringTag');
 
 var DOMIterables = ('CSSRuleList,CSSStyleDeclaration,CSSValueList,ClientRectList,DOMRectList,DOMStringList,' +
@@ -8173,7 +8207,7 @@ for (var i = 0; i < DOMIterables.length; i++) {
 
 var addToUnscopables = __webpack_require__(58);
 var step = __webpack_require__(59);
-var Iterators = __webpack_require__(19);
+var Iterators = __webpack_require__(20);
 var toIObject = __webpack_require__(5);
 
 // 22.1.3.4 Array.prototype.entries()
@@ -8230,7 +8264,7 @@ __webpack_require__(61);
 __webpack_require__(67);
 __webpack_require__(68);
 __webpack_require__(69);
-module.exports = __webpack_require__(17).Symbol;
+module.exports = __webpack_require__(18).Symbol;
 
 
 /***/ }),
@@ -8246,25 +8280,24 @@ var DESCRIPTORS = __webpack_require__(4);
 var $export = __webpack_require__(30);
 var redefine = __webpack_require__(33);
 var META = __webpack_require__(62).KEY;
-var $fails = __webpack_require__(9);
-var shared = __webpack_require__(22);
-var setToStringTag = __webpack_require__(24);
-var uid = __webpack_require__(11);
+var $fails = __webpack_require__(10);
+var shared = __webpack_require__(23);
+var setToStringTag = __webpack_require__(25);
+var uid = __webpack_require__(12);
 var wks = __webpack_require__(6);
-var wksExt = __webpack_require__(25);
+var wksExt = __webpack_require__(26);
 var wksDefine = __webpack_require__(27);
 var enumKeys = __webpack_require__(63);
 var isArray = __webpack_require__(64);
 var anObject = __webpack_require__(8);
-var isObject = __webpack_require__(7);
 var toIObject = __webpack_require__(5);
-var toPrimitive = __webpack_require__(18);
-var createDesc = __webpack_require__(10);
+var toPrimitive = __webpack_require__(19);
+var createDesc = __webpack_require__(11);
 var _create = __webpack_require__(34);
 var gOPNExt = __webpack_require__(65);
 var $GOPD = __webpack_require__(66);
 var $DP = __webpack_require__(3);
-var $keys = __webpack_require__(20);
+var $keys = __webpack_require__(21);
 var gOPD = $GOPD.f;
 var dP = $DP.f;
 var gOPN = gOPNExt.f;
@@ -8391,7 +8424,7 @@ if (!USE_NATIVE) {
   __webpack_require__(28).f = $propertyIsEnumerable;
   __webpack_require__(37).f = $getOwnPropertySymbols;
 
-  if (DESCRIPTORS && !__webpack_require__(16)) {
+  if (DESCRIPTORS && !__webpack_require__(17)) {
     redefine(ObjectProto, 'propertyIsEnumerable', $propertyIsEnumerable, true);
   }
 
@@ -8449,14 +8482,15 @@ $JSON && $export($export.S + $export.F * (!USE_NATIVE || $fails(function () {
   return _stringify([S]) != '[null]' || _stringify({ a: S }) != '{}' || _stringify(Object(S)) != '{}';
 })), 'JSON', {
   stringify: function stringify(it) {
+    if (it === undefined || isSymbol(it)) return; // IE8 returns string on undefined
     var args = [it];
     var i = 1;
     var replacer, $replacer;
     while (arguments.length > i) args.push(arguments[i++]);
-    $replacer = replacer = args[1];
-    if (!isObject(replacer) && it === undefined || isSymbol(it)) return; // IE8 returns string on undefined
-    if (!isArray(replacer)) replacer = function (key, value) {
-      if (typeof $replacer == 'function') value = $replacer.call(this, key, value);
+    replacer = args[1];
+    if (typeof replacer == 'function') $replacer = replacer;
+    if ($replacer || !isArray(replacer)) replacer = function (key, value) {
+      if ($replacer) value = $replacer.call(this, key, value);
       if (!isSymbol(value)) return value;
     };
     args[1] = replacer;
@@ -8478,15 +8512,15 @@ setToStringTag(global.JSON, 'JSON', true);
 /* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var META = __webpack_require__(11)('meta');
-var isObject = __webpack_require__(7);
+var META = __webpack_require__(12)('meta');
+var isObject = __webpack_require__(9);
 var has = __webpack_require__(1);
 var setDesc = __webpack_require__(3).f;
 var id = 0;
 var isExtensible = Object.isExtensible || function () {
   return true;
 };
-var FREEZE = !__webpack_require__(9)(function () {
+var FREEZE = !__webpack_require__(10)(function () {
   return isExtensible(Object.preventExtensions({}));
 });
 var setMeta = function (it) {
@@ -8538,7 +8572,7 @@ var meta = module.exports = {
 /***/ (function(module, exports, __webpack_require__) {
 
 // all enumerable object keys, includes symbols
-var getKeys = __webpack_require__(20);
+var getKeys = __webpack_require__(21);
 var gOPS = __webpack_require__(37);
 var pIE = __webpack_require__(28);
 module.exports = function (it) {
@@ -8595,9 +8629,9 @@ module.exports.f = function getOwnPropertyNames(it) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var pIE = __webpack_require__(28);
-var createDesc = __webpack_require__(10);
+var createDesc = __webpack_require__(11);
 var toIObject = __webpack_require__(5);
-var toPrimitive = __webpack_require__(18);
+var toPrimitive = __webpack_require__(19);
 var has = __webpack_require__(1);
 var IE8_DOM_DEFINE = __webpack_require__(31);
 var gOPD = Object.getOwnPropertyDescriptor;
@@ -8704,9 +8738,12 @@ exports["default"] = function (glob) {
       = (object) array of returned values from the listeners. Array has two methods `.firstDefined()` and `.lastDefined()` to get first or last not `undefined` value.
     \*/
     eve = function eve(name, scope) {
+        for (var i = 0, len = arguments.length, arg = new Array(len); i < len; i++) {
+            arg[i] = arguments[i];
+        }
         var e = events,
             oldstop = stop,
-            args = Array.prototype.slice.call(arguments, 2),
+            args = Array.prototype.slice.call(arg, 2),
             listeners = eve.listeners(name),
             z = 0,
             f = false,
@@ -8893,9 +8930,12 @@ exports["default"] = function (glob) {
      = (function) possible event handler function
     \*/
     eve.f = function (event) {
-        var attrs = [].slice.call(arguments, 1);
+        for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+            args[i] = arguments[i];
+        }
+        var attrs = [].slice.call(args, 1);
         return function () {
-            eve.apply(null, [event, null].concat(attrs).concat([].slice.call(arguments, 0)));
+            eve.apply(null, [event, null].concat(attrs).concat([].slice.call(args, 0)));
         };
     };
     /*\
@@ -9068,8 +9108,11 @@ exports["default"] = function (glob) {
     \*/
     eve.once = function (name, f) {
         var f2 = function f2() {
+            for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+                args[i] = arguments[i];
+            }
             eve.off(name, f2);
-            return f.apply(this, arguments);
+            return f.apply(this, args);
         };
         return eve.on(name, f2);
     };
@@ -9089,7 +9132,7 @@ exports["default"] = function (glob) {
 }(typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : null);
 
 module.exports = exports["default"];
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14)))
 
 /***/ }),
 /* 71 */
@@ -9101,11 +9144,11 @@ module.exports = exports["default"];
 exports.__esModule = true;
 exports.merge = undefined;
 
-var _iterator = __webpack_require__(13);
+var _iterator = __webpack_require__(7);
 
 var _iterator2 = _interopRequireDefault(_iterator);
 
-var _symbol = __webpack_require__(26);
+var _symbol = __webpack_require__(13);
 
 var _symbol2 = _interopRequireDefault(_symbol);
 
@@ -9791,7 +9834,10 @@ exports['default'] = function (R) {
      | st.attr({fill: 'red'}); // changes the fill of both circles
     */
     paperproto.set = function (itemsArray) {
-        !R.is(itemsArray, 'array') && (itemsArray = Array.prototype.splice.call(arguments, 0, arguments.length));
+        for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+            args[i] = arguments[i];
+        }
+        !R.is(itemsArray, 'array') && (itemsArray = Array.prototype.splice.call(args, 0, args.length));
         var out = new Set(itemsArray);
         this.__set__ && this.__set__.push(out);
         return out;
@@ -9980,9 +10026,11 @@ exports['default'] = function (R) {
         if (elproto[has](method)) {
             setproto[method] = function (methodname) {
                 return function () {
-                    var arg = arguments;
+                    for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+                        args[i] = arguments[i];
+                    }
                     return this.forEach(function (el) {
-                        el[methodname][apply](el, arg);
+                        el[methodname][apply](el, args);
                     });
                 };
             }(method);
@@ -10157,7 +10205,7 @@ exports['default'] = function (R) {
 module.exports = exports['default']; /**
                                       * All non fusincharts related functionalities of redRaphael is listed here
                                       */
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14)))
 
 /***/ }),
 /* 73 */
@@ -10167,6 +10215,26 @@ module.exports = exports['default']; /**
 
 
 exports.__esModule = true;
+
+var _iterator = __webpack_require__(7);
+
+var _iterator2 = _interopRequireDefault(_iterator);
+
+var _symbol = __webpack_require__(13);
+
+var _symbol2 = _interopRequireDefault(_symbol);
+
+var _typeof = typeof _symbol2["default"] === "function" && typeof _iterator2["default"] === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof _symbol2["default"] === "function" && obj.constructor === _symbol2["default"] && obj !== _symbol2["default"].prototype ? "symbol" : typeof obj; }; /**!
+                                                                                                                                                                                                                                                                                                                                        * RedRaphael 1.0.0 - JavaScript Vector Library SVG Module
+                                                                                                                                                                                                                                                                                                                                        * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
+                                                                                                                                                                                                                                                                                                                                        *
+                                                                                                                                                                                                                                                                                                                                        * Raphael 2.1.0 - JavaScript Vector Library SVG Module
+                                                                                                                                                                                                                                                                                                                                        * Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
+                                                                                                                                                                                                                                                                                                                                        * Copyright © 2008-2012 Sencha Labs <http://sencha.com>
+                                                                                                                                                                                                                                                                                                                                        *
+                                                                                                                                                                                                                                                                                                                                        * Licensed under the MIT license.
+                                                                                                                                                                                                                                                                                                                                        */
+// Define _window as window object in case of indivual file inclusion.
 
 exports["default"] = function (R) {
     if (R.svg) {
@@ -10232,6 +10300,7 @@ exports["default"] = function (R) {
             abs = math.abs,
             pow = math.pow,
             sqrt = math.sqrt,
+            xlinkRegx = /^xlink\:/,
             separator = /[, ]+/,
             arrayShift = Array.prototype.shift,
             zeroStrokeFix = !!(/AppleWebKit/.test(R._g.win.navigator.userAgent) && (!/Chrome/.test(R._g.win.navigator.userAgent) || R._g.win.navigator.appVersion.match(/Chrome\/(\d+)\./)[1] < 29)),
@@ -10239,6 +10308,8 @@ exports["default"] = function (R) {
             E = "",
             S = " ",
             xlink = "http://www.w3.org/1999/xlink",
+            svgNSStr = "http://www.w3.org/2000/svg",
+            typeStringSTR = "string",
             markers = {
             block: "M5,0 0,2.5 5,5z",
             classic: "M5,0 0,2.5 5,5 3.5,3 3.5,2z",
@@ -10257,7 +10328,7 @@ exports["default"] = function (R) {
         //     return R._url = R._g.win.location.href.replace(/#.*?$/, E);
         // },
         createDummyText = function createDummyText(paper) {
-            txtElem = paper.txtElem = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            txtElem = paper.txtElem = document.createElementNS(svgNSStr, 'text');
             txtElem.setAttribute('x', randomPos);
             txtElem.setAttribute('y', randomPos);
             theMSG = document.createTextNode('abcdefhiklmnopqrstuvwxyz');
@@ -10311,21 +10382,24 @@ exports["default"] = function (R) {
         };
 
         var $ = R._createNode = function (el, attr) {
+            // Create the element
+            if ((typeof el === "undefined" ? "undefined" : _typeof(el)) == typeStringSTR) {
+                el = R._g.doc.createElementNS(svgNSStr, el);
+            }
+            // else {
+
+            // }
             if (attr) {
-                if (typeof el == "string") {
-                    el = $(el);
-                }
-                for (var key in attr) {
+                var key;
+                for (key in attr) {
                     if (attr[has](key)) {
-                        if (key.substring(0, 6) == "xlink:") {
-                            el.setAttributeNS(xlink, key.substring(6), Str(attr[key]));
+                        if (xlinkRegx.test(key)) {
+                            el.setAttributeNS(xlink, key.replace(xlinkRegx, E), attr[key]);
                         } else {
-                            el.setAttribute(key, Str(attr[key]));
+                            el.setAttribute(key, attr[key]);
                         }
                     }
                 }
-            } else {
-                el = R._g.doc.createElementNS("http://www.w3.org/2000/svg", el);
             }
             return el;
         },
@@ -10634,7 +10708,7 @@ exports["default"] = function (R) {
                     o._.arrows[se + "Marker"] = markerId;
                     o._.arrows[se + "dx"] = delta;
                     o._.arrows[se + "Type"] = type;
-                    o._.arrows[se + "String"] = value;
+                    o._.arrows[se + typeStringSTR] = value;
                 } else {
                     if (isEnd) {
                         from = o._.arrows.startdx * stroke || 0;
@@ -10650,7 +10724,7 @@ exports["default"] = function (R) {
                     delete o._.arrows[se + "Marker"];
                     delete o._.arrows[se + "dx"];
                     delete o._.arrows[se + "Type"];
-                    delete o._.arrows[se + "String"];
+                    delete o._.arrows[se + typeStringSTR];
                 }
                 for (attr in markerCounter) {
                     if (markerCounter[has](attr) && !markerCounter[attr]) {
@@ -10720,13 +10794,7 @@ exports["default"] = function (R) {
                 }
             }
         },
-            applyCustomAttributes = function applyCustomAttributes(o, attrs) {
-            for (var key in attrs) {
-                eve("raphael.attr." + key + "." + o.id, o, attrs[key], key);
-                o.ca[key] && o.attr(key, attrs[key]);
-            }
-        },
-            setFillAndStroke = R._setFillAndStroke = function (o, params, group) {
+            setFillAndStroke = R._setFillAndStroke = function (o, params) {
             if (!o.paper.canvas) {
                 return;
             }
@@ -11104,7 +11172,7 @@ exports["default"] = function (R) {
                     }
                 }
             }
-            o.type === 'text' && !params["_do-not-tune"] && tuneText(o, params, group);
+            o.type === 'text' && !params["_do-not-tune"] && tuneText(o, params);
             s.visibility = vis;
         },
 
@@ -11116,10 +11184,12 @@ exports["default"] = function (R) {
         arguments.
         */
         updateFollowers = R._updateFollowers = function () {
+            for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+                args[i] = arguments[i];
+            }
             var i,
                 ii,
                 followerElem,
-                args = arguments,
                 o = arrayShift.call(args),
                 fnName = arrayShift.call(args);
             for (i = 0, ii = o.followers.length; i < ii; i++) {
@@ -11128,20 +11198,21 @@ exports["default"] = function (R) {
             }
         },
             leading = 1.2,
-            tuneText = function tuneText(el, params, group) {
+            tuneText = function tuneText(el, params) {
             if (el.type != "text" || !(params[has]("text") || params[has]("font") || params[has]("font-size") || params[has]("x") || params[has]("y") || params[has]("line-height") || params[has]("vertical-align"))) {
                 return;
             }
             var a = el.attrs,
+                group = el.parent,
                 node = el.node,
                 computedStyle = node.firstChild && R._g.doc.defaultView.getComputedStyle(node.firstChild, E),
-                fontSize = params['fontSize'] || params['font-size'] || a['font-size'] || group && group.attrs.fontSize,
+                fontSize = params['fontSize'] || params['font-size'] || a['font-size'] || group && group.attrs && group.attrs.fontSize,
                 lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading,
                 actualValign = a[has]("vertical-align") ? a["vertical-align"] : "middle",
-                direction = params["direction"] || group && group.attrs.direction || "initial",
+                direction = params.direction || a.direction || group && group.attrs && group.attrs.direction || "initial",
                 isIE = /*@cc_on!@*/false || !!document.documentMode,
                 valign,
-                fontFamily = params['fontFamily'] || params['font-family'] || a['font-family'] || group && group.attrs.fontFamily || 'Verdana,sans';
+                fontFamily = params['fontFamily'] || params['font-family'] || a['font-family'] || group && group.attrs && group.attrs.fontFamily || 'Verdana,sans';
 
             fontSize = fontSize === undefined ? lineHeight / 1.2 || 10 : fontSize.toString().replace(/px/, '');
 
@@ -11561,92 +11632,94 @@ exports["default"] = function (R) {
             if (this.removed) {
                 return this;
             }
+            var todel = {},
+                key,
+                finalParam = {},
+                i,
+                ii,
+                params,
+                subkey,
+                par,
+                follower;
+            // get all, return all applied attributes
             if (name == null) {
                 var res = {};
-                for (var a in this.attrs) {
-                    if (this.attrs[has](a)) {
-                        res[a] = this.attrs[a];
+                for (key in this.attrs) {
+                    if (this.attrs[has](key)) {
+                        res[key] = this.attrs[key];
                     }
                 }res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
                 res.transform = this._.transform;
                 res.visibility = this.node.style.display === "none" ? "hidden" : "visible";
                 return res;
-            }
-            if (value == null && R.is(name, "string")) {
-                if (name == "fill" && this.attrs.fill == "none" && this.attrs.gradient) {
-                    return this.attrs.gradient;
-                }
-                if (name == "transform") {
-                    return this._.transform;
-                }
-                if (name == "visibility") {
-                    return this.node.style.display === "none" ? "hidden" : "visible";
-                }
-                var names = name.split(separator),
-                    out = {};
-                for (var i = 0, ii = names.length; i < ii; i++) {
-                    name = names[i];
-                    if (name in this.attrs) {
-                        out[name] = this.attrs[name];
-                    } else if (R.is(this.ca[name], "function")) {
-                        out[name] = this.ca[name].def;
-                    } else {
-                        out[name] = R._availableAttrs[name];
-                    }
-                }
-                return ii - 1 ? out : out[names[0]];
-            }
-            if (value == null && R.is(name, "array")) {
-                out = {};
-                for (i = 0, ii = name.length; i < ii; i++) {
-                    out[name[i]] = this.attr(name[i]);
-                }
-                return out;
-            }
-            if (value != null) {
-                var params = {};
-                params[name] = value;
-            } else if (name != null && R.is(name, "object")) {
-                params = name;
-            }
-            if (!R.stopPartialEventPropagation) {
-                for (var key in params) {
-                    eve("raphael.attr." + key + "." + this.id, this, params[key], key);
-                }
-            }
-            var todel = {};
-            for (key in this.ca) {
-                if (this.ca[key] && params[has](key) && R.is(this.ca[key], "function") && !this.ca['_invoked' + key]) {
-
-                    this.ca['_invoked' + key] = true; // prevent recursion
-                    var par = this.ca[key].apply(this, [].concat(params[key]));
-                    delete this.ca['_invoked' + key];
-
-                    for (var subkey in par) {
-                        if (par[has](subkey)) {
-                            params[subkey] = par[subkey];
+            } else {
+                if (value == null) {
+                    if (R.is(name, "object")) {
+                        // Provided as an object
+                        params = name;
+                    } else if (R.is(name, typeStringSTR)) {
+                        // get one, return the value of the given attribute
+                        if (name == "fill" && this.attrs.fill == "none" && this.attrs.gradient) {
+                            return this.attrs.gradient;
                         }
+                        if (name == "transform") {
+                            return this._.transform;
+                        }
+                        if (name == "visibility") {
+                            return this.node.style.display === "none" ? "hidden" : "visible";
+                        }
+
+                        if (name in this.attrs) {
+                            return this.attrs[name];
+                        } else if (R.is(this.ca[name], "function")) {
+                            return this.ca[name].def;
+                        }
+                        return R._availableAttrs[name];
                     }
-                    this.attrs[key] = params[key];
-                    if (par === false) {
-                        todel[key] = params[key];
-                        delete params[key];
+                } else {
+                    // key value provided seperately
+                    params = {};
+                    params[name] = value;
+                }
+
+                if (!R.stopPartialEventPropagation) {
+                    for (key in params) {
+                        eve("raphael.attr." + key + "." + this.id, this, params[key], key);
                     }
                 }
-            }
 
-            setFillAndStroke(this, params);
+                // For each param
+                for (key in params) {
+                    // check if that is a Custom attribute or not
+                    if (this.ca[key] && params[has](key) && R.is(this.ca[key], "function") && !this.ca['_invoked' + key]) {
 
-            var follower;
-            for (i = 0, ii = this.followers.length; i < ii; i++) {
-                follower = this.followers[i];
-                follower.cb && !follower.cb.call(follower.el, params, this) || follower.el.attr(params);
-            }
+                        this.ca['_invoked' + key] = true; // prevent recursion
+                        par = this.ca[key].apply(this, [].concat(params[key]));
+                        delete this.ca['_invoked' + key];
 
-            for (subkey in todel) {
-                params[subkey] = todel[subkey];
+                        // If the custom attribute create another set of attribute to be updated
+                        // Then add them in the attribute list
+                        for (subkey in par) {
+                            if (par[has](subkey)) {
+                                finalParam[subkey] = par[subkey];
+                            }
+                        }
+                        // Add the attribute in attrs
+                        this.attrs[key] = params[key];
+                    } else {
+                        finalParam[key] = params[key];
+                    }
+                }
+
+                setFillAndStroke(this, finalParam);
+
+                for (i = 0, ii = this.followers.length; i < ii; i++) {
+                    follower = this.followers[i];
+                    follower.cb && !follower.cb.call(follower.el, finalParam, this) || follower.el.attr(finalParam);
+                }
+
+                return this;
             }
-            return this;
         };
 
         elproto.blur = function (size) {
@@ -11801,8 +11874,8 @@ exports["default"] = function (R) {
                 res = new Element(el, svg, group);
 
             res.type = "path";
-            setFillAndStroke(res, attrs);
-            applyCustomAttributes(res, attrs);
+            // Apply the attribute if provided
+            attrs && res.attr(attrs);
             return res;
         };
 
@@ -11823,8 +11896,8 @@ exports["default"] = function (R) {
                 res = new Element(el, svg, group);
 
             res.type = "circle";
-            setFillAndStroke(res, attrs);
-            applyCustomAttributes(res, attrs);
+            // Apply the attribute if provided
+            attrs && res.attr(attrs);
             return res;
         };
         R._engine.rect = function (svg, attrs, group) {
@@ -11833,8 +11906,8 @@ exports["default"] = function (R) {
 
             res.type = "rect";
             attrs.rx = attrs.ry = attrs.r;
-            setFillAndStroke(res, attrs);
-            applyCustomAttributes(res, attrs);
+            // Apply the attribute if provided
+            attrs && res.attr(attrs);
             return res;
         };
         R._engine.ellipse = function (svg, attrs, group) {
@@ -11842,8 +11915,8 @@ exports["default"] = function (R) {
                 res = new Element(el, svg, group);
 
             res.type = "ellipse";
-            setFillAndStroke(res, attrs);
-            applyCustomAttributes(res, attrs);
+            // Apply the attribute if provided
+            attrs && res.attr(attrs);
             return res;
         };
         ;
@@ -11855,8 +11928,8 @@ exports["default"] = function (R) {
             res._.group = group || svg;
             res.type = "image";
             el.setAttribute("preserveAspectRatio", "none");
-            setFillAndStroke(res, attrs);
-            applyCustomAttributes(res, attrs);
+            // Apply the attribute if provided
+            attrs && res.attr(attrs);
             return res;
         };
         R._engine.text = function (svg, attrs, group, css) {
@@ -11866,9 +11939,8 @@ exports["default"] = function (R) {
             res._textdirty = true;
             // Ideally this code should not be here as .css() is not a function of rapheal.
             css && res.css && res.css(css, undefined, true);
-
-            setFillAndStroke(res, attrs, group);
-            applyCustomAttributes(res, attrs);
+            // Apply the attribute if provided
+            attrs && res.attr(attrs);
             return res;
         };
 
@@ -11883,12 +11955,16 @@ exports["default"] = function (R) {
             return this;
         };
         R._engine.create = function () {
-            var con = R._getContainer.apply(0, arguments),
+            for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+                args[i] = arguments[i];
+            }
+            var con = R._getContainer.apply(0, args),
                 container = con && con.container,
                 x = con.x,
                 y = con.y,
                 width = con.width,
-                height = con.height;
+                height = con.height,
+                paper;
             if (!container) {
                 throw new Error("SVG container not found.");
             }
@@ -11904,11 +11980,13 @@ exports["default"] = function (R) {
                 height: height,
                 version: 1.1,
                 width: width,
-                xmlns: "http://www.w3.org/2000/svg"
+                xmlns: svgNSStr
             });
             if (container == 1) {
                 cnvs.style.cssText = css + "position:absolute;left:" + x + "px;top:" + y + "px";
-                R._g.doc.body.appendChild(cnvs);
+                // Store body as the container
+                container = R._g.doc.body;
+                container.appendChild(cnvs);
                 isFloating = 1;
             } else {
                 cnvs.style.cssText = css + "position:relative";
@@ -11918,19 +11996,22 @@ exports["default"] = function (R) {
                     container.appendChild(cnvs);
                 }
             }
-            container = new R._Paper();
-            container.width = width;
-            container.height = height;
-            container.canvas = cnvs;
+            paper = new R._Paper();
+            paper.width = width;
+            paper.height = height;
+            paper.canvas = cnvs;
+            // Store the container for further detachment and attachment
+            paper.container = container;
+
             $(cnvs, {
-                id: "raphael-paper-" + container.id
+                id: "raphael-paper-" + paper.id
             });
-            container.clear();
-            createDummyText(container);
-            container._left = container._top = 0;
-            isFloating && (container.renderfix = function () {});
-            container.renderfix();
-            return container;
+            paper.clear();
+            createDummyText(paper);
+            paper._left = paper._top = 0;
+            isFloating && (paper.renderfix = function () {});
+            paper.renderfix();
+            return paper;
         };
         R._engine.setViewBox = function (x, y, w, h, fit) {
             eve("raphael.setViewBox", this, this._viewBox, [x, y, w, h, fit]);
@@ -11964,6 +12045,26 @@ exports["default"] = function (R) {
             }
             this._viewBox = [x, y, w, h, !!fit];
             return this;
+        };
+
+        /**
+         * Function to remove the paper form the DOM tree
+         */
+        R.prototype.detachPaper = function () {
+            if (this._detached !== false) {
+                this.container.removeChild(this.canvas);
+                this._detached = true;
+            }
+        };
+        /**
+         * Function to append the paper in the DOM tree
+         * @note: This might change the order of the child elements.
+         */
+        R.prototype.attachPaper = function () {
+            if (this._detached) {
+                this.container.appendChild(this.canvas);
+                this._detached = false;
+            }
         };
 
         R.prototype.renderfix = function () {
@@ -12000,7 +12101,7 @@ exports["default"] = function (R) {
                     desc.removeChild(desc.firstChild);
                 }
             }
-            desc.appendChild(R._g.doc.createTextNode(R.is(txt, "string") ? txt : "Created with Red Rapha\xebl " + R.version));
+            desc.appendChild(R._g.doc.createTextNode(R.is(txt, typeStringSTR) ? txt : "Created with Red Rapha\xebl " + R.version));
         };
 
         R.prototype.clear = function () {
@@ -12051,17 +12152,9 @@ exports["default"] = function (R) {
     }
 };
 
-module.exports = exports["default"]; /**!
-                                     * RedRaphael 1.0.0 - JavaScript Vector Library SVG Module
-                                     * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
-                                     *
-                                     * Raphael 2.1.0 - JavaScript Vector Library SVG Module
-                                     * Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
-                                     * Copyright © 2008-2012 Sencha Labs <http://sencha.com>
-                                     *
-                                     * Licensed under the MIT license.
-                                     */
-// Define _window as window object in case of indivual file inclusion.
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+module.exports = exports["default"];
 
 /***/ }),
 /* 74 */
@@ -12576,10 +12669,12 @@ exports["default"] = function (R) {
         arguments.
         */
         updateFollowers = R._updateFollowers = function () {
+            for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+                args[i] = arguments[i];
+            }
             var i,
                 ii,
                 followerElem,
-                args = arguments,
                 o = arrayShift.call(args),
                 fnName = arrayShift.call(args);
             for (i = 0, ii = o.followers.length; i < ii; i++) {
@@ -13340,7 +13435,10 @@ exports["default"] = function (R) {
         };
         R._engine.initWin(R._g.win);
         R._engine.create = function () {
-            var con = R._getContainer.apply(0, arguments),
+            for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+                args[i] = arguments[i];
+            }
+            var con = R._getContainer.apply(0, args),
                 container = con.container,
                 height = con.height,
                 s,
@@ -13444,11 +13542,11 @@ module.exports = exports["default"]; /**!
 
 exports.__esModule = true;
 
-var _iterator = __webpack_require__(13);
+var _iterator = __webpack_require__(7);
 
 var _iterator2 = _interopRequireDefault(_iterator);
 
-var _symbol = __webpack_require__(26);
+var _symbol = __webpack_require__(13);
 
 var _symbol2 = _interopRequireDefault(_symbol);
 
@@ -14033,8 +14131,10 @@ exports['default'] = function (R) {
              * standard browsers (and also the non-standard one).
              */
             addEventListener: function addEventListener() {
+                for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+                    args[i] = arguments[i];
+                }
                 var o = this,
-                    args = arguments,
                     eventName = args && args[0],
                     handler = args && args[1],
                     area,
@@ -14104,14 +14204,14 @@ exports['default'] = function (R) {
                                         // Based on the state of the flags, fire the
                                         // appropriate event handlers.
                                         if (isOutside && transition && node.eventListeners['mouseout']) {
-                                            node.eventListeners['mouseout'].apply(this, arguments);
+                                            node.eventListeners['mouseout'].apply(this, args);
                                         }
                                         if (isInside) {
                                             if (transition && node.eventListeners['mouseover']) {
-                                                node.eventListeners['mouseover'].apply(this, arguments);
+                                                node.eventListeners['mouseover'].apply(this, args);
                                             }
                                             if (node.eventListeners['mousemove']) {
-                                                node.eventListeners['mousemove'].apply(this, arguments);
+                                                node.eventListeners['mousemove'].apply(this, args);
                                             }
                                         }
                                     };
@@ -14126,7 +14226,7 @@ exports['default'] = function (R) {
                             var checkPathHandler = function (node, handler) {
                                 return function (event) {
                                     if (R.isPointInsidePath(node._path, event.layerX, event.layerY)) {
-                                        handler.apply(this, arguments);
+                                        handler.apply(this, args);
                                     }
                                 };
                             }(o, handler);
@@ -14140,8 +14240,10 @@ exports['default'] = function (R) {
             },
 
             removeEventListener: function removeEventListener() {
+                for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+                    args[i] = arguments[i];
+                }
                 var o = this,
-                    args = arguments,
                     eventName = args && args[0],
                     handler = args && args[1],
                     area,
@@ -15128,7 +15230,10 @@ exports['default'] = function (R) {
                     this.element.width = this.element.width;
                 });
 
-                FauxNode.prototype.draw.apply(this, arguments);
+                for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+                    args[i] = arguments[i];
+                }
+                FauxNode.prototype.draw.apply(this, args);
             },
 
             /**
@@ -15366,7 +15471,10 @@ exports['default'] = function (R) {
         };
         /** @todo implement setViewBox() */
         R._engine.create = function () {
-            var con = R._getContainer.apply(0, arguments) || {},
+            for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+                args[i] = arguments[i];
+            }
+            var con = R._getContainer.apply(0, args) || {},
                 container = con.container,
                 x = con.x,
                 y = con.y,
@@ -16026,6 +16134,9 @@ exports['default'] = function (R) {
             if (elproto.hasOwnProperty(method) && !setproto.hasOwnProperty(method)) {
                 setproto[method] = function (methodname) {
                     return function () {
+                        for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+                            args[i] = arguments[i];
+                        }
                         var arg = arguments;
                         return this.forEach(function (el) {
                             el[methodname].apply(el, arg);

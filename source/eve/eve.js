@@ -63,9 +63,12 @@ export default (function (glob) {
      = (object) array of returned values from the listeners. Array has two methods `.firstDefined()` and `.lastDefined()` to get first or last not `undefined` value.
     \*/
         eve = function (name, scope) {
+            for (var i = 0, len = arguments.length, arg = new Array(len); i < len; i++) {
+                arg[i] = arguments[i];
+            }
             var e = events,
                 oldstop = stop,
-                args = Array.prototype.slice.call(arguments, 2),
+                args = Array.prototype.slice.call(arg, 2),
                 listeners = eve.listeners(name),
                 z = 0,
                 f = false,
@@ -255,9 +258,12 @@ export default (function (glob) {
      = (function) possible event handler function
     \*/
     eve.f = function (event) {
-        var attrs = [].slice.call(arguments, 1);
+        for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+            args[i] = arguments[i];
+        }
+        var attrs = [].slice.call(args, 1);
         return function () {
-            eve.apply(null, [event, null].concat(attrs).concat([].slice.call(arguments, 0)));
+            eve.apply(null, [event, null].concat(attrs).concat([].slice.call(args, 0)));
         };
     };
     /*\
@@ -419,8 +425,11 @@ export default (function (glob) {
     \*/
     eve.once = function (name, f) {
         var f2 = function () {
+            for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+                args[i] = arguments[i];
+            }    
             eve.off(name, f2);
-            return f.apply(this, arguments);
+            return f.apply(this, args);
         };
         return eve.on(name, f2);
     };

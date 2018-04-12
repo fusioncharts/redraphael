@@ -519,10 +519,12 @@ export default function (R) {
         arguments.
         */
         updateFollowers = R._updateFollowers = function () {
+            for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+                args[i] = arguments[i];
+            }
             var i,
                 ii,
                 followerElem,
-                args = arguments,
                 o = arrayShift.call(args),
                 fnName = arrayShift.call(args);
             for (i = 0, ii = o.followers.length; i < ii; i++) {
@@ -1303,7 +1305,10 @@ export default function (R) {
         };
         R._engine.initWin(R._g.win);
         R._engine.create = function() {
-            var con = R._getContainer.apply(0, arguments),
+            for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+                args[i] = arguments[i];
+            }
+            var con = R._getContainer.apply(0, args),
             container = con.container,
             height = con.height,
             s,

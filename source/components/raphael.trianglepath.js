@@ -54,8 +54,10 @@ _window.Raphael && (_window.Raphael.define && function (R) {
 
         // Constructor of the component goes here. Must be same name as the name of the component.
         trianglepath: function () { // args: [x1, y1, x2, y2, x3, y3, r1, r2, r3]
+            for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+                args[i] = arguments[i];
+            }
             var paper = this,
-                args = arguments,
                 group = R._lastArgIfGroup(args),
                 face = paper.path(group),
                 argsLen = args.length,

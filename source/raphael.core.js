@@ -87,7 +87,10 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             return R._engine.create[apply](R, first.splice(0, 3 + R.is(first[0], nu))).add(first);
         }
         else {
-            args = Array.prototype.slice.call(arguments, 0);
+            for (var i = 0, len = arguments.length, arg = new Array(len); i < len; i++) {
+                arg[i] = arguments[i];
+            }    
+            args = Array.prototype.slice.call(arg, 0);
             if (R.is(args[args.length - 1], "function")) {
                 f = args.pop();
                 return loaded ? f.call(R._engine.create[apply](R, args)) : eve.on("raphael.DOMload", function() {
@@ -1107,7 +1110,10 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
 
     var cacher = R._cacher = function (f, scope, postprocessor) {
         function cachedfunction() {
-            var arg = arraySlice.call(arguments, 0),
+            for (var i = 0, len = arguments.length, _args = new Array(len); i < len; i++) {
+                _args[i] = arguments[i];
+            }
+            var arg = arraySlice.call(_args, 0),
             args = arg.join("\u2400"),
             cache = cachedfunction.cache = cachedfunction.cache || {},
             count = cachedfunction.count = cachedfunction.count || [];
@@ -3703,14 +3709,20 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             this.untrack = addEvent(g.doc, 'mouseup', mouseUp, this);
         },
         mouseUp = function () {
+            for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+                args[i] = arguments[i];
+            }
             this.untrack();
             this.untrack = null;
-            return this.fn && this.fn.apply(this.scope || this.el, arguments);
+            return this.fn && this.fn.apply(this.scope || this.el, args);
 
         };
     elproto.mouseup = function (fn, scope, track) {
         if (!track) {
-            return R.mouseup.apply(this, arguments);
+            for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+                args[i] = arguments[i];
+            }
+            return R.mouseup.apply(this, args);
         }
         downables.push(track = {
             el: this,
@@ -3734,7 +3746,10 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                 downables.splice(i, 1);
             }
         }
-        return undowned ? this : R.unmouseup.apply(this, arguments);
+        for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+            args[i] = arguments[i];
+        }
+        return undowned ? this : R.unmouseup.apply(this, args);
     };
 
     /*\
@@ -4064,8 +4079,10 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
      | var g = paper.group();
     \*/
     paperproto.group = function () { // id
+        for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+            args[i] = arguments[i];
+        }
         var paper = this,
-            args = arguments,
             group = lastArgIfGroup(args, true),
             out = R._engine.group(paper, args[0], group);
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
@@ -4088,8 +4105,10 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
      | var c = paper.circle(50, 50, 40);
     \*/
     paperproto.circle = function () { // x, y, r
+        for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+            args[i] = arguments[i];
+        }
         var paper = this,
-            args = arguments,
             group = lastArgIfGroup(args, true),
             attrs = serializeArgs(args,
                 "cx", 0,
@@ -4125,8 +4144,10 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
      | var c = paper.rect(40, 40, 50, 50, 10);
     \*/
     paperproto.rect = function () {
+        for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+            args[i] = arguments[i];
+        }
         var paper = this,
-            args = arguments,
             group = lastArgIfGroup(args, true),
             attrs = serializeArgs(args,
                 "x", 0,
@@ -4159,8 +4180,10 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
      | var c = paper.ellipse(50, 50, 40, 20);
     \*/
     paperproto.ellipse = function () {
+        for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+            args[i] = arguments[i];
+        }
         var paper = this,
-            args = arguments,
             group = lastArgIfGroup(args, true),
             attrs = serializeArgs(args,
                 "x", 0,
@@ -4207,8 +4230,10 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
      * For example of path strings, check out these icons: http://raphaeljs.com/icons/
     \*/
     paperproto.path = function () {
+        for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+            args[i] = arguments[i];
+        }
         var paper = this,
-            args = arguments,
             group = lastArgIfGroup(args, true),
             paperConfig = paper.config,
             capStyle = (paperConfig && paperConfig["stroke-linecap"]) || "butt",
@@ -4240,8 +4265,10 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
      | var c = paper.image("apple.png", 10, 10, 80, 80);
     \*/
     paperproto.image = function () {
+        for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+            args[i] = arguments[i];
+        }
         var paper = this,
-            args = arguments,
             group = lastArgIfGroup(args, true),
             attrs = serializeArgs(args,
                 // "src", "",
@@ -4270,8 +4297,10 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
      | var t = paper.text(50, 50, "Raphaël\nkicks\nbutt!");
     \*/
     paperproto.text = function() {
+        for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
+            args[i] = arguments[i];
+        }
         var paper = this,
-            args = arguments,
             group = lastArgIfGroup(args, true),
             attrs = serializeArgs(args,
                 "x", 0,
@@ -7104,7 +7133,10 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
      | paper.path(Raphael.format("M{0},{1}h{2}v{3}h{4}z", x, y, width, height, -width));
     \*/
     R.format = function(token, params) {
-        var args = R.is(params, array) ? [0][concat](params) : arguments;
+        for (var i = 0, len = arguments.length, arg = new Array(len); i < len; i++) {
+            arg[i] = arguments[i];
+        }
+        var args = R.is(params, array) ? [0][concat](params) : arg;
         token && R.is(token, string) && args.length - 1 && (token = token.replace(formatrg, function(str, i) {
             return args[++i] == null ? E : args[i];
         }));
@@ -7190,8 +7222,10 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         }
 
         R.fn[name] = function () {
-            var args = arguments,
-                element = init.apply(this, args),
+            for (var i = 0, len = arguments.length, arg = new Array(len); i < len; i++) {
+                arg[i] = arguments[i];
+            }
+            var element = init.apply(this, arg),
                 key;
 
             if (fn && R.is(fn, object)) {

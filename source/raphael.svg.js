@@ -1014,6 +1014,17 @@ export default function (R) {
                 }
             }
 
+            // If the text was RTL earlier and now changed or vice versa
+            if (isIE && direction != oldAttr.direction) {
+                // remove all tspans
+                while (node.firstChild) {
+                    node.removeChild(node.firstChild);
+                }
+                // reset the tspan count as well
+                oldAttr.lineCount = 0;
+            }
+            oldAttr.direction = direction;
+
             // If the containing text got changed
             if (params[has](textStr)) {
                 // If the text is an arra then join with <br>

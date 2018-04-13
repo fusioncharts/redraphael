@@ -7907,10 +7907,8 @@ elproto.removeChild = function (element) {
  | paper.path(Raphael.format("M{0},{1}h{2}v{3}h{4}z", x, y, width, height, -width));
 \*/
 R.format = function (token, params) {
-    for (var i = 0, len = arguments.length, arg = new Array(len); i < len; i++) {
-        arg[i] = arguments[i];
-    }
-    var args = R.is(params, array) ? [0][concat](params) : arg;
+    var arg = (0, _raphael.getArrayCopy)(arguments),
+        args = R.is(params, array) ? [0][concat](params) : arg;
     token && R.is(token, string) && args.length - 1 && (token = token.replace(formatrg, function (str, i) {
         return args[++i] == null ? E : args[i];
     }));

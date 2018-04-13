@@ -972,15 +972,14 @@ export default function (R) {
                 ii,
                 // For rtl text in IE there is a blank tspan to fix RTL rendering issues in IE.
                 // So there will twice the amount of tSpan
-                j = !isIE && direction === rtlStr ? 2 : 1,
+                j = isIE && direction === rtlStr ? 2 : 1,
                 texts,
                 tempIESpan,
                 tspan,
-                oldAttr = el._oldAttr = el._oldAttr || {},
+                oldAttr = el._oldAttr = el._oldAttr || {tspanAttr: {}},
                 updateAlignment,
                 tspans,
                 text;
-
             // If line height is not valid (0, NaN, undefuned), then derive it from fontSize
             if (!lineHeight) {
                 fontSize = params.fontSize || params[fontSizeStr] || a[fontSizeStr] || (group && group.attrs && group.attrs.fontSize);
@@ -988,9 +987,9 @@ export default function (R) {
                 lineHeight = fontSize * leading;
             }
 
-            if (params[has]("x") && oldAttr.x != params.x){ // X change
+            if (params[has]("x") && oldAttr.tspanAttr.x != params.x){ // X change
                 // If the x is getting changed, then node and the tspan both needs to be updated
-                oldAttr.x = tspanAttr.x = nodeAttr.x = a.x;
+                oldAttr.tspanAttr.x = tspanAttr.x = nodeAttr.x = a.x;
                 updateNode = true;
                 updateTspan = true;
             }
@@ -1000,7 +999,7 @@ export default function (R) {
             }
 
             if (lineHeight != oldAttr.lineHeight) { // lineHeight change
-                oldAttr.lineHeight = tspanAttr.dy = lineHeight;
+                oldAttr.lineHeight = oldAttr.tspanAttr.dy = tspanAttr.dy = lineHeight;
                 updateTspan = true;
                 updateAlignment = true;
                 oldAttr.baseLineDiff = lineHeight * 0.75; //Aprox calculation
@@ -1023,7 +1022,7 @@ export default function (R) {
                 if (text !==  oldAttr.text) {
                     oldAttr.text = a.text = text;
                     texts = Str(text).split(/\n|<br\s*?\/?>/ig);
-                    ii = oldAttr.lineCount = texts.length;
+                    ii = texts.length;
                     if (oldAttr.lineCount != ii) {
                         oldAttr.lineCount = ii;
                         updateAlignment = true;
@@ -1032,11 +1031,14 @@ export default function (R) {
                     for (i = 0; i < ii; i++) {
                         if (tspan = tspans[i * j]) { // If already there is a tspan then remove the text
                             tspan.innerHTML = E;
+                            if(updateTspan) { // If update required, update here
+                                $(tspan, tspanAttr);
+                            }
                         } else { // Else create a new span
-                            tspan = $(tSpanStr);
+                            tspan = $(tSpanStr, oldAttr.tspanAttr);
                             node.appendChild(tspan);
                             // Special fix for RTL texts in IE-SVG browsers
-                            if (!isIE && direction === rtlStr) {
+                            if (isIE && direction === rtlStr) {
                                 tempIESpan = $(tSpanStr, IESplTspanAttr);
                                 tempIESpan.appendChild(R._g.doc.createTextNode("i"));
                                 node.appendChild(tempIESpan);
@@ -1049,6 +1051,8 @@ export default function (R) {
                         }
                         tspan.appendChild(R._g.doc.createTextNode(texts[i]));
                     }
+                    // Already attributes are getting updated here
+                    updateTspan = false;
                 }
             }
 
@@ -1066,7 +1070,7 @@ export default function (R) {
             if (updateNode){
                 $(node, nodeAttr);
             }
-
+            // Update the dy of the first tspan according to the v-alignment
             if (updateAlignment) {
                 $(node.getElementsByTagName(tSpanStr)[0], {
                     dy: oldAttr.baseLineDiff + (oldAttr.lineCount * oldAttr.lineHeight * oldAttr.valign)

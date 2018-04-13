@@ -1,3 +1,5 @@
+import { getArrayCopy } from "./raphael.lib";
+
 /**!
 * RedRaphael 1.0.0 - JavaScript Vector Library VML Module
 * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
@@ -519,12 +521,10 @@ export default function (R) {
         arguments.
         */
         updateFollowers = R._updateFollowers = function () {
-            for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
-                args[i] = arguments[i];
-            }
             var i,
                 ii,
                 followerElem,
+                args = getArrayCopy(arguments),
                 o = arrayShift.call(args),
                 fnName = arrayShift.call(args);
             for (i = 0, ii = o.followers.length; i < ii; i++) {
@@ -1305,10 +1305,7 @@ export default function (R) {
         };
         R._engine.initWin(R._g.win);
         R._engine.create = function() {
-            for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
-                args[i] = arguments[i];
-            }
-            var con = R._getContainer.apply(0, args),
+            var con = R._getContainer.apply(0, arguments),
             container = con.container,
             height = con.height,
             s,

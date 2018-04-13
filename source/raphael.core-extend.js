@@ -1,3 +1,5 @@
+import { getArrayCopy } from "./raphael.lib";
+
 /**
  * All non fusincharts related functionalities of redRaphael is listed here
  */
@@ -532,9 +534,7 @@ export default function (R) {
      | st.attr({fill: 'red'}); // changes the fill of both circles
     */
     paperproto.set = function (itemsArray) {
-        for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
-            args[i] = arguments[i];
-        }
+        var args = getArrayCopy(arguments);
         !R.is(itemsArray, 'array') && (itemsArray = Array.prototype.splice.call(args, 0, args.length));
         var out = new Set(itemsArray);
         this.__set__ && this.__set__.push(out);
@@ -726,11 +726,9 @@ export default function (R) {
         if (elproto[has](method)) {
             setproto[method] = (function (methodname) {
                 return function () {
-                    for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
-                        args[i] = arguments[i];
-                    }        
+                    var arg = arguments;
                     return this.forEach(function (el) {
-                        el[methodname][apply](el, args);
+                        el[methodname][apply](el, arg);
                     });
                 };
             })(method);

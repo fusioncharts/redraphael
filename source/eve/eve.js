@@ -1,3 +1,5 @@
+import { getArrayCopy } from "../raphael.lib";
+
 // Copyright (c) 2017 Adobe Systems Incorporated. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -63,11 +65,9 @@ export default (function (glob) {
      = (object) array of returned values from the listeners. Array has two methods `.firstDefined()` and `.lastDefined()` to get first or last not `undefined` value.
     \*/
         eve = function (name, scope) {
-            for (var i = 0, len = arguments.length, arg = new Array(len); i < len; i++) {
-                arg[i] = arguments[i];
-            }
             var e = events,
                 oldstop = stop,
+                arg = getArrayCopy(arguments),
                 args = Array.prototype.slice.call(arg, 2),
                 listeners = eve.listeners(name),
                 z = 0,
@@ -258,10 +258,8 @@ export default (function (glob) {
      = (function) possible event handler function
     \*/
     eve.f = function (event) {
-        for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
-            args[i] = arguments[i];
-        }
-        var attrs = [].slice.call(args, 1);
+        var args = getArrayCopy(arguments),
+            attrs = [].slice.call(args, 1);
         return function () {
             eve.apply(null, [event, null].concat(attrs).concat([].slice.call(args, 0)));
         };
@@ -425,11 +423,8 @@ export default (function (glob) {
     \*/
     eve.once = function (name, f) {
         var f2 = function () {
-            for (var i = 0, len = arguments.length, args = new Array(len); i < len; i++) {
-                args[i] = arguments[i];
-            }    
             eve.off(name, f2);
-            return f.apply(this, args);
+            return f.apply(this, arguments);
         };
         return eve.on(name, f2);
     };

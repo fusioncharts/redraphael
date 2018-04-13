@@ -15,6 +15,13 @@ let UNDEF,
 
         return bIndex;
     },
+    // Returns a copy of a array
+    getArrayCopy = function (array) {
+        for (var i = 0, len = array.length, arg = new Array(len); i < len; i++) {
+            arg[i] = array[i];
+        }
+        return arg;
+    },
     merge = function (obj1, obj2, skipUndef, tgtArr, srcArr) {
         var item,
             srcVal,
@@ -136,4 +143,4 @@ export default function (obj1, obj2, skipUndef, shallow) {
     return obj1;
 }
 
-export {merge};
+export {merge, getArrayCopy};

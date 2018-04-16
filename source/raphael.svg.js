@@ -969,10 +969,11 @@ export default function (R) {
                 tspanAttr = {},
                 updateTspan,
                 i,
+                l,
                 ii,
                 // For rtl text in IE there is a blank tspan to fix RTL rendering issues in IE.
                 // So there will twice the amount of tSpan
-                j = isIE && direction === rtlStr ? 2 : 1,
+                j = !isIE && direction === rtlStr ? 2 : 1,
                 texts,
                 tempIESpan,
                 tspan,
@@ -1015,7 +1016,7 @@ export default function (R) {
             }
 
             // If the text was RTL earlier and now changed or vice versa
-            if (isIE && direction != oldAttr.direction) {
+            if (!isIE && direction != oldAttr.direction) {
                 // remove all tspans
                 while (node.firstChild) {
                     node.removeChild(node.firstChild);
@@ -1033,13 +1034,13 @@ export default function (R) {
                 if (text !==  oldAttr.text) {
                     oldAttr.text = a.text = text;
                     texts = Str(text).split(/\n|<br\s*?\/?>/ig);
-                    ii = texts.length;
-                    if (oldAttr.lineCount != ii) {
-                        oldAttr.lineCount = ii;
+                    l = texts.length;
+                    if (oldAttr.lineCount != l) {
+                        oldAttr.lineCount = l;
                         updateAlignment = true;
                     }
                     tspans = node.getElementsByTagName(tSpanStr);
-                    for (i = 0; i < ii; i++) {
+                    for (i = 0; i < l; i++) {
                         if (tspan = tspans[i * j]) { // If already there is a tspan then remove the text
                             tspan.innerHTML = E;
                             if(updateTspan) { // If update required, update here
@@ -1049,7 +1050,7 @@ export default function (R) {
                             tspan = $(tSpanStr, oldAttr.tspanAttr);
                             node.appendChild(tspan);
                             // Special fix for RTL texts in IE-SVG browsers
-                            if (isIE && direction === rtlStr) {
+                            if (!isIE && direction === rtlStr) {
                                 tempIESpan = $(tSpanStr, IESplTspanAttr);
                                 tempIESpan.appendChild(R._g.doc.createTextNode("i"));
                                 node.appendChild(tempIESpan);
@@ -1061,6 +1062,14 @@ export default function (R) {
                             texts[i] = " ";
                         }
                         tspan.appendChild(R._g.doc.createTextNode(texts[i]));
+                    }
+
+                    ii = l * j;
+                    // If there are already more tspan than required, then remove the extra tspans
+                    if (tspans.length > ii) {
+                        for (i = tspans.length - 1; i >= ii; i -= 1) {
+                            node.removeChild(tspans[i]);
+                        }
                     }
                     // Already attributes are getting updated here
                     updateTspan = false;

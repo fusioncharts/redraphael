@@ -1997,6 +1997,12 @@ R._path2string = function () {
 };
 
 var cacher = R._cacher = function (f, scope, postprocessor) {
+    var blank = null,
+        start = null,
+        end = null,
+        cache = {},
+        count = 0;
+
     function cachedfunction() {
         var arg = (0, _raphael.getArrayCopy)(arguments),
             args = arg.join('\u2400'),
@@ -2006,20 +2012,13 @@ var cacher = R._cacher = function (f, scope, postprocessor) {
             prev,
             next,
             nextStr,
-            newNode,
-            blank = cachedfunction.blank = cachedfunction.blank || null,
-            start = cachedfunction.start = cachedfunction.start || null,
-            // start is a object reference
-        end = cachedfunction.end = cachedfunction.end || null,
-            // end is a string
-        cache = cachedfunction.cache = cachedfunction.cache || {},
-            count = cachedfunction.count = cachedfunction.count || 0;
+            newNode;
 
         /**
          * Special case. for blank string, store separately.
          */
         if (args === '') {
-            blank = cachedfunction.blank = blank || f[apply][(scope, arg)];
+            blank = blank || f[apply][(scope, arg)];
             return postprocessor ? postprocessor(blank) : blank;
         }
 
@@ -2060,9 +2059,6 @@ var cacher = R._cacher = function (f, scope, postprocessor) {
 
                 start = cur; // start point to the cur node
             }
-            // update the pointers
-            cachedfunction.start = start;
-            cachedfunction.end = end;
 
             return postprocessor ? postprocessor(start.item) : start.item;
         }
@@ -2111,11 +2107,6 @@ var cacher = R._cacher = function (f, scope, postprocessor) {
         // In case newNode is the first node of the cache end will also be null, but it should point to the start.
         end === null && (end = args);
         count++;
-
-        // After all caching operation is complete, update the start and end pointers.
-        cachedfunction.start = start;
-        cachedfunction.end = end;
-        cachedfunction.count = count;
 
         return postprocessor ? postprocessor(cache[args].item) : cache[args].item;
     }

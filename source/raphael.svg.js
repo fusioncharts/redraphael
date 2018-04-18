@@ -554,13 +554,16 @@ export default function (R) {
                 s = node.style,
                 // vis = s.visibility,
                 i,
-                l;
+                l,
+                att,
+                finalAttr = {},
+                finalS = {};
 
             // s.visibility = "hidden";
             if (o.type === imageStr) {
                 LoadRefImage(o, params);
             }
-            for (var att in params) {
+            for (att in params) {
                // if (params[has](att)) {
                     if (!(att in R._availableAttrs)) {
                         continue;
@@ -597,7 +600,7 @@ export default function (R) {
                             node.titleNode = pn;
                             break;
                         case "cursor":
-                            s.cursor = value;
+                            finalS.cursor = value;
                             break;
                         case "transform":
                             o.transform(value);
@@ -669,7 +672,7 @@ export default function (R) {
                             }
                             break;
                         case "width":
-                            node.setAttribute(att, value);
+                            finalAttr[att] = value;
                             o._.dirty = 1;
                             if (attrs.fx) {
                                 att = "x";
@@ -686,12 +689,12 @@ export default function (R) {
                                 break;
                             }
                         case "cx":
-                            node.setAttribute(att, value);
+                            finalAttr[att] = value;
                             o.pattern && updatePosition(o);
                             o._.dirty = 1;
                             break;
                         case "height":
-                            node.setAttribute(att, value);
+                            finalAttr[att] = value;
                             o._.dirty = 1;
                             if (attrs.fy) {
                                 att = "y";
@@ -708,16 +711,15 @@ export default function (R) {
                                 break;
                             }
                         case "cy":
-                            node.setAttribute(att, value);
+                            finalAttr[att] = value;
                             o.pattern && updatePosition(o);
                             o._.dirty = 1;
                             break;
                         case "r":
                             if (o.type === "rect") {
-                                node.setAttribute('rx', value);
-                                node.setAttribute('ry', value);
+                                finalAttr.rx = finalAttr.ry = value;
                             } else {
-                                node.setAttribute(att, value);
+                                finalAttr[att] = value;
                             }
                             o._.dirty = 1;
                             break;
@@ -736,7 +738,7 @@ export default function (R) {
                             if (zeroStrokeFix && value === 0) {
                                 value = 0.000001;
                             }
-                            node.setAttribute(att, value);
+                            finalAttr[att] = value;
                             if (attrs["stroke-dasharray"]) {
                                 addDashes(o, attrs["stroke-dasharray"], params);
                             }
@@ -784,7 +786,7 @@ export default function (R) {
                                     });
                                 })(el);
                                 paper.defs.appendChild(el);
-                                s.fill = "url('" + R._url + "#" + el.id + "')";
+                                finalS.fill = "url('" + R._url + "#" + el.id + "')";
                                 $(node, {
                                     fill: s.fill
                                 });
@@ -802,8 +804,7 @@ export default function (R) {
                                 //     $(node, {
                                 //         opacity: attrs.opacity
                                 //     });
-                                !R.is(attrs["fill-opacity"], "undefined") &&
-                                node.setAttribute("fill-opacity", attrs["fill-opacity"]);
+                                !R.is(attrs["fill-opacity"], "undefined") && (finalAttr["fill-opacity"] = attrs["fill-opacity"]);
                                 o.gradient && updateGradientReference(o);
                             }
                             else if ((o.type === "circle" || o.type === "ellipse" || Str(value).charAt() != "r") && addGradientFill(o, value)) {
@@ -820,27 +821,26 @@ export default function (R) {
                                 }*/
                                 attrs.gradient = value;
                                 // attrs.fill = "none";
-                                s.fill = E;
+                                finalS.fill = E;
                                 break;
                             }
                             if (clr[has]("opacity")) {
-                                node.setAttribute("fill-opacity", (s.fillOpacity =
-                                    (clr.opacity > 1 ? clr.opacity / 100 : clr.opacity)));
+                                finalAttr["fill-opacity"] = finalS.fillOpacity = (clr.opacity > 1 ? clr.opacity / 100 : clr.opacity);
                                 o._.fillOpacityDirty = true;
                             }
                             else if (o._.fillOpacityDirty && R.is(attrs['fill-opacity'], "undefined") &&
                                     R.is(params["fill-opacity"], "undefined")) {
                                 node.removeAttribute('fill-opacity');
-                                s.fillOpacity = E;
+                                finalS.fillOpacity = E;
                                 delete o._.fillOpacityDirty;
                             }
                         case "stroke":
                             clr = R.getRGB(value);
-                            node.setAttribute(att, clr.hex);
-                            s[att] = clr.hex;
+                            finalAttr[att] = clr.hex;
+                            finalS[att] = clr.hex;
                             if (att === "stroke") { // remove stroke opacity when stroke is set to none
                                 if (clr[has]("opacity")) {
-                                    node.setAttribute("stroke-opacity", (s.strokeOpacity = (clr.opacity > 1 ? clr.opacity / 100 : clr.opacity)));
+                                    finalAttr["stroke-opacity"] = finalS.strokeOpacity = (clr.opacity > 1 ? clr.opacity / 100 : clr.opacity);
                                     // $(node, {
                                     //     "stroke-opacity": )
                                     // });
@@ -849,7 +849,7 @@ export default function (R) {
                                 else if (o._.strokeOpacityDirty && R.is(attrs['stroke-opacity'], "undefined") &&
                                         R.is(params["stroke-opacity"], "undefined")) {
                                     node.removeAttribute('stroke-opacity');
-                                    s.strokeOpacity = E;
+                                    finalS.strokeOpacity = E;
                                     delete o._.strokeOpacityDirty;
                                 }
                                 if (o._.arrows) {
@@ -874,8 +874,8 @@ export default function (R) {
                             //     });
                             // }
                             value = value > 1 ? value / 100 : value;
-                            node.setAttribute("opacity",value);
-                            s.opacity = value;
+                            finalAttr.opacity = value;
+                            finalS.opacity = value;
                             break;
                         // fall
                         case "fill-opacity":
@@ -893,12 +893,12 @@ export default function (R) {
                             //     break;
                             // }
                             value = value > 1 ? value / 100 : value;
-                            node.setAttribute("fill-opacity",value);
-                            s.fillOpacity = value;
+                            finalAttr["fill-opacity"] = value;
+                            finalS.fillOpacity = value;
                             break;
                         case "shape-rendering":
                             o.attrs[att] = value = shapeRenderingAttrs[value] || value || 'auto';
-                            node.setAttribute(att, value);
+                            finalAttr[att] = value;
                             node.style.shapeRendering = value;
                             break;
                         default:
@@ -906,12 +906,20 @@ export default function (R) {
                             var cssrule = att.replace(/(\-.)/g, function(w) {
                                 return w.substring(1).toUpperCase();
                             });
-                            s[cssrule] = value;
+                            finalS[cssrule] = value;
                             o._.dirty = 1;
-                            node.setAttribute(att, value);
+                            finalAttr[att] = value;
                             break;
                     }
                 //}
+            }
+            // Finally apply the attributes
+            for (att in finalAttr) {
+                node.setAttribute(att, finalAttr[att]);
+            }
+            // Finally apply the styles
+            for (att in finalS) {
+                s[att] = finalS[att];
             }
             (o.type === 'text' && !params[notToTuneStr]) && tuneText(o, params);
             // s.visibility = vis;

@@ -31,7 +31,6 @@ export default function (R) {
             toInt = parseInt,
             theMSG,
             randomPos = -100,
-            txtElem,
             isIE = /*@cc_on!@*/false || !!document.documentMode,
             math = Math,
             mmax = math.max,
@@ -62,18 +61,7 @@ export default function (R) {
                 crisp: 'crispEdges',
                 precision: 'geometricPrecision'
             },
-            markerCounter = {},
-            // updateReferenceUrl = function () {
-            //     return R._url = R._g.win.location.href.replace(/#.*?$/, E);
-            // },
-            createDummyText = function (paper) {
-                txtElem = paper.txtElem = document.createElementNS(svgNSStr, 'text')
-                txtElem.setAttribute('x', randomPos)
-                txtElem.setAttribute('y', randomPos)
-                theMSG = document.createTextNode('abcdefhiklmnopqrstuvwxyz')
-                txtElem.appendChild(theMSG)
-                document.getElementsByTagName('svg')[0].appendChild(txtElem)
-            };
+            markerCounter = {};
 
         R.cachedFontHeight = {};
 
@@ -1334,73 +1322,6 @@ export default function (R) {
             return fn;
         };
 
-        elproto._getCustomBBox = function(fontFamily, fontSize, valign, lines) {
-            var fn,
-                o = this,
-                node = o.node,
-                hide,
-                isText = (o.type === textStr),
-                cachedFontHeight,
-                txtElem,
-                theText,
-                paper,
-                availableFontFamily,
-                availableFontSize,
-                info,
-                randomPos,
-                bboxY,
-                diff,
-                bbox,
-                bboxHeight;
-            if (isIE && isText) {
-                fn = showRecursively(o);
-            }
-            else {
-                if (node.style.display === "none") {
-                    o.show();
-                    hide = true;
-                }
-            }
-
-            if (isText) {
-                cachedFontHeight = R.cachedFontHeight;
-                paper = this.paper;
-                txtElem = paper.txtElem;
-                availableFontFamily = cachedFontHeight[fontFamily] || (cachedFontHeight[fontFamily] = {});
-                availableFontSize = availableFontFamily[fontSize];
-                randomPos = -100;
-
-                if (!availableFontSize) {
-                    txtElem.setAttribute('style', 'font-family :' + fontFamily + '; font-size :' + fontSize);
-                    bbox = txtElem.getBBox();
-                    availableFontFamily[fontSize] = availableFontSize = [];
-                    availableFontSize.push(bbox.height);
-                    availableFontSize.push(bbox.y);
-                }
-
-                bboxY = availableFontSize[1];
-                bboxHeight = availableFontSize[0];
-                switch (valign) {
-                    case "bottom":
-                        diff = randomPos - bboxY - bboxHeight * lines;
-                        break;
-                    case "top":
-                        diff = randomPos - bboxY;
-                        break;
-                    default :
-                    diff = randomPos - bboxY - bboxHeight/ 2 * lines;
-                };
-
-                bbox = {
-                    height : availableFontSize[0],
-                    diff : diff
-                }
-            }
-
-            isIE && isText ? fn && fn() : hide && o.hide();
-            return bbox;
-        };
-
         elproto._getBBox = function() {
             var fn,
                 o = this,
@@ -1846,7 +1767,6 @@ export default function (R) {
                 id: "raphael-paper-" + paper.id
             });
             paper.clear();
-            createDummyText(paper);
             paper._left = paper._top = 0;
             isFloating && (paper.renderfix = function() {
                 });

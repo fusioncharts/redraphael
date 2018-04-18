@@ -956,7 +956,6 @@ export default function (R) {
                     params[has](lineHeightStr) || params[has](vAignStr))) {
                 return;
             }
-            debugger;
             var a = el.attrs,
                 group = el.parent,
                 node = el.node,

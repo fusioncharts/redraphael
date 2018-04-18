@@ -956,13 +956,15 @@ export default function (R) {
                     params[has](lineHeightStr) || params[has](vAignStr))) {
                 return;
             }
+            debugger;
             var a = el.attrs,
                 group = el.parent,
                 node = el.node,
                 fontSize,
+                oldAttr = el._oldAttr = el._oldAttr || {tspanAttr: {}},
                 lineHeight = toFloat(params[lineHeightStr] || a[lineHeightStr]),
                 actualValign,
-                direction = params.direction || a.direction || (group && group.attrs && group.attrs.direction) || "initial",
+                direction = params.direction || a.direction || (group && group.attrs && group.attrs.direction) || oldAttr.direction || "initial",
                 valign,
                 nodeAttr = {},
                 updateNode,
@@ -977,7 +979,6 @@ export default function (R) {
                 texts,
                 tempIESpan,
                 tspan,
-                oldAttr = el._oldAttr = el._oldAttr || {tspanAttr: {}},
                 updateAlignment,
                 tspans,
                 text;
@@ -1092,7 +1093,8 @@ export default function (R) {
             }
             // Update the dy of the first tspan according to the v-alignment
             if (updateAlignment) {
-                $(node.getElementsByTagName(tSpanStr)[0], {
+                tspan = node.getElementsByTagName(tSpanStr)[0];
+                tspan && $(tspan, {
                     dy: oldAttr.baseLineDiff + (oldAttr.lineCount * oldAttr.lineHeight * oldAttr.valign)
                 });
             }

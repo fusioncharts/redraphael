@@ -19,9 +19,12 @@ export default function (R) {
             fontSizeStr = 'font-size',
             fontFamilyStr = 'font-family',
             textStr = "text",
+            imageStr = "image",
             rtlStr = 'rtl',
             arrayStr = 'array',
             middleStr = 'middle',
+            noneStr = 'none',
+            notToTuneStr = "_do-not-tune",
             IESplTspanAttr = {
                     visibility: "hidden",
                     "font-size": "0px"
@@ -121,7 +124,7 @@ export default function (R) {
 
         var $ = R._createNode = function(el, attr) {
             // Create the element
-            if (typeof el == typeStringSTR) {
+            if (typeof el === typeStringSTR) {
                 el = R._g.doc.createElementNS(svgNSStr, el);
             } 
             // else {
@@ -130,13 +133,13 @@ export default function (R) {
             if (attr) {
                 var key;
                 for (key in attr)
-                    if (attr[has](key)) {
+                    // if (attr[has](key)) {
                         if (xlinkRegx.test(key)) {
                             el.setAttributeNS(xlink, key.replace(xlinkRegx, E), attr[key]);
                         } else {
                             el.setAttribute(key, attr[key]);
                         }
-                    }
+                    // }
             }
             return el;
         },
@@ -226,7 +229,7 @@ export default function (R) {
                     return E;
                 });
                 gradient = gradient.split(/\s*\-\s*/);
-                if (type == "linear") {
+                if (type === "linear") {
                     var angle = gradient.shift(),
                         specs = angle.match(/\((.*)\)/),
                         vector,
@@ -330,7 +333,7 @@ export default function (R) {
             });
         },
         addArrow = function(o, value, isEnd) {
-            if (o.type == "path") {
+            if (o.type === "path") {
                 var values = Str(value).toLowerCase().split("-"),
                 p = o.paper,
                 se = isEnd ? "end" : "start",
@@ -371,7 +374,7 @@ export default function (R) {
                             break;
                     }
                 }
-                if (type == "open") {
+                if (type === "open") {
                     w += 2;
                     h += 2;
                     t += 2;
@@ -519,7 +522,7 @@ export default function (R) {
                 l = i = value.length;
                 widthFactor = predefValue ? width : 1;
 
-                if (value[0] == 'none') {
+                if (value[0] === noneStr) {
                     calculatedValues = value;
                 }
                 else {
@@ -549,32 +552,26 @@ export default function (R) {
                 attrs = o.attrs,
                 paper = o.paper,
                 s = node.style,
-                vis = s.visibility,
+                // vis = s.visibility,
                 i,
                 l;
-            // Convert all the &lt; and &gt; to < and > and if there is any <br/> tag in between &lt; and &gt;
-            // then converting them into <<br/> and ><br/> respectively.
-            if (params && params.text && params.text.replace) {
-                params.text = params.text.replace(/&lt;/g, "<").replace(/&gt;/g, ">")
-                    .replace(/&<br\/>lt;|&l<br\/>t;|&lt<br\/>;/g, "<<br/>")
-                    .replace(/&<br\/>gt;|&g<br\/>t;|&gt<br\/>;/g, "><br/>");
-            }
-            s.visibility = "hidden";
-            if (o.type === "image") {
+
+            // s.visibility = "hidden";
+            if (o.type === imageStr) {
                 LoadRefImage(o, params);
             }
             for (var att in params) {
-                if (params[has](att)) {
-                    if (!R._availableAttrs[has](att)) {
+               // if (params[has](att)) {
+                    if (!(att in R._availableAttrs)) {
                         continue;
                     }
                     var value = params[att];
-                    attrs[att] = value;
                     if (value === E) {
                         delete o.attrs[att];
                         node.removeAttribute(att);
                         continue;
                     }
+                    attrs[att] = value;
                     switch (att) {
                         case "blur":
                             o.blur(value);
@@ -592,8 +589,8 @@ export default function (R) {
                                 hl.appendChild(node);
                                 pn = hl;
                             }
-                            if (att == "target") {
-                                pn.setAttributeNS(xlink, "show", value == "blank" ? "new" : value);
+                            if (att === "target") {
+                                pn.setAttributeNS(xlink, "show", value === "blank" ? "new" : value);
                             } else {
                                 pn.setAttributeNS(xlink, att, value);
                             }
@@ -624,14 +621,14 @@ export default function (R) {
                         case "clip-rect":
                             var rect = !pathClip && Str(value).split(separator);
                             o._.clipispath = !!pathClip;
-                            if (pathClip || rect.length == 4) {
+                            if (pathClip || rect.length === 4) {
                                 o.clip && o.clip.parentNode.parentNode.removeChild(o.clip.parentNode);
                                 var el = $("clipPath"),
                                 rc = $(pathClip ? "path" : "rect");
                                 el.id = R.getElementID(R.createUUID());
                                 $(rc, pathClip ? {
                                     d: value ? attrs['clip-path'] = R._pathToAbsolute(value) : R._availableAttrs.path,
-                                    fill: 'none'
+                                    fill: noneStr
                                 } : {
                                     x: rect[0],
                                     y: rect[1],
@@ -660,7 +657,7 @@ export default function (R) {
                             }
                             break;
                         case "path":
-                            if (o.type == "path") {
+                            if (o.type === "path") {
                                 $(node, {
                                     d: value ? attrs.path = R._pathToAbsolute(value) : R._availableAttrs.path
                                 });
@@ -685,7 +682,7 @@ export default function (R) {
                                 value = -attrs.x - (attrs.width || 0);
                             }
                         case "rx":
-                            if (att == "rx" && o.type == "rect") {
+                            if (att === "rx" && o.type === "rect") {
                                 break;
                             }
                         case "cx":
@@ -707,7 +704,7 @@ export default function (R) {
                                 value = -attrs.y - (attrs.height || 0);
                             }
                         case "ry":
-                            if (att == "ry" && o.type == "rect") {
+                            if (att === "ry" && o.type === "rect") {
                                 break;
                             }
                         case "cy":
@@ -716,18 +713,16 @@ export default function (R) {
                             o._.dirty = 1;
                             break;
                         case "r":
-                            if (o.type == "rect") {
-                                $(node, {
-                                    rx: value,
-                                    ry: value
-                                });
+                            if (o.type === "rect") {
+                                node.setAttribute('rx', value);
+                                node.setAttribute('ry', value);
                             } else {
                                 node.setAttribute(att, value);
                             }
                             o._.dirty = 1;
                             break;
                         case "src":
-                            if (o.type == "image") {
+                            if (o.type === imageStr) {
                                 node.setAttributeNS(xlink, "href", value);
                             }
                             break;
@@ -754,10 +749,10 @@ export default function (R) {
                             addDashes(o, value, params);
                             break;
                         case "fill":
-                            var isURL = Str(value).match(R._ISURL);
+                            var isURL = value && value.match(R._ISURL);
                             if (isURL) {
                                 el = $("pattern");
-                                var ig = $("image");
+                                var ig = $(imageStr);
                                 el.id = R.getElementID(R.createUUID());
                                 $(el, {
                                     x: 0,
@@ -808,13 +803,10 @@ export default function (R) {
                                 //         opacity: attrs.opacity
                                 //     });
                                 !R.is(attrs["fill-opacity"], "undefined") &&
-                                    R.is(params["fill-opacity"], "undefined") &&
-                                    $(node, {
-                                        "fill-opacity": attrs["fill-opacity"]
-                                    });
+                                node.setAttribute("fill-opacity", attrs["fill-opacity"]);
                                 o.gradient && updateGradientReference(o);
                             }
-                            else if ((o.type == "circle" || o.type == "ellipse" || Str(value).charAt() != "r") && addGradientFill(o, value)) {
+                            else if ((o.type === "circle" || o.type === "ellipse" || Str(value).charAt() != "r") && addGradientFill(o, value)) {
                                 // The reason for this block of code is not known, hence it is commented out as it is causeing issues in 
                                 // IE8 browser for gradient color
                                 /*if ("opacity" in attrs || "fill-opacity" in attrs) {
@@ -832,10 +824,8 @@ export default function (R) {
                                 break;
                             }
                             if (clr[has]("opacity")) {
-                                $(node, {
-                                    "fill-opacity": (s.fillOpacity =
-                                        (clr.opacity > 1 ? clr.opacity / 100 : clr.opacity))
-                                });
+                                node.setAttribute("fill-opacity", (s.fillOpacity =
+                                    (clr.opacity > 1 ? clr.opacity / 100 : clr.opacity)));
                                 o._.fillOpacityDirty = true;
                             }
                             else if (o._.fillOpacityDirty && R.is(attrs['fill-opacity'], "undefined") &&
@@ -848,12 +838,12 @@ export default function (R) {
                             clr = R.getRGB(value);
                             node.setAttribute(att, clr.hex);
                             s[att] = clr.hex;
-                            if (att == "stroke") { // remove stroke opacity when stroke is set to none
+                            if (att === "stroke") { // remove stroke opacity when stroke is set to none
                                 if (clr[has]("opacity")) {
-                                    $(node, {
-                                        "stroke-opacity": (s.strokeOpacity =
-                                            (clr.opacity > 1 ? clr.opacity / 100 : clr.opacity))
-                                    });
+                                    node.setAttribute("stroke-opacity", (s.strokeOpacity = (clr.opacity > 1 ? clr.opacity / 100 : clr.opacity)));
+                                    // $(node, {
+                                    //     "stroke-opacity": )
+                                    // });
                                     o._.strokeOpacityDirty = true;
                                 }
                                 else if (o._.strokeOpacityDirty && R.is(attrs['stroke-opacity'], "undefined") &&
@@ -869,7 +859,7 @@ export default function (R) {
                             }
                             break;
                         case "gradient":
-                            (o.type == "circle" || o.type == "ellipse" || Str(value).charAt() != "r") && addGradientFill(o, value);
+                            (o.type === "circle" || o.type === "ellipse" || Str(value).charAt() != "r") && addGradientFill(o, value);
                             break;
                         case 'line-height': // do not apply
                         case 'vertical-align': // do not apply
@@ -884,9 +874,7 @@ export default function (R) {
                             //     });
                             // }
                             value = value > 1 ? value / 100 : value;
-                            $(node, {
-                                "opacity": value
-                            });
+                            node.setAttribute("opacity",value);
                             s.opacity = value;
                             break;
                         // fall
@@ -905,9 +893,7 @@ export default function (R) {
                             //     break;
                             // }
                             value = value > 1 ? value / 100 : value;
-                            $(node, {
-                                "fill-opacity": value
-                            });
+                            node.setAttribute("fill-opacity",value);
                             s.fillOpacity = value;
                             break;
                         case "shape-rendering":
@@ -916,7 +902,7 @@ export default function (R) {
                             node.style.shapeRendering = value;
                             break;
                         default:
-                            att == fontSizeStr && (value = toInt(value, 10) + "px");
+                            att === fontSizeStr && (value = toInt(value, 10) + "px");
                             var cssrule = att.replace(/(\-.)/g, function(w) {
                                 return w.substring(1).toUpperCase();
                             });
@@ -925,10 +911,10 @@ export default function (R) {
                             node.setAttribute(att, value);
                             break;
                     }
-                }
+                //}
             }
-            (o.type === 'text' && !params["_do-not-tune"]) && tuneText(o, params);
-            s.visibility = vis;
+            (o.type === 'text' && !params[notToTuneStr]) && tuneText(o, params);
+            // s.visibility = vis;
         },
         /*
         * Keeps the follower element in sync with the leaders.
@@ -1032,6 +1018,13 @@ export default function (R) {
                 text = R.is(params.text, arrayStr) ? params.text.join('<br>') : params.text;
                 // If it is a new text applied
                 if (text !==  oldAttr.text) {
+                    // Convert all the &lt; and &gt; to < and > and if there is any <br/> tag in between &lt; and &gt;
+                    // then converting them into <<br/> and ><br/> respectively.
+                    if (text && text.replace) {
+                        text = text.replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+                            .replace(/&<br\/>lt;|&l<br\/>t;|&lt<br\/>;/g, "<<br/>")
+                            .replace(/&<br\/>gt;|&g<br\/>t;|&gt<br\/>;/g, "><br/>");
+                    }
                     oldAttr.text = a.text = text;
                     texts = Str(text).split(/\n|<br\s*?\/?>/ig);
                     l = texts.length;
@@ -1472,7 +1465,7 @@ export default function (R) {
                     if (this.attrs[has](key)) {
                         res[key] = this.attrs[key];
                     }
-                res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
+                res.gradient && res.fill === "none" && (res.fill = res.gradient) && delete res.gradient;
                 res.transform = this._.transform;
                 res.visibility = this.node.style.display === "none" ? "hidden" : "visible";
                 return res;
@@ -1481,13 +1474,13 @@ export default function (R) {
                     if (R.is(name, "object")) { // Provided as an object
                         params = name;
                     } else if(R.is(name, typeStringSTR)) { // get one, return the value of the given attribute
-                        if (name == "fill" && this.attrs.fill == "none" && this.attrs.gradient) {
+                        if (name === "fill" && this.attrs.fill === "none" && this.attrs.gradient) {
                             return this.attrs.gradient;
                         }
-                        if (name == "transform") {
+                        if (name === "transform") {
                             return this._.transform;
                         }
-                        if (name == "visibility") {
+                        if (name === "visibility") {
                             return this.node.style.display === "none" ? "hidden" : "visible";
                         }
                     
@@ -1762,12 +1755,12 @@ export default function (R) {
             element._.RefImg = RefImg;
         };
         R._engine.image = function(svg, attrs, group) {
-            var el = $("image"),
+            var el = $(imageStr),
                 src = attrs.src,
                 res = new Element(el, svg, group, true);
 
             res._.group = group || svg;
-            res.type = "image";
+            res.type = imageStr;
             el.setAttribute("preserveAspectRatio", "none");
             // Apply the attribute if provided
             attrs && res.attr(attrs);
@@ -1975,7 +1968,7 @@ export default function (R) {
             this.desc && this.desc.parentNode.removeChild(this.desc);
             this.canvas.parentNode && this.canvas.parentNode.removeChild(this.canvas);
             for (i in this) {
-                this[i] = typeof this[i] == "function" ? R._removedFactory(i) : null;
+                this[i] = typeof this[i] === "function" ? R._removedFactory(i) : null;
             }
             this.removed = true;
         };

@@ -1,4 +1,4 @@
-import {getArrayCopy} from './raphael.lib';
+import {getArrayCopy, dashedAttr2CSSMap} from './raphael.lib';
 
 /**!
 * RedRaphael 1.0.0 - JavaScript Vector Library SVG Module
@@ -116,9 +116,9 @@ export default function (R) {
             // Create the element
             if (typeof el === typeStringSTR) {
                 el = R._g.doc.createElementNS(svgNSStr, el);
-            } 
+            }
             // else {
-                
+
             // }
             if (attr) {
                 var key;
@@ -753,7 +753,7 @@ export default function (R) {
                                     o.gradient && updateGradientReference(o);
                                 }
                                 else if ((o.type === "circle" || o.type === "ellipse" || Str(value).charAt() != "r") && addGradientFill(o, value)) {
-                                    // The reason for this block of code is not known, hence it is commented out as it is causeing issues in 
+                                    // The reason for this block of code is not known, hence it is commented out as it is causeing issues in
                                     // IE8 browser for gradient color
                                     /*if ("opacity" in attrs || "fill-opacity" in attrs) {
                                         var gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\(#|\)$/g, E));
@@ -848,10 +848,7 @@ export default function (R) {
                                 break;
                             default:
                                 att === fontSizeStr && (value = toInt(value, 10) + "px");
-                                var cssrule = att.replace(/(\-.)/g, function(w) {
-                                    return w.substring(1).toUpperCase();
-                                });
-                                finalS[cssrule] = value;
+                                s[dashedAttr2CSSMap[att]] = value;
                                 o._.dirty = 1;
                                 finalAttr[att] = value;
                                 break;
@@ -1370,7 +1367,7 @@ export default function (R) {
                         if (name === "visibility") {
                             return this.node.style.display === "none" ? "hidden" : "visible";
                         }
-                    
+
                         if (name in this.attrs) {
                             return this.attrs[name];
                         } else if (R.is(this.ca[name], "function")) {
@@ -1382,22 +1379,22 @@ export default function (R) {
                     params = {};
                     params[name] = value;
                 }
-                
+
                 if (!R.stopPartialEventPropagation) {
                     for (key in params) {
                         eve("raphael.attr." + key + "." + this.id, this, params[key], key);
                     }
                 }
-    
+
                 // For each param
                 for (key in params) {
                     // check if that is a Custom attribute or not
                     if (this.ca[key] && params[has](key) && R.is(this.ca[key], "function") && !this.ca['_invoked' + key]) {
-    
+
                         this.ca['_invoked'+key] = true; // prevent recursion
                         par = this.ca[key].apply(this, [].concat(params[key]));
                         delete this.ca['_invoked'+key];
-    
+
                         // If the custom attribute create another set of attribute to be updated
                         // Then add them in the attribute list
                         for (subkey in par) {
@@ -1411,15 +1408,15 @@ export default function (R) {
                         finalParam[key] = params[key];
                     }
                 }
-    
+
                 setFillAndStroke(this, finalParam);
-                
+
                 for (i = 0, ii = this.followers.length; i < ii; i++) {
                     follower = this.followers[i];
                     (follower.cb && !follower.cb.call(follower.el, finalParam, this)) ||
                         follower.el.attr(finalParam);
                 }
-    
+
                 return this;
             }
         };

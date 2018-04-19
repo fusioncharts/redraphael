@@ -1,3 +1,5 @@
+import { getArrayCopy } from "../raphael.lib";
+
 /*jslint forin: true, regexp: true, todo: true, white: false, browser: true,
  sloppy: true, white: true, eqeq: false, newcap: true, nomen: true */
 
@@ -26,7 +28,8 @@ _window.Raphael && _window.Raphael.define && function (R) {
 
         // args: sides, cx, cy, r, angle, dip, group
         polypath: function () {
-            return this.path(undefined, R._lastArgIfGroup(arguments));
+            var args = getArrayCopy(arguments);    
+            return this.path(undefined, R._lastArgIfGroup(args));
         },
 
         ca: {

@@ -1,3 +1,5 @@
+import {getArrayCopy} from './raphael.lib';
+
 /**!
 * RedRaphael 1.0.0 - JavaScript Vector Library SVG Module
 * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
@@ -879,7 +881,7 @@ export default function (R) {
             var i,
                 ii,
                 followerElem,
-                args = arguments,
+                args = getArrayCopy(arguments),
                 o = arrayShift.call(args),
                 fnName = arrayShift.call(args);
             for (i = 0, ii = o.followers.length; i < ii; i++) {

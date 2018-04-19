@@ -1,3 +1,5 @@
+import { getArrayCopy } from "../raphael.lib";
+
 // Copyright (c) 2017 Adobe Systems Incorporated. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -65,7 +67,8 @@ export default (function (glob) {
         eve = function (name, scope) {
             var e = events,
                 oldstop = stop,
-                args = Array.prototype.slice.call(arguments, 2),
+                arg = getArrayCopy(arguments),
+                args = Array.prototype.slice.call(arg, 2),
                 listeners = eve.listeners(name),
                 z = 0,
                 f = false,
@@ -255,9 +258,10 @@ export default (function (glob) {
      = (function) possible event handler function
     \*/
     eve.f = function (event) {
-        var attrs = [].slice.call(arguments, 1);
+        var args = getArrayCopy(arguments),
+            attrs = [].slice.call(args, 1);
         return function () {
-            eve.apply(null, [event, null].concat(attrs).concat([].slice.call(arguments, 0)));
+            eve.apply(null, [event, null].concat(attrs).concat([].slice.call(args, 0)));
         };
     };
     /*\

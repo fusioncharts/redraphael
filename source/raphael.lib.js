@@ -2,6 +2,20 @@
 let UNDEF,
     arrayToStr = '[object Array]',
     objectToStr = '[object Object]',
+    // Map of SVG attribute to CSS styles for all attributes that are in R._availableAttrs
+    // but fall through to the default case in R._setFillAndStroke.
+    dashedAttr2CSSMap = {
+        'font-family': 'fontFamily',
+        'font-size': 'fontSize',
+        'text-anchor': 'textAnchor',
+        'font-weight': 'fontWeight',
+        'font-style': 'fontStyle',
+        'stroke-linejoin': 'strokeLinejoin',
+        'stroke-linecap': 'strokeLinecap',
+        'letter-spacing': 'letterSpacing',
+        'stroke-miterlimit': 'strokeMiterlimit',
+        'stroke-opacity': 'strokeOpacity'
+    },
     checkCyclicRef = function (obj, parentArr) {
         var i = parentArr.length,
             bIndex = -1;
@@ -143,4 +157,4 @@ export default function (obj1, obj2, skipUndef, shallow) {
     return obj1;
 }
 
-export {merge, getArrayCopy};
+export {merge, getArrayCopy, dashedAttr2CSSMap};

@@ -560,8 +560,8 @@ export default function (R) {
                 if (att in R._availableAttrs) {
                     value = params[att];
                     if (value === E) {
-                        // delete attrs[att];
-                        // node.removeAttribute(att);
+                        delete attrs[att];
+                        node.removeAttribute(att);
                     } else {
                         attrs[att] = value;
                         switch (att) {

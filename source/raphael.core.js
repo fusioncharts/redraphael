@@ -10,7 +10,7 @@
  */
 
 import eve from './eve/eve';
-import extend, {merge, getArrayCopy} from './raphael.lib';
+import extend, {merge, getArrayCopy, BLANK} from './raphael.lib';
 
 var _win = (typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : null);
 
@@ -1100,8 +1100,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
     };
 
     var cacher = R._cacher = function (f, scope, postprocessor) {
-        var blank = null,
-            start = null,
+        var start = null,
             end = null,
             cache = {},
             count = 0;
@@ -1114,17 +1113,9 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                 cur,
                 prev,
                 next,
-                nextStr,
-                newNode;
+                nextStr;
 
-            /**
-             * Special case. for blank string, store separately.
-             */
-            if (args === '') {
-                blank = blank || f[apply][scope, arg];
-                return postprocessor ? postprocessor(blank) : blank;
-            }
-
+            args = args === '' ? BLANK : args;
             /****** Cache hit ******/
             // If the following condition is true it is a cache hit.
             if (cache[has](args)) {
@@ -1161,7 +1152,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                     start = cur;    // start point to the cur node
                 }
                 
-                return postprocessor ? postprocessor(start.item) : start.item;
+                return start.item;
             }
             
             /******* Cache miss *******/
@@ -1174,12 +1165,9 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                 // Take the second last element
                 newEndStr = cache[end].next;
 
-                // This check is neccessary because newEndStr can be null when cache limit is 1.
-                if (newEndStr !== null) {
-                    newEnd = cache[newEndStr];
-                    // prev pointer of the second last element should be deleted.(Beware! Not doing this step will lead to memory leak)
-                    newEnd.prev = null;
-                }
+                newEnd = cache[newEndStr];
+                // prev pointer of the second last element should be deleted.(Beware! Not doing this step will lead to memory leak)
+                newEnd.prev = null;
 
                 // clear the pointers of the node to be deleted
                 cache[end].next = null;
@@ -1193,23 +1181,22 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
 
             /* ----- insertion process begins here ----- */
             // create a new node
-            cache[args] = newNode = {
+            cache[args] = {
                 next: null,
-                prev: null,
-                item: f[apply](scope, arg)
+                prev: start, // newNode's prev pointer should point to the present start
+                item: postprocessor ? postprocessor(f[apply](scope, arg)) : f[apply](scope, arg)
             };
             // If start is present(start can be null if it is first node), point start.next to the new object
             if (start !== null) {
                 start.next = args; // The present start node will fall second.
-                newNode.prev = start; // newNode's prev pointer should point to the present start
             }
             // finally assign start to the new node as start always points to the node at front
-            start = newNode;
+            start = cache[args];
             // In case newNode is the first node of the cache end will also be null, but it should point to the start.
             (end === null) && (end = args);
             count++;
 
-            return postprocessor ? postprocessor(cache[args].item) : cache[args].item;
+            return cache[args].item;
         }
         return cachedfunction;
     };

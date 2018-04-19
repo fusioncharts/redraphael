@@ -1,5 +1,6 @@
 /* eslint require-jsdoc: 'error', valid-jsdoc: 'error' */
 let UNDEF,
+    BLANK = 'blank',
     arrayToStr = '[object Array]',
     objectToStr = '[object Object]',
     checkCyclicRef = function (obj, parentArr) {
@@ -143,4 +144,4 @@ export default function (obj1, obj2, skipUndef, shallow) {
     return obj1;
 }
 
-export {merge, getArrayCopy};
+export {merge, getArrayCopy, BLANK};

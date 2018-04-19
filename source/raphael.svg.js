@@ -545,7 +545,9 @@ export default function (R) {
                 l,
                 att,
                 finalAttr = {},
-                finalS = {};
+                finalS = {},
+                value,
+                clr;
 
             // s.visibility = "hidden";
             if (o.type === imageStr) {
@@ -554,10 +556,10 @@ export default function (R) {
             for (att in params) {
                // if (params[has](att)) {
                 if (att in R._availableAttrs) {
-                    var value = params[att];
+                    value = params[att];
                     if (value === E) {
-                        delete attrs[att];
-                        node.removeAttribute(att);
+                        // delete attrs[att];
+                        // node.removeAttribute(att);
                     } else {
                         attrs[att] = value;
                         switch (att) {
@@ -736,7 +738,7 @@ export default function (R) {
                                 addDashes(o, value, params);
                                 break;
                             case "fill":
-                                var clr = R.getRGB(value);
+                                clr = R.getRGB(value);
                                 if (!clr.error) {
                                     delete params.gradient;
                                     delete attrs.gradient;

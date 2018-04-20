@@ -2,6 +2,66 @@
 let UNDEF,
     arrayToStr = '[object Array]',
     objectToStr = '[object Object]',
+    // Map of SVG attribute to CSS styles for all attributes that are in R._availableAttrs
+    // but fall through to the default case in R._setFillAndStroke.
+    dashedAttr2CSSMap = {
+        'font-family': 'fontFamily',
+        'font-size': 'fontSize',
+        'text-anchor': 'textAnchor',
+        'font-weight': 'fontWeight',
+        'font-style': 'fontStyle',
+        'stroke-linejoin': 'strokeLinejoin',
+        'stroke-linecap': 'strokeLinecap',
+        'letter-spacing': 'letterSpacing',
+        'stroke-miterlimit': 'strokeMiterlimit',
+        'stroke-opacity': 'strokeOpacity'
+    },
+    loadRefImage = function (element, attrs) {
+        var src = attrs.src,
+            RefImg = element._.RefImg;
+
+        if (!RefImg) {
+            RefImg = element._.RefImg = new Image();
+        }
+
+        if (attrs.src === undefined) {
+            return;
+        }
+        RefImg.src = src;
+        element._.RefImg = RefImg;
+    },
+    /**
+     * Recursively shows the element and stores the visibilties of its parents
+     * in a tree structure for future restoration.
+     * @param {Element} el - Element which is to shown recursively
+     * @return {Function} Function to restore the old visibility state.
+     */
+    showRecursively = function (el) {
+        var origAttrTree = {},
+            currentEl = el,
+            currentNode = origAttrTree,
+            fn = function () {
+                var localEl = el,
+                    localNode = origAttrTree;
+                while (localEl) {
+                    if (localNode._doHide) {
+                        localEl.hide();
+                    }
+                    localEl = localEl.parent;
+                    localNode = localNode.parent;
+                }
+            };
+        while (currentEl) {
+            if (currentEl.node && currentEl.node.style && currentEl.node.style.display === 'none') {
+                currentEl.show();
+                currentNode._doHide = true;
+            }
+            currentEl = currentEl.parent;
+            currentNode.parent = {};
+            currentNode = currentNode.parent;
+        }
+        return fn;
+    },
     checkCyclicRef = function (obj, parentArr) {
         var i = parentArr.length,
             bIndex = -1;
@@ -14,6 +74,13 @@ let UNDEF,
         }
 
         return bIndex;
+    },
+    // Returns a copy of a array
+    getArrayCopy = function (array) {
+        for (var i = 0, len = array.length, arg = new Array(len); i < len; i++) {
+            arg[i] = array[i];
+        }
+        return arg;
     },
     merge = function (obj1, obj2, skipUndef, tgtArr, srcArr) {
         var item,
@@ -136,4 +203,4 @@ export default function (obj1, obj2, skipUndef, shallow) {
     return obj1;
 }
 
-export {merge};
+export {merge, getArrayCopy, dashedAttr2CSSMap, loadRefImage, showRecursively};

@@ -100,7 +100,7 @@ module.exports = function (it, key) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var dP = __webpack_require__(3);
-var createDesc = __webpack_require__(10);
+var createDesc = __webpack_require__(11);
 module.exports = __webpack_require__(4) ? function (object, key, value) {
   return dP.f(object, key, createDesc(1, value));
 } : function (object, key, value) {
@@ -115,7 +115,7 @@ module.exports = __webpack_require__(4) ? function (object, key, value) {
 
 var anObject = __webpack_require__(8);
 var IE8_DOM_DEFINE = __webpack_require__(31);
-var toPrimitive = __webpack_require__(18);
+var toPrimitive = __webpack_require__(19);
 var dP = Object.defineProperty;
 
 exports.f = __webpack_require__(4) ? Object.defineProperty : function defineProperty(O, P, Attributes) {
@@ -136,7 +136,7 @@ exports.f = __webpack_require__(4) ? Object.defineProperty : function defineProp
 /***/ (function(module, exports, __webpack_require__) {
 
 // Thank's IE8 for his funny defineProperty
-module.exports = !__webpack_require__(9)(function () {
+module.exports = !__webpack_require__(10)(function () {
   return Object.defineProperty({}, 'a', { get: function () { return 7; } }).a != 7;
 });
 
@@ -147,7 +147,7 @@ module.exports = !__webpack_require__(9)(function () {
 
 // to indexed object, toObject with fallback for non-array-like ES3 strings
 var IObject = __webpack_require__(49);
-var defined = __webpack_require__(15);
+var defined = __webpack_require__(16);
 module.exports = function (it) {
   return IObject(defined(it));
 };
@@ -157,8 +157,8 @@ module.exports = function (it) {
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var store = __webpack_require__(22)('wks');
-var uid = __webpack_require__(11);
+var store = __webpack_require__(23)('wks');
+var uid = __webpack_require__(12);
 var Symbol = __webpack_require__(0).Symbol;
 var USE_SYMBOL = typeof Symbol == 'function';
 
@@ -172,18 +172,15 @@ $exports.store = store;
 
 /***/ }),
 /* 7 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-module.exports = function (it) {
-  return typeof it === 'object' ? it !== null : typeof it === 'function';
-};
-
+module.exports = { "default": __webpack_require__(42), __esModule: true };
 
 /***/ }),
 /* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isObject = __webpack_require__(7);
+var isObject = __webpack_require__(9);
 module.exports = function (it) {
   if (!isObject(it)) throw TypeError(it + ' is not an object!');
   return it;
@@ -192,6 +189,15 @@ module.exports = function (it) {
 
 /***/ }),
 /* 9 */
+/***/ (function(module, exports) {
+
+module.exports = function (it) {
+  return typeof it === 'object' ? it !== null : typeof it === 'function';
+};
+
+
+/***/ }),
+/* 10 */
 /***/ (function(module, exports) {
 
 module.exports = function (exec) {
@@ -204,7 +210,7 @@ module.exports = function (exec) {
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports) {
 
 module.exports = function (bitmap, value) {
@@ -218,7 +224,7 @@ module.exports = function (bitmap, value) {
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports) {
 
 var id = 0;
@@ -229,7 +235,13 @@ module.exports = function (key) {
 
 
 /***/ }),
-/* 12 */
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = { "default": __webpack_require__(60), __esModule: true };
+
+/***/ }),
+/* 14 */
 /***/ (function(module, exports) {
 
 var g;
@@ -256,13 +268,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = { "default": __webpack_require__(42), __esModule: true };
-
-/***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports) {
 
 // 7.1.4 ToInteger
@@ -274,7 +280,7 @@ module.exports = function (it) {
 
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports) {
 
 // 7.2.1 RequireObjectCoercible(argument)
@@ -285,26 +291,26 @@ module.exports = function (it) {
 
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports) {
 
 module.exports = true;
 
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports) {
 
-var core = module.exports = { version: '2.5.3' };
+var core = module.exports = { version: '2.5.1' };
 if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.1.1 ToPrimitive(input [, PreferredType])
-var isObject = __webpack_require__(7);
+var isObject = __webpack_require__(9);
 // instead of the ES6 spec version, we didn't implement @@toPrimitive case
 // and the second argument - flag - preferred type is a string
 module.exports = function (it, S) {
@@ -318,19 +324,19 @@ module.exports = function (it, S) {
 
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports) {
 
 module.exports = {};
 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // 19.1.2.14 / 15.2.3.14 Object.keys(O)
 var $keys = __webpack_require__(35);
-var enumBugKeys = __webpack_require__(23);
+var enumBugKeys = __webpack_require__(24);
 
 module.exports = Object.keys || function keys(O) {
   return $keys(O, enumBugKeys);
@@ -338,18 +344,18 @@ module.exports = Object.keys || function keys(O) {
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var shared = __webpack_require__(22)('keys');
-var uid = __webpack_require__(11);
+var shared = __webpack_require__(23)('keys');
+var uid = __webpack_require__(12);
 module.exports = function (key) {
   return shared[key] || (shared[key] = uid(key));
 };
 
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var global = __webpack_require__(0);
@@ -361,7 +367,7 @@ module.exports = function (key) {
 
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports) {
 
 // IE 8- don't enum bug keys
@@ -371,7 +377,7 @@ module.exports = (
 
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var def = __webpack_require__(3).f;
@@ -384,26 +390,20 @@ module.exports = function (it, tag, stat) {
 
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports.f = __webpack_require__(6);
 
 
 /***/ }),
-/* 26 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = { "default": __webpack_require__(60), __esModule: true };
-
-/***/ }),
 /* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var global = __webpack_require__(0);
-var core = __webpack_require__(17);
-var LIBRARY = __webpack_require__(16);
-var wksExt = __webpack_require__(25);
+var core = __webpack_require__(18);
+var LIBRARY = __webpack_require__(17);
+var wksExt = __webpack_require__(26);
 var defineProperty = __webpack_require__(3).f;
 module.exports = function (name) {
   var $Symbol = core.Symbol || (core.Symbol = LIBRARY ? {} : global.Symbol || {});
@@ -424,14 +424,14 @@ exports.f = {}.propertyIsEnumerable;
 
 "use strict";
 
-var LIBRARY = __webpack_require__(16);
+var LIBRARY = __webpack_require__(17);
 var $export = __webpack_require__(30);
 var redefine = __webpack_require__(33);
 var hide = __webpack_require__(2);
 var has = __webpack_require__(1);
-var Iterators = __webpack_require__(19);
+var Iterators = __webpack_require__(20);
 var $iterCreate = __webpack_require__(47);
-var setToStringTag = __webpack_require__(24);
+var setToStringTag = __webpack_require__(25);
 var getPrototypeOf = __webpack_require__(54);
 var ITERATOR = __webpack_require__(6)('iterator');
 var BUGGY = !([].keys && 'next' in [].keys()); // Safari has buggy iterators w/o `next`
@@ -455,7 +455,7 @@ module.exports = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCE
   var VALUES_BUG = false;
   var proto = Base.prototype;
   var $native = proto[ITERATOR] || proto[FF_ITERATOR] || DEFAULT && proto[DEFAULT];
-  var $default = (!BUGGY && $native) || getMethod(DEFAULT);
+  var $default = $native || getMethod(DEFAULT);
   var $entries = DEFAULT ? !DEF_VALUES ? $default : getMethod('entries') : undefined;
   var $anyNative = NAME == 'Array' ? proto.entries || $native : $native;
   var methods, key, IteratorPrototype;
@@ -500,7 +500,7 @@ module.exports = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCE
 /***/ (function(module, exports, __webpack_require__) {
 
 var global = __webpack_require__(0);
-var core = __webpack_require__(17);
+var core = __webpack_require__(18);
 var ctx = __webpack_require__(45);
 var hide = __webpack_require__(2);
 var PROTOTYPE = 'prototype';
@@ -566,7 +566,7 @@ module.exports = $export;
 /* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = !__webpack_require__(4) && !__webpack_require__(9)(function () {
+module.exports = !__webpack_require__(4) && !__webpack_require__(10)(function () {
   return Object.defineProperty(__webpack_require__(32)('div'), 'a', { get: function () { return 7; } }).a != 7;
 });
 
@@ -575,7 +575,7 @@ module.exports = !__webpack_require__(4) && !__webpack_require__(9)(function () 
 /* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isObject = __webpack_require__(7);
+var isObject = __webpack_require__(9);
 var document = __webpack_require__(0).document;
 // typeof document.createElement is 'object' in old IE
 var is = isObject(document) && isObject(document.createElement);
@@ -598,8 +598,8 @@ module.exports = __webpack_require__(2);
 // 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
 var anObject = __webpack_require__(8);
 var dPs = __webpack_require__(48);
-var enumBugKeys = __webpack_require__(23);
-var IE_PROTO = __webpack_require__(21)('IE_PROTO');
+var enumBugKeys = __webpack_require__(24);
+var IE_PROTO = __webpack_require__(22)('IE_PROTO');
 var Empty = function () { /* empty */ };
 var PROTOTYPE = 'prototype';
 
@@ -645,7 +645,7 @@ module.exports = Object.create || function create(O, Properties) {
 var has = __webpack_require__(1);
 var toIObject = __webpack_require__(5);
 var arrayIndexOf = __webpack_require__(50)(false);
-var IE_PROTO = __webpack_require__(21)('IE_PROTO');
+var IE_PROTO = __webpack_require__(22)('IE_PROTO');
 
 module.exports = function (object, names) {
   var O = toIObject(object);
@@ -685,7 +685,7 @@ exports.f = Object.getOwnPropertySymbols;
 
 // 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
 var $keys = __webpack_require__(35);
-var hiddenKeys = __webpack_require__(23).concat('length', 'prototype');
+var hiddenKeys = __webpack_require__(24).concat('length', 'prototype');
 
 exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
   return $keys(O, hiddenKeys);
@@ -750,11 +750,11 @@ module.exports = exports['default'];
 
 exports.__esModule = true;
 
-var _iterator = __webpack_require__(13);
+var _iterator = __webpack_require__(7);
 
 var _iterator2 = _interopRequireDefault(_iterator);
 
-var _symbol = __webpack_require__(26);
+var _symbol = __webpack_require__(13);
 
 var _symbol2 = _interopRequireDefault(_symbol);
 
@@ -7777,7 +7777,7 @@ elproto.crisp = function () {
         attrs = o.attrs,
         key,
         attr = {},
-        values = o.attr(['x', 'y', 'width', 'height', 'stroke-width']);
+        values = o.attr();
 
     values = R.crispBound(values.x, values.y, values.width, values.height, values['stroke-width']);
 
@@ -7854,7 +7854,7 @@ R.define = function (name, init, ca, fn, e, data) {
                 if (args.length) {
                     // If name attribute is present then the received argument is an object with the customAttribute and other
                     // common attributes. Else it is just the customAttributes that is to be applied.
-                    args[0][name] ? element.attr(arraySlice.call(args)) : element.attr(name, arraySlice.call(args));
+                    args[0][name] ? element.attr.apply(element, args) : element.attr(name, args[0]);
                 }
             }
         }
@@ -7903,7 +7903,7 @@ _eve3['default'].on("raphael.DOMload", function () {
 
 exports['default'] = R;
 module.exports = exports['default'];
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14)))
 
 /***/ }),
 /* 42 */
@@ -7911,7 +7911,7 @@ module.exports = exports['default'];
 
 __webpack_require__(43);
 __webpack_require__(56);
-module.exports = __webpack_require__(25).f('iterator');
+module.exports = __webpack_require__(26).f('iterator');
 
 
 /***/ }),
@@ -7942,8 +7942,8 @@ __webpack_require__(29)(String, 'String', function (iterated) {
 /* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var toInteger = __webpack_require__(14);
-var defined = __webpack_require__(15);
+var toInteger = __webpack_require__(15);
+var defined = __webpack_require__(16);
 // true  -> String#at
 // false -> String#codePointAt
 module.exports = function (TO_STRING) {
@@ -8004,8 +8004,8 @@ module.exports = function (it) {
 "use strict";
 
 var create = __webpack_require__(34);
-var descriptor = __webpack_require__(10);
-var setToStringTag = __webpack_require__(24);
+var descriptor = __webpack_require__(11);
+var setToStringTag = __webpack_require__(25);
 var IteratorPrototype = {};
 
 // 25.1.2.1.1 %IteratorPrototype%[@@iterator]()
@@ -8023,7 +8023,7 @@ module.exports = function (Constructor, NAME, next) {
 
 var dP = __webpack_require__(3);
 var anObject = __webpack_require__(8);
-var getKeys = __webpack_require__(20);
+var getKeys = __webpack_require__(21);
 
 module.exports = __webpack_require__(4) ? Object.defineProperties : function defineProperties(O, Properties) {
   anObject(O);
@@ -8082,7 +8082,7 @@ module.exports = function (IS_INCLUDES) {
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.1.15 ToLength
-var toInteger = __webpack_require__(14);
+var toInteger = __webpack_require__(15);
 var min = Math.min;
 module.exports = function (it) {
   return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
@@ -8093,7 +8093,7 @@ module.exports = function (it) {
 /* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var toInteger = __webpack_require__(14);
+var toInteger = __webpack_require__(15);
 var max = Math.max;
 var min = Math.min;
 module.exports = function (index, length) {
@@ -8117,7 +8117,7 @@ module.exports = document && document.documentElement;
 // 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
 var has = __webpack_require__(1);
 var toObject = __webpack_require__(55);
-var IE_PROTO = __webpack_require__(21)('IE_PROTO');
+var IE_PROTO = __webpack_require__(22)('IE_PROTO');
 var ObjectProto = Object.prototype;
 
 module.exports = Object.getPrototypeOf || function (O) {
@@ -8134,7 +8134,7 @@ module.exports = Object.getPrototypeOf || function (O) {
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.1.13 ToObject(argument)
-var defined = __webpack_require__(15);
+var defined = __webpack_require__(16);
 module.exports = function (it) {
   return Object(defined(it));
 };
@@ -8147,7 +8147,7 @@ module.exports = function (it) {
 __webpack_require__(57);
 var global = __webpack_require__(0);
 var hide = __webpack_require__(2);
-var Iterators = __webpack_require__(19);
+var Iterators = __webpack_require__(20);
 var TO_STRING_TAG = __webpack_require__(6)('toStringTag');
 
 var DOMIterables = ('CSSRuleList,CSSStyleDeclaration,CSSValueList,ClientRectList,DOMRectList,DOMStringList,' +
@@ -8173,7 +8173,7 @@ for (var i = 0; i < DOMIterables.length; i++) {
 
 var addToUnscopables = __webpack_require__(58);
 var step = __webpack_require__(59);
-var Iterators = __webpack_require__(19);
+var Iterators = __webpack_require__(20);
 var toIObject = __webpack_require__(5);
 
 // 22.1.3.4 Array.prototype.entries()
@@ -8230,7 +8230,7 @@ __webpack_require__(61);
 __webpack_require__(67);
 __webpack_require__(68);
 __webpack_require__(69);
-module.exports = __webpack_require__(17).Symbol;
+module.exports = __webpack_require__(18).Symbol;
 
 
 /***/ }),
@@ -8246,25 +8246,24 @@ var DESCRIPTORS = __webpack_require__(4);
 var $export = __webpack_require__(30);
 var redefine = __webpack_require__(33);
 var META = __webpack_require__(62).KEY;
-var $fails = __webpack_require__(9);
-var shared = __webpack_require__(22);
-var setToStringTag = __webpack_require__(24);
-var uid = __webpack_require__(11);
+var $fails = __webpack_require__(10);
+var shared = __webpack_require__(23);
+var setToStringTag = __webpack_require__(25);
+var uid = __webpack_require__(12);
 var wks = __webpack_require__(6);
-var wksExt = __webpack_require__(25);
+var wksExt = __webpack_require__(26);
 var wksDefine = __webpack_require__(27);
 var enumKeys = __webpack_require__(63);
 var isArray = __webpack_require__(64);
 var anObject = __webpack_require__(8);
-var isObject = __webpack_require__(7);
 var toIObject = __webpack_require__(5);
-var toPrimitive = __webpack_require__(18);
-var createDesc = __webpack_require__(10);
+var toPrimitive = __webpack_require__(19);
+var createDesc = __webpack_require__(11);
 var _create = __webpack_require__(34);
 var gOPNExt = __webpack_require__(65);
 var $GOPD = __webpack_require__(66);
 var $DP = __webpack_require__(3);
-var $keys = __webpack_require__(20);
+var $keys = __webpack_require__(21);
 var gOPD = $GOPD.f;
 var dP = $DP.f;
 var gOPN = gOPNExt.f;
@@ -8391,7 +8390,7 @@ if (!USE_NATIVE) {
   __webpack_require__(28).f = $propertyIsEnumerable;
   __webpack_require__(37).f = $getOwnPropertySymbols;
 
-  if (DESCRIPTORS && !__webpack_require__(16)) {
+  if (DESCRIPTORS && !__webpack_require__(17)) {
     redefine(ObjectProto, 'propertyIsEnumerable', $propertyIsEnumerable, true);
   }
 
@@ -8449,14 +8448,15 @@ $JSON && $export($export.S + $export.F * (!USE_NATIVE || $fails(function () {
   return _stringify([S]) != '[null]' || _stringify({ a: S }) != '{}' || _stringify(Object(S)) != '{}';
 })), 'JSON', {
   stringify: function stringify(it) {
+    if (it === undefined || isSymbol(it)) return; // IE8 returns string on undefined
     var args = [it];
     var i = 1;
     var replacer, $replacer;
     while (arguments.length > i) args.push(arguments[i++]);
-    $replacer = replacer = args[1];
-    if (!isObject(replacer) && it === undefined || isSymbol(it)) return; // IE8 returns string on undefined
-    if (!isArray(replacer)) replacer = function (key, value) {
-      if (typeof $replacer == 'function') value = $replacer.call(this, key, value);
+    replacer = args[1];
+    if (typeof replacer == 'function') $replacer = replacer;
+    if ($replacer || !isArray(replacer)) replacer = function (key, value) {
+      if ($replacer) value = $replacer.call(this, key, value);
       if (!isSymbol(value)) return value;
     };
     args[1] = replacer;
@@ -8478,15 +8478,15 @@ setToStringTag(global.JSON, 'JSON', true);
 /* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var META = __webpack_require__(11)('meta');
-var isObject = __webpack_require__(7);
+var META = __webpack_require__(12)('meta');
+var isObject = __webpack_require__(9);
 var has = __webpack_require__(1);
 var setDesc = __webpack_require__(3).f;
 var id = 0;
 var isExtensible = Object.isExtensible || function () {
   return true;
 };
-var FREEZE = !__webpack_require__(9)(function () {
+var FREEZE = !__webpack_require__(10)(function () {
   return isExtensible(Object.preventExtensions({}));
 });
 var setMeta = function (it) {
@@ -8538,7 +8538,7 @@ var meta = module.exports = {
 /***/ (function(module, exports, __webpack_require__) {
 
 // all enumerable object keys, includes symbols
-var getKeys = __webpack_require__(20);
+var getKeys = __webpack_require__(21);
 var gOPS = __webpack_require__(37);
 var pIE = __webpack_require__(28);
 module.exports = function (it) {
@@ -8595,9 +8595,9 @@ module.exports.f = function getOwnPropertyNames(it) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var pIE = __webpack_require__(28);
-var createDesc = __webpack_require__(10);
+var createDesc = __webpack_require__(11);
 var toIObject = __webpack_require__(5);
-var toPrimitive = __webpack_require__(18);
+var toPrimitive = __webpack_require__(19);
 var has = __webpack_require__(1);
 var IE8_DOM_DEFINE = __webpack_require__(31);
 var gOPD = Object.getOwnPropertyDescriptor;
@@ -9089,7 +9089,7 @@ exports["default"] = function (glob) {
 }(typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : null);
 
 module.exports = exports["default"];
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14)))
 
 /***/ }),
 /* 71 */
@@ -9101,11 +9101,11 @@ module.exports = exports["default"];
 exports.__esModule = true;
 exports.merge = undefined;
 
-var _iterator = __webpack_require__(13);
+var _iterator = __webpack_require__(7);
 
 var _iterator2 = _interopRequireDefault(_iterator);
 
-var _symbol = __webpack_require__(26);
+var _symbol = __webpack_require__(13);
 
 var _symbol2 = _interopRequireDefault(_symbol);
 
@@ -10157,7 +10157,7 @@ exports['default'] = function (R) {
 module.exports = exports['default']; /**
                                       * All non fusincharts related functionalities of redRaphael is listed here
                                       */
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(14)))
 
 /***/ }),
 /* 73 */
@@ -10167,6 +10167,26 @@ module.exports = exports['default']; /**
 
 
 exports.__esModule = true;
+
+var _iterator = __webpack_require__(7);
+
+var _iterator2 = _interopRequireDefault(_iterator);
+
+var _symbol = __webpack_require__(13);
+
+var _symbol2 = _interopRequireDefault(_symbol);
+
+var _typeof = typeof _symbol2["default"] === "function" && typeof _iterator2["default"] === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof _symbol2["default"] === "function" && obj.constructor === _symbol2["default"] && obj !== _symbol2["default"].prototype ? "symbol" : typeof obj; }; /**
+                                                                                                                                                                                                                                                                                                                                        * RedRaphael 1.0.0 - JavaScript Vector Library SVG Module
+                                                                                                                                                                                                                                                                                                                                        * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
+                                                                                                                                                                                                                                                                                                                                        *
+                                                                                                                                                                                                                                                                                                                                        * Raphael 2.1.0 - JavaScript Vector Library SVG Module
+                                                                                                                                                                                                                                                                                                                                        * Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
+                                                                                                                                                                                                                                                                                                                                        * Copyright © 2008-2012 Sencha Labs <http://sencha.com>
+                                                                                                                                                                                                                                                                                                                                        *
+                                                                                                                                                                                                                                                                                                                                        * Licensed under the MIT license.
+                                                                                                                                                                                                                                                                                                                                        */
+// Define _window as window object in case of indivual file inclusion.
 
 exports["default"] = function (R) {
     if (R.svg) {
@@ -10221,24 +10241,50 @@ exports["default"] = function (R) {
         };
 
         var has = "hasOwnProperty",
+            tSpanStr = "tspan",
+            vAignStr = "vertical-align",
+            lineHeightStr = "line-height",
+            fontSizeStr = 'font-size',
+            fontFamilyStr = 'font-family',
+            textStr = "text",
+            rtlStr = 'rtl',
+            arrayStr = 'array',
+            middleStr = 'middle',
+            pxStr = "px",
+            initialStr = "initial",
+            brStr = '<br>',
+            IESplTspanAttr = {
+            visibility: "hidden",
+            "font-size": "0px"
+        },
             Str = String,
             toFloat = parseFloat,
             toInt = parseInt,
             theMSG,
             randomPos = -100,
-            txtElem,
+            vAlignMultiplier = {
+            top: 0,
+            bottom: -1,
+            middle: -0.5
+        },
+            isIE = /*@cc_on!@*/false || !!document.documentMode,
             math = Math,
             mmax = math.max,
             abs = math.abs,
             pow = math.pow,
             sqrt = math.sqrt,
+            xlinkRegx = /^xlink\:/,
             separator = /[, ]+/,
+            textBreakRegx = /\n|<br\s*?\/?>/i,
+            ltgtbrRegex = /&lt|&gt|<br/i,
             arrayShift = Array.prototype.shift,
             zeroStrokeFix = !!(/AppleWebKit/.test(R._g.win.navigator.userAgent) && (!/Chrome/.test(R._g.win.navigator.userAgent) || R._g.win.navigator.appVersion.match(/Chrome\/(\d+)\./)[1] < 29)),
             eve = R.eve,
             E = "",
             S = " ",
             xlink = "http://www.w3.org/1999/xlink",
+            svgNSStr = "http://www.w3.org/2000/svg",
+            typeStringSTR = "string",
             markers = {
             block: "M5,0 0,2.5 5,5z",
             classic: "M5,0 0,2.5 5,5 3.5,3 3.5,2z",
@@ -10251,19 +10297,7 @@ exports["default"] = function (R) {
             crisp: 'crispEdges',
             precision: 'geometricPrecision'
         },
-            markerCounter = {},
-
-        // updateReferenceUrl = function () {
-        //     return R._url = R._g.win.location.href.replace(/#.*?$/, E);
-        // },
-        createDummyText = function createDummyText(paper) {
-            txtElem = paper.txtElem = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            txtElem.setAttribute('x', randomPos);
-            txtElem.setAttribute('y', randomPos);
-            theMSG = document.createTextNode('abcdefhiklmnopqrstuvwxyz');
-            txtElem.appendChild(theMSG);
-            document.getElementsByTagName('svg')[0].appendChild(txtElem);
-        };
+            markerCounter = {};
 
         R.cachedFontHeight = {};
 
@@ -10311,21 +10345,24 @@ exports["default"] = function (R) {
         };
 
         var $ = R._createNode = function (el, attr) {
+            // Create the element
+            if ((typeof el === "undefined" ? "undefined" : _typeof(el)) === typeStringSTR) {
+                el = R._g.doc.createElementNS(svgNSStr, el);
+            }
+            // else {
+
+            // }
             if (attr) {
-                if (typeof el == "string") {
-                    el = $(el);
-                }
-                for (var key in attr) {
+                var key;
+                for (key in attr) {
                     if (attr[has](key)) {
-                        if (key.substring(0, 6) == "xlink:") {
-                            el.setAttributeNS(xlink, key.substring(6), Str(attr[key]));
+                        if (xlinkRegx.test(key)) {
+                            el.setAttributeNS(xlink, key.replace(xlinkRegx, E), attr[key]);
                         } else {
-                            el.setAttribute(key, Str(attr[key]));
+                            el.setAttribute(key, attr[key]);
                         }
                     }
                 }
-            } else {
-                el = R._g.doc.createElementNS("http://www.w3.org/2000/svg", el);
             }
             return el;
         },
@@ -10605,7 +10642,7 @@ exports["default"] = function (R) {
                         });
                         use = $($("use"), {
                             "xlink:href": "#" + pathId,
-                            transform: (isEnd ? "rotate(180 " + w / 2 + " " + h / 2 + ") " : E) + "scale(" + w / t + "," + h / t + ")",
+                            transform: (isEnd ? "rotate(180 " + w / 2 + S + h / 2 + ") " : E) + "scale(" + w / t + "," + h / t + ")",
                             "stroke-width": (1 / ((w / t + h / t) / 2)).toFixed(4)
                         });
                         marker.appendChild(use);
@@ -10634,7 +10671,7 @@ exports["default"] = function (R) {
                     o._.arrows[se + "Marker"] = markerId;
                     o._.arrows[se + "dx"] = delta;
                     o._.arrows[se + "Type"] = type;
-                    o._.arrows[se + "String"] = value;
+                    o._.arrows[se + typeStringSTR] = value;
                 } else {
                     if (isEnd) {
                         from = o._.arrows.startdx * stroke || 0;
@@ -10650,7 +10687,7 @@ exports["default"] = function (R) {
                     delete o._.arrows[se + "Marker"];
                     delete o._.arrows[se + "dx"];
                     delete o._.arrows[se + "Type"];
-                    delete o._.arrows[se + "String"];
+                    delete o._.arrows[se + typeStringSTR];
                 }
                 for (attr in markerCounter) {
                     if (markerCounter[has](attr) && !markerCounter[attr]) {
@@ -10713,20 +10750,14 @@ exports["default"] = function (R) {
                     }
                 }
 
-                if (R.is(value, 'array')) {
+                if (R.is(value, arrayStr)) {
                     $(o.node, {
                         "stroke-dasharray": calculatedValues.join(",")
                     });
                 }
             }
         },
-            applyCustomAttributes = function applyCustomAttributes(o, attrs) {
-            for (var key in attrs) {
-                eve("raphael.attr." + key + "." + o.id, o, attrs[key], key);
-                o.ca[key] && o.attr(key, attrs[key]);
-            }
-        },
-            setFillAndStroke = R._setFillAndStroke = function (o, params, group) {
+            setFillAndStroke = R._setFillAndStroke = function (o, params) {
             if (!o.paper.canvas) {
                 return;
             }
@@ -10737,11 +10768,6 @@ exports["default"] = function (R) {
                 vis = s.visibility,
                 i,
                 l;
-            // Convert all the &lt; and &gt; to < and > and if there is any <br/> tag in between &lt; and &gt;
-            // then converting them into <<br/> and ><br/> respectively.
-            if (params && params.text && params.text.replace) {
-                params.text = params.text.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&<br\/>lt;|&l<br\/>t;|&lt<br\/>;/g, "<<br/>").replace(/&<br\/>gt;|&g<br\/>t;|&gt<br\/>;/g, "><br/>");
-            }
             s.visibility = "hidden";
             if (o.type === "image") {
                 LoadRefImage(o, params);
@@ -10753,7 +10779,7 @@ exports["default"] = function (R) {
                     }
                     var value = params[att];
                     attrs[att] = value;
-                    if (value === '') {
+                    if (value === E) {
                         delete o.attrs[att];
                         node.removeAttribute(att);
                         continue;
@@ -10791,7 +10817,7 @@ exports["default"] = function (R) {
                             o.transform(value);
                             break;
                         case "rotation":
-                            if (R.is(value, "array")) {
+                            if (R.is(value, arrayStr)) {
                                 o.rotate.apply(o, value);
                             } else {
                                 o.rotate(value);
@@ -10887,6 +10913,10 @@ exports["default"] = function (R) {
                                 break;
                             }
                         case "y":
+                            // For text don't apply y attribute as it will be applied during tuneText
+                            if (o.type === textStr) {
+                                break;
+                            }
                             if (attrs.fy) {
                                 value = -attrs.y - (attrs.height || 0);
                             }
@@ -11093,7 +11123,7 @@ exports["default"] = function (R) {
                             node.style.shapeRendering = value;
                             break;
                         default:
-                            att == "font-size" && (value = toInt(value, 10) + "px");
+                            att == fontSizeStr && (value = toInt(value, 10) + pxStr);
                             var cssrule = att.replace(/(\-.)/g, function (w) {
                                 return w.substring(1).toUpperCase();
                             });
@@ -11104,7 +11134,7 @@ exports["default"] = function (R) {
                     }
                 }
             }
-            o.type === 'text' && !params["_do-not-tune"] && tuneText(o, params, group);
+            o.type === 'text' && !params["_do-not-tune"] && tuneText(o, params);
             s.visibility = vis;
         },
 
@@ -11128,116 +11158,202 @@ exports["default"] = function (R) {
             }
         },
             leading = 1.2,
-            tuneText = function tuneText(el, params, group) {
-            if (el.type != "text" || !(params[has]("text") || params[has]("font") || params[has]("font-size") || params[has]("x") || params[has]("y") || params[has]("line-height") || params[has]("vertical-align"))) {
+            tuneText = function tuneText(el, params) {
+            // If there is no effective change in new attributes then ignore
+            if (el.type != textStr || !(params[has](textStr) || params[has]("font") || params[has](fontSizeStr) || params[has]("x") || params[has]("y") || params[has](lineHeightStr) || params[has](vAignStr))) {
                 return;
             }
             var a = el.attrs,
+                group = el.parent,
                 node = el.node,
-                computedStyle = node.firstChild && R._g.doc.defaultView.getComputedStyle(node.firstChild, E),
-                fontSize = params['fontSize'] || params['font-size'] || a['font-size'] || group && group.attrs.fontSize,
-                lineHeight = toFloat(params['line-height'] || a['line-height']) || fontSize * leading,
-                actualValign = a[has]("vertical-align") ? a["vertical-align"] : "middle",
-                direction = params["direction"] || group && group.attrs.direction || "initial",
-                isIE = /*@cc_on!@*/false || !!document.documentMode,
+                fontSize,
+                oldAttr = el._oldAttr = el._oldAttr || { baseLineDiff: 8, valign: -0.5 },
+                // Store all the attributes that are getting applied. This will help us to apply deferential information only.
+            lineHeight = toFloat(params[lineHeightStr] || a[lineHeightStr]),
+                actualValign,
+                direction = params.direction || a.direction || group && group.attrs && group.attrs.direction || oldAttr.direction || initialStr,
                 valign,
-                fontFamily = params['fontFamily'] || params['font-family'] || a['font-family'] || group && group.attrs.fontFamily || 'Verdana,sans';
+                updateNode = false,
+                tspanAttr,
+                updateTspan = false,
+                i,
+                l,
+                ii,
 
-            fontSize = fontSize === undefined ? lineHeight / 1.2 || 10 : fontSize.toString().replace(/px/, '');
+            // For rtl text in IE there is a blank tspan to fix RTL rendering issues in IE.
+            // So there will twice the amount of tSpan
+            j = !isIE && direction === rtlStr ? 2 : 1,
+                texts,
+                tempIESpan,
+                tspan,
+                updateAlignment = false,
+                tspans,
+                aaaa,
+                text,
+                textChanged = false,
+                removeAllChild = !!(!isIE && oldAttr.direction && direction !== oldAttr.direction);
 
-            if (isNaN(lineHeight)) {
+            oldAttr.direction = direction;
+
+            // If line height is not valid (0, NaN, undefuned), then derive it from fontSize
+            if (!lineHeight) {
+                fontSize = params.fontSize || params[fontSizeStr] || a[fontSizeStr] || group && group.attrs && group.attrs.fontSize;
+                fontSize = fontSize ? fontSize.toString().replace(pxStr, E) : 10;
                 lineHeight = fontSize * leading;
             }
-
-            if (R.is(params.text, 'array')) {
-                params.text = params.text.join('<br>');
+            // If the containing text got changed
+            if (params[has](textStr)) {
+                // If the text is an arra then join with <br>
+                text = R.is(params.text, arrayStr) ? params.text.join(brStr) : params.text;
+                // If it is a new text applied
+                if (text !== oldAttr.text) {
+                    textChanged = true;
+                    // Convert all the &lt; and &gt; to < and > and if there is any <br/> tag in between &lt; and &gt;
+                    // then converting them into <<br/> and ><br/> respectively.
+                    if (text && ltgtbrRegex.test(text)) {
+                        text = text.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&<br\/>lt;|&l<br\/>t;|&lt<br\/>;/g, "<<br/>").replace(/&<br\/>gt;|&g<br\/>t;|&gt<br\/>;/g, "><br/>");
+                    }
+                    oldAttr.text = a.text = text;
+                    if (textBreakRegx.test(text)) {
+                        // if multiline text
+                        if (oldAttr.noTSpan) {
+                            // previously it was single line
+                            oldAttr.noTSpan = !(removeAllChild = true);
+                        }
+                        texts = Str(text).split(textBreakRegx);
+                        l = texts.length;
+                    } else {
+                        // single line
+                        if (oldAttr.noTSpan !== undefined) {
+                            removeAllChild = true;
+                        }
+                        oldAttr.noTSpan = true; // Always remove old text node
+                        l = 1;
+                    }
+                    // if no if lines are changed
+                    if (oldAttr.lineCount !== l) {
+                        oldAttr.lineCount = l;
+                        updateAlignment = true;
+                    }
+                }
             }
 
-            valign = actualValign === 'top' ? -0.5 : actualValign === 'bottom' ? 0.5 : 0;
+            if (lineHeight !== oldAttr.lineHeight) {
+                // lineHeight change
+                oldAttr.lineHeight = lineHeight;
+                oldAttr.baseLineDiff = lineHeight * 0.75; //Approximate calculation
+                updateAlignment = true;
+            }
 
-            if (params[has]("text") && (params.text !== a.text || el._textdirty)) {
-                a.text = params.text;
+            // If the text was RTL earlier and now changed or vice versa
+            if (removeAllChild) {
+                // remove all children
                 while (node.firstChild) {
                     node.removeChild(node.firstChild);
                 }
-                var texts = Str(params.text).split(/\n|<br\s*?\/?>/ig),
-                    tspans = [],
-                    tspan;
-                for (var i = 0, ii = texts.length; i < ii; i++) {
-                    tspan = $("tspan");
-                    if (i) {
-                        $(tspan, {
-                            dy: lineHeight,
-                            x: a.x
-                        });
-                    } else {
-                        $(tspan, {
-                            dy: lineHeight * texts.length * valign,
-                            x: a.x
-                        });
-                    }
-                    if (!texts[i]) {
-                        // preserve blank lines
-                        tspan.setAttributeNS("http://www.w3.org/XML/1998/namespace", "xml:space", "preserve");
-                        texts[i] = " ";
-                    }
-                    tspan.appendChild(R._g.doc.createTextNode(texts[i]));
-                    node.appendChild(tspan);
-                    tspans[i] = tspan;
+            }
 
-                    if (!isIE && direction === "rtl" && i < ii - 1) {
-                        tspan = $("tspan");
-                        $(tspan, {
-                            visibility: "hidden",
-                            "font-size": "0px"
-                        });
-                        tspan.appendChild(R._g.doc.createTextNode("i"));
-                        node.appendChild(tspan);
+            // ** If multiline text mode
+            if (oldAttr.lineCount > 1) {
+                tspanAttr = {};
+                if (!oldAttr.tspanAttr) {
+                    oldAttr.tspanAttr = {};
+                    oldAttr.tspan0Attr = {};
+                }
+                // If the dy needs to be changed
+                if (oldAttr.tspanAttr.dy !== oldAttr.lineHeight) {
+                    oldAttr.tspanAttr.dy = tspanAttr.dy = oldAttr.lineHeight;
+                    updateTspan = true;
+                }
+
+                // if x is getting changed
+                if (params[has]("x") && oldAttr.tspanAttr.x !== params.x) {
+                    // X change
+                    // If the x is getting changed, then the tspan need to be updated
+                    // Note: we don't need to update the node as it is already updated during setFillAndStroke
+                    oldAttr.tspan0Attr.x = oldAttr.tspanAttr.x = tspanAttr.x = a.x;
+                    updateTspan = true;
+                }
+
+                // Note for the first tspan (i === 0), we will add only the x attribute. No dy
+                // If the containing text got changed
+                if (textChanged) {
+                    tspans = node.getElementsByTagName(tSpanStr);
+                    for (i = 0; i < l; i++) {
+                        if (tspan = tspans[i * j]) {
+                            // If already there is a tspan then remove the text
+                            tspan.innerHTML = E;
+                            if (updateTspan) {
+                                // If update required, update here
+                                $(tspan, i ? tspanAttr : oldAttr.tspan0Attr);
+                            }
+                        } else {
+                            // Else create a new span
+                            tspan = $(tSpanStr, i ? oldAttr.tspanAttr : oldAttr.tspan0Attr);
+                            node.appendChild(tspan);
+                            // Special fix for RTL texts in IE-SVG browsers
+                            if (!isIE && direction === rtlStr) {
+                                tempIESpan = $(tSpanStr, IESplTspanAttr);
+                                tempIESpan.appendChild(R._g.doc.createTextNode("i"));
+                                node.appendChild(tempIESpan);
+                            }
+                        }
+                        // If it is a blank line, preserve it
+                        if (!texts[i]) {
+                            tspan.setAttributeNS("http://www.w3.org/XML/1998/namespace", "xml:space", "preserve");
+                            texts[i] = S;
+                        }
+                        // create and append the text node
+                        tspan.appendChild(R._g.doc.createTextNode(texts[i]));
+                    }
+
+                    ii = l * j;
+                    // If there are already more tspan than required, then remove the extra tspans
+                    if (tspans.length > ii) {
+                        for (i = tspans.length - 1; i >= ii; i -= 1) {
+                            node.removeChild(tspans[i]);
+                        }
                     }
                 }
-                el._textdirty = false;
-            } else {
-                tspans = node.getElementsByTagName("tspan");
-                var obj,
-                    numDummyTspans = 0;
-
-                for (i = 0, ii = tspans.length; i < ii; i++) {
-                    tspan = tspans[i];
-                    obj = tspan.attributes[0];
-
-                    if (obj && (obj.name === "visibility" || obj.nodeName === "visibility") && (obj.value === "hidden" || obj.nodeValue === "hidden")) {
-                        continue;
-                    }
-
-                    if (i) {
-                        $(tspan, {
-                            dy: lineHeight,
-                            x: a.x
-                        });
-                    } else {
-                        obj = tspans[1] && tspans[1].attributes[0];
-                        if (obj && (obj.name === "visibility" || obj.nodeName === "visibility") && (obj.value === "hidden" || obj.nodeValue === "hidden")) {
-                            numDummyTspans = math.floor(tspans.length * 0.5);
+                // else if the tspans needs to be updated
+                else if (updateTspan) {
+                        tspans = node.getElementsByTagName(tSpanStr); // @note: don't count on tspan, rather store the previous count
+                        ii = tspans.length;
+                        for (i = 0; i < ii; i += j) {
+                            $(tspans[i], i ? tspanAttr : oldAttr.tspan0Attr);
                         }
-
-                        $(tspans[0], {
-                            dy: lineHeight * (tspans.length - numDummyTspans) * valign,
-                            x: a.x
-                        });
                     }
+            } else if (textChanged) {
+                // ** single line mode
+                // create and append the text node
+                node.appendChild(R._g.doc.createTextNode(text));
+            }
+
+            if (params[vAignStr]) {
+                // vAlign change
+                valign = vAlignMultiplier[a[vAignStr]] || 0; // default v-alignment is middle but for wrong alignment value it will be top.
+                if (valign !== oldAttr.valign) {
+                    oldAttr.valign = valign;
+                    updateAlignment = true;
                 }
             }
-            $(node, {
-                x: a.x,
-                y: a.y
-            });
-            el._.dirty = 1;
-            var bb = el._getCustomBBox(fontFamily, fontSize + 'px', actualValign, i),
-                dif = bb.diff;
 
-            dif && R.is(dif, "finite") && tspans[0] && $(tspans[0], {
-                dy: dif
-            });
+            // Update the dy of the first tspan according to the v-alignment
+            if (updateAlignment) {
+                oldAttr.shift = oldAttr.baseLineDiff + oldAttr.lineCount * oldAttr.lineHeight * oldAttr.valign;
+                updateNode = true;
+            }
+            // if y is getting changed
+            if ((params.y || params.y === 0) && oldAttr.y !== params.y) {
+                // Y change
+                oldAttr.y = a.y;
+                updateNode = true;
+            }
+
+            // Update the node's attribute
+            if (updateNode) {
+                $(node, { y: Math.round(oldAttr.y + oldAttr.shift) });
+            }
         },
             Element = function Element(node, svg, group /*, dontAppend*/) {
             var o = this,
@@ -11442,73 +11558,6 @@ exports["default"] = function (R) {
             o.removed = true;
         };;
 
-        elproto._getCustomBBox = function (fontFamily, fontSize, valign, lines) {
-            var fn,
-                o = this,
-                node = o.node,
-                hide,
-                isText = o.type === "text",
-                isIE = /*@cc_on!@*/false || !!document.documentMode,
-                cachedFontHeight,
-                txtElem,
-                theText,
-                paper,
-                availableFontFamily,
-                availableFontSize,
-                info,
-                randomPos,
-                bboxY,
-                diff,
-                bbox,
-                bboxHeight;
-            if (isIE && isText) {
-                fn = showRecursively(o);
-            } else {
-                if (node.style.display === "none") {
-                    o.show();
-                    hide = true;
-                }
-            }
-
-            if (isText) {
-                cachedFontHeight = R.cachedFontHeight;
-                paper = this.paper;
-                txtElem = paper.txtElem;
-                availableFontFamily = cachedFontHeight[fontFamily] || (cachedFontHeight[fontFamily] = {});
-                availableFontSize = availableFontFamily[fontSize];
-                randomPos = -100;
-
-                if (!availableFontSize) {
-                    txtElem.setAttribute('style', 'font-family :' + fontFamily + '; font-size :' + fontSize);
-                    bbox = txtElem.getBBox();
-                    availableFontFamily[fontSize] = availableFontSize = [];
-                    availableFontSize.push(bbox.height);
-                    availableFontSize.push(bbox.y);
-                }
-
-                bboxY = availableFontSize[1];
-                bboxHeight = availableFontSize[0];
-                switch (valign) {
-                    case "bottom":
-                        diff = randomPos - bboxY - bboxHeight * lines;
-                        break;
-                    case "top":
-                        diff = randomPos - bboxY;
-                        break;
-                    default:
-                        diff = randomPos - bboxY - bboxHeight / 2 * lines;
-                };
-
-                bbox = {
-                    height: availableFontSize[0],
-                    diff: diff
-                };
-            }
-
-            isIE && isText ? fn && fn() : hide && o.hide();
-            return bbox;
-        };
-
         elproto._getBBox = function () {
             var fn,
                 o = this,
@@ -11517,8 +11566,7 @@ exports["default"] = function (R) {
                 a = o.attrs,
                 align,
                 hide,
-                isText = o.type === "text",
-                isIE = /*@cc_on!@*/false || !!document.documentMode;
+                isText = o.type === textStr;
             if (isIE && isText) {
                 fn = showRecursively(o);
             } else {
@@ -11539,13 +11587,13 @@ exports["default"] = function (R) {
                     if (bbox.x === undefined) {
                         bbox.isCalculated = true;
                         align = a['text-anchor'];
-                        bbox.x = (a.x || 0) - bbox.width * (align === "start" ? 0 : align === "middle" ? 0.5 : 1);
+                        bbox.x = (a.x || 0) - bbox.width * (align === "start" ? 0 : align === middleStr ? 0.5 : 1);
                     }
 
                     if (bbox.y === undefined) {
                         bbox.isCalculated = true;
-                        align = a['vertical-align'];
-                        bbox.y = (a.y || 0) - bbox.height * (align === "bottom" ? 1 : align === "middle" ? 0.5 : 0);
+                        align = a[vAignStr];
+                        bbox.y = (a.y || 0) - bbox.height * (align === "bottom" ? 1 : align === middleStr ? 0.5 : 0);
                     }
                 }
             } catch (e) {
@@ -11561,92 +11609,94 @@ exports["default"] = function (R) {
             if (this.removed) {
                 return this;
             }
+            var todel = {},
+                key,
+                finalParam = {},
+                i,
+                ii,
+                params,
+                subkey,
+                par,
+                follower;
+            // get all, return all applied attributes
             if (name == null) {
                 var res = {};
-                for (var a in this.attrs) {
-                    if (this.attrs[has](a)) {
-                        res[a] = this.attrs[a];
+                for (key in this.attrs) {
+                    if (this.attrs[has](key)) {
+                        res[key] = this.attrs[key];
                     }
                 }res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
                 res.transform = this._.transform;
                 res.visibility = this.node.style.display === "none" ? "hidden" : "visible";
                 return res;
-            }
-            if (value == null && R.is(name, "string")) {
-                if (name == "fill" && this.attrs.fill == "none" && this.attrs.gradient) {
-                    return this.attrs.gradient;
-                }
-                if (name == "transform") {
-                    return this._.transform;
-                }
-                if (name == "visibility") {
-                    return this.node.style.display === "none" ? "hidden" : "visible";
-                }
-                var names = name.split(separator),
-                    out = {};
-                for (var i = 0, ii = names.length; i < ii; i++) {
-                    name = names[i];
-                    if (name in this.attrs) {
-                        out[name] = this.attrs[name];
-                    } else if (R.is(this.ca[name], "function")) {
-                        out[name] = this.ca[name].def;
-                    } else {
-                        out[name] = R._availableAttrs[name];
-                    }
-                }
-                return ii - 1 ? out : out[names[0]];
-            }
-            if (value == null && R.is(name, "array")) {
-                out = {};
-                for (i = 0, ii = name.length; i < ii; i++) {
-                    out[name[i]] = this.attr(name[i]);
-                }
-                return out;
-            }
-            if (value != null) {
-                var params = {};
-                params[name] = value;
-            } else if (name != null && R.is(name, "object")) {
-                params = name;
-            }
-            if (!R.stopPartialEventPropagation) {
-                for (var key in params) {
-                    eve("raphael.attr." + key + "." + this.id, this, params[key], key);
-                }
-            }
-            var todel = {};
-            for (key in this.ca) {
-                if (this.ca[key] && params[has](key) && R.is(this.ca[key], "function") && !this.ca['_invoked' + key]) {
-
-                    this.ca['_invoked' + key] = true; // prevent recursion
-                    var par = this.ca[key].apply(this, [].concat(params[key]));
-                    delete this.ca['_invoked' + key];
-
-                    for (var subkey in par) {
-                        if (par[has](subkey)) {
-                            params[subkey] = par[subkey];
+            } else {
+                if (value == null) {
+                    if (R.is(name, "object")) {
+                        // Provided as an object
+                        params = name;
+                    } else if (R.is(name, typeStringSTR)) {
+                        // get one, return the value of the given attribute
+                        if (name == "fill" && this.attrs.fill == "none" && this.attrs.gradient) {
+                            return this.attrs.gradient;
                         }
+                        if (name == "transform") {
+                            return this._.transform;
+                        }
+                        if (name == "visibility") {
+                            return this.node.style.display === "none" ? "hidden" : "visible";
+                        }
+
+                        if (name in this.attrs) {
+                            return this.attrs[name];
+                        } else if (R.is(this.ca[name], "function")) {
+                            return this.ca[name].def;
+                        }
+                        return R._availableAttrs[name];
                     }
-                    this.attrs[key] = params[key];
-                    if (par === false) {
-                        todel[key] = params[key];
-                        delete params[key];
+                } else {
+                    // key value provided seperately
+                    params = {};
+                    params[name] = value;
+                }
+
+                if (!R.stopPartialEventPropagation) {
+                    for (key in params) {
+                        eve("raphael.attr." + key + "." + this.id, this, params[key], key);
                     }
                 }
-            }
 
-            setFillAndStroke(this, params);
+                // For each param
+                for (key in params) {
+                    // check if that is a Custom attribute or not
+                    if (this.ca[key] && params[has](key) && R.is(this.ca[key], "function") && !this.ca['_invoked' + key]) {
 
-            var follower;
-            for (i = 0, ii = this.followers.length; i < ii; i++) {
-                follower = this.followers[i];
-                follower.cb && !follower.cb.call(follower.el, params, this) || follower.el.attr(params);
-            }
+                        this.ca['_invoked' + key] = true; // prevent recursion
+                        par = this.ca[key].apply(this, [].concat(params[key]));
+                        delete this.ca['_invoked' + key];
 
-            for (subkey in todel) {
-                params[subkey] = todel[subkey];
+                        // If the custom attribute create another set of attribute to be updated
+                        // Then add them in the attribute list
+                        for (subkey in par) {
+                            if (par[has](subkey)) {
+                                finalParam[subkey] = par[subkey];
+                            }
+                        }
+                        // Add the attribute in attrs
+                        this.attrs[key] = params[key];
+                    } else {
+                        finalParam[key] = params[key];
+                    }
+                }
+
+                setFillAndStroke(this, finalParam);
+
+                for (i = 0, ii = this.followers.length; i < ii; i++) {
+                    follower = this.followers[i];
+                    follower.cb && !follower.cb.call(follower.el, finalParam, this) || follower.el.attr(finalParam);
+                }
+
+                return this;
             }
-            return this;
         };
 
         elproto.blur = function (size) {
@@ -11801,8 +11851,8 @@ exports["default"] = function (R) {
                 res = new Element(el, svg, group);
 
             res.type = "path";
-            setFillAndStroke(res, attrs);
-            applyCustomAttributes(res, attrs);
+            // Apply the attribute if provided
+            attrs && res.attr(attrs);
             return res;
         };
 
@@ -11823,8 +11873,8 @@ exports["default"] = function (R) {
                 res = new Element(el, svg, group);
 
             res.type = "circle";
-            setFillAndStroke(res, attrs);
-            applyCustomAttributes(res, attrs);
+            // Apply the attribute if provided
+            attrs && res.attr(attrs);
             return res;
         };
         R._engine.rect = function (svg, attrs, group) {
@@ -11833,8 +11883,8 @@ exports["default"] = function (R) {
 
             res.type = "rect";
             attrs.rx = attrs.ry = attrs.r;
-            setFillAndStroke(res, attrs);
-            applyCustomAttributes(res, attrs);
+            // Apply the attribute if provided
+            attrs && res.attr(attrs);
             return res;
         };
         R._engine.ellipse = function (svg, attrs, group) {
@@ -11842,8 +11892,8 @@ exports["default"] = function (R) {
                 res = new Element(el, svg, group);
 
             res.type = "ellipse";
-            setFillAndStroke(res, attrs);
-            applyCustomAttributes(res, attrs);
+            // Apply the attribute if provided
+            attrs && res.attr(attrs);
             return res;
         };
         ;
@@ -11855,20 +11905,18 @@ exports["default"] = function (R) {
             res._.group = group || svg;
             res.type = "image";
             el.setAttribute("preserveAspectRatio", "none");
-            setFillAndStroke(res, attrs);
-            applyCustomAttributes(res, attrs);
+            // Apply the attribute if provided
+            attrs && res.attr(attrs);
             return res;
         };
         R._engine.text = function (svg, attrs, group, css) {
-            var el = $("text"),
+            var el = $(textStr),
                 res = new Element(el, svg, group);
-            res.type = "text";
-            res._textdirty = true;
+            res.type = textStr;
             // Ideally this code should not be here as .css() is not a function of rapheal.
             css && res.css && res.css(css, undefined, true);
-
-            setFillAndStroke(res, attrs, group);
-            applyCustomAttributes(res, attrs);
+            // Apply the attribute if provided
+            attrs && res.attr(attrs);
             return res;
         };
 
@@ -11888,7 +11936,8 @@ exports["default"] = function (R) {
                 x = con.x,
                 y = con.y,
                 width = con.width,
-                height = con.height;
+                height = con.height,
+                paper;
             if (!container) {
                 throw new Error("SVG container not found.");
             }
@@ -11904,11 +11953,13 @@ exports["default"] = function (R) {
                 height: height,
                 version: 1.1,
                 width: width,
-                xmlns: "http://www.w3.org/2000/svg"
+                xmlns: svgNSStr
             });
             if (container == 1) {
-                cnvs.style.cssText = css + "position:absolute;left:" + x + "px;top:" + y + "px";
-                R._g.doc.body.appendChild(cnvs);
+                cnvs.style.cssText = css + "position:absolute;left:" + x + "px;top:" + y + pxStr;
+                // Store body as the container
+                container = R._g.doc.body;
+                container.appendChild(cnvs);
                 isFloating = 1;
             } else {
                 cnvs.style.cssText = css + "position:relative";
@@ -11918,19 +11969,21 @@ exports["default"] = function (R) {
                     container.appendChild(cnvs);
                 }
             }
-            container = new R._Paper();
-            container.width = width;
-            container.height = height;
-            container.canvas = cnvs;
+            paper = new R._Paper();
+            paper.width = width;
+            paper.height = height;
+            paper.canvas = cnvs;
+            // Store the container for further detachment and attachment
+            paper.container = container;
+
             $(cnvs, {
-                id: "raphael-paper-" + container.id
+                id: "raphael-paper-" + paper.id
             });
-            container.clear();
-            createDummyText(container);
-            container._left = container._top = 0;
-            isFloating && (container.renderfix = function () {});
-            container.renderfix();
-            return container;
+            paper.clear();
+            paper._left = paper._top = 0;
+            isFloating && (paper.renderfix = function () {});
+            paper.renderfix();
+            return paper;
         };
         R._engine.setViewBox = function (x, y, w, h, fit) {
             eve("raphael.setViewBox", this, this._viewBox, [x, y, w, h, fit]);
@@ -11966,6 +12019,26 @@ exports["default"] = function (R) {
             return this;
         };
 
+        /**
+         * Function to remove the paper form the DOM tree
+         */
+        R.prototype.detachPaper = function () {
+            if (this._detached !== false) {
+                this.container.removeChild(this.canvas);
+                this._detached = true;
+            }
+        };
+        /**
+         * Function to append the paper in the DOM tree
+         * @note: This might change the order of the child elements.
+         */
+        R.prototype.attachPaper = function () {
+            if (this._detached) {
+                this.container.appendChild(this.canvas);
+                this._detached = false;
+            }
+        };
+
         R.prototype.renderfix = function () {
             var cnvs = this.canvas,
                 s = cnvs.style,
@@ -11980,11 +12053,11 @@ exports["default"] = function (R) {
             if (left || top) {
                 if (left) {
                     this._left = (this._left + left) % 1;
-                    s.left = this._left + "px";
+                    s.left = this._left + pxStr;
                 }
                 if (top) {
                     this._top = (this._top + top) % 1;
-                    s.top = this._top + "px";
+                    s.top = this._top + pxStr;
                 }
             }
         };
@@ -12000,7 +12073,7 @@ exports["default"] = function (R) {
                     desc.removeChild(desc.firstChild);
                 }
             }
-            desc.appendChild(R._g.doc.createTextNode(R.is(txt, "string") ? txt : "Created with Red Rapha\xebl " + R.version));
+            desc.appendChild(R._g.doc.createTextNode(R.is(txt, typeStringSTR) ? txt : "Created with Red Rapha\xebl " + R.version));
         };
 
         R.prototype.clear = function () {
@@ -12051,17 +12124,9 @@ exports["default"] = function (R) {
     }
 };
 
-module.exports = exports["default"]; /**!
-                                     * RedRaphael 1.0.0 - JavaScript Vector Library SVG Module
-                                     * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
-                                     *
-                                     * Raphael 2.1.0 - JavaScript Vector Library SVG Module
-                                     * Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
-                                     * Copyright © 2008-2012 Sencha Labs <http://sencha.com>
-                                     *
-                                     * Licensed under the MIT license.
-                                     */
-// Define _window as window object in case of indivual file inclusion.
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+module.exports = exports["default"];
 
 /***/ }),
 /* 74 */
@@ -13444,11 +13509,11 @@ module.exports = exports["default"]; /**!
 
 exports.__esModule = true;
 
-var _iterator = __webpack_require__(13);
+var _iterator = __webpack_require__(7);
 
 var _iterator2 = _interopRequireDefault(_iterator);
 
-var _symbol = __webpack_require__(26);
+var _symbol = __webpack_require__(13);
 
 var _symbol2 = _interopRequireDefault(_symbol);
 

@@ -10,7 +10,7 @@
  */
 
 import eve from './eve/eve';
-import extend, {merge, getArrayCopy} from './raphael.lib';
+import extend, {merge, getArrayCopy, BLANK} from './raphael.lib';
 
 var _win = (typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : null);
 
@@ -1099,29 +1099,104 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         return this.join(",").replace(p2s, "$1");
     };
 
-    function repush(array, item) {
-        for (var i = 0, ii = array.length; i < ii; i++) {
-            if (array[i] === item) {
-                return array.push(array.splice(i, 1)[0]);
-            }
-        }
-    }
-
     var cacher = R._cacher = function (f, scope, postprocessor) {
-        function cachedfunction() {
-            var _args = getArrayCopy(arguments),
-            arg = arraySlice.call(_args, 0),
-            args = arg.join("\u2400"),
-            cache = cachedfunction.cache = cachedfunction.cache || {},
-            count = cachedfunction.count = cachedfunction.count || [];
+        var start = null,
+            end = null,
+            cache = {},
+            count = 0;
+
+        function cachedfunction () {
+            var arg = getArrayCopy(arguments),
+                args = arg.join("\u2400"),
+                newEndStr,
+                newEnd,
+                cur,
+                prev,
+                next,
+                nextStr;
+
+            args = args === '' ? BLANK : args;
+            /****** Cache hit ******/
+            // If the following condition is true it is a cache hit.
             if (cache[has](args)) {
-                repush(count, args);
-                return postprocessor ? postprocessor(cache[args]) : cache[args];
+                // cur is the element due to cache hit
+                cur = cache[args];
+                nextStr = cur.next; // nextStr is the id of next element of cur.
+                prev = cur.prev;    // prev is the previous node of the current hit node
+                next = ((nextStr !== null) && cache[nextStr]) || null;    // next is the next node of the current hit node
+
+                // Scope of error: Always check if the start and cur are not same node.
+                // start and cur can be same when same node has back to back cache hits.
+                if (start === cur) {
+                    // do nothing.
+                } else if (cache[end] === cur) {    // when the cur element is the last element of cache
+                    start.next = end;
+                    
+                    newEndStr = cache[end].next;    // Take Id of the next element of the cur element
+                    cache[newEndStr].prev = null;   // Make it's previous pointer null so that it doesn't point to cur
+
+                    cur.next = null; // taking cur to the front. make it's next point to null, since there is no element ahead of it
+                    cur.prev = start;   // make it's prev pointer to the present element at the front.
+
+                    start = cache[end]; // start pointer now point to the first element
+                    end = newEndStr;    // end holds the ID of the last element
+                } else {    // when cur element is any element except start and end
+                    start.next = args;  // present start node's next pointer should point to the cur node
+                    
+                    cur.prev = start;   // cur node's prev pointer now points to the present start, making the present start to 2nd position
+                    cur.next = null;    // since cur is in front, no one should be ahead of it. hence next = null
+
+                    prev.next = nextStr;    // cur's prev node should point to cur's next node
+                    next.prev = prev;   // cur's next node should point to cur's prev node
+                    
+                    start = cur;    // start point to the cur node
+                }
+                
+                return start.item;
             }
-            count.length >= 1e3 && delete cache[count.shift()];
-            count.push(args);
-            cache[args] = f[apply](scope, arg);
-            return postprocessor ? postprocessor(cache[args]) : cache[args];
+            
+            /******* Cache miss *******/
+            // Else, it is a cache miss.
+
+            /* ----- deletion process begins here -----
+            *  deletion takes place if cache is full 
+            * */
+            if (count > 1e3) {
+                // Take the second last element
+                newEndStr = cache[end].next;
+
+                newEnd = cache[newEndStr];
+                // prev pointer of the second last element should be deleted.(Beware! Not doing this step will lead to memory leak)
+                newEnd.prev = null;
+
+                // clear the pointers of the node to be deleted
+                cache[end].next = null;
+
+                // delete the node
+                delete cache[end];
+                // update the end pointer
+                end = newEndStr;
+                count--; // decrement the counter
+            }
+
+            /* ----- insertion process begins here ----- */
+            // create a new node
+            cache[args] = {
+                next: null,
+                prev: start, // newNode's prev pointer should point to the present start
+                item: postprocessor ? postprocessor(f[apply](scope, arg)) : f[apply](scope, arg)
+            };
+            // If start is present(start can be null if it is first node), point start.next to the new object
+            if (start !== null) {
+                start.next = args; // The present start node will fall second.
+            }
+            // finally assign start to the new node as start always points to the node at front
+            start = cache[args];
+            // In case newNode is the first node of the cache end will also be null, but it should point to the start.
+            (end === null) && (end = args);
+            count++;
+
+            return cache[args].item;
         }
         return cachedfunction;
     };

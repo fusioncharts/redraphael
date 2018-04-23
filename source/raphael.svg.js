@@ -569,11 +569,11 @@ export default function (R) {
                 for (att in params) {
                     if (att in R._availableAttrs) {
                         value = params[att];
-                        attrs[att] = value;
                         if (value === E) {
                             delete attrs[att];
                             node.removeAttribute(att);
                         } else {
+                            attrs[att] = value;
                             switch (att) {
                             case 'blur':
                                 o.blur(value);
@@ -665,7 +665,7 @@ export default function (R) {
                                 }
                                 break;
                             case 'width':
-                                node.setAttribute(att, value);
+                                finalAttr[att] = value;
                                 o._.dirty = 1;
                                 if (attrs.fx) {
                                     att = 'x';
@@ -685,12 +685,12 @@ export default function (R) {
                                 }
                                 // falls through
                             case 'cx':
-                                node.setAttribute(att, value);
+                                finalAttr[att] = value;
                                 o.pattern && updatePosition(o);
                                 o._.dirty = 1;
                                 break;
                             case 'height':
-                                node.setAttribute(att, value);
+                                finalAttr[att] = value;
                                 o._.dirty = 1;
                                 if (attrs.fy) {
                                     att = 'y';
@@ -714,7 +714,7 @@ export default function (R) {
                                 }
                                 // falls through
                             case 'cy':
-                                node.setAttribute(att, value);
+                                finalAttr[att] = value;
                                 o.pattern && updatePosition(o);
                                 o._.dirty = 1;
                                 break;
@@ -722,7 +722,7 @@ export default function (R) {
                                 if (o.type === 'rect') {
                                     finalAttr.rx = finalAttr.ry = value;
                                 } else {
-                                    node.setAttribute(att, value);
+                                    finalAttr[att] = value;
                                 }
                                 o._.dirty = 1;
                                 break;
@@ -741,7 +741,7 @@ export default function (R) {
                                 if (zeroStrokeFix && value === 0) {
                                     value = 0.000001;
                                 }
-                                node.setAttribute(att, value);
+                                finalAttr[att] = value;
                                 if (attrs['stroke-dasharray']) {
                                     addDashes(o, attrs['stroke-dasharray'], params);
                                 }
@@ -818,7 +818,7 @@ export default function (R) {
                                 // falls through
                             case 'stroke':
                                 clr = R.getRGB(value);
-                                node.setAttribute(att, clr.hex);
+                                finalAttr[att] = clr.hex;
                                 finalS[att] = clr.hex;
                                 if (att === 'stroke') { // remove stroke opacity when stroke is set to none
                                     if (clr[has]('opacity')) {
@@ -874,7 +874,7 @@ export default function (R) {
                                 break;
                             case 'shape-rendering':
                                 o.attrs[att] = value = shapeRenderingAttrs[value] || value || 'auto';
-                                node.setAttribute(att, value);
+                                finalAttr[att] = value;
                                 node.style.shapeRendering = value;
                                 break;
                             default:

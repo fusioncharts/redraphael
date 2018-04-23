@@ -1,5 +1,6 @@
 /* eslint require-jsdoc: 'error', valid-jsdoc: 'error' */
 let UNDEF,
+    BLANK = 'blank',
     arrayToStr = '[object Array]',
     objectToStr = '[object Object]',
     // Map of SVG attribute to CSS styles for all attributes that are in R._availableAttrs
@@ -203,4 +204,4 @@ export default function (obj1, obj2, skipUndef, shallow) {
     return obj1;
 }
 
-export {merge, getArrayCopy, dashedAttr2CSSMap, loadRefImage, showRecursively};
+export {merge, getArrayCopy, BLANK, dashedAttr2CSSMap, loadRefImage, showRecursively};

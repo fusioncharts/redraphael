@@ -100,7 +100,7 @@ module.exports = function (it, key) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var dP = __webpack_require__(3);
-var createDesc = __webpack_require__(12);
+var createDesc = __webpack_require__(11);
 module.exports = __webpack_require__(4) ? function (object, key, value) {
   return dP.f(object, key, createDesc(1, value));
 } : function (object, key, value) {
@@ -113,9 +113,9 @@ module.exports = __webpack_require__(4) ? function (object, key, value) {
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var anObject = __webpack_require__(9);
+var anObject = __webpack_require__(8);
 var IE8_DOM_DEFINE = __webpack_require__(32);
-var toPrimitive = __webpack_require__(20);
+var toPrimitive = __webpack_require__(19);
 var dP = Object.defineProperty;
 
 exports.f = __webpack_require__(4) ? Object.defineProperty : function defineProperty(O, P, Attributes) {
@@ -136,7 +136,7 @@ exports.f = __webpack_require__(4) ? Object.defineProperty : function defineProp
 /***/ (function(module, exports, __webpack_require__) {
 
 // Thank's IE8 for his funny defineProperty
-module.exports = !__webpack_require__(11)(function () {
+module.exports = !__webpack_require__(10)(function () {
   return Object.defineProperty({}, 'a', { get: function () { return 7; } }).a != 7;
 });
 
@@ -147,7 +147,7 @@ module.exports = !__webpack_require__(11)(function () {
 
 // to indexed object, toObject with fallback for non-array-like ES3 strings
 var IObject = __webpack_require__(50);
-var defined = __webpack_require__(17);
+var defined = __webpack_require__(16);
 module.exports = function (it) {
   return IObject(defined(it));
 };
@@ -157,8 +157,8 @@ module.exports = function (it) {
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var store = __webpack_require__(24)('wks');
-var uid = __webpack_require__(13);
+var store = __webpack_require__(23)('wks');
+var uid = __webpack_require__(12);
 var Symbol = __webpack_require__(0).Symbol;
 var USE_SYMBOL = typeof Symbol == 'function';
 
@@ -178,13 +178,13 @@ $exports.store = store;
 
 
 exports.__esModule = true;
-exports.dashedAttr2CSSMap = exports.getArrayCopy = exports.merge = undefined;
+exports.showRecursively = exports.loadRefImage = exports.dashedAttr2CSSMap = exports.getArrayCopy = exports.merge = undefined;
 
-var _iterator = __webpack_require__(8);
+var _iterator = __webpack_require__(14);
 
 var _iterator2 = _interopRequireDefault(_iterator);
 
-var _symbol = __webpack_require__(14);
+var _symbol = __webpack_require__(27);
 
 var _symbol2 = _interopRequireDefault(_symbol);
 
@@ -236,6 +236,53 @@ dashedAttr2CSSMap = {
     'letter-spacing': 'letterSpacing',
     'stroke-miterlimit': 'strokeMiterlimit',
     'stroke-opacity': 'strokeOpacity'
+},
+    loadRefImage = function loadRefImage(element, attrs) {
+    var src = attrs.src,
+        RefImg = element._.RefImg;
+
+    if (!RefImg) {
+        RefImg = element._.RefImg = new Image();
+    }
+
+    if (attrs.src === undefined) {
+        return;
+    }
+    RefImg.src = src;
+    element._.RefImg = RefImg;
+},
+
+/**
+ * Recursively shows the element and stores the visibilties of its parents
+ * in a tree structure for future restoration.
+ * @param {Element} el - Element which is to shown recursively
+ * @return {Function} Function to restore the old visibility state.
+ */
+showRecursively = function showRecursively(el) {
+    var origAttrTree = {},
+        currentEl = el,
+        currentNode = origAttrTree,
+        fn = function fn() {
+        var localEl = el,
+            localNode = origAttrTree;
+        while (localEl) {
+            if (localNode._doHide) {
+                localEl.hide();
+            }
+            localEl = localEl.parent;
+            localNode = localNode.parent;
+        }
+    };
+    while (currentEl) {
+        if (currentEl.node && currentEl.node.style && currentEl.node.style.display === 'none') {
+            currentEl.show();
+            currentNode._doHide = true;
+        }
+        currentEl = currentEl.parent;
+        currentNode.parent = {};
+        currentNode = currentNode.parent;
+    }
+    return fn;
 },
     checkCyclicRef = function checkCyclicRef(obj, parentArr) {
     var i = parentArr.length,
@@ -352,18 +399,14 @@ getArrayCopy = function getArrayCopy(array) {
 exports.merge = merge;
 exports.getArrayCopy = getArrayCopy;
 exports.dashedAttr2CSSMap = dashedAttr2CSSMap;
+exports.loadRefImage = loadRefImage;
+exports.showRecursively = showRecursively;
 
 /***/ }),
 /* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = { "default": __webpack_require__(43), __esModule: true };
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var isObject = __webpack_require__(10);
+var isObject = __webpack_require__(9);
 module.exports = function (it) {
   if (!isObject(it)) throw TypeError(it + ' is not an object!');
   return it;
@@ -371,7 +414,7 @@ module.exports = function (it) {
 
 
 /***/ }),
-/* 10 */
+/* 9 */
 /***/ (function(module, exports) {
 
 module.exports = function (it) {
@@ -380,7 +423,7 @@ module.exports = function (it) {
 
 
 /***/ }),
-/* 11 */
+/* 10 */
 /***/ (function(module, exports) {
 
 module.exports = function (exec) {
@@ -393,7 +436,7 @@ module.exports = function (exec) {
 
 
 /***/ }),
-/* 12 */
+/* 11 */
 /***/ (function(module, exports) {
 
 module.exports = function (bitmap, value) {
@@ -407,7 +450,7 @@ module.exports = function (bitmap, value) {
 
 
 /***/ }),
-/* 13 */
+/* 12 */
 /***/ (function(module, exports) {
 
 var id = 0;
@@ -418,13 +461,7 @@ module.exports = function (key) {
 
 
 /***/ }),
-/* 14 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = { "default": __webpack_require__(61), __esModule: true };
-
-/***/ }),
-/* 15 */
+/* 13 */
 /***/ (function(module, exports) {
 
 var g;
@@ -451,7 +488,13 @@ module.exports = g;
 
 
 /***/ }),
-/* 16 */
+/* 14 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = { "default": __webpack_require__(43), __esModule: true };
+
+/***/ }),
+/* 15 */
 /***/ (function(module, exports) {
 
 // 7.1.4 ToInteger
@@ -463,7 +506,7 @@ module.exports = function (it) {
 
 
 /***/ }),
-/* 17 */
+/* 16 */
 /***/ (function(module, exports) {
 
 // 7.2.1 RequireObjectCoercible(argument)
@@ -474,14 +517,14 @@ module.exports = function (it) {
 
 
 /***/ }),
-/* 18 */
+/* 17 */
 /***/ (function(module, exports) {
 
 module.exports = true;
 
 
 /***/ }),
-/* 19 */
+/* 18 */
 /***/ (function(module, exports) {
 
 var core = module.exports = { version: '2.5.1' };
@@ -489,11 +532,11 @@ if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
 
 
 /***/ }),
-/* 20 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.1.1 ToPrimitive(input [, PreferredType])
-var isObject = __webpack_require__(10);
+var isObject = __webpack_require__(9);
 // instead of the ES6 spec version, we didn't implement @@toPrimitive case
 // and the second argument - flag - preferred type is a string
 module.exports = function (it, S) {
@@ -507,19 +550,19 @@ module.exports = function (it, S) {
 
 
 /***/ }),
-/* 21 */
+/* 20 */
 /***/ (function(module, exports) {
 
 module.exports = {};
 
 
 /***/ }),
-/* 22 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // 19.1.2.14 / 15.2.3.14 Object.keys(O)
 var $keys = __webpack_require__(36);
-var enumBugKeys = __webpack_require__(25);
+var enumBugKeys = __webpack_require__(24);
 
 module.exports = Object.keys || function keys(O) {
   return $keys(O, enumBugKeys);
@@ -527,18 +570,18 @@ module.exports = Object.keys || function keys(O) {
 
 
 /***/ }),
-/* 23 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var shared = __webpack_require__(24)('keys');
-var uid = __webpack_require__(13);
+var shared = __webpack_require__(23)('keys');
+var uid = __webpack_require__(12);
 module.exports = function (key) {
   return shared[key] || (shared[key] = uid(key));
 };
 
 
 /***/ }),
-/* 24 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var global = __webpack_require__(0);
@@ -550,7 +593,7 @@ module.exports = function (key) {
 
 
 /***/ }),
-/* 25 */
+/* 24 */
 /***/ (function(module, exports) {
 
 // IE 8- don't enum bug keys
@@ -560,7 +603,7 @@ module.exports = (
 
 
 /***/ }),
-/* 26 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var def = __webpack_require__(3).f;
@@ -573,20 +616,26 @@ module.exports = function (it, tag, stat) {
 
 
 /***/ }),
-/* 27 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports.f = __webpack_require__(6);
 
 
 /***/ }),
+/* 27 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = { "default": __webpack_require__(61), __esModule: true };
+
+/***/ }),
 /* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var global = __webpack_require__(0);
-var core = __webpack_require__(19);
-var LIBRARY = __webpack_require__(18);
-var wksExt = __webpack_require__(27);
+var core = __webpack_require__(18);
+var LIBRARY = __webpack_require__(17);
+var wksExt = __webpack_require__(26);
 var defineProperty = __webpack_require__(3).f;
 module.exports = function (name) {
   var $Symbol = core.Symbol || (core.Symbol = LIBRARY ? {} : global.Symbol || {});
@@ -607,14 +656,14 @@ exports.f = {}.propertyIsEnumerable;
 
 "use strict";
 
-var LIBRARY = __webpack_require__(18);
+var LIBRARY = __webpack_require__(17);
 var $export = __webpack_require__(31);
 var redefine = __webpack_require__(34);
 var hide = __webpack_require__(2);
 var has = __webpack_require__(1);
-var Iterators = __webpack_require__(21);
+var Iterators = __webpack_require__(20);
 var $iterCreate = __webpack_require__(48);
-var setToStringTag = __webpack_require__(26);
+var setToStringTag = __webpack_require__(25);
 var getPrototypeOf = __webpack_require__(55);
 var ITERATOR = __webpack_require__(6)('iterator');
 var BUGGY = !([].keys && 'next' in [].keys()); // Safari has buggy iterators w/o `next`
@@ -683,7 +732,7 @@ module.exports = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCE
 /***/ (function(module, exports, __webpack_require__) {
 
 var global = __webpack_require__(0);
-var core = __webpack_require__(19);
+var core = __webpack_require__(18);
 var ctx = __webpack_require__(46);
 var hide = __webpack_require__(2);
 var PROTOTYPE = 'prototype';
@@ -749,7 +798,7 @@ module.exports = $export;
 /* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = !__webpack_require__(4) && !__webpack_require__(11)(function () {
+module.exports = !__webpack_require__(4) && !__webpack_require__(10)(function () {
   return Object.defineProperty(__webpack_require__(33)('div'), 'a', { get: function () { return 7; } }).a != 7;
 });
 
@@ -758,7 +807,7 @@ module.exports = !__webpack_require__(4) && !__webpack_require__(11)(function ()
 /* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isObject = __webpack_require__(10);
+var isObject = __webpack_require__(9);
 var document = __webpack_require__(0).document;
 // typeof document.createElement is 'object' in old IE
 var is = isObject(document) && isObject(document.createElement);
@@ -779,10 +828,10 @@ module.exports = __webpack_require__(2);
 /***/ (function(module, exports, __webpack_require__) {
 
 // 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
-var anObject = __webpack_require__(9);
+var anObject = __webpack_require__(8);
 var dPs = __webpack_require__(49);
-var enumBugKeys = __webpack_require__(25);
-var IE_PROTO = __webpack_require__(23)('IE_PROTO');
+var enumBugKeys = __webpack_require__(24);
+var IE_PROTO = __webpack_require__(22)('IE_PROTO');
 var Empty = function () { /* empty */ };
 var PROTOTYPE = 'prototype';
 
@@ -828,7 +877,7 @@ module.exports = Object.create || function create(O, Properties) {
 var has = __webpack_require__(1);
 var toIObject = __webpack_require__(5);
 var arrayIndexOf = __webpack_require__(51)(false);
-var IE_PROTO = __webpack_require__(23)('IE_PROTO');
+var IE_PROTO = __webpack_require__(22)('IE_PROTO');
 
 module.exports = function (object, names) {
   var O = toIObject(object);
@@ -868,7 +917,7 @@ exports.f = Object.getOwnPropertySymbols;
 
 // 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
 var $keys = __webpack_require__(36);
-var hiddenKeys = __webpack_require__(25).concat('length', 'prototype');
+var hiddenKeys = __webpack_require__(24).concat('length', 'prototype');
 
 exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
   return $keys(O, hiddenKeys);
@@ -933,11 +982,11 @@ module.exports = exports['default'];
 
 exports.__esModule = true;
 
-var _iterator = __webpack_require__(8);
+var _iterator = __webpack_require__(14);
 
 var _iterator2 = _interopRequireDefault(_iterator);
 
-var _symbol = __webpack_require__(14);
+var _symbol = __webpack_require__(27);
 
 var _symbol2 = _interopRequireDefault(_symbol);
 
@@ -8089,7 +8138,7 @@ _eve3['default'].on("raphael.DOMload", function () {
 
 exports['default'] = R;
 module.exports = exports['default'];
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(15)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(13)))
 
 /***/ }),
 /* 43 */
@@ -8097,7 +8146,7 @@ module.exports = exports['default'];
 
 __webpack_require__(44);
 __webpack_require__(57);
-module.exports = __webpack_require__(27).f('iterator');
+module.exports = __webpack_require__(26).f('iterator');
 
 
 /***/ }),
@@ -8128,8 +8177,8 @@ __webpack_require__(30)(String, 'String', function (iterated) {
 /* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var toInteger = __webpack_require__(16);
-var defined = __webpack_require__(17);
+var toInteger = __webpack_require__(15);
+var defined = __webpack_require__(16);
 // true  -> String#at
 // false -> String#codePointAt
 module.exports = function (TO_STRING) {
@@ -8190,8 +8239,8 @@ module.exports = function (it) {
 "use strict";
 
 var create = __webpack_require__(35);
-var descriptor = __webpack_require__(12);
-var setToStringTag = __webpack_require__(26);
+var descriptor = __webpack_require__(11);
+var setToStringTag = __webpack_require__(25);
 var IteratorPrototype = {};
 
 // 25.1.2.1.1 %IteratorPrototype%[@@iterator]()
@@ -8208,8 +8257,8 @@ module.exports = function (Constructor, NAME, next) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var dP = __webpack_require__(3);
-var anObject = __webpack_require__(9);
-var getKeys = __webpack_require__(22);
+var anObject = __webpack_require__(8);
+var getKeys = __webpack_require__(21);
 
 module.exports = __webpack_require__(4) ? Object.defineProperties : function defineProperties(O, Properties) {
   anObject(O);
@@ -8268,7 +8317,7 @@ module.exports = function (IS_INCLUDES) {
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.1.15 ToLength
-var toInteger = __webpack_require__(16);
+var toInteger = __webpack_require__(15);
 var min = Math.min;
 module.exports = function (it) {
   return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
@@ -8279,7 +8328,7 @@ module.exports = function (it) {
 /* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var toInteger = __webpack_require__(16);
+var toInteger = __webpack_require__(15);
 var max = Math.max;
 var min = Math.min;
 module.exports = function (index, length) {
@@ -8303,7 +8352,7 @@ module.exports = document && document.documentElement;
 // 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
 var has = __webpack_require__(1);
 var toObject = __webpack_require__(56);
-var IE_PROTO = __webpack_require__(23)('IE_PROTO');
+var IE_PROTO = __webpack_require__(22)('IE_PROTO');
 var ObjectProto = Object.prototype;
 
 module.exports = Object.getPrototypeOf || function (O) {
@@ -8320,7 +8369,7 @@ module.exports = Object.getPrototypeOf || function (O) {
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.1.13 ToObject(argument)
-var defined = __webpack_require__(17);
+var defined = __webpack_require__(16);
 module.exports = function (it) {
   return Object(defined(it));
 };
@@ -8333,7 +8382,7 @@ module.exports = function (it) {
 __webpack_require__(58);
 var global = __webpack_require__(0);
 var hide = __webpack_require__(2);
-var Iterators = __webpack_require__(21);
+var Iterators = __webpack_require__(20);
 var TO_STRING_TAG = __webpack_require__(6)('toStringTag');
 
 var DOMIterables = ('CSSRuleList,CSSStyleDeclaration,CSSValueList,ClientRectList,DOMRectList,DOMStringList,' +
@@ -8359,7 +8408,7 @@ for (var i = 0; i < DOMIterables.length; i++) {
 
 var addToUnscopables = __webpack_require__(59);
 var step = __webpack_require__(60);
-var Iterators = __webpack_require__(21);
+var Iterators = __webpack_require__(20);
 var toIObject = __webpack_require__(5);
 
 // 22.1.3.4 Array.prototype.entries()
@@ -8416,7 +8465,7 @@ __webpack_require__(62);
 __webpack_require__(68);
 __webpack_require__(69);
 __webpack_require__(70);
-module.exports = __webpack_require__(19).Symbol;
+module.exports = __webpack_require__(18).Symbol;
 
 
 /***/ }),
@@ -8432,24 +8481,24 @@ var DESCRIPTORS = __webpack_require__(4);
 var $export = __webpack_require__(31);
 var redefine = __webpack_require__(34);
 var META = __webpack_require__(63).KEY;
-var $fails = __webpack_require__(11);
-var shared = __webpack_require__(24);
-var setToStringTag = __webpack_require__(26);
-var uid = __webpack_require__(13);
+var $fails = __webpack_require__(10);
+var shared = __webpack_require__(23);
+var setToStringTag = __webpack_require__(25);
+var uid = __webpack_require__(12);
 var wks = __webpack_require__(6);
-var wksExt = __webpack_require__(27);
+var wksExt = __webpack_require__(26);
 var wksDefine = __webpack_require__(28);
 var enumKeys = __webpack_require__(64);
 var isArray = __webpack_require__(65);
-var anObject = __webpack_require__(9);
+var anObject = __webpack_require__(8);
 var toIObject = __webpack_require__(5);
-var toPrimitive = __webpack_require__(20);
-var createDesc = __webpack_require__(12);
+var toPrimitive = __webpack_require__(19);
+var createDesc = __webpack_require__(11);
 var _create = __webpack_require__(35);
 var gOPNExt = __webpack_require__(66);
 var $GOPD = __webpack_require__(67);
 var $DP = __webpack_require__(3);
-var $keys = __webpack_require__(22);
+var $keys = __webpack_require__(21);
 var gOPD = $GOPD.f;
 var dP = $DP.f;
 var gOPN = gOPNExt.f;
@@ -8576,7 +8625,7 @@ if (!USE_NATIVE) {
   __webpack_require__(29).f = $propertyIsEnumerable;
   __webpack_require__(38).f = $getOwnPropertySymbols;
 
-  if (DESCRIPTORS && !__webpack_require__(18)) {
+  if (DESCRIPTORS && !__webpack_require__(17)) {
     redefine(ObjectProto, 'propertyIsEnumerable', $propertyIsEnumerable, true);
   }
 
@@ -8664,15 +8713,15 @@ setToStringTag(global.JSON, 'JSON', true);
 /* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var META = __webpack_require__(13)('meta');
-var isObject = __webpack_require__(10);
+var META = __webpack_require__(12)('meta');
+var isObject = __webpack_require__(9);
 var has = __webpack_require__(1);
 var setDesc = __webpack_require__(3).f;
 var id = 0;
 var isExtensible = Object.isExtensible || function () {
   return true;
 };
-var FREEZE = !__webpack_require__(11)(function () {
+var FREEZE = !__webpack_require__(10)(function () {
   return isExtensible(Object.preventExtensions({}));
 });
 var setMeta = function (it) {
@@ -8724,7 +8773,7 @@ var meta = module.exports = {
 /***/ (function(module, exports, __webpack_require__) {
 
 // all enumerable object keys, includes symbols
-var getKeys = __webpack_require__(22);
+var getKeys = __webpack_require__(21);
 var gOPS = __webpack_require__(38);
 var pIE = __webpack_require__(29);
 module.exports = function (it) {
@@ -8781,9 +8830,9 @@ module.exports.f = function getOwnPropertyNames(it) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var pIE = __webpack_require__(29);
-var createDesc = __webpack_require__(12);
+var createDesc = __webpack_require__(11);
 var toIObject = __webpack_require__(5);
-var toPrimitive = __webpack_require__(20);
+var toPrimitive = __webpack_require__(19);
 var has = __webpack_require__(1);
 var IE8_DOM_DEFINE = __webpack_require__(32);
 var gOPD = Object.getOwnPropertyDescriptor;
@@ -9279,7 +9328,7 @@ exports["default"] = function (glob) {
 }(typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : null);
 
 module.exports = exports["default"];
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(15)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(13)))
 
 /***/ }),
 /* 72 */
@@ -10194,7 +10243,7 @@ module.exports = exports['default'];
 /**
  * All non fusincharts related functionalities of redRaphael is listed here
  */
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(15)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(13)))
 
 /***/ }),
 /* 73 */
@@ -10205,121 +10254,56 @@ module.exports = exports['default'];
 
 exports.__esModule = true;
 
-var _iterator = __webpack_require__(8);
-
-var _iterator2 = _interopRequireDefault(_iterator);
-
-var _symbol = __webpack_require__(14);
-
-var _symbol2 = _interopRequireDefault(_symbol);
-
-var _typeof = typeof _symbol2["default"] === "function" && typeof _iterator2["default"] === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof _symbol2["default"] === "function" && obj.constructor === _symbol2["default"] && obj !== _symbol2["default"].prototype ? "symbol" : typeof obj; };
-
-/**!
-* RedRaphael 1.0.0 - JavaScript Vector Library SVG Module
-* Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
-*
-* Raphael 2.1.0 - JavaScript Vector Library SVG Module
-* Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
-* Copyright © 2008-2012 Sencha Labs <http://sencha.com>
-*
-* Licensed under the MIT license.
-*/
-// Define _window as window object in case of indivual file inclusion.
-
-exports["default"] = function (R) {
+exports['default'] = function (R) {
     if (R.svg) {
-        /*
-        * Recursively shows the element and stores the visibilties of its parents
-        * in a tree structure for future restoration.
-        * @param el - Element which is to shown recursively
-        * @return Function - Function to restore the old visibility state.
-        */
-        var showRecursively = function showRecursively(el) {
-            var origAttrTree = {},
-                currentEl = el,
-                currentNode = origAttrTree,
-                fn = function fn() {
-                var localEl = el,
-                    localNode = origAttrTree;
-                while (localEl) {
-                    if (localNode._doHide) {
-                        localEl.hide();
-                    }
-                    localEl = localEl.parent;
-                    localNode = localNode.parent;
-                }
-            };
-            while (currentEl) {
-                if (currentEl.node && currentEl.node.style && currentEl.node.style.display === "none") {
-                    currentEl.show();
-                    currentNode._doHide = true;
-                }
-                currentEl = currentEl.parent;
-                currentNode.parent = {};
-                currentNode = currentNode.parent;
-            }
-            return fn;
-        };
-
-        var LoadRefImage = function LoadRefImage(element, attrs) {
-            var src = attrs.src,
-                parent = element._.group,
-                node = element.node,
-                RefImg = element._.RefImg;
-
-            if (!RefImg) {
-                RefImg = element._.RefImg = new Image();
-            }
-
-            if (attrs.src === undefined) {
-                return;
-            }
-            RefImg.src = src;
-            element._.RefImg = RefImg;
-        };
-
-        var has = "hasOwnProperty",
-            tSpanStr = "tspan",
-            vAignStr = "vertical-align",
-            lineHeightStr = "line-height",
+        var has = 'hasOwnProperty',
+            tSpanStr = 'tspan',
+            vAignStr = 'vertical-align',
+            lineHeightStr = 'line-height',
             fontSizeStr = 'font-size',
-            fontFamilyStr = 'font-family',
-            textStr = "text",
+            textStr = 'text',
             rtlStr = 'rtl',
             arrayStr = 'array',
             middleStr = 'middle',
+            pxStr = 'px',
+            initialStr = 'initial',
+            brStr = '<br>',
             IESplTspanAttr = {
-            visibility: "hidden",
-            "font-size": "0px"
+            visibility: 'hidden',
+            'font-size': '0px'
         },
             Str = String,
             toFloat = parseFloat,
             toInt = parseInt,
-            theMSG,
-            randomPos = -100,
-            isIE = /*@cc_on!@*/false || !!document.documentMode,
+            vAlignMultiplier = {
+            top: 0,
+            bottom: -1,
+            middle: -0.5
+        },
+            isIE = /* @cc_on!@ */false || !!document.documentMode,
             math = Math,
             mmax = math.max,
             abs = math.abs,
             pow = math.pow,
             sqrt = math.sqrt,
-            xlinkRegx = /^xlink\:/,
+            xlinkRegx = /^xlink:/,
             separator = /[, ]+/,
+            textBreakRegx = /\n|<br\s*?\/?>/i,
+            ltgtbrRegex = /&lt|&gt|<br/i,
             arrayShift = Array.prototype.shift,
             zeroStrokeFix = !!(/AppleWebKit/.test(R._g.win.navigator.userAgent) && (!/Chrome/.test(R._g.win.navigator.userAgent) || R._g.win.navigator.appVersion.match(/Chrome\/(\d+)\./)[1] < 29)),
             eve = R.eve,
-            E = "",
-            S = " ",
-            xlink = "http://www.w3.org/1999/xlink",
-            svgNSStr = "http://www.w3.org/2000/svg",
-            typeStringSTR = "string",
+            E = '',
+            S = ' ',
+            xlink = 'http://www.w3.org/1999/xlink',
+            svgNSStr = 'http://www.w3.org/2000/svg',
+            typeStringSTR = 'string',
             markers = {
-            block: "M5,0 0,2.5 5,5z",
-            classic: "M5,0 0,2.5 5,5 3.5,3 3.5,2z",
-            diamond: "M2.5,0 5,2.5 2.5,5 0,2.5z",
-            open: "M6,1 1,3.5 6,6",
-            oval: "M2.5,0A2.5,2.5,0,0,1,2.5,5 2.5,2.5,0,0,1,2.5,0z"
+            block: 'M5,0 0,2.5 5,5z',
+            classic: 'M5,0 0,2.5 5,5 3.5,3 3.5,2z',
+            diamond: 'M2.5,0 5,2.5 2.5,5 0,2.5z',
+            open: 'M6,1 1,3.5 6,6',
+            oval: 'M2.5,0A2.5,2.5,0,0,1,2.5,5 2.5,2.5,0,0,1,2.5,0z'
         },
             shapeRenderingAttrs = {
             speed: 'optimizeSpeed',
@@ -10331,7 +10315,7 @@ exports["default"] = function (R) {
         R.cachedFontHeight = {};
 
         R.toString = function () {
-            return "Your browser supports SVG.\nYou are running Rapha\xebl " + this.version;
+            return 'Your browser supports SVG.\nYou are running Rapha\xebl ' + this.version;
         };
 
         // Code commented as resources will now be referenced using relative urls.
@@ -10375,7 +10359,7 @@ exports["default"] = function (R) {
 
         var $ = R._createNode = function (el, attr) {
             // Create the element
-            if ((typeof el === "undefined" ? "undefined" : _typeof(el)) == typeStringSTR) {
+            if (typeof el === 'string') {
                 el = R._g.doc.createElementNS(svgNSStr, el);
             }
             // else {
@@ -10409,11 +10393,11 @@ exports["default"] = function (R) {
                 return 0;
             }
 
-            var type = "linear",
+            var type = 'linear',
                 SVG = element.paper,
-                id = R.getElementID((SVG.id + '-' + gradient).replace(/[\(\)\s%:,\xb0#]/g, "_")),
-                fx = .5,
-                fy = .5,
+                id = R.getElementID((SVG.id + '-' + gradient).replace(/[()\s%:,\xb0#]/g, '_')),
+                fx = 0.5,
+                fy = 0.5,
                 r,
                 cx,
                 cy,
@@ -10421,12 +10405,13 @@ exports["default"] = function (R) {
                 spread,
                 o = element.node,
                 s = o.style,
-                el = R._g.doc.getElementById(id);
+                el = R._g.doc.getElementById(id),
+                vector;
 
             if (!el) {
                 gradient = Str(gradient).replace(R._radial_gradient, function (all, opts) {
-                    type = "radial";
-                    opts = opts && opts.split(',') || [];
+                    type = 'radial';
+                    opts = opts ? opts.split(',') : [];
                     units = opts[5];
                     spread = opts[6];
 
@@ -10440,7 +10425,7 @@ exports["default"] = function (R) {
                         sqx;
 
                     if (_r) {
-                        r = /\%/.test(_r) ? _r : toFloat(_r);
+                        r = /%/.test(_r) ? _r : toFloat(_r);
                     }
 
                     if (units === gradientUnitNames.userSpaceOnUse) {
@@ -10462,15 +10447,15 @@ exports["default"] = function (R) {
                     if (shifted) {
                         fx = toFloat(_fx);
                         fy = toFloat(_fy);
-                        dir = (fy > .5) * 2 - 1;
-                        (sqx = pow(fx - .5, 2)) + pow(fy - .5, 2) > .25 && sqx < .25 && (fy = sqrt(.25 - sqx) * dir + .5) && fy !== .5 && (fy = fy.toFixed(5) - 1e-5 * dir);
+                        dir = (fy > 0.5) * 2 - 1;
+                        (sqx = pow(fx - 0.5, 2)) + pow(fy - 0.5, 2) > 0.25 && sqx < 0.25 && (fy = sqrt(0.25 - sqx) * dir + 0.5) && fy !== 0.5 && (fy = fy.toFixed(5) - 1e-5 * dir);
                     }
                     if (_cx && _cy) {
                         cx = toFloat(_cx);
                         cy = toFloat(_cy);
-                        dir = (cy > .5) * 2 - 1;
+                        dir = (cy > 0.5) * 2 - 1;
 
-                        (sqx = pow(cx - .5, 2)) + pow(cy - .5, 2) > .25 && sqx < .25 && (cy = sqrt(.25 - sqx) * dir + .5) && cy !== .5 && (cy = cy.toFixed(5) - 1e-5 * dir);
+                        (sqx = pow(cx - 0.5, 2)) + pow(cy - 0.5, 2) > 0.25 && sqx < 0.25 && (cy = sqrt(0.25 - sqx) * dir + 0.5) && cy !== 0.5 && (cy = cy.toFixed(5) - 1e-5 * dir);
 
                         if (!shifted) {
                             fx = cx;
@@ -10480,14 +10465,13 @@ exports["default"] = function (R) {
 
                     return E;
                 });
-                gradient = gradient.split(/\s*\-\s*/);
-                if (type == "linear") {
+                gradient = gradient.split(/\s*-\s*/);
+                if (type === 'linear') {
                     var angle = gradient.shift(),
                         specs = angle.match(/\((.*)\)/),
-                        vector,
                         max;
 
-                    specs = specs && specs[1] && specs[1].split(/\s*\,\s*/);
+                    specs = specs && specs[1] && specs[1].split(/\s*,\s*/);
                     angle = -toFloat(angle);
                     if (isNaN(angle)) {
                         return null;
@@ -10502,7 +10486,7 @@ exports["default"] = function (R) {
                         }
 
                         /** @todo apply angle rotation and validation */
-                        vector = [specs[0] || "0%", specs[1] || "0%", specs[2] || "100%", specs[3] || "0%"];
+                        vector = [specs[0] || '0%', specs[1] || '0%', specs[2] || '100%', specs[3] || '0%'];
                     } else {
                         vector = [0, 0, math.cos(R.rad(angle)), math.sin(R.rad(angle))];
                         max = 1 / (mmax(abs(vector[2]), abs(vector[3])) || 1);
@@ -10523,13 +10507,13 @@ exports["default"] = function (R) {
                     return null;
                 }
 
-                el = $(type + "Gradient", {
+                el = $(type + 'Gradient', {
                     id: id
                 });
                 el.refCount = 0;
                 units in gradientUnitNames && el.setAttribute('gradientUnits', Str(units));
                 spread in gradientSpreadNames && el.setAttribute('spreadMethod', Str(spread));
-                if (type === "radial") {
+                if (type === 'radial') {
                     r !== undefined && el.setAttribute('r', Str(r));
 
                     if (cx !== undefined && cy !== undefined) {
@@ -10548,11 +10532,11 @@ exports["default"] = function (R) {
                 }
 
                 for (var i = 0, ii = dots.length; i < ii; i++) {
-                    el.appendChild($("stop", {
-                        offset: dots[i].offset ? dots[i].offset : i ? "100%" : "0%",
-                        "stop-color": dots[i].color || "#fff",
-                        //add stop opacity information
-                        "stop-opacity": dots[i].opacity === undefined ? 1 : dots[i].opacity
+                    el.appendChild($('stop', {
+                        offset: dots[i].offset ? dots[i].offset : i ? '100%' : '0%',
+                        'stop-color': dots[i].color || '#fff',
+                        // add stop opacity information
+                        'stop-opacity': dots[i].opacity === undefined ? 1 : dots[i].opacity
                     }));
                 }
                 SVG.defs.appendChild(el);
@@ -10561,8 +10545,8 @@ exports["default"] = function (R) {
             updateGradientReference(element, el);
 
             $(o, {
-                fill: "url('" + R._url + "#" + id + "')",
-                "fill-opacity": 1
+                fill: "url('" + R._url + '#' + id + "')",
+                'fill-opacity': 1
             });
 
             s.fill = E;
@@ -10572,19 +10556,19 @@ exports["default"] = function (R) {
             updatePosition = function updatePosition(o) {
             var bbox = o.getBBox(1);
             $(o.pattern, {
-                patternTransform: o.matrix.invert() + " translate(" + bbox.x + "," + bbox.y + ")"
+                patternTransform: o.matrix.invert() + ' translate(' + bbox.x + ',' + bbox.y + ')'
             });
         },
             addArrow = function addArrow(o, value, isEnd) {
-            if (o.type == "path") {
-                var values = Str(value).toLowerCase().split("-"),
+            if (o.type === 'path') {
+                var values = Str(value).toLowerCase().split('-'),
                     p = o.paper,
-                    se = isEnd ? "end" : "start",
+                    se = isEnd ? 'end' : 'start',
                     node = o.node,
                     attrs = o.attrs,
-                    stroke = attrs["stroke-width"],
+                    stroke = attrs['stroke-width'],
                     i = values.length,
-                    type = "classic",
+                    type = 'classic',
                     from,
                     to,
                     dx,
@@ -10595,43 +10579,43 @@ exports["default"] = function (R) {
                     t = 5;
                 while (i--) {
                     switch (values[i]) {
-                        case "block":
-                        case "classic":
-                        case "oval":
-                        case "diamond":
-                        case "open":
-                        case "none":
+                        case 'block':
+                        case 'classic':
+                        case 'oval':
+                        case 'diamond':
+                        case 'open':
+                        case 'none':
                             type = values[i];
                             break;
-                        case "wide":
+                        case 'wide':
                             h = 5;
                             break;
-                        case "narrow":
+                        case 'narrow':
                             h = 2;
                             break;
-                        case "long":
+                        case 'long':
                             w = 5;
                             break;
-                        case "short":
+                        case 'short':
                             w = 2;
                             break;
                     }
                 }
-                if (type == "open") {
+                if (type === 'open') {
                     w += 2;
                     h += 2;
                     t += 2;
                     dx = 1;
                     refX = isEnd ? 4 : 1;
                     attr = {
-                        fill: "none",
+                        fill: 'none',
                         stroke: attrs.stroke
                     };
                 } else {
                     refX = dx = w / 2;
                     attr = {
                         fill: attrs.stroke,
-                        stroke: "none"
+                        stroke: 'none'
                     };
                 }
                 if (o._.arrows) {
@@ -10645,12 +10629,12 @@ exports["default"] = function (R) {
                 } else {
                     o._.arrows = {};
                 }
-                if (type != "none") {
-                    var pathId = "raphael-marker-" + type,
-                        markerId = "raphael-marker-" + se + type + w + h + "-obj" + o.id;
+                if (type !== 'none') {
+                    var pathId = 'raphael-marker-' + type,
+                        markerId = 'raphael-marker-' + se + type + w + h + '-obj' + o.id;
                     if (!R._g.doc.getElementById(pathId)) {
-                        p.defs.appendChild($($("path"), {
-                            "stroke-linecap": "round",
+                        p.defs.appendChild($($('path'), {
+                            'stroke-linecap': 'round',
                             d: markers[type],
                             id: pathId
                         }));
@@ -10661,28 +10645,28 @@ exports["default"] = function (R) {
                     var marker = R._g.doc.getElementById(markerId),
                         use;
                     if (!marker) {
-                        marker = $($("marker"), {
+                        marker = $($('marker'), {
                             id: markerId,
                             markerHeight: h,
                             markerWidth: w,
-                            orient: "auto",
+                            orient: 'auto',
                             refX: refX,
                             refY: h / 2
                         });
-                        use = $($("use"), {
-                            "xlink:href": "#" + pathId,
-                            transform: (isEnd ? "rotate(180 " + w / 2 + " " + h / 2 + ") " : E) + "scale(" + w / t + "," + h / t + ")",
-                            "stroke-width": (1 / ((w / t + h / t) / 2)).toFixed(4)
+                        use = $($('use'), {
+                            'xlink:href': '#' + pathId,
+                            transform: (isEnd ? 'rotate(180 ' + w / 2 + S + h / 2 + ') ' : E) + 'scale(' + w / t + ',' + h / t + ')',
+                            'stroke-width': (1 / ((w / t + h / t) / 2)).toFixed(4)
                         });
                         marker.appendChild(use);
                         p.defs.appendChild(marker);
                         markerCounter[markerId] = 1;
                     } else {
                         markerCounter[markerId]++;
-                        use = marker.getElementsByTagName("use")[0];
+                        use = marker.getElementsByTagName('use')[0];
                     }
                     $(use, attr);
-                    var delta = dx * (type != "diamond" && type != "oval");
+                    var delta = dx * (type !== 'diamond' && type !== 'oval');
                     if (isEnd) {
                         from = o._.arrows.startdx * stroke || 0;
                         to = R.getTotalLength(attrs.path) - delta * stroke;
@@ -10691,15 +10675,15 @@ exports["default"] = function (R) {
                         to = R.getTotalLength(attrs.path) - (o._.arrows.enddx * stroke || 0);
                     }
                     attr = {};
-                    attr["marker-" + se] = "url('" + R._url + "#" + markerId + "')";
+                    attr['marker-' + se] = "url('" + R._url + '#' + markerId + "')";
                     if (to || from) {
                         attr.d = R.getSubpath(attrs.path, from, to);
                     }
                     $(node, attr);
-                    o._.arrows[se + "Path"] = pathId;
-                    o._.arrows[se + "Marker"] = markerId;
-                    o._.arrows[se + "dx"] = delta;
-                    o._.arrows[se + "Type"] = type;
+                    o._.arrows[se + 'Path'] = pathId;
+                    o._.arrows[se + 'Marker'] = markerId;
+                    o._.arrows[se + 'dx'] = delta;
+                    o._.arrows[se + 'Type'] = type;
                     o._.arrows[se + typeStringSTR] = value;
                 } else {
                     if (isEnd) {
@@ -10709,13 +10693,13 @@ exports["default"] = function (R) {
                         from = 0;
                         to = R.getTotalLength(attrs.path) - (o._.arrows.enddx * stroke || 0);
                     }
-                    o._.arrows[se + "Path"] && $(node, {
+                    o._.arrows[se + 'Path'] && $(node, {
                         d: R.getSubpath(attrs.path, from, to)
                     });
-                    delete o._.arrows[se + "Path"];
-                    delete o._.arrows[se + "Marker"];
-                    delete o._.arrows[se + "dx"];
-                    delete o._.arrows[se + "Type"];
+                    delete o._.arrows[se + 'Path'];
+                    delete o._.arrows[se + 'Marker'];
+                    delete o._.arrows[se + 'dx'];
+                    delete o._.arrows[se + 'Type'];
                     delete o._.arrows[se + typeStringSTR];
                 }
                 for (attr in markerCounter) {
@@ -10732,18 +10716,18 @@ exports["default"] = function (R) {
             // redraphael internally changes the "none" value to "0", thus the stroke/border becomes invisible
             // To fix this issue now instead of setting the value as `0` for `stroke-dasharray` attribute
             // now using `none` string as none is a w3c standard value for stroke-dasharray
-            "": ["none"],
-            "none": ["none"],
-            "-": [3, 1],
-            ".": [1, 1],
-            "-.": [3, 1, 1, 1],
-            "-..": [3, 1, 1, 1, 1, 1],
-            ". ": [1, 3],
-            "- ": [4, 3],
-            "--": [8, 3],
-            "- .": [4, 3, 1, 3],
-            "--.": [8, 3, 1, 3],
-            "--..": [8, 3, 1, 3, 1, 3]
+            '': ['none'],
+            'none': ['none'],
+            '-': [3, 1],
+            '.': [1, 1],
+            '-.': [3, 1, 1, 1],
+            '-..': [3, 1, 1, 1, 1, 1],
+            '. ': [1, 3],
+            '- ': [4, 3],
+            '--': [8, 3],
+            '- .': [4, 3, 1, 3],
+            '--.': [8, 3, 1, 3],
+            '--..': [8, 3, 1, 3, 1, 3]
         },
             addDashes = function addDashes(o, value, params) {
             var predefValue = dasharray[Str(value).toLowerCase()],
@@ -10751,22 +10735,19 @@ exports["default"] = function (R) {
                 width,
                 butt,
                 i,
-                l,
                 widthFactor;
 
             value = predefValue || value !== undefined && [].concat(value);
             if (value) {
-
-                width = o.attrs["stroke-width"] || 1;
+                width = o.attrs['stroke-width'] || 1;
                 butt = {
                     round: width,
                     square: width,
                     butt: 0
-                }[params["stroke-linecap"] || o.attrs["stroke-linecap"]] || 0;
-                l = i = value.length;
+                }[params['stroke-linecap'] || o.attrs['stroke-linecap']] || 0;
                 widthFactor = predefValue ? width : 1;
 
-                if (value[0] == 'none') {
+                if (value[0] === 'none') {
                     calculatedValues = value;
                 } else {
                     calculatedValues = [];
@@ -10781,7 +10762,7 @@ exports["default"] = function (R) {
 
                 if (R.is(value, arrayStr)) {
                     $(o.node, {
-                        "stroke-dasharray": calculatedValues.join(",")
+                        'stroke-dasharray': calculatedValues.join(',')
                     });
                 }
             }
@@ -10795,16 +10776,26 @@ exports["default"] = function (R) {
                 paper = o.paper,
                 s = node.style,
                 vis = s.visibility,
-                i,
-                l;
-            // Convert all the &lt; and &gt; to < and > and if there is any <br/> tag in between &lt; and &gt;
-            // then converting them into <<br/> and ><br/> respectively.
-            if (params && params.text && params.text.replace) {
-                params.text = params.text.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&<br\/>lt;|&l<br\/>t;|&lt<br\/>;/g, "<<br/>").replace(/&<br\/>gt;|&g<br\/>t;|&gt<br\/>;/g, "><br/>");
-            }
-            s.visibility = "hidden";
-            if (o.type === "image") {
-                LoadRefImage(o, params);
+                el,
+                preLoad = function preLoad(elem, ig, isURL) {
+                R._preload(isURL[1], function () {
+                    var w = this.offsetWidth,
+                        h = this.offsetHeight;
+                    $(elem, {
+                        width: w,
+                        height: h
+                    });
+                    $(ig, {
+                        width: w,
+                        height: h
+                    });
+                    paper.safari();
+                });
+            };
+
+            s.visibility = 'hidden';
+            if (o.type === 'image') {
+                (0, _raphael.loadRefImage)(o, params);
             }
             for (var att in params) {
                 if (params[has](att)) {
@@ -10819,59 +10810,60 @@ exports["default"] = function (R) {
                         continue;
                     }
                     switch (att) {
-                        case "blur":
+                        case 'blur':
                             o.blur(value);
                             break;
-                        case "href":
-                        case "title":
-                        case "target":
+                        case 'href':
+                        case 'title':
+                        case 'target':
                             var pn = node.parentNode;
-                            if (pn.tagName.toLowerCase() != "a") {
-                                if (value == E) {
+                            if (pn.tagName.toLowerCase() !== 'a') {
+                                if (value === E) {
                                     break;
                                 }
-                                var hl = $("a");
+                                var hl = $('a');
                                 hl.raphael = true;
                                 hl.raphaelid = node.raphaelid;
                                 pn.insertBefore(hl, node);
                                 hl.appendChild(node);
                                 pn = hl;
                             }
-                            if (att == "target") {
-                                pn.setAttributeNS(xlink, "show", value == "blank" ? "new" : value);
+                            if (att === 'target') {
+                                pn.setAttributeNS(xlink, 'show', value === 'blank' ? 'new' : value);
                             } else {
                                 pn.setAttributeNS(xlink, att, value);
                             }
                             node.titleNode = pn;
                             break;
-                        case "cursor":
+                        case 'cursor':
                             s.cursor = value;
                             break;
-                        case "transform":
+                        case 'transform':
                             o.transform(value);
                             break;
-                        case "rotation":
+                        case 'rotation':
                             if (R.is(value, arrayStr)) {
                                 o.rotate.apply(o, value);
                             } else {
                                 o.rotate(value);
                             }
                             break;
-                        case "arrow-start":
+                        case 'arrow-start':
                             addArrow(o, value);
                             break;
-                        case "arrow-end":
+                        case 'arrow-end':
                             addArrow(o, value, 1);
                             break;
-                        case "clip-path":
+                        case 'clip-path':
                             var pathClip = true;
-                        case "clip-rect":
+                        // falls through
+                        case 'clip-rect':
                             var rect = !pathClip && Str(value).split(separator);
                             o._.clipispath = !!pathClip;
-                            if (pathClip || rect.length == 4) {
+                            if (pathClip || rect.length === 4) {
                                 o.clip && o.clip.parentNode.parentNode.removeChild(o.clip.parentNode);
-                                var el = $("clipPath"),
-                                    rc = $(pathClip ? "path" : "rect");
+                                var rc = $(pathClip ? 'path' : 'rect');
+                                el = $('clipPath');
                                 el.id = R.getElementID(R.createUUID());
                                 $(rc, pathClip ? {
                                     d: value ? attrs['clip-path'] = R._pathToAbsolute(value) : R._availableAttrs.path,
@@ -10886,81 +10878,91 @@ exports["default"] = function (R) {
                                 el.appendChild(rc);
                                 paper.defs.appendChild(el);
                                 $(node, {
-                                    "clip-path": "url('" + R._url + "#" + el.id + "')"
+                                    'clip-path': "url('" + R._url + '#' + el.id + "')"
                                 });
                                 o.clip = rc;
                             }
                             if (!value) {
-                                var path = node.getAttribute("clip-path");
+                                var path = node.getAttribute('clip-path');
                                 if (path) {
                                     var clip = R._g.doc.getElementById(path.replace(/(^url\(#|\)$)/g, E));
                                     clip && clip.parentNode.removeChild(clip);
                                     $(node, {
-                                        "clip-path": E
+                                        'clip-path': E
                                     });
                                     document.documentMode === 11 && node.removeAttribute('clip-path');
                                     delete o.clip;
                                 }
                             }
                             break;
-                        case "path":
-                            if (o.type == "path") {
+                        case 'path':
+                            if (o.type === 'path') {
                                 $(node, {
                                     d: value ? attrs.path = R._pathToAbsolute(value) : R._availableAttrs.path
                                 });
                                 o._.dirty = 1;
                                 if (o._.arrows) {
-                                    "startString" in o._.arrows && addArrow(o, o._.arrows.startString);
-                                    "endString" in o._.arrows && addArrow(o, o._.arrows.endString, 1);
+                                    'startString' in o._.arrows && addArrow(o, o._.arrows.startString);
+                                    'endString' in o._.arrows && addArrow(o, o._.arrows.endString, 1);
                                 }
                             }
                             break;
-                        case "width":
+                        case 'width':
                             node.setAttribute(att, value);
                             o._.dirty = 1;
                             if (attrs.fx) {
-                                att = "x";
+                                att = 'x';
                                 value = attrs.x;
                             } else {
                                 break;
                             }
-                        case "x":
+                        // falls through
+                        case 'x':
                             if (attrs.fx) {
                                 value = -attrs.x - (attrs.width || 0);
                             }
-                        case "rx":
-                            if (att == "rx" && o.type == "rect") {
+                        // falls through
+                        case 'rx':
+                            if (att === 'rx' && o.type === 'rect') {
                                 break;
                             }
-                        case "cx":
+                        // falls through
+                        case 'cx':
                             node.setAttribute(att, value);
                             o.pattern && updatePosition(o);
                             o._.dirty = 1;
                             break;
-                        case "height":
+                        case 'height':
                             node.setAttribute(att, value);
                             o._.dirty = 1;
                             if (attrs.fy) {
-                                att = "y";
+                                att = 'y';
                                 value = attrs.y;
                             } else {
                                 break;
                             }
-                        case "y":
+                        // falls through
+                        case 'y':
+                            // For text don't apply y attribute as it will be applied during tuneText
+                            if (o.type === textStr) {
+                                break;
+                            }
                             if (attrs.fy) {
                                 value = -attrs.y - (attrs.height || 0);
                             }
-                        case "ry":
-                            if (att == "ry" && o.type == "rect") {
+                        // falls through
+                        case 'ry':
+                            if (att === 'ry' && o.type === 'rect') {
                                 break;
                             }
-                        case "cy":
+                        // falls through
+                        case 'cy':
                             node.setAttribute(att, value);
                             o.pattern && updatePosition(o);
                             o._.dirty = 1;
                             break;
-                        case "r":
-                            if (o.type == "rect") {
+                        case 'r':
+                            if (o.type === 'rect') {
                                 $(node, {
                                     rx: value,
                                     ry: value
@@ -10970,13 +10972,13 @@ exports["default"] = function (R) {
                             }
                             o._.dirty = 1;
                             break;
-                        case "src":
-                            if (o.type == "image") {
-                                node.setAttributeNS(xlink, "href", value);
+                        case 'src':
+                            if (o.type === 'image') {
+                                node.setAttributeNS(xlink, 'href', value);
                             }
                             break;
-                        case "stroke-width":
-                            if (o._.sx != 1 || o._.sy != 1) {
+                        case 'stroke-width':
+                            if (o._.sx !== 1 || o._.sy !== 1) {
                                 value /= mmax(abs(o._.sx), abs(o._.sy)) || 1;
                             }
                             if (paper._vbSize) {
@@ -10986,54 +10988,39 @@ exports["default"] = function (R) {
                                 value = 0.000001;
                             }
                             node.setAttribute(att, value);
-                            if (attrs["stroke-dasharray"]) {
-                                addDashes(o, attrs["stroke-dasharray"], params);
+                            if (attrs['stroke-dasharray']) {
+                                addDashes(o, attrs['stroke-dasharray'], params);
                             }
                             if (o._.arrows) {
-                                "startString" in o._.arrows && addArrow(o, o._.arrows.startString);
-                                "endString" in o._.arrows && addArrow(o, o._.arrows.endString, 1);
+                                'startString' in o._.arrows && addArrow(o, o._.arrows.startString);
+                                'endString' in o._.arrows && addArrow(o, o._.arrows.endString, 1);
                             }
                             break;
-                        case "stroke-dasharray":
+                        case 'stroke-dasharray':
                             addDashes(o, value, params);
                             break;
-                        case "fill":
+                        case 'fill':
                             var isURL = Str(value).match(R._ISURL);
                             if (isURL) {
-                                el = $("pattern");
-                                var ig = $("image");
+                                el = $('pattern');
+                                var ig = $('image');
                                 el.id = R.getElementID(R.createUUID());
                                 $(el, {
                                     x: 0,
                                     y: 0,
-                                    patternUnits: "userSpaceOnUse",
+                                    patternUnits: 'userSpaceOnUse',
                                     height: 1,
                                     width: 1
                                 });
                                 $(ig, {
                                     x: 0,
                                     y: 0,
-                                    "xlink:href": isURL[1]
+                                    'xlink:href': isURL[1]
                                 });
                                 el.appendChild(ig);
-
-                                (function (el) {
-                                    R._preload(isURL[1], function () {
-                                        var w = this.offsetWidth,
-                                            h = this.offsetHeight;
-                                        $(el, {
-                                            width: w,
-                                            height: h
-                                        });
-                                        $(ig, {
-                                            width: w,
-                                            height: h
-                                        });
-                                        paper.safari();
-                                    });
-                                })(el);
+                                preLoad(el, ig, isURL);
                                 paper.defs.appendChild(el);
-                                s.fill = "url('" + R._url + "#" + el.id + "')";
+                                s.fill = "url('" + R._url + '#' + el.id + "')";
                                 $(node, {
                                     fill: s.fill
                                 });
@@ -11051,14 +11038,14 @@ exports["default"] = function (R) {
                                 //     $(node, {
                                 //         opacity: attrs.opacity
                                 //     });
-                                !R.is(attrs["fill-opacity"], "undefined") && R.is(params["fill-opacity"], "undefined") && $(node, {
-                                    "fill-opacity": attrs["fill-opacity"]
+                                !R.is(attrs['fill-opacity'], 'undefined') && R.is(params['fill-opacity'], 'undefined') && $(node, {
+                                    'fill-opacity': attrs['fill-opacity']
                                 });
                                 o.gradient && updateGradientReference(o);
-                            } else if ((o.type == "circle" || o.type == "ellipse" || Str(value).charAt() != "r") && addGradientFill(o, value)) {
+                            } else if ((o.type === 'circle' || o.type === 'ellipse' || Str(value).charAt() !== 'r') && addGradientFill(o, value)) {
                                 // The reason for this block of code is not known, hence it is commented out as it is causeing issues in
                                 // IE8 browser for gradient color
-                                /*if ("opacity" in attrs || "fill-opacity" in attrs) {
+                                /* if ("opacity" in attrs || "fill-opacity" in attrs) {
                                     var gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\(#|\)$/g, E));
                                     if (gradient) {
                                         var stops = gradient.getElementsByTagName("stop");
@@ -11066,55 +11053,56 @@ exports["default"] = function (R) {
                                             "stop-opacity": ("opacity" in attrs ? attrs.opacity : 1) * ("fill-opacity" in attrs ? attrs["fill-opacity"] : 1)
                                         });
                                     }
-                                }*/
+                                } */
                                 attrs.gradient = value;
                                 // attrs.fill = "none";
                                 s.fill = E;
                                 break;
                             }
-                            if (clr[has]("opacity")) {
+                            if (clr[has]('opacity')) {
                                 $(node, {
-                                    "fill-opacity": s.fillOpacity = clr.opacity > 1 ? clr.opacity / 100 : clr.opacity
+                                    'fill-opacity': s.fillOpacity = clr.opacity > 1 ? clr.opacity / 100 : clr.opacity
                                 });
                                 o._.fillOpacityDirty = true;
-                            } else if (o._.fillOpacityDirty && R.is(attrs['fill-opacity'], "undefined") && R.is(params["fill-opacity"], "undefined")) {
+                            } else if (o._.fillOpacityDirty && R.is(attrs['fill-opacity'], 'undefined') && R.is(params['fill-opacity'], 'undefined')) {
                                 node.removeAttribute('fill-opacity');
                                 s.fillOpacity = E;
                                 delete o._.fillOpacityDirty;
                             }
-                        case "stroke":
+                        // falls through
+                        case 'stroke':
                             clr = R.getRGB(value);
                             node.setAttribute(att, clr.hex);
                             s[att] = clr.hex;
-                            if (att == "stroke") {
+                            if (att === 'stroke') {
                                 // remove stroke opacity when stroke is set to none
-                                if (clr[has]("opacity")) {
+                                if (clr[has]('opacity')) {
                                     $(node, {
-                                        "stroke-opacity": s.strokeOpacity = clr.opacity > 1 ? clr.opacity / 100 : clr.opacity
+                                        'stroke-opacity': s.strokeOpacity = clr.opacity > 1 ? clr.opacity / 100 : clr.opacity
                                     });
                                     o._.strokeOpacityDirty = true;
-                                } else if (o._.strokeOpacityDirty && R.is(attrs['stroke-opacity'], "undefined") && R.is(params["stroke-opacity"], "undefined")) {
+                                } else if (o._.strokeOpacityDirty && R.is(attrs['stroke-opacity'], 'undefined') && R.is(params['stroke-opacity'], 'undefined')) {
                                     node.removeAttribute('stroke-opacity');
                                     s.strokeOpacity = E;
                                     delete o._.strokeOpacityDirty;
                                 }
                                 if (o._.arrows) {
-                                    "startString" in o._.arrows && addArrow(o, o._.arrows.startString);
-                                    "endString" in o._.arrows && addArrow(o, o._.arrows.endString, 1);
+                                    'startString' in o._.arrows && addArrow(o, o._.arrows.startString);
+                                    'endString' in o._.arrows && addArrow(o, o._.arrows.endString, 1);
                                 }
                             }
                             break;
-                        case "gradient":
-                            (o.type == "circle" || o.type == "ellipse" || Str(value).charAt() != "r") && addGradientFill(o, value);
+                        case 'gradient':
+                            (o.type === 'circle' || o.type === 'ellipse' || Str(value).charAt() !== 'r') && addGradientFill(o, value);
                             break;
                         case 'line-height': // do not apply
                         case 'vertical-align':
                             // do not apply
                             break;
-                        case "visibility":
+                        case 'visibility':
                             value === 'hidden' ? o.hide() : o.show();
                             break;
-                        case "opacity":
+                        case 'opacity':
                             // if (attrs.gradient && !attrs[has]("stroke-opacity")) {
                             //     $(node, {
                             //         "stroke-opacity": value > 1 ? value / 100 : value
@@ -11122,12 +11110,12 @@ exports["default"] = function (R) {
                             // }
                             value = value > 1 ? value / 100 : value;
                             $(node, {
-                                "opacity": value
+                                'opacity': value
                             });
                             s.opacity = value;
                             break;
                         // fall
-                        case "fill-opacity":
+                        case 'fill-opacity':
                             // if (attrs.gradient) {
                             //     gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\([\'\"]#|[\'\"]\)$/g, E));
                             //     if (gradient) {
@@ -11143,17 +11131,17 @@ exports["default"] = function (R) {
                             // }
                             value = value > 1 ? value / 100 : value;
                             $(node, {
-                                "fill-opacity": value
+                                'fill-opacity': value
                             });
                             s.fillOpacity = value;
                             break;
-                        case "shape-rendering":
+                        case 'shape-rendering':
                             o.attrs[att] = value = shapeRenderingAttrs[value] || value || 'auto';
                             node.setAttribute(att, value);
                             node.style.shapeRendering = value;
                             break;
                         default:
-                            att == fontSizeStr && (value = toInt(value, 10) + "px");
+                            att === fontSizeStr && (value = toInt(value, 10) + 'px');
                             s[_raphael.dashedAttr2CSSMap[att]] = value;
                             o._.dirty = 1;
                             node.setAttribute(att, value);
@@ -11161,7 +11149,7 @@ exports["default"] = function (R) {
                     }
                 }
             }
-            o.type === 'text' && !params["_do-not-tune"] && tuneText(o, params);
+            o.type === 'text' && !params['_do-not-tune'] && tuneText(o, params);
             s.visibility = vis;
         },
 
@@ -11186,22 +11174,22 @@ exports["default"] = function (R) {
         },
             leading = 1.2,
             tuneText = function tuneText(el, params) {
-            if (el.type != textStr || !(params[has](textStr) || params[has]("font") || params[has](fontSizeStr) || params[has]("x") || params[has]("y") || params[has](lineHeightStr) || params[has](vAignStr))) {
+            // If there is no effective change in new attributes then ignore
+            if (el.type !== textStr || !(params[has](textStr) || params[has]('font') || params[has](fontSizeStr) || params[has]('x') || params[has]('y') || params[has](lineHeightStr) || params[has](vAignStr))) {
                 return;
             }
             var a = el.attrs,
                 group = el.parent,
                 node = el.node,
                 fontSize,
-                oldAttr = el._oldAttr = el._oldAttr || { tspanAttr: {} },
-                lineHeight = toFloat(params[lineHeightStr] || a[lineHeightStr]),
-                actualValign,
-                direction = params.direction || a.direction || group && group.attrs && group.attrs.direction || oldAttr.direction || "initial",
+                oldAttr = el._oldAttr = el._oldAttr || { baseLineDiff: 8, valign: -0.5 },
+                // Store all the attributes that are getting applied. This will help us to apply deferential information only.
+            lineHeight = toFloat(params[lineHeightStr] || a[lineHeightStr]),
+                direction = params.direction || a.direction || group && group.attrs && group.attrs.direction || oldAttr.direction || initialStr,
                 valign,
-                nodeAttr = {},
-                updateNode,
-                tspanAttr = {},
-                updateTspan,
+                updateNode = false,
+                tspanAttr,
+                updateTspan = false,
                 i,
                 l,
                 ii,
@@ -11212,96 +11200,124 @@ exports["default"] = function (R) {
                 texts,
                 tempIESpan,
                 tspan,
-                updateAlignment,
+                updateAlignment = false,
                 tspans,
-                text;
+                text,
+                textChanged = false,
+                removeAllChild = !!(!isIE && oldAttr.direction && direction !== oldAttr.direction);
+
+            oldAttr.direction = direction;
+
             // If line height is not valid (0, NaN, undefuned), then derive it from fontSize
             if (!lineHeight) {
                 fontSize = params.fontSize || params[fontSizeStr] || a[fontSizeStr] || group && group.attrs && group.attrs.fontSize;
-                fontSize = fontSize ? fontSize.toString().replace(/px/, E) : 10;
+                fontSize = fontSize ? fontSize.toString().replace(pxStr, E) : 10;
                 lineHeight = fontSize * leading;
             }
-
-            if (params[has]("x") && oldAttr.tspanAttr.x != params.x) {
-                // X change
-                // If the x is getting changed, then node and the tspan both needs to be updated
-                oldAttr.tspanAttr.x = tspanAttr.x = nodeAttr.x = a.x;
-                updateNode = true;
-                updateTspan = true;
-            }
-            if (params[has]("y") && oldAttr.y != params.y) {
-                // Y change
-                oldAttr.y = nodeAttr.y = a.y;
-                updateNode = true;
-            }
-
-            if (lineHeight != oldAttr.lineHeight) {
-                // lineHeight change
-                oldAttr.lineHeight = oldAttr.tspanAttr.dy = tspanAttr.dy = lineHeight;
-                updateTspan = true;
-                updateAlignment = true;
-                oldAttr.baseLineDiff = lineHeight * 0.75; //Aprox calculation
-            }
-
-            if (params[has](vAignStr)) {
-                // vAlign change
-                actualValign = a[has](vAignStr) ? a[vAignStr] : middleStr;
-                valign = actualValign === 'top' ? 0 : actualValign === 'bottom' ? -1 : -0.5;
-                if (valign != oldAttr.valign) {
-                    oldAttr.valign = valign;
-                    updateAlignment = true;
-                }
-            }
-
-            // If the text was RTL earlier and now changed or vice versa
-            if (!isIE && direction != oldAttr.direction) {
-                // remove all tspans
-                while (node.firstChild) {
-                    node.removeChild(node.firstChild);
-                }
-                // reset the tspan count as well
-                oldAttr.lineCount = 0;
-            }
-            oldAttr.direction = direction;
-
             // If the containing text got changed
             if (params[has](textStr)) {
                 // If the text is an arra then join with <br>
-                text = R.is(params.text, arrayStr) ? params.text.join('<br>') : params.text;
+                text = R.is(params.text, arrayStr) ? params.text.join(brStr) : params.text;
                 // If it is a new text applied
                 if (text !== oldAttr.text) {
+                    textChanged = true;
+                    // Convert all the &lt; and &gt; to < and > and if there is any <br/> tag in between &lt; and &gt;
+                    // then converting them into <<br/> and ><br/> respectively.
+                    if (text && ltgtbrRegex.test(text)) {
+                        text = text.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&<br\/>lt;|&l<br\/>t;|&lt<br\/>;/g, '<<br/>').replace(/&<br\/>gt;|&g<br\/>t;|&gt<br\/>;/g, '><br/>');
+                    }
                     oldAttr.text = a.text = text;
-                    texts = Str(text).split(/\n|<br\s*?\/?>/ig);
-                    l = texts.length;
-                    if (oldAttr.lineCount != l) {
+                    if (textBreakRegx.test(text)) {
+                        // if multiline text
+                        if (oldAttr.noTSpan) {
+                            // previously it was single line
+                            oldAttr.noTSpan = !(removeAllChild = true);
+                        }
+                        texts = Str(text).split(textBreakRegx);
+                        l = texts.length;
+                    } else {
+                        // single line
+                        if (oldAttr.noTSpan !== undefined) {
+                            removeAllChild = true;
+                        }
+                        oldAttr.noTSpan = true; // Always remove old text node
+                        l = 1;
+                    }
+                    // if no if lines are changed
+                    if (oldAttr.lineCount !== l) {
                         oldAttr.lineCount = l;
                         updateAlignment = true;
                     }
+                }
+            }
+
+            if (lineHeight !== oldAttr.lineHeight) {
+                // lineHeight change
+                oldAttr.lineHeight = lineHeight;
+                oldAttr.baseLineDiff = lineHeight * 0.75; // Approximate calculation
+                updateAlignment = true;
+            }
+
+            // If the text was RTL earlier and now changed or vice versa
+            if (removeAllChild) {
+                // remove all children
+                while (node.firstChild) {
+                    node.removeChild(node.firstChild);
+                }
+            }
+
+            // ** If multiline text mode
+            if (oldAttr.lineCount > 1) {
+                tspanAttr = {};
+                if (!oldAttr.tspanAttr) {
+                    oldAttr.tspanAttr = {};
+                    oldAttr.tspan0Attr = {};
+                }
+                // If the dy needs to be changed
+                if (oldAttr.tspanAttr.dy !== oldAttr.lineHeight) {
+                    oldAttr.tspanAttr.dy = tspanAttr.dy = oldAttr.lineHeight;
+                    updateTspan = true;
+                }
+
+                // if x is getting changed
+                if (params[has]('x') && oldAttr.tspanAttr.x !== params.x) {
+                    // X change
+                    // If the x is getting changed, then the tspan need to be updated
+                    // Note: we don't need to update the node as it is already updated during setFillAndStroke
+                    oldAttr.tspan0Attr.x = oldAttr.tspanAttr.x = tspanAttr.x = a.x;
+                    updateTspan = true;
+                }
+
+                // Note for the first tspan (i === 0), we will add only the x attribute. No dy
+                // If the containing text got changed
+                if (textChanged) {
                     tspans = node.getElementsByTagName(tSpanStr);
                     for (i = 0; i < l; i++) {
-                        if (tspan = tspans[i * j]) {
+                        tspan = tspans[i * j];
+                        if (tspan) {
                             // If already there is a tspan then remove the text
                             tspan.innerHTML = E;
                             if (updateTspan) {
                                 // If update required, update here
-                                $(tspan, tspanAttr);
+                                $(tspan, i ? tspanAttr : oldAttr.tspan0Attr);
                             }
                         } else {
                             // Else create a new span
-                            tspan = $(tSpanStr, oldAttr.tspanAttr);
+                            tspan = $(tSpanStr, i ? oldAttr.tspanAttr : oldAttr.tspan0Attr);
                             node.appendChild(tspan);
                             // Special fix for RTL texts in IE-SVG browsers
                             if (!isIE && direction === rtlStr) {
                                 tempIESpan = $(tSpanStr, IESplTspanAttr);
-                                tempIESpan.appendChild(R._g.doc.createTextNode("i"));
+                                tempIESpan.appendChild(R._g.doc.createTextNode('i'));
                                 node.appendChild(tempIESpan);
                             }
                         }
                         // If it is a blank line, preserve it
                         if (!texts[i]) {
-                            tspan.setAttributeNS("http://www.w3.org/XML/1998/namespace", "xml:space", "preserve");
-                            texts[i] = " ";
+                            tspan.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
+                            texts[i] = S;
                         }
+                        // create and append the text node
                         tspan.appendChild(R._g.doc.createTextNode(texts[i]));
                     }
 
@@ -11312,38 +11328,51 @@ exports["default"] = function (R) {
                             node.removeChild(tspans[i]);
                         }
                     }
-                    // Already attributes are getting updated here
-                    updateTspan = false;
+                } else if (updateTspan) {
+                    // else if the tspans needs to be updated
+                    tspans = node.getElementsByTagName(tSpanStr); // @note: don't count on tspan, rather store the previous count
+                    ii = tspans.length;
+                    for (i = 0; i < ii; i += j) {
+                        $(tspans[i], i ? tspanAttr : oldAttr.tspan0Attr);
+                    }
+                }
+            } else if (textChanged) {
+                // ** single line mode
+                // create and append the text node
+                node.appendChild(R._g.doc.createTextNode(text));
+            }
+
+            if (params[vAignStr]) {
+                // vAlign change
+                valign = vAlignMultiplier[a[vAignStr]] || 0; // default v-alignment is middle but for wrong alignment value it will be top.
+                if (valign !== oldAttr.valign) {
+                    oldAttr.valign = valign;
+                    updateAlignment = true;
                 }
             }
 
-            // the tspans needs to be updated
-            if (updateTspan) {
-                tspans = node.getElementsByTagName(tSpanStr); // @note: don't count on tspan, rather store the previous count
-                ii = tspans.length;
-
-                for (i = 0; i < ii; i += j) {
-                    $(tspans[i], tspanAttr);
-                }
+            // Update the dy of the first tspan according to the v-alignment
+            if (updateAlignment) {
+                oldAttr.shift = oldAttr.baseLineDiff + oldAttr.lineCount * oldAttr.lineHeight * oldAttr.valign;
+                updateNode = true;
+            }
+            // if y is getting changed
+            if ((params.y || params.y === 0) && oldAttr.y !== params.y) {
+                // Y change
+                oldAttr.y = a.y;
+                updateNode = true;
             }
 
             // Update the node's attribute
             if (updateNode) {
-                $(node, nodeAttr);
-            }
-            // Update the dy of the first tspan according to the v-alignment
-            if (updateAlignment) {
-                tspan = node.getElementsByTagName(tSpanStr)[0];
-                tspan && $(tspan, {
-                    dy: oldAttr.baseLineDiff + oldAttr.lineCount * oldAttr.lineHeight * oldAttr.valign
-                });
+                $(node, { y: Math.round(oldAttr.y + oldAttr.shift) });
             }
         },
-            Element = function Element(node, svg, group /*, dontAppend*/) {
+            Element = function Element(node, svg, group /*, dontAppend */) {
             var o = this,
                 parent = group || svg;
 
-            /*!dontAppend && */parent.canvas && parent.canvas.appendChild(node);
+            /*! dontAppend && */parent.canvas && parent.canvas.appendChild(node);
 
             o.node = o[0] = node;
             node.raphael = true;
@@ -11409,7 +11438,7 @@ exports["default"] = function (R) {
                 cx = bbox.x + bbox.width / 2;
                 cy = bbox.y + bbox.height / 2;
             }
-            o.transform(o._.transform.concat([["r", deg, cx, cy]]));
+            o.transform(o._.transform.concat([['r', deg, cx, cy]]));
             return o;
         };
 
@@ -11434,7 +11463,7 @@ exports["default"] = function (R) {
             }
             cx = cx == null ? bbox.x + bbox.width / 2 : cx;
             cy = cy == null ? bbox.y + bbox.height / 2 : cy;
-            o.transform(o._.transform.concat([["s", sx, sy, cx, cy]]));
+            o.transform(o._.transform.concat([['s', sx, sy, cx, cy]]));
             return o;
         };
 
@@ -11450,7 +11479,7 @@ exports["default"] = function (R) {
             }
             dx = toFloat(dx[0]) || 0;
             dy = +dy || 0;
-            o.transform(o._.transform.concat([["t", dx, dy]]));
+            o.transform(o._.transform.concat([['t', dx, dy]]));
             return o;
         };
 
@@ -11472,10 +11501,10 @@ exports["default"] = function (R) {
                 transform: o.matrix
             });
 
-            if (_.sx != 1 || _.sy != 1) {
-                sw = o.attrs["stroke-width"];
+            if (_.sx !== 1 || _.sy !== 1) {
+                sw = o.attrs['stroke-width'];
                 sw && o.attr({
-                    "stroke-width": sw
+                    'stroke-width': sw
                 });
             }
 
@@ -11485,7 +11514,7 @@ exports["default"] = function (R) {
         elproto.hide = function () {
             var o = this;
             updateFollowers(o, 'hide');
-            !o.removed && o.paper.safari(o.node.style.display = "none");
+            !o.removed && o.paper.safari(o.node.style.display = 'none');
             return o;
         };
 
@@ -11508,7 +11537,7 @@ exports["default"] = function (R) {
                 i;
 
             paper.__set__ && paper.__set__.exclude(o);
-            eve.unbind("raphael.*.*." + o.id);
+            eve.unbind('raphael.*.*.' + o.id);
 
             if (o.gradient && defs) {
                 updateGradientReference(o);
@@ -11536,11 +11565,11 @@ exports["default"] = function (R) {
             R._tear(o, o.parent);
 
             for (i in o) {
-                o[i] = typeof o[i] === "function" ? R._removedFactory(i) : null;
+                o[i] = typeof o[i] === 'function' ? R._removedFactory(i) : null;
             }
 
             o.removed = true;
-        };;
+        };
 
         elproto._getBBox = function () {
             var fn,
@@ -11552,9 +11581,9 @@ exports["default"] = function (R) {
                 hide,
                 isText = o.type === textStr;
             if (isIE && isText) {
-                fn = showRecursively(o);
+                fn = (0, _raphael.showRecursively)(o);
             } else {
-                if (node.style.display === "none") {
+                if (node.style.display === 'none') {
                     o.show();
                     hide = true;
                 }
@@ -11571,13 +11600,13 @@ exports["default"] = function (R) {
                     if (bbox.x === undefined) {
                         bbox.isCalculated = true;
                         align = a['text-anchor'];
-                        bbox.x = (a.x || 0) - bbox.width * (align === "start" ? 0 : align === middleStr ? 0.5 : 1);
+                        bbox.x = (a.x || 0) - bbox.width * (align === 'start' ? 0 : align === middleStr ? 0.5 : 1);
                     }
 
                     if (bbox.y === undefined) {
                         bbox.isCalculated = true;
                         align = a[vAignStr];
-                        bbox.y = (a.y || 0) - bbox.height * (align === "bottom" ? 1 : align === middleStr ? 0.5 : 0);
+                        bbox.y = (a.y || 0) - bbox.height * (align === 'bottom' ? 1 : align === middleStr ? 0.5 : 0);
                     }
                 }
             } catch (e) {
@@ -11593,8 +11622,7 @@ exports["default"] = function (R) {
             if (this.removed) {
                 return this;
             }
-            var todel = {},
-                key,
+            var key,
                 finalParam = {},
                 i,
                 ii,
@@ -11609,30 +11637,31 @@ exports["default"] = function (R) {
                     if (this.attrs[has](key)) {
                         res[key] = this.attrs[key];
                     }
-                }res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
+                }
+                res.gradient && res.fill === 'none' && (res.fill = res.gradient) && delete res.gradient;
                 res.transform = this._.transform;
-                res.visibility = this.node.style.display === "none" ? "hidden" : "visible";
+                res.visibility = this.node.style.display === 'none' ? 'hidden' : 'visible';
                 return res;
             } else {
                 if (value == null) {
-                    if (R.is(name, "object")) {
+                    if (R.is(name, 'object')) {
                         // Provided as an object
                         params = name;
                     } else if (R.is(name, typeStringSTR)) {
                         // get one, return the value of the given attribute
-                        if (name == "fill" && this.attrs.fill == "none" && this.attrs.gradient) {
+                        if (name === 'fill' && this.attrs.fill === 'none' && this.attrs.gradient) {
                             return this.attrs.gradient;
                         }
-                        if (name == "transform") {
+                        if (name === 'transform') {
                             return this._.transform;
                         }
-                        if (name == "visibility") {
-                            return this.node.style.display === "none" ? "hidden" : "visible";
+                        if (name === 'visibility') {
+                            return this.node.style.display === 'none' ? 'hidden' : 'visible';
                         }
 
                         if (name in this.attrs) {
                             return this.attrs[name];
-                        } else if (R.is(this.ca[name], "function")) {
+                        } else if (R.is(this.ca[name], 'function')) {
                             return this.ca[name].def;
                         }
                         return R._availableAttrs[name];
@@ -11645,15 +11674,14 @@ exports["default"] = function (R) {
 
                 if (!R.stopPartialEventPropagation) {
                     for (key in params) {
-                        eve("raphael.attr." + key + "." + this.id, this, params[key], key);
+                        eve('raphael.attr.' + key + '.' + this.id, this, params[key], key);
                     }
                 }
 
                 // For each param
                 for (key in params) {
                     // check if that is a Custom attribute or not
-                    if (this.ca[key] && params[has](key) && R.is(this.ca[key], "function") && !this.ca['_invoked' + key]) {
-
+                    if (this.ca[key] && params[has](key) && R.is(this.ca[key], 'function') && !this.ca['_invoked' + key]) {
                         this.ca['_invoked' + key] = true; // prevent recursion
                         par = this.ca[key].apply(this, [].concat(params[key]));
                         delete this.ca['_invoked' + key];
@@ -11687,8 +11715,8 @@ exports["default"] = function (R) {
             // Experimental. No Safari support. Use it on your own risk.
             var t = this;
             if (+size !== 0) {
-                var fltr = $("filter"),
-                    blur = $("feGaussianBlur");
+                var fltr = $('filter'),
+                    blur = $('feGaussianBlur');
                 t.attrs.blur = size;
                 fltr.id = R.getElementID(R.createUUID());
                 $(blur, {
@@ -11698,7 +11726,7 @@ exports["default"] = function (R) {
                 t.paper.defs.appendChild(fltr);
                 t._blur = fltr;
                 $(t.node, {
-                    filter: "url('" + R._url + "#" + fltr.id + "')"
+                    filter: "url('" + R._url + '#' + fltr.id + "')"
                 });
             } else {
                 if (t._blur) {
@@ -11706,18 +11734,18 @@ exports["default"] = function (R) {
                     delete t._blur;
                     delete t.attrs.blur;
                 }
-                t.node.removeAttribute("filter");
+                t.node.removeAttribute('filter');
             }
         };
 
-        /*\
+        /* \
         * Element.on
         [ method ]
         **
         * Bind handler function for a particular event to Element
         * @param eventType - Type of event
         * @param handler - Function to be called on the firing of the event
-        \*/
+        \ */
         elproto.on = function (eventType, handler) {
             var elem = this,
                 node,
@@ -11774,14 +11802,14 @@ exports["default"] = function (R) {
             return this;
         };
 
-        /*\
+        /* \
         * Element.off
         [ method ]
         **
         * Remove handler function bind to an event of element
         * @param eventType - Type of event
         * @param handler - Function to be removed from event
-        \*/
+        \ */
         elproto.off = function (eventType, handler) {
             var elem = this,
                 fn,
@@ -11831,20 +11859,20 @@ exports["default"] = function (R) {
         };
 
         R._engine.path = function (svg, attrs, group) {
-            var el = $("path"),
+            var el = $('path'),
                 res = new Element(el, svg, group);
 
-            res.type = "path";
+            res.type = 'path';
             // Apply the attribute if provided
             attrs && res.attr(attrs);
             return res;
         };
 
         R._engine.group = function (svg, id, group) {
-            var el = $("g"),
+            var el = $('g'),
                 res = new Element(el, svg, group);
 
-            res.type = "group";
+            res.type = 'group';
             res.canvas = res.node;
             res.top = res.bottom = null;
             res._id = id || E;
@@ -11853,42 +11881,40 @@ exports["default"] = function (R) {
         };
 
         R._engine.circle = function (svg, attrs, group) {
-            var el = $("circle"),
+            var el = $('circle'),
                 res = new Element(el, svg, group);
 
-            res.type = "circle";
+            res.type = 'circle';
             // Apply the attribute if provided
             attrs && res.attr(attrs);
             return res;
         };
         R._engine.rect = function (svg, attrs, group) {
-            var el = $("rect"),
+            var el = $('rect'),
                 res = new Element(el, svg, group);
 
-            res.type = "rect";
+            res.type = 'rect';
             attrs.rx = attrs.ry = attrs.r;
             // Apply the attribute if provided
             attrs && res.attr(attrs);
             return res;
         };
         R._engine.ellipse = function (svg, attrs, group) {
-            var el = $("ellipse"),
+            var el = $('ellipse'),
                 res = new Element(el, svg, group);
 
-            res.type = "ellipse";
+            res.type = 'ellipse';
             // Apply the attribute if provided
             attrs && res.attr(attrs);
             return res;
         };
-        ;
         R._engine.image = function (svg, attrs, group) {
-            var el = $("image"),
-                src = attrs.src,
+            var el = $('image'),
                 res = new Element(el, svg, group, true);
 
             res._.group = group || svg;
-            res.type = "image";
-            el.setAttribute("preserveAspectRatio", "none");
+            res.type = 'image';
+            el.setAttribute('preserveAspectRatio', 'none');
             // Apply the attribute if provided
             attrs && res.attr(attrs);
             return res;
@@ -11907,8 +11933,8 @@ exports["default"] = function (R) {
         R._engine.setSize = function (width, height) {
             this.width = width || this.width;
             this.height = height || this.height;
-            this.canvas.setAttribute("width", this.width);
-            this.canvas.setAttribute("height", this.height);
+            this.canvas.setAttribute('width', this.width);
+            this.canvas.setAttribute('height', this.height);
             if (this._viewBox) {
                 this.setViewBox.apply(this, this._viewBox);
             }
@@ -11923,11 +11949,10 @@ exports["default"] = function (R) {
                 height = con.height,
                 paper;
             if (!container) {
-                throw new Error("SVG container not found.");
+                throw new Error('SVG container not found.');
             }
-            var cnvs = $("svg"),
-                css = "overflow:hidden;-webkit-tap-highlight-color:rgba(0,0,0,0);" + "-webkit-user-select:none;-moz-user-select:-moz-none;-khtml-user-select:none;" + "-ms-user-select:none;user-select:none;-o-user-select:none;cursor:default;",
-                css = css + "vertical-align:middle;",
+            var cnvs = $('svg'),
+                css = 'overflow:hidden;-webkit-tap-highlight-color:rgba(0,0,0,0);' + '-webkit-user-select:none;-moz-user-select:-moz-none;-khtml-user-select:none;' + '-ms-user-select:none;user-select:none;-o-user-select:none;cursor:default;' + 'vertical-align:middle;',
                 isFloating;
             x = x || 0;
             y = y || 0;
@@ -11939,14 +11964,16 @@ exports["default"] = function (R) {
                 width: width,
                 xmlns: svgNSStr
             });
-            if (container == 1) {
-                cnvs.style.cssText = css + "position:absolute;left:" + x + "px;top:" + y + "px";
+
+            if (container === 1) {
+                cnvs.style.cssText = css + 'position:absolute;left:' + x + 'px;top:' + y + pxStr;
+
                 // Store body as the container
                 container = R._g.doc.body;
                 container.appendChild(cnvs);
                 isFloating = 1;
             } else {
-                cnvs.style.cssText = css + "position:relative";
+                cnvs.style.cssText = css + 'position:relative';
                 if (container.firstChild) {
                     container.insertBefore(cnvs, container.firstChild);
                 } else {
@@ -11961,19 +11988,21 @@ exports["default"] = function (R) {
             paper.container = container;
 
             $(cnvs, {
-                id: "raphael-paper-" + paper.id
+                id: 'raphael-paper-' + paper.id
             });
             paper.clear();
             paper._left = paper._top = 0;
-            isFloating && (paper.renderfix = function () {});
+            isFloating && (paper.renderfix = function () {
+                // No render fix required when isFloating is true
+            });
             paper.renderfix();
             return paper;
         };
         R._engine.setViewBox = function (x, y, w, h, fit) {
-            eve("raphael.setViewBox", this, this._viewBox, [x, y, w, h, fit]);
+            eve('raphael.setViewBox', this, this._viewBox, [x, y, w, h, fit]);
             var size = mmax(w / this.width, h / this.height),
                 top = this.top,
-                aspectRatio = fit ? "meet" : "xMinYMin",
+                aspectRatio = fit ? 'meet' : 'xMinYMin',
                 vb,
                 sw;
             if (x == null) {
@@ -11981,7 +12010,7 @@ exports["default"] = function (R) {
                     size = 1;
                 }
                 delete this._vbSize;
-                vb = "0 0 " + this.width + S + this.height;
+                vb = '0 0 ' + this.width + S + this.height;
             } else {
                 this._vbSize = size;
                 vb = x + S + y + S + w + S + h;
@@ -11990,14 +12019,16 @@ exports["default"] = function (R) {
                 viewBox: vb,
                 preserveAspectRatio: aspectRatio
             });
-            while (size && top) {
-                sw = "stroke-width" in top.attrs ? top.attrs["stroke-width"] : 1;
-                top.attr({
-                    "stroke-width": sw
-                });
-                top._.dirty = 1;
-                top._.dirtyT = 1;
-                top = top.prev;
+            if (size) {
+                while (top) {
+                    sw = 'stroke-width' in top.attrs ? top.attrs['stroke-width'] : 1;
+                    top.attr({
+                        'stroke-width': sw
+                    });
+                    top._.dirty = 1;
+                    top._.dirtyT = 1;
+                    top = top.prev;
+                }
             }
             this._viewBox = [x, y, w, h, !!fit];
             return this;
@@ -12037,11 +12068,11 @@ exports["default"] = function (R) {
             if (left || top) {
                 if (left) {
                     this._left = (this._left + left) % 1;
-                    s.left = this._left + "px";
+                    s.left = this._left + pxStr;
                 }
                 if (top) {
                     this._top = (this._top + top) % 1;
-                    s.top = this._top + "px";
+                    s.top = this._top + pxStr;
                 }
             }
         };
@@ -12050,19 +12081,19 @@ exports["default"] = function (R) {
             var desc = this.desc;
 
             if (!desc) {
-                this.desc = desc = $("desc");
+                this.desc = desc = $('desc');
                 this.canvas.appendChild(desc);
             } else {
                 while (desc.firstChild) {
                     desc.removeChild(desc.firstChild);
                 }
             }
-            desc.appendChild(R._g.doc.createTextNode(R.is(txt, typeStringSTR) ? txt : "Created with Red Rapha\xebl " + R.version));
+            desc.appendChild(R._g.doc.createTextNode(R.is(txt, typeStringSTR) ? txt : 'Created with Red Rapha\xebl ' + R.version));
         };
 
         R.prototype.clear = function () {
             var c;
-            eve("raphael.clear", this);
+            eve('raphael.clear', this);
 
             while (c = this.bottom) {
                 c.remove();
@@ -12073,13 +12104,13 @@ exports["default"] = function (R) {
                 c.removeChild(c.firstChild);
             }
             this.bottom = this.top = null;
-            c.appendChild(this.desc = $("desc"));
-            c.appendChild(this.defs = $("defs"));
+            c.appendChild(this.desc = $('desc'));
+            c.appendChild(this.defs = $('defs'));
         };
 
         R.prototype.remove = function () {
             var i;
-            eve("raphael.remove", this);
+            eve('raphael.remove', this);
 
             while (i = this.bottom) {
                 i.remove();
@@ -12089,7 +12120,7 @@ exports["default"] = function (R) {
             this.desc && this.desc.parentNode.removeChild(this.desc);
             this.canvas.parentNode && this.canvas.parentNode.removeChild(this.canvas);
             for (i in this) {
-                this[i] = typeof this[i] == "function" ? R._removedFactory(i) : null;
+                this[i] = typeof this[i] === 'function' ? R._removedFactory(i) : null;
             }
             this.removed = true;
         };
@@ -12110,9 +12141,19 @@ exports["default"] = function (R) {
 
 var _raphael = __webpack_require__(7);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+module.exports = exports['default'];
 
-module.exports = exports["default"];
+/** !
+* RedRaphael 1.0.0 - JavaScript Vector Library SVG Module
+* Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
+*
+* Raphael 2.1.0 - JavaScript Vector Library SVG Module
+* Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
+* Copyright © 2008-2012 Sencha Labs <http://sencha.com>
+*
+* Licensed under the MIT license.
+*/
+// Define _window as window object in case of indivual file inclusion.
 
 /***/ }),
 /* 74 */
@@ -13499,11 +13540,11 @@ module.exports = exports["default"];
 
 exports.__esModule = true;
 
-var _iterator = __webpack_require__(8);
+var _iterator = __webpack_require__(14);
 
 var _iterator2 = _interopRequireDefault(_iterator);
 
-var _symbol = __webpack_require__(14);
+var _symbol = __webpack_require__(27);
 
 var _symbol2 = _interopRequireDefault(_symbol);
 

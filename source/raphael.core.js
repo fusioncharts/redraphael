@@ -3663,11 +3663,11 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                     }
                 return this;
             }
-            eve("raphael.data.get." + this.id, this, data[key], key);
+            R.stopPartialEventPropagation || eve("raphael.data.get." + this.id, this, data[key], key);
             return data[key];
         }
         data[key] = value;
-        eve("raphael.data.set." + this.id, this, value, key);
+        R.stopPartialEventPropagation || eve("raphael.data.set." + this.id, this, value, key);
         return this;
     };
 

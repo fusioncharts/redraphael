@@ -560,7 +560,9 @@ export default function (R) {
                     att,
                     finalAttr = {},
                     finalS = {},
-                    value;
+                    value,
+                    pathClip,
+                    rect;
 
                 // s.visibility = 'hidden';
                 if (o.type === imageStr) {
@@ -618,10 +620,10 @@ export default function (R) {
                                 addArrow(o, value, 1);
                                 break;
                             case 'clip-path':
-                                var pathClip = true;
+                                pathClip = true;
                                 // falls through
                             case 'clip-rect':
-                                var rect = !pathClip && Str(value).split(separator);
+                                rect = !pathClip && Str(value).split(separator);
                                 o._.clipispath = !!pathClip;
                                 if (pathClip || rect.length === 4) {
                                     o.clip && o.clip.parentNode.parentNode.removeChild(o.clip.parentNode);
@@ -839,9 +841,6 @@ export default function (R) {
                             case 'gradient':
                                 (o.type === 'circle' || o.type === 'ellipse' || Str(value).charAt() !== 'r') && addGradientFill(o, value);
                                 break;
-                            case 'line-height': // do not apply
-                            case 'vertical-align': // do not apply
-                                break;
                             case 'visibility':
                                 value === 'hidden' ? o.hide() : o.show();
                                 break;
@@ -877,6 +876,10 @@ export default function (R) {
                                 finalAttr[att] = value;
                                 node.style.shapeRendering = value;
                                 break;
+                            
+                            case 'line-height': // do not apply
+                            case 'vertical-align': // do not apply
+                                break;
                             default:
                                 att === fontSizeStr && (value = toInt(value, 10) + 'px');
                                 finalS[dashedAttr2CSSMap[att]] = value;
@@ -895,7 +898,7 @@ export default function (R) {
                 for (att in finalS) {
                     s[att] = finalS[att];
                 }
-                (o.type === 'text' && !params[notToTuneStr]) && tuneText(o, params);
+                (o.type === textStr && !params[notToTuneStr]) && tuneText(o, params);
                 // s.visibility = vis;
             },
             /*

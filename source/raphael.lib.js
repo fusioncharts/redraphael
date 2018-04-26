@@ -10,12 +10,12 @@ let UNDEF,
         'font-size': 'fontSize',
         'text-anchor': 'textAnchor',
         'font-weight': 'fontWeight',
-        'font-style': 'fontStyle',
-        'stroke-linejoin': 'strokeLinejoin',
-        'stroke-linecap': 'strokeLinecap',
+        // 'stroke-linejoin': 'strokeLinejoin',
+        // 'stroke-linecap': 'strokeLinecap',
         'letter-spacing': 'letterSpacing',
-        'stroke-miterlimit': 'strokeMiterlimit',
-        'stroke-opacity': 'strokeOpacity'
+        // 'stroke-miterlimit': 'strokeMiterlimit',
+        // 'stroke-opacity': 'strokeOpacity',
+        'font-style': 'fontStyle'
     },
     loadRefImage = function (element, attrs) {
         var src = attrs.src,

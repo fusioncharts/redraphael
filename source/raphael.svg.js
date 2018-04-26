@@ -29,9 +29,16 @@ export default function (R) {
             middleStr = 'middle',
             pxStr = 'px',
             initialStr = 'initial',
+            fnStr = 'function',
             brStr = '<br>',
+            hiddenStr = 'hidden',
+            visibleStr = 'visible',
+            objectStr = 'object',
+            fillStr = 'fill',
+            transformStr = 'transform',
+            visibilityStr = 'visibility',
             IESplTspanAttr = {
-                visibility: 'hidden',
+                visibility: hiddenStr,
                 'font-size': '0px'
             },
             Str = String,
@@ -74,7 +81,29 @@ export default function (R) {
                 crisp: 'crispEdges',
                 precision: 'geometricPrecision'
             },
-            markerCounter = {};
+            markerCounter = {},
+            preLoad = function (elem, ig, isURL, paper) {
+                R._preload(isURL[1], function () {
+                    var w = this.offsetWidth,
+                        h = this.offsetHeight;
+                    $(elem, {
+                        width: w,
+                        height: h
+                    });
+                    $(ig, {
+                        width: w,
+                        height: h
+                    });
+                    paper.safari();
+                });
+            },
+            quickExtend = function (obj1, obj2) {
+                if (obj2) {
+                    for (var key in obj2) {
+                        obj1[key] = obj2[key];
+                    }
+                }
+            };
 
         R.cachedFontHeight = {};
 
@@ -494,40 +523,40 @@ export default function (R) {
                 '--..': [8, 3, 1, 3, 1, 3]
             },
             addDashes = function (o, value, params) {
-                var predefValue = dasharray[Str(value).toLowerCase()],
-                    calculatedValues,
-                    width,
-                    butt,
-                    i,
-                    widthFactor;
+                if (value !== undefined) {
+                    var predefValue = dasharray[value.toLowerCase && value.toLowerCase()],
+                        calculatedValues,
+                        width,
+                        butt,
+                        i,
+                        widthFactor;
 
-                value = predefValue || ((value !== undefined) && [].concat(value));
-                if (value) {
-                    width = o.attrs['stroke-width'] || 1;
-                    butt = {
-                        round: width,
-                        square: width,
-                        butt: 0
-                    }[params['stroke-linecap'] || o.attrs['stroke-linecap']] || 0;
-                    i = value.length;
-                    widthFactor = predefValue ? width : 1;
+                    value = predefValue || ([].concat(value));
+                    if (R.is(value, arrayStr)) {
+                        width = params['stroke-width'] || o.attrs['stroke-width'] || 1;
+                        butt = {
+                            round: width,
+                            square: width,
+                            butt: 0
+                        }[params['stroke-linecap'] || o.attrs['stroke-linecap']] || 0;
+                        i = value.length;
+                        widthFactor = predefValue ? width : 1;
 
-                    if (value[0] === noneStr) {
-                        calculatedValues = value;
-                    } else {
-                        calculatedValues = [];
-                        while (i--) {
-                            calculatedValues[i] = (value[i] * widthFactor + ((i % 2) ? 1 : -1) * butt);
-                            calculatedValues[i] <= 0 && (calculatedValues[i] = 0.01 + (width <= 1 ? butt : 0));
-                            if (isNaN(calculatedValues[i])) {
-                                calculatedValues[i] = 0;
+                        if (value[0] === noneStr) {
+                            calculatedValues = value;
+                        } else {
+                            calculatedValues = [];
+                            while (i--) {
+                                calculatedValues[i] = (value[i] * widthFactor + ((i % 2) ? 1 : -1) * butt);
+                                calculatedValues[i] <= 0 && (calculatedValues[i] = 0.01 + (width <= 1 ? butt : 0));
+                                if (isNaN(calculatedValues[i])) {
+                                    calculatedValues[i] = 0;
+                                }
                             }
                         }
-                    }
-                    if (R.is(value, arrayStr)) {
-                        $(o.node, {
+                        return {
                             'stroke-dasharray': calculatedValues.join(',')
-                        });
+                        };
                     }
                 }
             },
@@ -539,24 +568,9 @@ export default function (R) {
                 var node = o.node,
                     attrs = o.attrs,
                     paper = o.paper,
-                    s = node.style,
+                    // s = node.style,
                     // vis = s.visibility,
                     el,
-                    preLoad = function (elem, ig, isURL) {
-                        R._preload(isURL[1], function () {
-                            var w = this.offsetWidth,
-                                h = this.offsetHeight;
-                            $(elem, {
-                                width: w,
-                                height: h
-                            });
-                            $(ig, {
-                                width: w,
-                                height: h
-                            });
-                            paper.safari();
-                        });
-                    },
                     att,
                     finalAttr = {},
                     finalS = {},
@@ -564,14 +578,14 @@ export default function (R) {
                     pathClip,
                     rect;
 
-                // s.visibility = 'hidden';
+                // s.visibility = hiddenStr;
                 if (o.type === imageStr) {
                     loadRefImage(o, params);
                 }
                 for (att in params) {
                     if (att in R._availableAttrs) {
                         value = params[att];
-                        if (value === E) {
+                        if (value === E && att in attrs) {
                             delete attrs[att];
                             node.removeAttribute(att);
                         } else {
@@ -744,8 +758,9 @@ export default function (R) {
                                     value = 0.000001;
                                 }
                                 finalAttr[att] = value;
-                                if (attrs['stroke-dasharray']) {
-                                    addDashes(o, attrs['stroke-dasharray'], params);
+                                // if this time we have no stroke-dasharray param but last time we have then update it according to new stroke-width
+                                if (!params['stroke-dasharray'] && attrs['stroke-dasharray']) {
+                                    quickExtend(finalAttr, addDashes(o, attrs['stroke-dasharray'], params));
                                 }
                                 if (o._.arrows) {
                                     'startString' in o._.arrows && addArrow(o, o._.arrows.startString);
@@ -753,10 +768,10 @@ export default function (R) {
                                 }
                                 break;
                             case 'stroke-dasharray':
-                                addDashes(o, value, params);
+                                quickExtend(finalAttr, addDashes(o, value, params));
                                 break;
                             case 'fill':
-                                var isURL = Str(value).match(R._ISURL);
+                                var isURL = R._ISURL.test(value);
                                 if (isURL) {
                                     el = $('pattern');
                                     var ig = $(imageStr);
@@ -774,9 +789,9 @@ export default function (R) {
                                         'xlink:href': isURL[1]
                                     });
                                     el.appendChild(ig);
-                                    preLoad(el, ig, isURL);
+                                    preLoad(el, ig, isURL, paper);
                                     paper.defs.appendChild(el);
-                                    finalAttr.fill = finalS.fill = "url('" + R._url + '#' + el.id + "')";
+                                    finalAttr.fill = "url('" + R._url + '#' + el.id + "')";
 
                                     o.pattern = el;
                                     o.pattern && updatePosition(o);
@@ -805,31 +820,27 @@ export default function (R) {
                                     } */
                                     attrs.gradient = value;
                                     // attrs.fill = "none";
-                                    finalS.fill = E;
                                     break;
                                 }
                                 if (clr[has]('opacity')) {
-                                    finalAttr['fill-opacity'] = (finalS.fillOpacity = (clr.opacity > 1 ? clr.opacity / 100 : clr.opacity));
+                                    finalAttr['fill-opacity'] = clr.opacity > 1 ? clr.opacity / 100 : clr.opacity;
                                     o._.fillOpacityDirty = true;
                                 } else if (o._.fillOpacityDirty && R.is(attrs['fill-opacity'], 'undefined') &&
                                         R.is(params['fill-opacity'], 'undefined')) {
                                     node.removeAttribute('fill-opacity');
-                                    finalS.fillOpacity = E;
                                     delete o._.fillOpacityDirty;
                                 }
                                 // falls through
                             case 'stroke':
                                 clr = R.getRGB(value);
                                 finalAttr[att] = clr.hex;
-                                finalS[att] = clr.hex;
                                 if (att === 'stroke') { // remove stroke opacity when stroke is set to none
                                     if (clr[has]('opacity')) {
-                                        finalAttr['stroke-opacity'] = (finalS.strokeOpacity = (clr.opacity > 1 ? clr.opacity / 100 : clr.opacity));
+                                        finalAttr['stroke-opacity'] = clr.opacity > 1 ? clr.opacity / 100 : clr.opacity;
                                         o._.strokeOpacityDirty = true;
                                     } else if (o._.strokeOpacityDirty && R.is(attrs['stroke-opacity'], 'undefined') &&
                                             R.is(params['stroke-opacity'], 'undefined')) {
                                         node.removeAttribute('stroke-opacity');
-                                        finalS.strokeOpacity = E;
                                         delete o._.strokeOpacityDirty;
                                     }
                                     if (o._.arrows) {
@@ -842,7 +853,7 @@ export default function (R) {
                                 (o.type === 'circle' || o.type === 'ellipse' || Str(value).charAt() !== 'r') && addGradientFill(o, value);
                                 break;
                             case 'visibility':
-                                value === 'hidden' ? o.hide() : o.show();
+                                value === hiddenStr ? o.hide() : o.show();
                                 break;
                             case 'opacity':
                                 // if (attrs.gradient && !attrs[has]("stroke-opacity")) {
@@ -850,7 +861,6 @@ export default function (R) {
                                 // }
                                 value = value > 1 ? value / 100 : value;
                                 finalAttr.opacity = value;
-                                finalS.opacity = value;
                                 break;
                             // fall
                             case 'fill-opacity':
@@ -869,34 +879,35 @@ export default function (R) {
                                 // }
                                 value = value > 1 ? value / 100 : value;
                                 finalAttr['fill-opacity'] = value;
-                                finalS.fillOpacity = value;
                                 break;
                             case 'shape-rendering':
                                 o.attrs[att] = value = shapeRenderingAttrs[value] || value || 'auto';
                                 finalAttr[att] = value;
                                 node.style.shapeRendering = value;
                                 break;
-                            
+
                             case 'line-height': // do not apply
                             case 'vertical-align': // do not apply
                                 break;
                             default:
                                 att === fontSizeStr && (value = toInt(value, 10) + 'px');
-                                finalS[dashedAttr2CSSMap[att]] = value;
                                 o._.dirty = 1;
                                 finalAttr[att] = value;
+                                if (dashedAttr2CSSMap[att]) {
+                                    finalS[dashedAttr2CSSMap[att]] = value;
+                                }
                                 break;
                             }
                         }
                     }
                 }
+                // Finally apply the styles
+                for (att in finalS) {
+                    node.style[att] = finalS[att];
+                }
                 // Finally apply the attributes
                 for (att in finalAttr) {
                     node.setAttribute(att, finalAttr[att]);
-                }
-                // Finally apply the styles
-                for (att in finalS) {
-                    s[att] = finalS[att];
                 }
                 (o.type === textStr && !params[notToTuneStr]) && tuneText(o, params);
                 // s.visibility = vis;
@@ -1303,7 +1314,7 @@ export default function (R) {
             R._tear(o, o.parent);
 
             for (i in o) {
-                o[i] = typeof o[i] === 'function' ? R._removedFactory(i) : null;
+                o[i] = typeof o[i] === fnStr ? R._removedFactory(i) : null;
             }
 
             o.removed = true;
@@ -1362,45 +1373,50 @@ export default function (R) {
             if (this.removed) {
                 return this;
             }
-            var key,
+            var elem = this,
+                attrs = this.attrs,
+                key,
                 finalParam = {},
                 i,
                 ii,
                 params,
                 subkey,
                 par,
-                follower;
+                follower,
+                invokedCa = elem._invokedCa || (elem._invokedCa = {}),
+                ca,
+                caObj = this.ca;
             // get all, return all applied attributes
             if (name == null) {
                 var res = {};
-                for (key in this.attrs) {
-                    if (this.attrs[has](key)) {
-                        res[key] = this.attrs[key];
+                for (key in attrs) {
+                    if (attrs[has](key)) {
+                        res[key] = attrs[key];
                     }
                 }
                 res.gradient && res.fill === noneStr && (res.fill = res.gradient) && delete res.gradient;
                 res.transform = this._.transform;
-                res.visibility = this.node.style.display === noneStr ? 'hidden' : 'visible';
+                res.visibility = this.node.style.display === noneStr ? hiddenStr : visibleStr;
                 return res;
             } else {
                 if (value == null) {
-                    if (R.is(name, 'object')) { // Provided as an object
+                    if (R.is(name, objectStr)) { // Provided as an object
                         params = name;
                     } else if (R.is(name, typeStringSTR)) { // get one, return the value of the given attribute
-                        if (name === 'fill' && this.attrs.fill === noneStr && this.attrs.gradient) {
-                            return this.attrs.gradient;
+                        if (name === fillStr && attrs.fill === noneStr && attrs.gradient) {
+                            return attrs.gradient;
                         }
-                        if (name === 'transform') {
+                        if (name === transformStr) {
                             return this._.transform;
                         }
-                        if (name === 'visibility') {
-                            return this.node.style.display === noneStr ? 'hidden' : 'visible';
+                        if (name === visibilityStr) {
+                            return this.node.style.display === noneStr ? hiddenStr : visibleStr;
                         }
 
-                        if (name in this.attrs) {
-                            return this.attrs[name];
-                        } else if (R.is(this.ca[name], 'function')) {
-                            return this.ca[name].def;
+                        if (name in attrs) {
+                            return attrs[name];
+                        } else if (R.is(caObj[name], fnStr)) {
+                            return caObj[name].def;
                         }
                         return R._availableAttrs[name];
                     }
@@ -1418,20 +1434,19 @@ export default function (R) {
                 // For each param
                 for (key in params) {
                     // check if that is a Custom attribute or not
-                    if (this.ca[key] && params[has](key) && R.is(this.ca[key], 'function') && !this.ca['_invoked' + key]) {
-                        this.ca['_invoked' + key] = true; // prevent recursion
-                        par = this.ca[key].apply(this, [].concat(params[key]));
-                        delete this.ca['_invoked' + key];
+                    ca = caObj[key];
+                    if (ca && !invokedCa[key] && R.is(ca, fnStr)) {
+                        invokedCa[key] = true; // prevent recursion
+                        par = ca.apply(this, [].concat(params[key]));
+                        invokedCa[key] = false;
 
                         // If the custom attribute create another set of attribute to be updated
                         // Then add them in the attribute list
                         for (subkey in par) {
-                            if (par[has](subkey)) {
-                                finalParam[subkey] = par[subkey];
-                            }
+                            finalParam[subkey] = par[subkey];
                         }
                         // Add the attribute in attrs
-                        this.attrs[key] = params[key];
+                        attrs[key] = params[key];
                     } else {
                         finalParam[key] = params[key];
                     }
@@ -1864,7 +1879,7 @@ export default function (R) {
             this.desc && this.desc.parentNode.removeChild(this.desc);
             this.canvas.parentNode && this.canvas.parentNode.removeChild(this.canvas);
             for (i in this) {
-                this[i] = typeof this[i] === 'function' ? R._removedFactory(i) : null;
+                this[i] = typeof this[i] === fnStr ? R._removedFactory(i) : null;
             }
             this.removed = true;
         };

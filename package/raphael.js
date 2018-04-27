@@ -4871,7 +4871,8 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
 
         // Queuing up the dragStartFn. It is fired if dragmove is fired after dragStart
         this.dragStartFn = function () {
-            (0, _eve3['default'])("raphael.drag.start." + this.id, drag.start_scope || drag.move_scope || this, dummyEve, data);
+            var len = drag.length;
+            (0, _eve3['default'])("raphael.drag.start." + this.id, drag[len - 1].start_scope || drag[len - 1].move_scope || this, dummyEve, data);
         };
     };
     this._drag = {};

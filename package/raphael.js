@@ -100,7 +100,7 @@ module.exports = function (it, key) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var dP = __webpack_require__(3);
-var createDesc = __webpack_require__(11);
+var createDesc = __webpack_require__(12);
 module.exports = __webpack_require__(4) ? function (object, key, value) {
   return dP.f(object, key, createDesc(1, value));
 } : function (object, key, value) {
@@ -113,9 +113,9 @@ module.exports = __webpack_require__(4) ? function (object, key, value) {
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var anObject = __webpack_require__(8);
+var anObject = __webpack_require__(9);
 var IE8_DOM_DEFINE = __webpack_require__(32);
-var toPrimitive = __webpack_require__(19);
+var toPrimitive = __webpack_require__(20);
 var dP = Object.defineProperty;
 
 exports.f = __webpack_require__(4) ? Object.defineProperty : function defineProperty(O, P, Attributes) {
@@ -136,7 +136,7 @@ exports.f = __webpack_require__(4) ? Object.defineProperty : function defineProp
 /***/ (function(module, exports, __webpack_require__) {
 
 // Thank's IE8 for his funny defineProperty
-module.exports = !__webpack_require__(10)(function () {
+module.exports = !__webpack_require__(11)(function () {
   return Object.defineProperty({}, 'a', { get: function () { return 7; } }).a != 7;
 });
 
@@ -147,7 +147,7 @@ module.exports = !__webpack_require__(10)(function () {
 
 // to indexed object, toObject with fallback for non-array-like ES3 strings
 var IObject = __webpack_require__(50);
-var defined = __webpack_require__(16);
+var defined = __webpack_require__(17);
 module.exports = function (it) {
   return IObject(defined(it));
 };
@@ -157,8 +157,8 @@ module.exports = function (it) {
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var store = __webpack_require__(23)('wks');
-var uid = __webpack_require__(12);
+var store = __webpack_require__(24)('wks');
+var uid = __webpack_require__(13);
 var Symbol = __webpack_require__(0).Symbol;
 var USE_SYMBOL = typeof Symbol == 'function';
 
@@ -178,13 +178,13 @@ $exports.store = store;
 
 
 exports.__esModule = true;
-exports.showRecursively = exports.loadRefImage = exports.dashedAttr2CSSMap = exports.BLANK = exports.getArrayCopy = exports.merge = undefined;
+exports.cacher = exports.showRecursively = exports.loadRefImage = exports.dashedAttr2CSSMap = exports.getArrayCopy = exports.merge = undefined;
 
-var _iterator = __webpack_require__(14);
+var _iterator = __webpack_require__(8);
 
 var _iterator2 = _interopRequireDefault(_iterator);
 
-var _symbol = __webpack_require__(27);
+var _symbol = __webpack_require__(14);
 
 var _symbol2 = _interopRequireDefault(_symbol);
 
@@ -220,7 +220,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
 
 /* eslint require-jsdoc: 'error', valid-jsdoc: 'error' */
 var UNDEF = void 0,
-    BLANK = 'blank',
+    BLANK = '__blank',
+    nullStr = '\u2400',
+    E = '',
     arrayToStr = '[object Array]',
     objectToStr = '[object Object]',
 
@@ -231,12 +233,12 @@ dashedAttr2CSSMap = {
     'font-size': 'fontSize',
     'text-anchor': 'textAnchor',
     'font-weight': 'fontWeight',
-    'font-style': 'fontStyle',
-    'stroke-linejoin': 'strokeLinejoin',
-    'stroke-linecap': 'strokeLinecap',
+    // 'stroke-linejoin': 'strokeLinejoin',
+    // 'stroke-linecap': 'strokeLinecap',
     'letter-spacing': 'letterSpacing',
-    'stroke-miterlimit': 'strokeMiterlimit',
-    'stroke-opacity': 'strokeOpacity'
+    // 'stroke-miterlimit': 'strokeMiterlimit',
+    // 'stroke-opacity': 'strokeOpacity',
+    'font-style': 'fontStyle'
 },
     loadRefImage = function loadRefImage(element, attrs) {
     var src = attrs.src,
@@ -301,7 +303,8 @@ showRecursively = function showRecursively(el) {
 
 // Returns a copy of a array
 getArrayCopy = function getArrayCopy(array) {
-    for (var i = 0, len = array.length, arg = new Array(len); i < len; i++) {
+    var i, len, arg;
+    for (i = 0, len = array.length, arg = new Array(len); i < len; i++) {
         arg[i] = array[i];
     }
     return arg;
@@ -397,18 +400,192 @@ getArrayCopy = function getArrayCopy(array) {
  * @param    {boolean} shallow whether it will be a shallow copy or deep copy
  * @return {Object} return the extend object
  */
+
+
+/**
+ * Function to cache a function's execution
+ * @param {Function} f the original function
+ * @param {Object} scope the scope on which the function will be called
+ * @param {Function} postprocessor the method that will process the returned value
+ * @param {string} key key by which the value will be stored
+ * @param {number} maxCache The masimum length of cache
+ * @param {Object} sharedCache methods might share a common cache if the key is veryLong to reduce the memory
+ * @param {boolean} firstArgKey The first argument is the key and there is no other argument
+ * @return {any} returns the return of the original method processed by the post processor if any
+ */
+var cacher = function cacher(f, scope, postprocessor, key, maxCache, sharedCache, firstArgKey) {
+    // If it is not a shared cache then 
+    var cache = sharedCache || {},
+        count = 0;
+    if (cache.__start === undefined) {
+        cache.__start = null;
+    }
+    if (cache.__end === undefined) {
+        cache.__end = null;
+    }
+    maxCache = maxCache || 1e3;
+    key = key || 'item';
+    /**
+     * Function that replace the original method with the ability to cache
+     * @param {string} arg1 the first and only argument
+     * @return {any} Return the exact result executed by the original method
+     */
+    function cachedfunction(arg1) {
+        var args = firstArgKey ? arg1 : getArrayCopy(arguments).join(nullStr),
+            newEndStr,
+
+        // newEnd,
+        cur,
+
+        // __next,
+        // __prev,
+        // nextStr,
+        oldEnd,
+            oldStart;
+
+        args = args === E ? BLANK : args;
+        // /** **** Cache hit ******/
+        // // If the following condition is true it is a cache hit.
+        // if (args in cache) {
+        //     // cur is the element due to cache hit
+        //     cur = cache[args];
+        //     nextStr = cur.__prev; // nextStr is the id of __prev element of cur.
+        //     __next = cur.__next; // __next is the next node of the current hit node
+        //     __prev = ((nextStr !== null) && cache[nextStr]) || null; // __prev is the previous node of the current hit node
+
+        //     // Scope of error: Always check if the start and cur are not same node.
+        //     // start and cur can be same when same node has back to back cache hits.
+        //     if (cache.__start === cur) {
+        //         // do nothing.
+        //     } else if (cache[cache.__end] === cur) { // when the cur element is the last element of cache
+        //         cache.__start.__prev = cache.__end;
+
+        //         newEndStr = cache[cache.__end].__prev; // Take Id of the previous element of the cur element
+        //         cache[newEndStr].__next = null; // Make it's next pointer null so that it doesn't point to cur
+
+        //         cur.__prev = null; // taking cur to the front. make it's previous point to null, since there is no element ahead of it
+        //         cur.__next = cache.__start; // make it's __next pointer to the present element at the front.
+
+        //         cache.__start = cache[cache.__end]; // start pointer now point to the first element
+        //         cache.__end = newEndStr; // end holds the ID of the last element
+        //     } else { // when cur element is any element except start and end
+        //         cache.__start.__prev = args; // present start node's previous pointer should point to the cur node
+
+        //         cur.__next = cache.__start; // cur node's __next pointer now points to the present start, making the present start to 2nd position
+        //         cur.__prev = null; // since cur is in front, no one should be ahead of it. hence __prev = null
+
+        //         __next.__prev = nextStr; // cur's __next node should point to cur's __prev node
+        //         __prev.__next = __next; // cur's __prev node should point to cur's __next node
+
+        //         cache.__start = cur; // start point to the cur node
+        //     }
+        // } else {
+        //     /** ***** Cache miss *******/
+        //     // Else, it is a cache miss.
+
+        //     /* ----- deletion process begins here -----
+        //         *  deletion takes place if cache is full 
+        //         * */
+        //     if (count > maxCache) {
+        //         // Take the second last element
+        //         newEndStr = cache[cache.__end].__prev;
+
+        //         newEnd = cache[newEndStr];
+        //         // __next pointer of the second last element should be deleted.(Beware! Not doing this step will lead to memory leak)
+        //         newEnd.__next = null;
+
+        //         // clear the pointers of the node to be deleted
+        //         cache[cache.__end].__prev = null;
+
+        //         // delete the node
+        //         delete cache[cache.__end];
+        //         // update the end pointer
+        //         cache.__end = newEndStr;
+        //         count--; // decrement the counter
+        //     }
+
+        //     /* ----- insertion process begins here ----- */
+        //     // create a new node
+        //     cache[args] = {
+        //         __prev: null,
+        //         __next: cache.__start // newNode's __next pointer should point to the present start
+        //     };
+        //     // If there is a function then call the function to get the results
+        //     f && (cache[args][key] = postprocessor ? postprocessor(f.apply(scope, arguments)) : f.apply(scope, arguments));
+
+        //     // If start is present(start can be null if it is first node), point start.__prev to the new object
+        //     if (cache.__start !== null) {
+        //         cache.__start.__prev = args; // The present start node will fall second.
+        //     }
+        //     // finally assign start to the new node as start always points to the node at front
+        //     cache.__start = cache[args];
+        //     // In case newNode is the first node of the cache end will also be null, but it should point to the start.
+        //     (cache.__end === null) && (cache.__end = args);
+        //     count++;
+        // }
+        // cur is the element due to cache hit
+        cur = cache[args];
+        if (!cur) {
+            /** ***** Cache miss *******/
+            /* ----- insertion process begins here ----- */
+            // create a new node and finally assign the new node as start as it should always points to the node at front
+            cur = cache.__start = cache[args] = {};
+            // If there is a function then call the function to get the results
+            f && (cache[args][key] = postprocessor ? postprocessor(f.apply(scope, arguments)) : f.apply(scope, arguments));
+            // In case newNode is the first node of the cache end will also be null, but it should point to the start.
+            cache.__end === null && (cache.__end = args);
+            // increase the counter
+            count++;
+            /* ----- deletion process begins here -----
+            *  deletion takes place if cache is full 
+            */
+            if (count > maxCache && cache.__end) {
+                oldEnd = cache.__end;
+                // update the end pointer
+                cache.__end = cache[oldEnd].__prev;
+                // __next pointer of the second last element should be deleted.
+                cache[newEndStr].__next = cache[oldEnd].next;
+                // delete the node
+                delete cache[cache.__end];
+                count--; // decrement the counter
+            }
+        } else {
+            // hit then conect the prev and next of hit to each other
+            if (cur.__prev) {
+                cache[cur.__prev].__next = cur.__next;
+                cur.__next && (cur.__next.__prev = cur.__prev);
+            }
+        }
+        // this is not the start element then set it as the start element
+        oldStart = cache.__start;
+        if (oldStart !== cur) {
+            cur.__prev = null;
+            cur.__next = oldStart;
+            oldStart && (oldStart.__prev = args);
+        }
+        return cache[args][key];
+    }
+    return cachedfunction;
+};
+
 exports.merge = merge;
 exports.getArrayCopy = getArrayCopy;
-exports.BLANK = BLANK;
 exports.dashedAttr2CSSMap = dashedAttr2CSSMap;
 exports.loadRefImage = loadRefImage;
 exports.showRecursively = showRecursively;
+exports.cacher = cacher;
 
 /***/ }),
 /* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isObject = __webpack_require__(9);
+module.exports = { "default": __webpack_require__(43), __esModule: true };
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var isObject = __webpack_require__(10);
 module.exports = function (it) {
   if (!isObject(it)) throw TypeError(it + ' is not an object!');
   return it;
@@ -416,7 +593,7 @@ module.exports = function (it) {
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports) {
 
 module.exports = function (it) {
@@ -425,7 +602,7 @@ module.exports = function (it) {
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports) {
 
 module.exports = function (exec) {
@@ -438,7 +615,7 @@ module.exports = function (exec) {
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports) {
 
 module.exports = function (bitmap, value) {
@@ -452,7 +629,7 @@ module.exports = function (bitmap, value) {
 
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports) {
 
 var id = 0;
@@ -463,7 +640,13 @@ module.exports = function (key) {
 
 
 /***/ }),
-/* 13 */
+/* 14 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = { "default": __webpack_require__(61), __esModule: true };
+
+/***/ }),
+/* 15 */
 /***/ (function(module, exports) {
 
 var g;
@@ -490,13 +673,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 14 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = { "default": __webpack_require__(43), __esModule: true };
-
-/***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports) {
 
 // 7.1.4 ToInteger
@@ -508,7 +685,7 @@ module.exports = function (it) {
 
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports) {
 
 // 7.2.1 RequireObjectCoercible(argument)
@@ -519,14 +696,14 @@ module.exports = function (it) {
 
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports) {
 
 module.exports = true;
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports) {
 
 var core = module.exports = { version: '2.5.1' };
@@ -534,11 +711,11 @@ if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
 
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.1.1 ToPrimitive(input [, PreferredType])
-var isObject = __webpack_require__(9);
+var isObject = __webpack_require__(10);
 // instead of the ES6 spec version, we didn't implement @@toPrimitive case
 // and the second argument - flag - preferred type is a string
 module.exports = function (it, S) {
@@ -552,19 +729,19 @@ module.exports = function (it, S) {
 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports) {
 
 module.exports = {};
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // 19.1.2.14 / 15.2.3.14 Object.keys(O)
 var $keys = __webpack_require__(36);
-var enumBugKeys = __webpack_require__(24);
+var enumBugKeys = __webpack_require__(25);
 
 module.exports = Object.keys || function keys(O) {
   return $keys(O, enumBugKeys);
@@ -572,18 +749,18 @@ module.exports = Object.keys || function keys(O) {
 
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var shared = __webpack_require__(23)('keys');
-var uid = __webpack_require__(12);
+var shared = __webpack_require__(24)('keys');
+var uid = __webpack_require__(13);
 module.exports = function (key) {
   return shared[key] || (shared[key] = uid(key));
 };
 
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var global = __webpack_require__(0);
@@ -595,7 +772,7 @@ module.exports = function (key) {
 
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports) {
 
 // IE 8- don't enum bug keys
@@ -605,7 +782,7 @@ module.exports = (
 
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var def = __webpack_require__(3).f;
@@ -618,26 +795,20 @@ module.exports = function (it, tag, stat) {
 
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports.f = __webpack_require__(6);
 
 
 /***/ }),
-/* 27 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = { "default": __webpack_require__(61), __esModule: true };
-
-/***/ }),
 /* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var global = __webpack_require__(0);
-var core = __webpack_require__(18);
-var LIBRARY = __webpack_require__(17);
-var wksExt = __webpack_require__(26);
+var core = __webpack_require__(19);
+var LIBRARY = __webpack_require__(18);
+var wksExt = __webpack_require__(27);
 var defineProperty = __webpack_require__(3).f;
 module.exports = function (name) {
   var $Symbol = core.Symbol || (core.Symbol = LIBRARY ? {} : global.Symbol || {});
@@ -658,14 +829,14 @@ exports.f = {}.propertyIsEnumerable;
 
 "use strict";
 
-var LIBRARY = __webpack_require__(17);
+var LIBRARY = __webpack_require__(18);
 var $export = __webpack_require__(31);
 var redefine = __webpack_require__(34);
 var hide = __webpack_require__(2);
 var has = __webpack_require__(1);
-var Iterators = __webpack_require__(20);
+var Iterators = __webpack_require__(21);
 var $iterCreate = __webpack_require__(48);
-var setToStringTag = __webpack_require__(25);
+var setToStringTag = __webpack_require__(26);
 var getPrototypeOf = __webpack_require__(55);
 var ITERATOR = __webpack_require__(6)('iterator');
 var BUGGY = !([].keys && 'next' in [].keys()); // Safari has buggy iterators w/o `next`
@@ -734,7 +905,7 @@ module.exports = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCE
 /***/ (function(module, exports, __webpack_require__) {
 
 var global = __webpack_require__(0);
-var core = __webpack_require__(18);
+var core = __webpack_require__(19);
 var ctx = __webpack_require__(46);
 var hide = __webpack_require__(2);
 var PROTOTYPE = 'prototype';
@@ -800,7 +971,7 @@ module.exports = $export;
 /* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = !__webpack_require__(4) && !__webpack_require__(10)(function () {
+module.exports = !__webpack_require__(4) && !__webpack_require__(11)(function () {
   return Object.defineProperty(__webpack_require__(33)('div'), 'a', { get: function () { return 7; } }).a != 7;
 });
 
@@ -809,7 +980,7 @@ module.exports = !__webpack_require__(4) && !__webpack_require__(10)(function ()
 /* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isObject = __webpack_require__(9);
+var isObject = __webpack_require__(10);
 var document = __webpack_require__(0).document;
 // typeof document.createElement is 'object' in old IE
 var is = isObject(document) && isObject(document.createElement);
@@ -830,10 +1001,10 @@ module.exports = __webpack_require__(2);
 /***/ (function(module, exports, __webpack_require__) {
 
 // 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
-var anObject = __webpack_require__(8);
+var anObject = __webpack_require__(9);
 var dPs = __webpack_require__(49);
-var enumBugKeys = __webpack_require__(24);
-var IE_PROTO = __webpack_require__(22)('IE_PROTO');
+var enumBugKeys = __webpack_require__(25);
+var IE_PROTO = __webpack_require__(23)('IE_PROTO');
 var Empty = function () { /* empty */ };
 var PROTOTYPE = 'prototype';
 
@@ -879,7 +1050,7 @@ module.exports = Object.create || function create(O, Properties) {
 var has = __webpack_require__(1);
 var toIObject = __webpack_require__(5);
 var arrayIndexOf = __webpack_require__(51)(false);
-var IE_PROTO = __webpack_require__(22)('IE_PROTO');
+var IE_PROTO = __webpack_require__(23)('IE_PROTO');
 
 module.exports = function (object, names) {
   var O = toIObject(object);
@@ -919,7 +1090,7 @@ exports.f = Object.getOwnPropertySymbols;
 
 // 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
 var $keys = __webpack_require__(36);
-var hiddenKeys = __webpack_require__(24).concat('length', 'prototype');
+var hiddenKeys = __webpack_require__(25).concat('length', 'prototype');
 
 exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
   return $keys(O, hiddenKeys);
@@ -984,11 +1155,11 @@ module.exports = exports['default'];
 
 exports.__esModule = true;
 
-var _iterator = __webpack_require__(14);
+var _iterator = __webpack_require__(8);
 
 var _iterator2 = _interopRequireDefault(_iterator);
 
-var _symbol = __webpack_require__(27);
+var _symbol = __webpack_require__(14);
 
 var _symbol2 = _interopRequireDefault(_symbol);
 
@@ -1071,13 +1242,13 @@ function R(first) {
     // Code commented as resources will now be referenced using relative URLs.
     // @todo Remove once we have ascertained that there are no issues in any environment.
     // if (R._url) { // Reinitialize URLs to be safe from pop state event
-    //     R._url = (R._g && R._g.win || _window).location.href.replace(/#.*?$/, "");
+    //     R._url = (R._g && R._g.win || _window).location.href.replace(/#.*?$/, E);
     // }
     // If the URL is undefined only then initialize the URL with blank in order to support
     // both relative as well as absolute URLs
     // @todo Need to track the URL change and modify the URL for the gradient and other elements dynamically.
     if (R._url === undefined) {
-        R._url = "";
+        R._url = E;
     }
 
     if (R.is(first, "function")) {
@@ -1105,8 +1276,8 @@ R.eve = _eve3['default'];
 
 var loaded,
     undef,
-    E = "",
-    S = " ",
+    E = '',
+    S = ' ',
     has = "hasOwnProperty",
     apply = "apply",
     concat = "concat",
@@ -1786,7 +1957,7 @@ var _toHex = function toHex(color) {
             bod = createPopup().document.body;
         }
         var range = bod.createTextRange();
-        _toHex = cacher(function (color) {
+        _toHex = (0, _raphael.cacher)(function (color) {
             try {
                 bod.style.color = Str(color).replace(trim, E);
                 var value = range.queryCommandValue("ForeColor");
@@ -1801,7 +1972,7 @@ var _toHex = function toHex(color) {
         i.title = "Rapha\xebl Colour Picker";
         i.style.display = none;
         g.doc.body.appendChild(i);
-        _toHex = cacher(function (color) {
+        _toHex = (0, _raphael.cacher)(function (color) {
             i.style.color = color;
             return g.doc.defaultView.getComputedStyle(i, E).getPropertyValue("color");
         });
@@ -2063,109 +2234,7 @@ R._path2string = function () {
     return this.join(",").replace(p2s, "$1");
 };
 
-var cacher = R._cacher = function (f, scope, postprocessor) {
-    var start = null,
-        end = null,
-        cache = {},
-        count = 0;
-
-    function cachedfunction() {
-        var arg = (0, _raphael.getArrayCopy)(arguments),
-            args = arg.join('\u2400'),
-            newEndStr,
-            newEnd,
-            cur,
-            prev,
-            next,
-            nextStr;
-
-        args = args === '' ? _raphael.BLANK : args;
-        /****** Cache hit ******/
-        // If the following condition is true it is a cache hit.
-        if (cache[has](args)) {
-            // cur is the element due to cache hit
-            cur = cache[args];
-            nextStr = cur.next; // nextStr is the id of next element of cur.
-            prev = cur.prev; // prev is the previous node of the current hit node
-            next = nextStr !== null && cache[nextStr] || null; // next is the next node of the current hit node
-
-            // Scope of error: Always check if the start and cur are not same node.
-            // start and cur can be same when same node has back to back cache hits.
-            if (start === cur) {
-                // do nothing.
-            } else if (cache[end] === cur) {
-                // when the cur element is the last element of cache
-                start.next = end;
-
-                newEndStr = cache[end].next; // Take Id of the next element of the cur element
-                cache[newEndStr].prev = null; // Make it's previous pointer null so that it doesn't point to cur
-
-                cur.next = null; // taking cur to the front. make it's next point to null, since there is no element ahead of it
-                cur.prev = start; // make it's prev pointer to the present element at the front.
-
-                start = cache[end]; // start pointer now point to the first element
-                end = newEndStr; // end holds the ID of the last element
-            } else {
-                // when cur element is any element except start and end
-                start.next = args; // present start node's next pointer should point to the cur node
-
-                cur.prev = start; // cur node's prev pointer now points to the present start, making the present start to 2nd position
-                cur.next = null; // since cur is in front, no one should be ahead of it. hence next = null
-
-                prev.next = nextStr; // cur's prev node should point to cur's next node
-                next.prev = prev; // cur's next node should point to cur's prev node
-
-                start = cur; // start point to the cur node
-            }
-
-            return start.item;
-        }
-
-        /******* Cache miss *******/
-        // Else, it is a cache miss.
-
-        /* ----- deletion process begins here -----
-        *  deletion takes place if cache is full 
-        * */
-        if (count > 1e3) {
-            // Take the second last element
-            newEndStr = cache[end].next;
-
-            newEnd = cache[newEndStr];
-            // prev pointer of the second last element should be deleted.(Beware! Not doing this step will lead to memory leak)
-            newEnd.prev = null;
-
-            // clear the pointers of the node to be deleted
-            cache[end].next = null;
-
-            // delete the node
-            delete cache[end];
-            // update the end pointer
-            end = newEndStr;
-            count--; // decrement the counter
-        }
-
-        /* ----- insertion process begins here ----- */
-        // create a new node
-        cache[args] = {
-            next: null,
-            prev: start, // newNode's prev pointer should point to the present start
-            item: postprocessor ? postprocessor(f[apply](scope, arg)) : f[apply](scope, arg)
-        };
-        // If start is present(start can be null if it is first node), point start.next to the new object
-        if (start !== null) {
-            start.next = args; // The present start node will fall second.
-        }
-        // finally assign start to the new node as start always points to the node at front
-        start = cache[args];
-        // In case newNode is the first node of the cache end will also be null, but it should point to the start.
-        end === null && (end = args);
-        count++;
-
-        return cache[args].item;
-    }
-    return cachedfunction;
-};
+R._cacher = _raphael.cacher;
 
 var preload = R._preload = function (src, f) {
     var img = doc.createElement("img");
@@ -2213,7 +2282,7 @@ function clrToString() {
  o     error (boolean) true if string can’t be parsed
  o }
 \*/
-R.getRGB = cacher(function (colour) {
+R.getRGB = (0, _raphael.cacher)(function (colour) {
     var opacity, res, red, green, blue, t, values, rgb;
 
     colour && is(colour, 'object') && "opacity" in colour && (opacity = colour.opacity);
@@ -2306,7 +2375,7 @@ R.getRGB = cacher(function (colour) {
     };
 }, R);
 
-R.tintshade = cacher(function (colour, percent) {
+R.tintshade = (0, _raphael.cacher)(function (colour, percent) {
     var rgb = R.getRGB(colour),
         tint,
         offset = 255;
@@ -2343,7 +2412,7 @@ R.tintshade = cacher(function (colour, percent) {
  - b (number) value or brightness
  = (string) hex representation of the colour.
 \*/
-R.hsb = cacher(function (h, s, b) {
+R.hsb = (0, _raphael.cacher)(function (h, s, b) {
     return R.hsb2rgb(h, s, b).hex;
 });
 
@@ -2358,7 +2427,7 @@ R.hsb = cacher(function (h, s, b) {
  - l (number) luminosity
  = (string) hex representation of the colour.
 \*/
-R.hsl = cacher(function (h, s, l) {
+R.hsl = (0, _raphael.cacher)(function (h, s, l) {
     return R.hsl2rgb(h, s, l).hex;
 });
 
@@ -2373,7 +2442,7 @@ R.hsl = cacher(function (h, s, l) {
  - b (number) blue
  = (string) hex representation of the colour.
 \*/
-R.rgb = cacher(function (r, g, b) {
+R.rgb = (0, _raphael.cacher)(function (r, g, b) {
     return "#" + (16777216 | b | g << 8 | r << 16).toString(16).slice(1);
 });
 
@@ -2546,7 +2615,7 @@ R.parsePathString = function (pathString) {
  - TString (string|array) transform string or array of transformations (in the last case it will be returned straight away)
  = (array) array of transformations.
 \*/
-R.parseTransformString = cacher(function (TString) {
+R.parseTransformString = (0, _raphael.cacher)(function (TString) {
     if (!TString) {
         return null;
     }
@@ -3054,7 +3123,7 @@ var pathDimensions = R.pathBBox = function (path) {
         p;
     for (var i = 0, ii = path.length; i < ii; i++) {
         p = path[i];
-        if (p[0] == "M") {
+        if (p[0] === "M") {
             x = p[1];
             y = p[2];
             X.push(x);
@@ -3283,7 +3352,7 @@ var pathDimensions = R.pathBBox = function (path) {
         rad = deg2rad * (+angle || 0),
         res = [],
         xy,
-        rotate = cacher(function (x, y, rad) {
+        rotate = (0, _raphael.cacher)(function (x, y, rad) {
         var X = x * mathCos(rad) - y * mathSin(rad),
             Y = x * mathSin(rad) + y * mathCos(rad);
         return {
@@ -3374,7 +3443,7 @@ var pathDimensions = R.pathBBox = function (path) {
         y: pow(t1, 3) * p1y + pow(t1, 2) * 3 * t * c1y + t1 * 3 * t * t * c2y + pow(t, 3) * p2y
     };
 },
-    curveDim = cacher(function (p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y) {
+    curveDim = (0, _raphael.cacher)(function (p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y) {
     var a = c2x - 2 * c1x + p1x - (p2x - 2 * c2x + c1x),
         b = 2 * (c1x - p1x) - 2 * (c2x - c1x),
         c = p1x - c1x,
@@ -3423,7 +3492,7 @@ var pathDimensions = R.pathBBox = function (path) {
         }
     };
 }),
-    path2curve = R._path2curve = cacher(function (path, path2) {
+    path2curve = R._path2curve = (0, _raphael.cacher)(function (path, path2) {
     var pth = !path2 && paths(path);
     if (!path2 && pth.curve) {
         return pathClone(pth.curve);
@@ -3543,7 +3612,7 @@ var pathDimensions = R.pathBBox = function (path) {
     }
     return p2 ? [p, p2] : p;
 }, null, pathClone),
-    parseDots = R._parseDots = cacher(function (gradient) {
+    parseDots = R._parseDots = (0, _raphael.cacher)(function (gradient) {
     var dots = [];
     for (var i = 0, ii = gradient.length; i < ii; i++) {
         var dot = {},
@@ -4662,11 +4731,11 @@ elproto.data = function (key, value) {
                 }
             }return this;
         }
-        (0, _eve3['default'])("raphael.data.get." + this.id, this, data[key], key);
+        R.stopPartialEventPropagation || (0, _eve3['default'])("raphael.data.get." + this.id, this, data[key], key);
         return data[key];
     }
     data[key] = value;
-    (0, _eve3['default'])("raphael.data.set." + this.id, this, value, key);
+    R.stopPartialEventPropagation || (0, _eve3['default'])("raphael.data.set." + this.id, this, value, key);
     return this;
 };
 
@@ -5221,7 +5290,7 @@ paperproto.image = function () {
         args = (0, _raphael.getArrayCopy)(arguments),
         group = lastArgIfGroup(args, true),
         attrs = serializeArgs(args,
-    // "src", "",
+    // "src", E,
     "x", 0, "y", 0, "width", 0, "height", 0),
         out = R._engine.image(paper, attrs, group);
     return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
@@ -5751,7 +5820,7 @@ var curveslengths = {},
             y,
             p,
             l,
-            sp = "",
+            sp = E,
             subpaths = {},
             point,
             len = 0;
@@ -6114,13 +6183,13 @@ animation = function animation() {
                                     if (i === 0) {
                                         if (from[attr].isRadial || diff[attr].isRadial) {
                                             radial = "xr(";
-                                            radial += from[attr][0].f1 * (1 - pos) + diff[attr][0].f1 * pos || '';
+                                            radial += from[attr][0].f1 * (1 - pos) + diff[attr][0].f1 * pos || E;
                                             radial += ',';
-                                            radial += from[attr][0].f2 * (1 - pos) + diff[attr][0].f2 * pos || '';
+                                            radial += from[attr][0].f2 * (1 - pos) + diff[attr][0].f2 * pos || E;
                                             radial += ',';
-                                            radial += (from[attr][0].f3 * (1 - pos) + diff[attr][0].f3 * pos) * 100 || '';
+                                            radial += (from[attr][0].f3 * (1 - pos) + diff[attr][0].f3 * pos) * 100 || E;
                                             radial += '%,';
-                                            radial += from[attr][0].f4 * (1 - pos) + diff[attr][0].f4 * pos || '';
+                                            radial += from[attr][0].f4 * (1 - pos) + diff[attr][0].f4 * pos || E;
                                             radial += ',';
                                             radial += from[attr][0].f5 * (1 - pos) + diff[attr][0].f5 * pos;
                                             radial += ',';
@@ -6140,7 +6209,7 @@ animation = function animation() {
                                 now = now.join("-");
                                 // If radial focus doesnt have a separator
                                 if (from[attr].isRadial || diff[attr].isRadial) {
-                                    now = now.replace('-', '');
+                                    now = now.replace('-', E);
                                 }
                             }
                             break;
@@ -6575,7 +6644,7 @@ function colorNormalizer(c1, c2, getRGB) {
                 f3: 0,
                 f4: 0,
                 f5: 0,
-                f6: ''
+                f6: E
             };
             b.isRadial = true;
         }
@@ -6752,7 +6821,7 @@ function colorNormalizer(c1, c2, getRGB) {
                 colPrev,
                 colNext,
                 ratio = 0,
-                key = "",
+                key = E,
                 col = { r: 0, g: 0, b: 0 };
 
             // Critical section; check again
@@ -6837,8 +6906,8 @@ function pathNormalizer(p1, p2) {
     ** which are not supported by all browsers
     */
     function canFallback(path1, path2) {
-        var str1 = '',
-            str2 = '',
+        var str1 = E,
+            str2 = E,
             testLen,
             testPoint;
         // Checking path totoalLength is accurate or not
@@ -6857,7 +6926,7 @@ function pathNormalizer(p1, p2) {
         function trimPathArray(arr) {
             var i = arr.length;
             while (i-- - 1) {
-                if (arr[i].join('') === arr[i - 1].join('')) {
+                if (arr[i].join(E) === arr[i - 1].join(E)) {
                     arr.pop();
                 } else {
                     break;
@@ -6865,11 +6934,11 @@ function pathNormalizer(p1, p2) {
             }
         }
         function getPathFromArray(arr) {
-            var str = '',
+            var str = E,
                 i = 0,
                 ii = arr.length;
             for (; i < ii; ++i) {
-                str += arr[i].join(' ');
+                str += arr[i].join(S);
             }
             return str;
         }
@@ -6903,11 +6972,11 @@ function pathNormalizer(p1, p2) {
                 // Removing continuous Move commands
                 // Picking up the last one
                 if (!i || !arr[i + 1] || arr[i + 1][0] !== 'M' || arr[i][0] !== 'M') {
-                    str.push(arr[i].join(' '));
+                    str.push(arr[i].join(S));
                 }
             }
         }
-        str = str.join('');
+        str = str.join(E);
         str = str.split(/[Mm]/).slice(1);
         for (i = 0, ii = str.length; i < ii; ++i) {
             str[i] = 'M' + str[i];
@@ -6930,10 +6999,10 @@ function pathNormalizer(p1, p2) {
         ii = arr.length;
         for (i = 0; i < ii; ++i) {
             if (arr[i].length - 1) {
-                str.push(arr[i].join(' '));
+                str.push(arr[i].join(S));
             }
         }
-        return str.join('');
+        return str.join(E);
     }
     /* path2curve appends repeated last path command,
         this function removes it or any other repeated path command */
@@ -7093,7 +7162,7 @@ function commonPathCalculator(p1, p2) {
             ii = 0;
         path = path.split(/[MCLmcl]/).slice(1);
         for (i = 0, ii = path.length; i < ii; ++i) {
-            path[i] = path[i].split(' ').slice(1);
+            path[i] = path[i].split(S).slice(1);
             i || path[i].unshift('M');
             if (i) {
                 path[i].length === 2 && path[i].unshift('L') || path[i].unshift('C');
@@ -7109,10 +7178,10 @@ function commonPathCalculator(p1, p2) {
             val,
             item;
         for (i = 0, ii = arr.length; i < ii; ++i) {
-            val = arr[i].join(' ');
+            val = arr[i].join(S);
             item = arr[i];
             if (item[0] === 'C' && item[3] === item[5] && item[4] === item[6]) {
-                arr[i].stringValue = ['L', item[3], item[4]].join(' ');
+                arr[i].stringValue = ['L', item[3], item[4]].join(S);
             } else item.stringValue = val;
             // Creating an array if undefined
             // pushing otherwise
@@ -7146,11 +7215,11 @@ function commonPathCalculator(p1, p2) {
     // function to get last coordinate for CurveTo command
     function getCoordinateAsMove(arr) {
         var last = arr.length - 1;
-        return ['M', arr[last - 1], arr[last]].join(' ');
+        return ['M', arr[last - 1], arr[last]].join(S);
     }
     // function to conver path array to string
     function pathToString(arr) {
-        return arr.join('');
+        return arr.join(E);
     }
     // commonPathCalculator flow here
     p1 = splitter(p1);
@@ -7303,10 +7372,10 @@ function _pathNormalizer(p1, p2) {
         return [fPath1, fPath2];
     }
     if (!p1 || p1 === 'M  ') {
-        p1 = p2.split(' ').slice(0, 3).join(' ').replace(/[LC]/, '');
+        p1 = p2.split(S).slice(0, 3).join(S).replace(/[LC]/, E);
     }
     if (!p2 || p2 === 'M  ') {
-        p2 = p1.split(' ').slice(0, 3).join(' ').replace(/[LC]/, '');
+        p2 = p1.split(S).slice(0, 3).join(S).replace(/[LC]/, E);
     }
     commonPath = commonPathCalculator(p1, p2);
 
@@ -8061,7 +8130,7 @@ R.format = function (token, params) {
 
 var crispFixer = R.vml && 0.5 || 0;
 
-R.crispBound = cacher(function (x, y, w, h, s) {
+R.crispBound = (0, _raphael.cacher)(function (x, y, w, h, s) {
     var at = {},
         normalizer;
 
@@ -8217,7 +8286,7 @@ _eve3['default'].on("raphael.DOMload", function () {
 
 exports['default'] = R;
 module.exports = exports['default'];
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(13)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(15)))
 
 /***/ }),
 /* 43 */
@@ -8225,7 +8294,7 @@ module.exports = exports['default'];
 
 __webpack_require__(44);
 __webpack_require__(57);
-module.exports = __webpack_require__(26).f('iterator');
+module.exports = __webpack_require__(27).f('iterator');
 
 
 /***/ }),
@@ -8256,8 +8325,8 @@ __webpack_require__(30)(String, 'String', function (iterated) {
 /* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var toInteger = __webpack_require__(15);
-var defined = __webpack_require__(16);
+var toInteger = __webpack_require__(16);
+var defined = __webpack_require__(17);
 // true  -> String#at
 // false -> String#codePointAt
 module.exports = function (TO_STRING) {
@@ -8318,8 +8387,8 @@ module.exports = function (it) {
 "use strict";
 
 var create = __webpack_require__(35);
-var descriptor = __webpack_require__(11);
-var setToStringTag = __webpack_require__(25);
+var descriptor = __webpack_require__(12);
+var setToStringTag = __webpack_require__(26);
 var IteratorPrototype = {};
 
 // 25.1.2.1.1 %IteratorPrototype%[@@iterator]()
@@ -8336,8 +8405,8 @@ module.exports = function (Constructor, NAME, next) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var dP = __webpack_require__(3);
-var anObject = __webpack_require__(8);
-var getKeys = __webpack_require__(21);
+var anObject = __webpack_require__(9);
+var getKeys = __webpack_require__(22);
 
 module.exports = __webpack_require__(4) ? Object.defineProperties : function defineProperties(O, Properties) {
   anObject(O);
@@ -8396,7 +8465,7 @@ module.exports = function (IS_INCLUDES) {
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.1.15 ToLength
-var toInteger = __webpack_require__(15);
+var toInteger = __webpack_require__(16);
 var min = Math.min;
 module.exports = function (it) {
   return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
@@ -8407,7 +8476,7 @@ module.exports = function (it) {
 /* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var toInteger = __webpack_require__(15);
+var toInteger = __webpack_require__(16);
 var max = Math.max;
 var min = Math.min;
 module.exports = function (index, length) {
@@ -8431,7 +8500,7 @@ module.exports = document && document.documentElement;
 // 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
 var has = __webpack_require__(1);
 var toObject = __webpack_require__(56);
-var IE_PROTO = __webpack_require__(22)('IE_PROTO');
+var IE_PROTO = __webpack_require__(23)('IE_PROTO');
 var ObjectProto = Object.prototype;
 
 module.exports = Object.getPrototypeOf || function (O) {
@@ -8448,7 +8517,7 @@ module.exports = Object.getPrototypeOf || function (O) {
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.1.13 ToObject(argument)
-var defined = __webpack_require__(16);
+var defined = __webpack_require__(17);
 module.exports = function (it) {
   return Object(defined(it));
 };
@@ -8461,7 +8530,7 @@ module.exports = function (it) {
 __webpack_require__(58);
 var global = __webpack_require__(0);
 var hide = __webpack_require__(2);
-var Iterators = __webpack_require__(20);
+var Iterators = __webpack_require__(21);
 var TO_STRING_TAG = __webpack_require__(6)('toStringTag');
 
 var DOMIterables = ('CSSRuleList,CSSStyleDeclaration,CSSValueList,ClientRectList,DOMRectList,DOMStringList,' +
@@ -8487,7 +8556,7 @@ for (var i = 0; i < DOMIterables.length; i++) {
 
 var addToUnscopables = __webpack_require__(59);
 var step = __webpack_require__(60);
-var Iterators = __webpack_require__(20);
+var Iterators = __webpack_require__(21);
 var toIObject = __webpack_require__(5);
 
 // 22.1.3.4 Array.prototype.entries()
@@ -8544,7 +8613,7 @@ __webpack_require__(62);
 __webpack_require__(68);
 __webpack_require__(69);
 __webpack_require__(70);
-module.exports = __webpack_require__(18).Symbol;
+module.exports = __webpack_require__(19).Symbol;
 
 
 /***/ }),
@@ -8560,24 +8629,24 @@ var DESCRIPTORS = __webpack_require__(4);
 var $export = __webpack_require__(31);
 var redefine = __webpack_require__(34);
 var META = __webpack_require__(63).KEY;
-var $fails = __webpack_require__(10);
-var shared = __webpack_require__(23);
-var setToStringTag = __webpack_require__(25);
-var uid = __webpack_require__(12);
+var $fails = __webpack_require__(11);
+var shared = __webpack_require__(24);
+var setToStringTag = __webpack_require__(26);
+var uid = __webpack_require__(13);
 var wks = __webpack_require__(6);
-var wksExt = __webpack_require__(26);
+var wksExt = __webpack_require__(27);
 var wksDefine = __webpack_require__(28);
 var enumKeys = __webpack_require__(64);
 var isArray = __webpack_require__(65);
-var anObject = __webpack_require__(8);
+var anObject = __webpack_require__(9);
 var toIObject = __webpack_require__(5);
-var toPrimitive = __webpack_require__(19);
-var createDesc = __webpack_require__(11);
+var toPrimitive = __webpack_require__(20);
+var createDesc = __webpack_require__(12);
 var _create = __webpack_require__(35);
 var gOPNExt = __webpack_require__(66);
 var $GOPD = __webpack_require__(67);
 var $DP = __webpack_require__(3);
-var $keys = __webpack_require__(21);
+var $keys = __webpack_require__(22);
 var gOPD = $GOPD.f;
 var dP = $DP.f;
 var gOPN = gOPNExt.f;
@@ -8704,7 +8773,7 @@ if (!USE_NATIVE) {
   __webpack_require__(29).f = $propertyIsEnumerable;
   __webpack_require__(38).f = $getOwnPropertySymbols;
 
-  if (DESCRIPTORS && !__webpack_require__(17)) {
+  if (DESCRIPTORS && !__webpack_require__(18)) {
     redefine(ObjectProto, 'propertyIsEnumerable', $propertyIsEnumerable, true);
   }
 
@@ -8792,15 +8861,15 @@ setToStringTag(global.JSON, 'JSON', true);
 /* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var META = __webpack_require__(12)('meta');
-var isObject = __webpack_require__(9);
+var META = __webpack_require__(13)('meta');
+var isObject = __webpack_require__(10);
 var has = __webpack_require__(1);
 var setDesc = __webpack_require__(3).f;
 var id = 0;
 var isExtensible = Object.isExtensible || function () {
   return true;
 };
-var FREEZE = !__webpack_require__(10)(function () {
+var FREEZE = !__webpack_require__(11)(function () {
   return isExtensible(Object.preventExtensions({}));
 });
 var setMeta = function (it) {
@@ -8852,7 +8921,7 @@ var meta = module.exports = {
 /***/ (function(module, exports, __webpack_require__) {
 
 // all enumerable object keys, includes symbols
-var getKeys = __webpack_require__(21);
+var getKeys = __webpack_require__(22);
 var gOPS = __webpack_require__(38);
 var pIE = __webpack_require__(29);
 module.exports = function (it) {
@@ -8909,9 +8978,9 @@ module.exports.f = function getOwnPropertyNames(it) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var pIE = __webpack_require__(29);
-var createDesc = __webpack_require__(11);
+var createDesc = __webpack_require__(12);
 var toIObject = __webpack_require__(5);
-var toPrimitive = __webpack_require__(19);
+var toPrimitive = __webpack_require__(20);
 var has = __webpack_require__(1);
 var IE8_DOM_DEFINE = __webpack_require__(32);
 var gOPD = Object.getOwnPropertyDescriptor;
@@ -9407,7 +9476,7 @@ exports["default"] = function (glob) {
 }(typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : null);
 
 module.exports = exports["default"];
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(13)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(15)))
 
 /***/ }),
 /* 72 */
@@ -10322,7 +10391,7 @@ module.exports = exports['default'];
 /**
  * All non fusincharts related functionalities of redRaphael is listed here
  */
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(13)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(15)))
 
 /***/ }),
 /* 73 */
@@ -10333,6 +10402,28 @@ module.exports = exports['default'];
 
 exports.__esModule = true;
 
+var _iterator = __webpack_require__(8);
+
+var _iterator2 = _interopRequireDefault(_iterator);
+
+var _symbol = __webpack_require__(14);
+
+var _symbol2 = _interopRequireDefault(_symbol);
+
+var _typeof = typeof _symbol2['default'] === "function" && typeof _iterator2['default'] === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof _symbol2['default'] === "function" && obj.constructor === _symbol2['default'] && obj !== _symbol2['default'].prototype ? "symbol" : typeof obj; };
+
+/** !
+* RedRaphael 1.0.0 - JavaScript Vector Library SVG Module
+* Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
+*
+* Raphael 2.1.0 - JavaScript Vector Library SVG Module
+* Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
+* Copyright © 2008-2012 Sencha Labs <http://sencha.com>
+*
+* Licensed under the MIT license.
+*/
+// Define _window as window object in case of indivual file inclusion.
+
 exports['default'] = function (R) {
     if (R.svg) {
         var has = 'hasOwnProperty',
@@ -10340,15 +10431,27 @@ exports['default'] = function (R) {
             vAignStr = 'vertical-align',
             lineHeightStr = 'line-height',
             fontSizeStr = 'font-size',
+
+        // fontFamilyStr = 'font-family',
+        imageStr = 'image',
+            noneStr = 'none',
+            notToTuneStr = '_do-not-tune',
             textStr = 'text',
             rtlStr = 'rtl',
             arrayStr = 'array',
             middleStr = 'middle',
             pxStr = 'px',
             initialStr = 'initial',
+            fnStr = 'function',
             brStr = '<br>',
+            hiddenStr = 'hidden',
+            visibleStr = 'visible',
+            objectStr = 'object',
+            fillStr = 'fill',
+            transformStr = 'transform',
+            visibilityStr = 'visibility',
             IESplTspanAttr = {
-            visibility: 'hidden',
+            visibility: hiddenStr,
             'font-size': '0px'
         },
             Str = String,
@@ -10389,7 +10492,29 @@ exports['default'] = function (R) {
             crisp: 'crispEdges',
             precision: 'geometricPrecision'
         },
-            markerCounter = {};
+            markerCounter = {},
+            preLoad = function preLoad(elem, ig, isURL, paper) {
+            R._preload(isURL[1], function () {
+                var w = this.offsetWidth,
+                    h = this.offsetHeight;
+                $(elem, {
+                    width: w,
+                    height: h
+                });
+                $(ig, {
+                    width: w,
+                    height: h
+                });
+                paper.safari();
+            });
+        },
+            quickExtend = function quickExtend(obj1, obj2) {
+            if (obj2) {
+                for (var key in obj2) {
+                    obj1[key] = obj2[key];
+                }
+            }
+        };
 
         R.cachedFontHeight = {};
 
@@ -10438,21 +10563,17 @@ exports['default'] = function (R) {
 
         var $ = R._createNode = function (el, attr) {
             // Create the element
-            if (typeof el === 'string') {
+            if ((typeof el === 'undefined' ? 'undefined' : _typeof(el)) === typeStringSTR) {
+                // eslint-disable-line valid-typeof
                 el = R._g.doc.createElementNS(svgNSStr, el);
             }
-            // else {
-
-            // }
             if (attr) {
                 var key;
                 for (key in attr) {
-                    if (attr[has](key)) {
-                        if (xlinkRegx.test(key)) {
-                            el.setAttributeNS(xlink, key.replace(xlinkRegx, E), attr[key]);
-                        } else {
-                            el.setAttribute(key, attr[key]);
-                        }
+                    if (xlinkRegx.test(key)) {
+                        el.setAttributeNS(xlink, key.replace(xlinkRegx, E), attr[key]);
+                    } else {
+                        el.setAttribute(key, attr[key]);
                     }
                 }
             }
@@ -10687,14 +10808,14 @@ exports['default'] = function (R) {
                     dx = 1;
                     refX = isEnd ? 4 : 1;
                     attr = {
-                        fill: 'none',
+                        fill: noneStr,
                         stroke: attrs.stroke
                     };
                 } else {
                     refX = dx = w / 2;
                     attr = {
                         fill: attrs.stroke,
-                        stroke: 'none'
+                        stroke: noneStr
                     };
                 }
                 if (o._.arrows) {
@@ -10708,7 +10829,7 @@ exports['default'] = function (R) {
                 } else {
                     o._.arrows = {};
                 }
-                if (type !== 'none') {
+                if (type !== noneStr) {
                     var pathId = 'raphael-marker-' + type,
                         markerId = 'raphael-marker-' + se + type + w + h + '-obj' + o.id;
                     if (!R._g.doc.getElementById(pathId)) {
@@ -10795,8 +10916,8 @@ exports['default'] = function (R) {
             // redraphael internally changes the "none" value to "0", thus the stroke/border becomes invisible
             // To fix this issue now instead of setting the value as `0` for `stroke-dasharray` attribute
             // now using `none` string as none is a w3c standard value for stroke-dasharray
-            '': ['none'],
-            'none': ['none'],
+            '': [noneStr],
+            'none': [noneStr],
             '-': [3, 1],
             '.': [1, 1],
             '-.': [3, 1, 1, 1],
@@ -10809,40 +10930,40 @@ exports['default'] = function (R) {
             '--..': [8, 3, 1, 3, 1, 3]
         },
             addDashes = function addDashes(o, value, params) {
-            var predefValue = dasharray[Str(value).toLowerCase()],
-                calculatedValues,
-                width,
-                butt,
-                i,
-                widthFactor;
+            if (value !== undefined) {
+                var predefValue = dasharray[value.toLowerCase && value.toLowerCase()],
+                    calculatedValues,
+                    width,
+                    butt,
+                    i,
+                    widthFactor;
 
-            value = predefValue || value !== undefined && [].concat(value);
-            if (value) {
-                width = o.attrs['stroke-width'] || 1;
-                butt = {
-                    round: width,
-                    square: width,
-                    butt: 0
-                }[params['stroke-linecap'] || o.attrs['stroke-linecap']] || 0;
-                i = value.length;
-                widthFactor = predefValue ? width : 1;
+                value = predefValue || [].concat(value);
+                if (R.is(value, arrayStr)) {
+                    width = params['stroke-width'] || o.attrs['stroke-width'] || 1;
+                    butt = {
+                        round: width,
+                        square: width,
+                        butt: 0
+                    }[params['stroke-linecap'] || o.attrs['stroke-linecap']] || 0;
+                    i = value.length;
+                    widthFactor = predefValue ? width : 1;
 
-                if (value[0] === 'none') {
-                    calculatedValues = value;
-                } else {
-                    calculatedValues = [];
-                    while (i--) {
-                        calculatedValues[i] = value[i] * widthFactor + (i % 2 ? 1 : -1) * butt;
-                        calculatedValues[i] <= 0 && (calculatedValues[i] = 0.01 + (width <= 1 ? butt : 0));
-                        if (isNaN(calculatedValues[i])) {
-                            calculatedValues[i] = 0;
+                    if (value[0] === noneStr) {
+                        calculatedValues = value;
+                    } else {
+                        calculatedValues = [];
+                        while (i--) {
+                            calculatedValues[i] = value[i] * widthFactor + (i % 2 ? 1 : -1) * butt;
+                            calculatedValues[i] <= 0 && (calculatedValues[i] = 0.01 + (width <= 1 ? butt : 0));
+                            if (isNaN(calculatedValues[i])) {
+                                calculatedValues[i] = 0;
+                            }
                         }
                     }
-                }
-                if (R.is(value, arrayStr)) {
-                    $(o.node, {
+                    return {
                         'stroke-dasharray': calculatedValues.join(',')
-                    });
+                    };
                 }
             }
         },
@@ -10853,383 +10974,352 @@ exports['default'] = function (R) {
             var node = o.node,
                 attrs = o.attrs,
                 paper = o.paper,
-                s = node.style,
-                vis = s.visibility,
-                el,
-                preLoad = function preLoad(elem, ig, isURL) {
-                R._preload(isURL[1], function () {
-                    var w = this.offsetWidth,
-                        h = this.offsetHeight;
-                    $(elem, {
-                        width: w,
-                        height: h
-                    });
-                    $(ig, {
-                        width: w,
-                        height: h
-                    });
-                    paper.safari();
-                });
-            };
 
-            s.visibility = 'hidden';
-            if (o.type === 'image') {
+            // s = node.style,
+            // vis = s.visibility,
+            el,
+                att,
+                finalAttr = {},
+                finalS = {},
+                value,
+                pathClip,
+                rect;
+
+            // s.visibility = hiddenStr;
+            if (o.type === imageStr) {
                 (0, _raphael.loadRefImage)(o, params);
             }
-            for (var att in params) {
-                if (params[has](att)) {
-                    if (!R._availableAttrs[has](att)) {
-                        continue;
-                    }
-                    var value = params[att];
-                    attrs[att] = value;
-                    if (value === E) {
-                        delete o.attrs[att];
+            for (att in params) {
+                if (att in R._availableAttrs) {
+                    value = params[att];
+                    if (value === E && att in attrs) {
+                        delete attrs[att];
                         node.removeAttribute(att);
-                        continue;
-                    }
-                    switch (att) {
-                        case 'blur':
-                            o.blur(value);
-                            break;
-                        case 'href':
-                        case 'title':
-                        case 'target':
-                            var pn = node.parentNode;
-                            if (pn.tagName.toLowerCase() !== 'a') {
-                                if (value === E) {
+                    } else {
+                        attrs[att] = value;
+                        switch (att) {
+                            case 'blur':
+                                o.blur(value);
+                                break;
+                            case 'href':
+                            case 'title':
+                            case 'target':
+                                var pn = node.parentNode;
+                                if (pn.tagName.toLowerCase() !== 'a') {
+                                    if (value === E) {
+                                        break;
+                                    }
+                                    var hl = $('a');
+                                    hl.raphael = true;
+                                    hl.raphaelid = node.raphaelid;
+                                    pn.insertBefore(hl, node);
+                                    hl.appendChild(node);
+                                    pn = hl;
+                                }
+                                if (att === 'target') {
+                                    pn.setAttributeNS(xlink, 'show', value === 'blank' ? 'new' : value);
+                                } else {
+                                    pn.setAttributeNS(xlink, att, value);
+                                }
+                                node.titleNode = pn;
+                                break;
+                            case 'cursor':
+                                finalS.cursor = value;
+                                break;
+                            case 'transform':
+                                o.transform(value);
+                                break;
+                            case 'rotation':
+                                if (R.is(value, arrayStr)) {
+                                    o.rotate.apply(o, value);
+                                } else {
+                                    o.rotate(value);
+                                }
+                                break;
+                            case 'arrow-start':
+                                addArrow(o, value);
+                                break;
+                            case 'arrow-end':
+                                addArrow(o, value, 1);
+                                break;
+                            case 'clip-path':
+                                pathClip = true;
+                            // falls through
+                            case 'clip-rect':
+                                rect = !pathClip && Str(value).split(separator);
+                                o._.clipispath = !!pathClip;
+                                if (pathClip || rect.length === 4) {
+                                    o.clip && o.clip.parentNode.parentNode.removeChild(o.clip.parentNode);
+                                    var rc = $(pathClip ? 'path' : 'rect');
+                                    el = $('clipPath');
+                                    el.id = R.getElementID(R.createUUID());
+                                    $(rc, pathClip ? {
+                                        d: value ? attrs['clip-path'] = R._pathToAbsolute(value) : R._availableAttrs.path,
+                                        fill: noneStr
+                                    } : {
+                                        x: rect[0],
+                                        y: rect[1],
+                                        width: rect[2],
+                                        height: rect[3],
+                                        transform: o.matrix.invert()
+                                    });
+                                    el.appendChild(rc);
+                                    paper.defs.appendChild(el);
+                                    finalAttr['clip-path'] = "url('" + R._url + '#' + el.id + "')";
+                                    o.clip = rc;
+                                }
+                                if (!value) {
+                                    var path = node.getAttribute('clip-path');
+                                    if (path) {
+                                        var clip = R._g.doc.getElementById(path.replace(/(^url\(#|\)$)/g, E));
+                                        clip && clip.parentNode.removeChild(clip);
+                                        finalAttr['clip-path'] = E;
+                                        document.documentMode === 11 && node.removeAttribute('clip-path');
+                                        delete o.clip;
+                                    }
+                                }
+                                break;
+                            case 'path':
+                                if (o.type === 'path') {
+                                    finalAttr.d = value ? attrs.path = R._pathToAbsolute(value) : R._availableAttrs.path;
+                                    o._.dirty = 1;
+                                    if (o._.arrows) {
+                                        'startString' in o._.arrows && addArrow(o, o._.arrows.startString);
+                                        'endString' in o._.arrows && addArrow(o, o._.arrows.endString, 1);
+                                    }
+                                }
+                                break;
+                            case 'width':
+                                finalAttr[att] = value;
+                                o._.dirty = 1;
+                                if (attrs.fx) {
+                                    att = 'x';
+                                    value = attrs.x;
+                                } else {
                                     break;
                                 }
-                                var hl = $('a');
-                                hl.raphael = true;
-                                hl.raphaelid = node.raphaelid;
-                                pn.insertBefore(hl, node);
-                                hl.appendChild(node);
-                                pn = hl;
-                            }
-                            if (att === 'target') {
-                                pn.setAttributeNS(xlink, 'show', value === 'blank' ? 'new' : value);
-                            } else {
-                                pn.setAttributeNS(xlink, att, value);
-                            }
-                            node.titleNode = pn;
-                            break;
-                        case 'cursor':
-                            s.cursor = value;
-                            break;
-                        case 'transform':
-                            o.transform(value);
-                            break;
-                        case 'rotation':
-                            if (R.is(value, arrayStr)) {
-                                o.rotate.apply(o, value);
-                            } else {
-                                o.rotate(value);
-                            }
-                            break;
-                        case 'arrow-start':
-                            addArrow(o, value);
-                            break;
-                        case 'arrow-end':
-                            addArrow(o, value, 1);
-                            break;
-                        case 'clip-path':
-                            var pathClip = true;
-                        // falls through
-                        case 'clip-rect':
-                            var rect = !pathClip && Str(value).split(separator);
-                            o._.clipispath = !!pathClip;
-                            if (pathClip || rect.length === 4) {
-                                o.clip && o.clip.parentNode.parentNode.removeChild(o.clip.parentNode);
-                                var rc = $(pathClip ? 'path' : 'rect');
-                                el = $('clipPath');
-                                el.id = R.getElementID(R.createUUID());
-                                $(rc, pathClip ? {
-                                    d: value ? attrs['clip-path'] = R._pathToAbsolute(value) : R._availableAttrs.path,
-                                    fill: 'none'
-                                } : {
-                                    x: rect[0],
-                                    y: rect[1],
-                                    width: rect[2],
-                                    height: rect[3],
-                                    transform: o.matrix.invert()
-                                });
-                                el.appendChild(rc);
-                                paper.defs.appendChild(el);
-                                $(node, {
-                                    'clip-path': "url('" + R._url + '#' + el.id + "')"
-                                });
-                                o.clip = rc;
-                            }
-                            if (!value) {
-                                var path = node.getAttribute('clip-path');
-                                if (path) {
-                                    var clip = R._g.doc.getElementById(path.replace(/(^url\(#|\)$)/g, E));
-                                    clip && clip.parentNode.removeChild(clip);
-                                    $(node, {
-                                        'clip-path': E
-                                    });
-                                    document.documentMode === 11 && node.removeAttribute('clip-path');
-                                    delete o.clip;
+                            // falls through
+                            case 'x':
+                                if (attrs.fx) {
+                                    value = -attrs.x - (attrs.width || 0);
                                 }
-                            }
-                            break;
-                        case 'path':
-                            if (o.type === 'path') {
-                                $(node, {
-                                    d: value ? attrs.path = R._pathToAbsolute(value) : R._availableAttrs.path
-                                });
-                                o._.dirty = 1;
-                                if (o._.arrows) {
-                                    'startString' in o._.arrows && addArrow(o, o._.arrows.startString);
-                                    'endString' in o._.arrows && addArrow(o, o._.arrows.endString, 1);
+                            // falls through
+                            case 'rx':
+                                if (att === 'rx' && o.type === 'rect') {
+                                    break;
                                 }
-                            }
-                            break;
-                        case 'width':
-                            node.setAttribute(att, value);
-                            o._.dirty = 1;
-                            if (attrs.fx) {
-                                att = 'x';
-                                value = attrs.x;
-                            } else {
-                                break;
-                            }
-                        // falls through
-                        case 'x':
-                            if (attrs.fx) {
-                                value = -attrs.x - (attrs.width || 0);
-                            }
-                        // falls through
-                        case 'rx':
-                            if (att === 'rx' && o.type === 'rect') {
-                                break;
-                            }
-                        // falls through
-                        case 'cx':
-                            node.setAttribute(att, value);
-                            o.pattern && updatePosition(o);
-                            o._.dirty = 1;
-                            break;
-                        case 'height':
-                            node.setAttribute(att, value);
-                            o._.dirty = 1;
-                            if (attrs.fy) {
-                                att = 'y';
-                                value = attrs.y;
-                            } else {
-                                break;
-                            }
-                        // falls through
-                        case 'y':
-                            // For text don't apply y attribute as it will be applied during tuneText
-                            if (o.type === textStr) {
-                                break;
-                            }
-                            if (attrs.fy) {
-                                value = -attrs.y - (attrs.height || 0);
-                            }
-                        // falls through
-                        case 'ry':
-                            if (att === 'ry' && o.type === 'rect') {
-                                break;
-                            }
-                        // falls through
-                        case 'cy':
-                            node.setAttribute(att, value);
-                            o.pattern && updatePosition(o);
-                            o._.dirty = 1;
-                            break;
-                        case 'r':
-                            if (o.type === 'rect') {
-                                $(node, {
-                                    rx: value,
-                                    ry: value
-                                });
-                            } else {
-                                node.setAttribute(att, value);
-                            }
-                            o._.dirty = 1;
-                            break;
-                        case 'src':
-                            if (o.type === 'image') {
-                                node.setAttributeNS(xlink, 'href', value);
-                            }
-                            break;
-                        case 'stroke-width':
-                            if (o._.sx !== 1 || o._.sy !== 1) {
-                                value /= mmax(abs(o._.sx), abs(o._.sy)) || 1;
-                            }
-                            if (paper._vbSize) {
-                                value *= paper._vbSize;
-                            }
-                            if (zeroStrokeFix && value === 0) {
-                                value = 0.000001;
-                            }
-                            node.setAttribute(att, value);
-                            if (attrs['stroke-dasharray']) {
-                                addDashes(o, attrs['stroke-dasharray'], params);
-                            }
-                            if (o._.arrows) {
-                                'startString' in o._.arrows && addArrow(o, o._.arrows.startString);
-                                'endString' in o._.arrows && addArrow(o, o._.arrows.endString, 1);
-                            }
-                            break;
-                        case 'stroke-dasharray':
-                            addDashes(o, value, params);
-                            break;
-                        case 'fill':
-                            var isURL = Str(value).match(R._ISURL);
-                            if (isURL) {
-                                el = $('pattern');
-                                var ig = $('image');
-                                el.id = R.getElementID(R.createUUID());
-                                $(el, {
-                                    x: 0,
-                                    y: 0,
-                                    patternUnits: 'userSpaceOnUse',
-                                    height: 1,
-                                    width: 1
-                                });
-                                $(ig, {
-                                    x: 0,
-                                    y: 0,
-                                    'xlink:href': isURL[1]
-                                });
-                                el.appendChild(ig);
-                                preLoad(el, ig, isURL);
-                                paper.defs.appendChild(el);
-                                s.fill = "url('" + R._url + '#' + el.id + "')";
-                                $(node, {
-                                    fill: s.fill
-                                });
-
-                                o.pattern = el;
+                            // falls through
+                            case 'cx':
+                                finalAttr[att] = value;
                                 o.pattern && updatePosition(o);
+                                o._.dirty = 1;
                                 break;
-                            }
-                            var clr = R.getRGB(value);
-                            if (!clr.error) {
-                                delete params.gradient;
-                                delete attrs.gradient;
-                                // !R.is(attrs.opacity, "undefined") &&
-                                //     R.is(params.opacity, "undefined") &&
-                                //     $(node, {
-                                //         opacity: attrs.opacity
-                                //     });
-                                !R.is(attrs['fill-opacity'], 'undefined') && R.is(params['fill-opacity'], 'undefined') && $(node, {
-                                    'fill-opacity': attrs['fill-opacity']
-                                });
-                                o.gradient && updateGradientReference(o);
-                            } else if ((o.type === 'circle' || o.type === 'ellipse' || Str(value).charAt() !== 'r') && addGradientFill(o, value)) {
-                                // The reason for this block of code is not known, hence it is commented out as it is causeing issues in
-                                // IE8 browser for gradient color
-                                /* if ("opacity" in attrs || "fill-opacity" in attrs) {
-                                    var gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\(#|\)$/g, E));
-                                    if (gradient) {
-                                        var stops = gradient.getElementsByTagName("stop");
-                                        $(stops[stops.length - 1], {
-                                            "stop-opacity": ("opacity" in attrs ? attrs.opacity : 1) * ("fill-opacity" in attrs ? attrs["fill-opacity"] : 1)
-                                        });
-                                    }
-                                } */
-                                attrs.gradient = value;
-                                // attrs.fill = "none";
-                                s.fill = E;
+                            case 'height':
+                                finalAttr[att] = value;
+                                o._.dirty = 1;
+                                if (attrs.fy) {
+                                    att = 'y';
+                                    value = attrs.y;
+                                } else {
+                                    break;
+                                }
+                            // falls through
+                            case 'y':
+                                // For text don't apply y attribute as it will be applied during tuneText
+                                if (o.type === textStr) {
+                                    break;
+                                }
+                                if (attrs.fy) {
+                                    value = -attrs.y - (attrs.height || 0);
+                                }
+                            // falls through
+                            case 'ry':
+                                if (att === 'ry' && o.type === 'rect') {
+                                    break;
+                                }
+                            // falls through
+                            case 'cy':
+                                finalAttr[att] = value;
+                                o.pattern && updatePosition(o);
+                                o._.dirty = 1;
                                 break;
-                            }
-                            if (clr[has]('opacity')) {
-                                $(node, {
-                                    'fill-opacity': s.fillOpacity = clr.opacity > 1 ? clr.opacity / 100 : clr.opacity
-                                });
-                                o._.fillOpacityDirty = true;
-                            } else if (o._.fillOpacityDirty && R.is(attrs['fill-opacity'], 'undefined') && R.is(params['fill-opacity'], 'undefined')) {
-                                node.removeAttribute('fill-opacity');
-                                s.fillOpacity = E;
-                                delete o._.fillOpacityDirty;
-                            }
-                        // falls through
-                        case 'stroke':
-                            clr = R.getRGB(value);
-                            node.setAttribute(att, clr.hex);
-                            s[att] = clr.hex;
-                            if (att === 'stroke') {
-                                // remove stroke opacity when stroke is set to none
-                                if (clr[has]('opacity')) {
-                                    $(node, {
-                                        'stroke-opacity': s.strokeOpacity = clr.opacity > 1 ? clr.opacity / 100 : clr.opacity
-                                    });
-                                    o._.strokeOpacityDirty = true;
-                                } else if (o._.strokeOpacityDirty && R.is(attrs['stroke-opacity'], 'undefined') && R.is(params['stroke-opacity'], 'undefined')) {
-                                    node.removeAttribute('stroke-opacity');
-                                    s.strokeOpacity = E;
-                                    delete o._.strokeOpacityDirty;
+                            case 'r':
+                                if (o.type === 'rect') {
+                                    finalAttr.rx = finalAttr.ry = value;
+                                } else {
+                                    finalAttr[att] = value;
+                                }
+                                o._.dirty = 1;
+                                break;
+                            case 'src':
+                                if (o.type === imageStr) {
+                                    node.setAttributeNS(xlink, 'href', value);
+                                }
+                                break;
+                            case 'stroke-width':
+                                if (o._.sx !== 1 || o._.sy !== 1) {
+                                    value /= mmax(abs(o._.sx), abs(o._.sy)) || 1;
+                                }
+                                if (paper._vbSize) {
+                                    value *= paper._vbSize;
+                                }
+                                if (zeroStrokeFix && value === 0) {
+                                    value = 0.000001;
+                                }
+                                finalAttr[att] = value;
+                                // if this time we have no stroke-dasharray param but last time we have then update it according to new stroke-width
+                                if (!params['stroke-dasharray'] && attrs['stroke-dasharray']) {
+                                    quickExtend(finalAttr, addDashes(o, attrs['stroke-dasharray'], params));
                                 }
                                 if (o._.arrows) {
                                     'startString' in o._.arrows && addArrow(o, o._.arrows.startString);
                                     'endString' in o._.arrows && addArrow(o, o._.arrows.endString, 1);
                                 }
-                            }
-                            break;
-                        case 'gradient':
-                            (o.type === 'circle' || o.type === 'ellipse' || Str(value).charAt() !== 'r') && addGradientFill(o, value);
-                            break;
-                        case 'line-height': // do not apply
-                        case 'vertical-align':
-                            // do not apply
-                            break;
-                        case 'visibility':
-                            value === 'hidden' ? o.hide() : o.show();
-                            break;
-                        case 'opacity':
-                            // if (attrs.gradient && !attrs[has]("stroke-opacity")) {
-                            //     $(node, {
-                            //         "stroke-opacity": value > 1 ? value / 100 : value
-                            //     });
-                            // }
-                            value = value > 1 ? value / 100 : value;
-                            $(node, {
-                                'opacity': value
-                            });
-                            s.opacity = value;
-                            break;
-                        // fall
-                        case 'fill-opacity':
-                            // if (attrs.gradient) {
-                            //     gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\([\'\"]#|[\'\"]\)$/g, E));
-                            //     if (gradient) {
-                            //         stops = gradient.getElementsByTagName("stop");
-                            //         l = stops.length;
-                            //         for (i = 0; i < l; i += 1) {
-                            //           $(stops[i], {
-                            //               "stop-opacity": value
-                            //           });
-                            //         }
-                            //     }
-                            //     break;
-                            // }
-                            value = value > 1 ? value / 100 : value;
-                            $(node, {
-                                'fill-opacity': value
-                            });
-                            s.fillOpacity = value;
-                            break;
-                        case 'shape-rendering':
-                            o.attrs[att] = value = shapeRenderingAttrs[value] || value || 'auto';
-                            node.setAttribute(att, value);
-                            node.style.shapeRendering = value;
-                            break;
-                        default:
-                            att === fontSizeStr && (value = toInt(value, 10) + 'px');
-                            s[_raphael.dashedAttr2CSSMap[att]] = value;
-                            o._.dirty = 1;
-                            node.setAttribute(att, value);
-                            break;
+                                break;
+                            case 'stroke-dasharray':
+                                quickExtend(finalAttr, addDashes(o, value, params));
+                                break;
+                            case 'fill':
+                                var isURL = R._ISURL.test(value);
+                                if (isURL) {
+                                    el = $('pattern');
+                                    var ig = $(imageStr);
+                                    el.id = R.getElementID(R.createUUID());
+                                    $(el, {
+                                        x: 0,
+                                        y: 0,
+                                        patternUnits: 'userSpaceOnUse',
+                                        height: 1,
+                                        width: 1
+                                    });
+                                    $(ig, {
+                                        x: 0,
+                                        y: 0,
+                                        'xlink:href': isURL[1]
+                                    });
+                                    el.appendChild(ig);
+                                    preLoad(el, ig, isURL, paper);
+                                    paper.defs.appendChild(el);
+                                    finalAttr.fill = "url('" + R._url + '#' + el.id + "')";
+
+                                    o.pattern = el;
+                                    o.pattern && updatePosition(o);
+                                    break;
+                                }
+                                var clr = R.getRGB(value);
+                                if (!clr.error) {
+                                    delete params.gradient;
+                                    delete attrs.gradient;
+                                    // !R.is(attrs.opacity, "undefined") &&
+                                    //     R.is(params.opacity, "undefined") &&
+                                    //     finalAttr[opacity] = attrs.opacity;
+                                    !R.is(attrs['fill-opacity'], 'undefined') && R.is(params['fill-opacity'], 'undefined') && (finalAttr['fill-opacity'] = attrs['fill-opacity']);
+                                    o.gradient && updateGradientReference(o);
+                                } else if ((o.type === 'circle' || o.type === 'ellipse' || Str(value).charAt() !== 'r') && addGradientFill(o, value)) {
+                                    // The reason for this block of code is not known, hence it is commented out as it is causeing issues in
+                                    // IE8 browser for gradient color
+                                    /* if ("opacity" in attrs || "fill-opacity" in attrs) {
+                                        var gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\(#|\)$/g, E));
+                                        if (gradient) {
+                                            var stops = gradient.getElementsByTagName("stop");
+                                            $(stops[stops.length - 1], {
+                                                "stop-opacity": ("opacity" in attrs ? attrs.opacity : 1) * ("fill-opacity" in attrs ? attrs["fill-opacity"] : 1)
+                                            });
+                                        }
+                                    } */
+                                    attrs.gradient = value;
+                                    // attrs.fill = "none";
+                                    break;
+                                }
+                                if (clr[has]('opacity')) {
+                                    finalAttr['fill-opacity'] = clr.opacity > 1 ? clr.opacity / 100 : clr.opacity;
+                                    o._.fillOpacityDirty = true;
+                                } else if (o._.fillOpacityDirty && R.is(attrs['fill-opacity'], 'undefined') && R.is(params['fill-opacity'], 'undefined')) {
+                                    node.removeAttribute('fill-opacity');
+                                    delete o._.fillOpacityDirty;
+                                }
+                            // falls through
+                            case 'stroke':
+                                clr = R.getRGB(value);
+                                finalAttr[att] = clr.hex;
+                                if (att === 'stroke') {
+                                    // remove stroke opacity when stroke is set to none
+                                    if (clr[has]('opacity')) {
+                                        finalAttr['stroke-opacity'] = clr.opacity > 1 ? clr.opacity / 100 : clr.opacity;
+                                        o._.strokeOpacityDirty = true;
+                                    } else if (o._.strokeOpacityDirty && R.is(attrs['stroke-opacity'], 'undefined') && R.is(params['stroke-opacity'], 'undefined')) {
+                                        node.removeAttribute('stroke-opacity');
+                                        delete o._.strokeOpacityDirty;
+                                    }
+                                    if (o._.arrows) {
+                                        'startString' in o._.arrows && addArrow(o, o._.arrows.startString);
+                                        'endString' in o._.arrows && addArrow(o, o._.arrows.endString, 1);
+                                    }
+                                }
+                                break;
+                            case 'gradient':
+                                (o.type === 'circle' || o.type === 'ellipse' || Str(value).charAt() !== 'r') && addGradientFill(o, value);
+                                break;
+                            case 'visibility':
+                                value === hiddenStr ? o.hide() : o.show();
+                                break;
+                            case 'opacity':
+                                // if (attrs.gradient && !attrs[has]("stroke-opacity")) {
+                                //     finalAttr["stroke-opacity"] = value > 1 ? value / 100 : value;
+                                // }
+                                value = value > 1 ? value / 100 : value;
+                                finalAttr.opacity = value;
+                                break;
+                            // fall
+                            case 'fill-opacity':
+                                // if (attrs.gradient) {
+                                //     gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\([\'\"]#|[\'\"]\)$/g, E));
+                                //     if (gradient) {
+                                //         stops = gradient.getElementsByTagName("stop");
+                                //         l = stops.length;
+                                //         for (i = 0; i < l; i += 1) {
+                                //           $(stops[i], {
+                                //               "stop-opacity": value
+                                //           });
+                                //         }
+                                //     }
+                                //     break;
+                                // }
+                                value = value > 1 ? value / 100 : value;
+                                finalAttr['fill-opacity'] = value;
+                                break;
+                            case 'shape-rendering':
+                                o.attrs[att] = value = shapeRenderingAttrs[value] || value || 'auto';
+                                finalAttr[att] = value;
+                                node.style.shapeRendering = value;
+                                break;
+
+                            case 'line-height': // do not apply
+                            case 'vertical-align':
+                                // do not apply
+                                break;
+                            default:
+                                att === fontSizeStr && (value = toInt(value, 10) + 'px');
+                                o._.dirty = 1;
+                                finalAttr[att] = value;
+                                if (_raphael.dashedAttr2CSSMap[att]) {
+                                    finalS[_raphael.dashedAttr2CSSMap[att]] = value;
+                                }
+                                break;
+                        }
                     }
                 }
             }
-            o.type === 'text' && !params['_do-not-tune'] && tuneText(o, params);
-            s.visibility = vis;
+            // Finally apply the styles
+            for (att in finalS) {
+                node.style[att] = finalS[att];
+            }
+            // Finally apply the attributes
+            for (att in finalAttr) {
+                node.setAttribute(att, finalAttr[att]);
+            }
+            o.type === textStr && !params[notToTuneStr] && tuneText(o, params);
+            // s.visibility = vis;
         },
 
         /*
@@ -11593,7 +11683,7 @@ exports['default'] = function (R) {
         elproto.hide = function () {
             var o = this;
             updateFollowers(o, 'hide');
-            !o.removed && o.paper.safari(o.node.style.display = 'none');
+            !o.removed && o.paper.safari(o.node.style.display = noneStr);
             return o;
         };
 
@@ -11644,7 +11734,7 @@ exports['default'] = function (R) {
             R._tear(o, o.parent);
 
             for (i in o) {
-                o[i] = typeof o[i] === 'function' ? R._removedFactory(i) : null;
+                o[i] = _typeof(o[i]) === fnStr ? R._removedFactory(i) : null;
             }
 
             o.removed = true;
@@ -11662,7 +11752,7 @@ exports['default'] = function (R) {
             if (isIE && isText) {
                 fn = (0, _raphael.showRecursively)(o);
             } else {
-                if (node.style.display === 'none') {
+                if (node.style.display === noneStr) {
                     o.show();
                     hide = true;
                 }
@@ -11701,47 +11791,52 @@ exports['default'] = function (R) {
             if (this.removed) {
                 return this;
             }
-            var key,
+            var elem = this,
+                attrs = this.attrs,
+                key,
                 finalParam = {},
                 i,
                 ii,
                 params,
                 subkey,
                 par,
-                follower;
+                follower,
+                invokedCa = elem._invokedCa || (elem._invokedCa = {}),
+                ca,
+                caObj = this.ca;
             // get all, return all applied attributes
             if (name == null) {
                 var res = {};
-                for (key in this.attrs) {
-                    if (this.attrs[has](key)) {
-                        res[key] = this.attrs[key];
+                for (key in attrs) {
+                    if (attrs[has](key)) {
+                        res[key] = attrs[key];
                     }
                 }
-                res.gradient && res.fill === 'none' && (res.fill = res.gradient) && delete res.gradient;
+                res.gradient && res.fill === noneStr && (res.fill = res.gradient) && delete res.gradient;
                 res.transform = this._.transform;
-                res.visibility = this.node.style.display === 'none' ? 'hidden' : 'visible';
+                res.visibility = this.node.style.display === noneStr ? hiddenStr : visibleStr;
                 return res;
             } else {
                 if (value == null) {
-                    if (R.is(name, 'object')) {
+                    if (R.is(name, objectStr)) {
                         // Provided as an object
                         params = name;
                     } else if (R.is(name, typeStringSTR)) {
                         // get one, return the value of the given attribute
-                        if (name === 'fill' && this.attrs.fill === 'none' && this.attrs.gradient) {
-                            return this.attrs.gradient;
+                        if (name === fillStr && attrs.fill === noneStr && attrs.gradient) {
+                            return attrs.gradient;
                         }
-                        if (name === 'transform') {
+                        if (name === transformStr) {
                             return this._.transform;
                         }
-                        if (name === 'visibility') {
-                            return this.node.style.display === 'none' ? 'hidden' : 'visible';
+                        if (name === visibilityStr) {
+                            return this.node.style.display === noneStr ? hiddenStr : visibleStr;
                         }
 
-                        if (name in this.attrs) {
-                            return this.attrs[name];
-                        } else if (R.is(this.ca[name], 'function')) {
-                            return this.ca[name].def;
+                        if (name in attrs) {
+                            return attrs[name];
+                        } else if (R.is(caObj[name], fnStr)) {
+                            return caObj[name].def;
                         }
                         return R._availableAttrs[name];
                     }
@@ -11760,20 +11855,19 @@ exports['default'] = function (R) {
                 // For each param
                 for (key in params) {
                     // check if that is a Custom attribute or not
-                    if (this.ca[key] && params[has](key) && R.is(this.ca[key], 'function') && !this.ca['_invoked' + key]) {
-                        this.ca['_invoked' + key] = true; // prevent recursion
-                        par = this.ca[key].apply(this, [].concat(params[key]));
-                        delete this.ca['_invoked' + key];
+                    ca = caObj[key];
+                    if (ca && !invokedCa[key] && R.is(ca, fnStr)) {
+                        invokedCa[key] = true; // prevent recursion
+                        par = ca.apply(this, [].concat(params[key]));
+                        invokedCa[key] = false;
 
                         // If the custom attribute create another set of attribute to be updated
                         // Then add them in the attribute list
                         for (subkey in par) {
-                            if (par[has](subkey)) {
-                                finalParam[subkey] = par[subkey];
-                            }
+                            finalParam[subkey] = par[subkey];
                         }
                         // Add the attribute in attrs
-                        this.attrs[key] = params[key];
+                        attrs[key] = params[key];
                     } else {
                         finalParam[key] = params[key];
                     }
@@ -11988,12 +12082,12 @@ exports['default'] = function (R) {
             return res;
         };
         R._engine.image = function (svg, attrs, group) {
-            var el = $('image'),
+            var el = $(imageStr),
                 res = new Element(el, svg, group, true);
 
             res._.group = group || svg;
-            res.type = 'image';
-            el.setAttribute('preserveAspectRatio', 'none');
+            res.type = imageStr;
+            el.setAttribute('preserveAspectRatio', noneStr);
             // Apply the attribute if provided
             attrs && res.attr(attrs);
             return res;
@@ -12199,7 +12293,7 @@ exports['default'] = function (R) {
             this.desc && this.desc.parentNode.removeChild(this.desc);
             this.canvas.parentNode && this.canvas.parentNode.removeChild(this.canvas);
             for (i in this) {
-                this[i] = typeof this[i] === 'function' ? R._removedFactory(i) : null;
+                this[i] = _typeof(this[i]) === fnStr ? R._removedFactory(i) : null;
             }
             this.removed = true;
         };
@@ -12220,19 +12314,9 @@ exports['default'] = function (R) {
 
 var _raphael = __webpack_require__(7);
 
-module.exports = exports['default'];
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-/** !
-* RedRaphael 1.0.0 - JavaScript Vector Library SVG Module
-* Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
-*
-* Raphael 2.1.0 - JavaScript Vector Library SVG Module
-* Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
-* Copyright © 2008-2012 Sencha Labs <http://sencha.com>
-*
-* Licensed under the MIT license.
-*/
-// Define _window as window object in case of indivual file inclusion.
+module.exports = exports['default'];
 
 /***/ }),
 /* 74 */
@@ -13619,11 +13703,11 @@ module.exports = exports["default"];
 
 exports.__esModule = true;
 
-var _iterator = __webpack_require__(14);
+var _iterator = __webpack_require__(8);
 
 var _iterator2 = _interopRequireDefault(_iterator);
 
-var _symbol = __webpack_require__(27);
+var _symbol = __webpack_require__(14);
 
 var _symbol2 = _interopRequireDefault(_symbol);
 

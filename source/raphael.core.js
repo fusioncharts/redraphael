@@ -1531,24 +1531,25 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         return data;
     });
     // PATHS
-    var paths = function(ps) {
-        var p = paths.ps = paths.ps || {};
-        if (p[ps]) {
-            p[ps].sleep = 100;
-        } else {
-            p[ps] = {
-                sleep: 100
-            };
-        }
-        setTimeout(function() {
-            for (var key in p)
-                if (p[has](key) && key != ps) {
-                    p[key].sleep--;
-                    !p[key].sleep && delete p[key];
-                }
-        });
-        return p[ps];
-    };
+    var _pathCache = {},
+    paths = cacher(function() {
+        // var p = paths.ps = paths.ps || {};
+        // if (p[ps]) {
+        //     p[ps].sleep = 100;
+        // } else {
+        //     p[ps] = {
+        //         sleep: 100
+        //     };
+        // }
+        // setTimeout(function() {
+        //     for (var key in p)
+        //         if (p[has](key) && key != ps) {
+        //             p[key].sleep--;
+        //             !p[key].sleep && delete p[key];
+        //         }
+        // });
+        return {};
+    }, undef, undef, undef, 500, _pathCache, true);
 
     /*\
      * Raphael.findDotsAtSegment

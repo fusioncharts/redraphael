@@ -236,8 +236,8 @@ var cacher = function (f, scope, postprocessor, key, maxCache, sharedCache, firs
      * @return {any} Return the exact result executed by the original method
      */
     function cachedfunction (arg1) {
-        var args = firstArgKey ? arg1 : getArrayCopy(arguments).join(nullStr),
-            newEndStr,
+        var hashKey = firstArgKey ? arg1 : getArrayCopy(arguments).join(nullStr),
+            // newEndStr,
             // newEnd,
             cur,
             // __next,
@@ -246,12 +246,12 @@ var cacher = function (f, scope, postprocessor, key, maxCache, sharedCache, firs
             oldEnd,
             oldStart;
 
-        args = args === E ? BLANK : args;
+        hashKey = hashKey === E ? BLANK : hashKey;
         // /** **** Cache hit ******/
         // // If the following condition is true it is a cache hit.
-        // if (args in cache) {
+        // if (hashKey in cache) {
         //     // cur is the element due to cache hit
-        //     cur = cache[args];
+        //     cur = cache[hashKey];
         //     nextStr = cur.__prev; // nextStr is the id of __prev element of cur.
         //     __next = cur.__next; // __next is the next node of the current hit node
         //     __prev = ((nextStr !== null) && cache[nextStr]) || null; // __prev is the previous node of the current hit node
@@ -272,7 +272,7 @@ var cacher = function (f, scope, postprocessor, key, maxCache, sharedCache, firs
         //         cache.__start = cache[cache.__end]; // start pointer now point to the first element
         //         cache.__end = newEndStr; // end holds the ID of the last element
         //     } else { // when cur element is any element except start and end
-        //         cache.__start.__prev = args; // present start node's previous pointer should point to the cur node
+        //         cache.__start.__prev = hashKey; // present start node's previous pointer should point to the cur node
 
         //         cur.__next = cache.__start; // cur node's __next pointer now points to the present start, making the present start to 2nd position
         //         cur.__prev = null; // since cur is in front, no one should be ahead of it. hence __prev = null
@@ -309,46 +309,46 @@ var cacher = function (f, scope, postprocessor, key, maxCache, sharedCache, firs
 
         //     /* ----- insertion process begins here ----- */
         //     // create a new node
-        //     cache[args] = {
+        //     cache[hashKey] = {
         //         __prev: null,
         //         __next: cache.__start // newNode's __next pointer should point to the present start
         //     };
         //     // If there is a function then call the function to get the results
-        //     f && (cache[args][key] = postprocessor ? postprocessor(f.apply(scope, arguments)) : f.apply(scope, arguments));
+        //     f && (cache[hashKey][key] = postprocessor ? postprocessor(f.apply(scope, arguments)) : f.apply(scope, arguments));
 
         //     // If start is present(start can be null if it is first node), point start.__prev to the new object
         //     if (cache.__start !== null) {
-        //         cache.__start.__prev = args; // The present start node will fall second.
+        //         cache.__start.__prev = hashKey; // The present start node will fall second.
         //     }
         //     // finally assign start to the new node as start always points to the node at front
-        //     cache.__start = cache[args];
+        //     cache.__start = cache[hashKey];
         //     // In case newNode is the first node of the cache end will also be null, but it should point to the start.
-        //     (cache.__end === null) && (cache.__end = args);
+        //     (cache.__end === null) && (cache.__end = hashKey);
         //     count++;
         // }
         // cur is the element due to cache hit
-        cur = cache[args];
+        cur = cache[hashKey];
         if (!cur) { /** ***** Cache miss *******/
             /* ----- insertion process begins here ----- */
             // create a new node and finally assign the new node as start as it should always points to the node at front
-            cur = cache.__start = cache[args] = {};
+            cur = cache[hashKey] = {};
             // If there is a function then call the function to get the results
-            f && (cache[args][key] = postprocessor ? postprocessor(f.apply(scope, arguments)) : f.apply(scope, arguments));
+            f && (cache[hashKey][key] = postprocessor ? postprocessor(f.apply(scope, arguments)) : f.apply(scope, arguments));
             // In case newNode is the first node of the cache end will also be null, but it should point to the start.
-            (cache.__end === null) && (cache.__end = args);
+            (cache.__end === null) && (cache.__end = hashKey);
             // increase the counter
             count++;
             /* ----- deletion process begins here -----
             *  deletion takes place if cache is full 
             */
             if (count > maxCache && cache.__end) {
-                oldEnd = cache.__end;
-                // update the end pointer
-                cache.__end = cache[oldEnd].__prev;
+                oldEnd = cache[cache.__end];
                 // __next pointer of the second last element should be deleted.
-                cache[newEndStr].__next = cache[oldEnd].next;
+                cache[oldEnd.__prev].__next = null;
                 // delete the node
                 delete cache[cache.__end];
+                // update the end pointer
+                cache.__end = oldEnd.__prev;
                 count--; // decrement the counter
             }
         } else { // hit then conect the prev and next of hit to each other
@@ -362,9 +362,10 @@ var cacher = function (f, scope, postprocessor, key, maxCache, sharedCache, firs
         if (oldStart !== cur) {
             cur.__prev = null;
             cur.__next = oldStart;
-            oldStart && (oldStart.__prev = args);
+            oldStart && (oldStart.__prev = hashKey);
+            cache.__start = cur;
         }
-        return cache[args][key];
+        return cache[hashKey][key];
     }
     return cachedfunction;
 };

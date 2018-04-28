@@ -10,7 +10,7 @@
  */
 
 import eve from './eve/eve';
-import extend, {merge, getArrayCopy, BLANK} from './raphael.lib';
+import extend, {merge, getArrayCopy, cacher} from './raphael.lib';
 
 var _win = (typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : null);
 
@@ -72,13 +72,13 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         // Code commented as resources will now be referenced using relative URLs.
         // @todo Remove once we have ascertained that there are no issues in any environment.
         // if (R._url) { // Reinitialize URLs to be safe from pop state event
-        //     R._url = (R._g && R._g.win || _window).location.href.replace(/#.*?$/, "");
+        //     R._url = (R._g && R._g.win || _window).location.href.replace(/#.*?$/, E);
         // }
         // If the URL is undefined only then initialize the URL with blank in order to support
         // both relative as well as absolute URLs
         // @todo Need to track the URL change and modify the URL for the gradient and other elements dynamically.
         if (R._url === undefined) {
-            R._url = "";
+            R._url = E;
         }
 
         if (R.is(first, "function")) {
@@ -108,8 +108,8 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
 
     var loaded,
         undef,
-        E = "",
-        S = " ",
+        E = '',
+        S = ' ',
         has = "hasOwnProperty",
         apply = "apply",
         concat = "concat",
@@ -1099,107 +1099,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         return this.join(",").replace(p2s, "$1");
     };
 
-    var cacher = R._cacher = function (f, scope, postprocessor) {
-        var start = null,
-            end = null,
-            cache = {},
-            count = 0;
-
-        function cachedfunction () {
-            var arg = getArrayCopy(arguments),
-                args = arg.join("\u2400"),
-                newEndStr,
-                newEnd,
-                cur,
-                prev,
-                next,
-                nextStr;
-
-            args = args === '' ? BLANK : args;
-            /****** Cache hit ******/
-            // If the following condition is true it is a cache hit.
-            if (cache[has](args)) {
-                // cur is the element due to cache hit
-                cur = cache[args];
-                nextStr = cur.next; // nextStr is the id of next element of cur.
-                prev = cur.prev;    // prev is the previous node of the current hit node
-                next = ((nextStr !== null) && cache[nextStr]) || null;    // next is the next node of the current hit node
-
-                // Scope of error: Always check if the start and cur are not same node.
-                // start and cur can be same when same node has back to back cache hits.
-                if (start === cur) {
-                    // do nothing.
-                } else if (cache[end] === cur) {    // when the cur element is the last element of cache
-                    start.next = end;
-                    
-                    newEndStr = cache[end].next;    // Take Id of the next element of the cur element
-                    cache[newEndStr].prev = null;   // Make it's previous pointer null so that it doesn't point to cur
-
-                    cur.next = null; // taking cur to the front. make it's next point to null, since there is no element ahead of it
-                    cur.prev = start;   // make it's prev pointer to the present element at the front.
-
-                    start = cache[end]; // start pointer now point to the first element
-                    end = newEndStr;    // end holds the ID of the last element
-                } else {    // when cur element is any element except start and end
-                    start.next = args;  // present start node's next pointer should point to the cur node
-                    
-                    cur.prev = start;   // cur node's prev pointer now points to the present start, making the present start to 2nd position
-                    cur.next = null;    // since cur is in front, no one should be ahead of it. hence next = null
-
-                    prev.next = nextStr;    // cur's prev node should point to cur's next node
-                    next.prev = prev;   // cur's next node should point to cur's prev node
-                    
-                    start = cur;    // start point to the cur node
-                }
-                
-                return start.item;
-            }
-            
-            /******* Cache miss *******/
-            // Else, it is a cache miss.
-
-            /* ----- deletion process begins here -----
-            *  deletion takes place if cache is full 
-            * */
-            if (count > 1e3) {
-                // Take the second last element
-                newEndStr = cache[end].next;
-
-                newEnd = cache[newEndStr];
-                // prev pointer of the second last element should be deleted.(Beware! Not doing this step will lead to memory leak)
-                newEnd.prev = null;
-
-                // clear the pointers of the node to be deleted
-                cache[end].next = null;
-
-                // delete the node
-                delete cache[end];
-                // update the end pointer
-                end = newEndStr;
-                count--; // decrement the counter
-            }
-
-            /* ----- insertion process begins here ----- */
-            // create a new node
-            cache[args] = {
-                next: null,
-                prev: start, // newNode's prev pointer should point to the present start
-                item: postprocessor ? postprocessor(f[apply](scope, arg)) : f[apply](scope, arg)
-            };
-            // If start is present(start can be null if it is first node), point start.next to the new object
-            if (start !== null) {
-                start.next = args; // The present start node will fall second.
-            }
-            // finally assign start to the new node as start always points to the node at front
-            start = cache[args];
-            // In case newNode is the first node of the cache end will also be null, but it should point to the start.
-            (end === null) && (end = args);
-            count++;
-
-            return cache[args].item;
-        }
-        return cachedfunction;
-    };
+    R._cacher = cacher;
 
     var preload = R._preload = function(src, f) {
         var img = doc.createElement("img");
@@ -2126,7 +2026,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         p;
         for (var i = 0, ii = path.length; i < ii; i++) {
             p = path[i];
-            if (p[0] == "M") {
+            if (p[0] === "M") {
                 x = p[1];
                 y = p[2];
                 X.push(x);
@@ -4322,7 +4222,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             args = getArrayCopy(arguments),
             group = lastArgIfGroup(args, true),
             attrs = serializeArgs(args,
-                // "src", "",
+                // "src", E,
                 "x", 0,
                 "y", 0,
                 "width", 0,
@@ -4861,7 +4761,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
     getLengthFactory = function(istotal, subpath) {
         return function(path, length, onlystart) {
             path = path2curve(path);
-            var x, y, p, l, sp = "", subpaths = {}, point,
+            var x, y, p, l, sp = E, subpaths = {}, point,
             len = 0;
             for (var i = 0, ii = path.length; i < ii; i++) {
                 p = path[i];
@@ -5203,13 +5103,13 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                                             if (i === 0) {
                                                 if(from[attr].isRadial || diff[attr].isRadial){
                                                     radial = "xr(";
-                                                    radial += from[attr][0].f1 * (1 - pos) + diff[attr][0].f1 * pos || '';
+                                                    radial += from[attr][0].f1 * (1 - pos) + diff[attr][0].f1 * pos || E;
                                                     radial += ',';
-                                                    radial += from[attr][0].f2 * (1 - pos) + diff[attr][0].f2 * pos || '';
+                                                    radial += from[attr][0].f2 * (1 - pos) + diff[attr][0].f2 * pos || E;
                                                     radial += ',';
-                                                    radial += (from[attr][0].f3 * (1 - pos) + diff[attr][0].f3 * pos) * 100 || '';
+                                                    radial += (from[attr][0].f3 * (1 - pos) + diff[attr][0].f3 * pos) * 100 || E;
                                                     radial += '%,';
-                                                    radial += from[attr][0].f4 * (1 - pos) + diff[attr][0].f4 * pos || '';
+                                                    radial += from[attr][0].f4 * (1 - pos) + diff[attr][0].f4 * pos || E;
                                                     radial += ',';
                                                     radial += from[attr][0].f5 * (1 - pos) + diff[attr][0].f5 * pos;
                                                     radial += ',';
@@ -5234,7 +5134,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                                         now = now.join("-");
                                         // If radial focus doesnt have a separator
                                         if(from[attr].isRadial || diff[attr].isRadial){
-                                            now = now.replace('-', '');
+                                            now = now.replace('-', E);
                                         }
                                     }
                                     break;
@@ -5675,7 +5575,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                     f3: 0,
                     f4: 0,
                     f5: 0,
-                    f6: ''
+                    f6: E
                 }
                 b.isRadial = true;
             }
@@ -5853,7 +5753,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                     colPrev,
                     colNext,
                     ratio = 0,
-                    key = "",
+                    key = E,
                     col = { r: 0, g: 0, b: 0 };
 
                 // Critical section; check again
@@ -5937,8 +5837,8 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         ** which are not supported by all browsers
         */
         function canFallback (path1, path2) {
-            var str1 = '',
-                str2 = '',
+            var str1 = E,
+                str2 = E,
                 testLen,
                 testPoint;
             // Checking path totoalLength is accurate or not
@@ -5958,7 +5858,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             function trimPathArray (arr) {
                 var i = arr.length;
                 while (i-- - 1) {
-                    if (arr[i].join('') === arr[i - 1].join('')) {
+                    if (arr[i].join(E) === arr[i - 1].join(E)) {
                         arr.pop();
                     } else {
                         break;
@@ -5966,11 +5866,11 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                 }
             }
             function getPathFromArray(arr) {
-                var str = '',
+                var str = E,
                     i = 0,
                     ii = arr.length;
                 for (; i < ii; ++i) {
-                    str += arr[i].join(' ');
+                    str += arr[i].join(S);
                 }
                 return str;
             }
@@ -6004,11 +5904,11 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                     // Removing continuous Move commands
                     // Picking up the last one
                     if ( !i || !arr[i + 1] || arr[i + 1][0] !== 'M' || arr[i][0] !== 'M'){
-                        str.push(arr[i].join(' '));
+                        str.push(arr[i].join(S));
                     }
                 }
             }
-            str = str.join('');
+            str = str.join(E);
             str = str.split(/[Mm]/).slice(1);
             for (i = 0, ii = str.length; i < ii; ++i) {
                 str[i] = 'M' + str[i];
@@ -6031,10 +5931,10 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             ii = arr.length;
             for (i = 0; i < ii; ++i) {
                 if (arr[i].length - 1) {
-                    str.push(arr[i].join(' '));
+                    str.push(arr[i].join(S));
                 }
             }
-            return str.join('');
+            return str.join(E);
         }
         /* path2curve appends repeated last path command,
             this function removes it or any other repeated path command */
@@ -6192,7 +6092,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                 ii = 0;
             path = path.split(/[MCLmcl]/).slice(1);
             for (i = 0, ii = path.length; i < ii; ++i) {
-                path[i] = path[i].split(' ').slice(1);
+                path[i] = path[i].split(S).slice(1);
                 i || path[i].unshift('M');
                 if (i) {
                     path[i].length === 2 && path[i].unshift('L') || path[i].unshift('C');
@@ -6208,10 +6108,10 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                 val,
                 item;
             for (i = 0, ii = arr.length; i < ii; ++i) {
-                val = arr[i].join(' ');
+                val = arr[i].join(S);
                 item = arr[i];
                 if (item[0] === 'C' && item[3] === item[5] && item[4] === item[6]) {
-                    arr[i].stringValue = ['L', item[3], item[4]].join(' ');
+                    arr[i].stringValue = ['L', item[3], item[4]].join(S);
                 } else
                 item.stringValue = val;
                 // Creating an array if undefined
@@ -6246,11 +6146,11 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         // function to get last coordinate for CurveTo command
         function getCoordinateAsMove (arr) {
             var last = arr.length - 1;
-            return ['M', arr[last - 1], arr[last]].join(' ');
+            return ['M', arr[last - 1], arr[last]].join(S);
         }
         // function to conver path array to string
         function pathToString (arr) {
-            return arr.join('');
+            return arr.join(E);
         }
         // commonPathCalculator flow here
         p1 = splitter(p1);
@@ -6408,10 +6308,10 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             return [fPath1, fPath2];
         }
         if (!p1 || p1 === 'M  ') {
-            p1 = p2.split(' ').slice(0, 3).join(' ').replace(/[LC]/, '');
+            p1 = p2.split(S).slice(0, 3).join(S).replace(/[LC]/, E);
         }
         if (!p2 || p2 === 'M  ') {
-            p2 = p1.split(' ').slice(0, 3).join(' ').replace(/[LC]/, '');
+            p2 = p1.split(S).slice(0, 3).join(S).replace(/[LC]/, E);
         }
         commonPath = commonPathCalculator(p1, p2);
 

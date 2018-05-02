@@ -672,7 +672,7 @@ export default function (R) {
                                 break;
                             case 'path':
                                 if (o.type === 'path') {
-                                    finalAttr.d = value ? attrs.path = R._pathToAbsolute(value) : R._availableAttrs.path;
+                                    finalAttr.d = value ? attrs.path = (R._stopabsolutePath ? R.sanitizePath(value) : R._pathToAbsolute(value)) : R._availableAttrs.path;
                                     o._.dirty = 1;
                                     if (o._.arrows) {
                                         'startString' in o._.arrows && addArrow(o, o._.arrows.startString);

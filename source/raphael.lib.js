@@ -1,10 +1,11 @@
-/* eslint require-jsdoc: 'error', valid-jsdoc: 'error' */
+/* eslint require-jsdoc: 'error', valid-jsdoc: 'error', valid-typeof: 'off' */
 let UNDEF,
     BLANK = '__blank',
     nullStr = '\u2400',
     E = '',
     arrayToStr = '[object Array]',
     objectToStr = '[object Object]',
+    objectStr = 'object',
     // Map of SVG attribute to CSS styles for all attributes that are in R._availableAttrs
     // but fall through to the default case in R._setFillAndStroke.
     dashedAttr2CSSMap = {
@@ -112,12 +113,12 @@ let UNDEF,
                     continue;
                 }
 
-                if (typeof tgtVal !== 'object') {
+                if (typeof tgtVal !== objectStr) {
                     if (!(skipUndef && tgtVal === UNDEF)) {
                         obj1[item] = tgtVal;
                     }
                 } else {
-                    if (srcVal === null || typeof srcVal !== 'object') {
+                    if (srcVal === null || typeof srcVal !== objectStr) {
                         srcVal = obj1[item] = tgtVal instanceof Array ? [] : {};
                     }
                     cRef = checkCyclicRef(tgtVal, srcArr);
@@ -137,14 +138,14 @@ let UNDEF,
                     continue;
                 }
 
-                if (tgtVal !== null && typeof tgtVal === 'object') {
+                if (tgtVal !== null && typeof tgtVal === objectStr) {
                     // Fix for issue BUG: FWXT-602
                     // IE < 9 Object.prototype.toString.call(null) gives
                     // '[object Object]' instead of '[object Null]'
                     // that's why null value becomes Object in IE < 9
                     str = Object.prototype.toString.call(tgtVal);
                     if (str === objectToStr) {
-                        if (srcVal === null || typeof srcVal !== 'object') {
+                        if (srcVal === null || typeof srcVal !== objectStr) {
                             srcVal = obj1[item] = {};
                         }
                         cRef = checkCyclicRef(tgtVal, srcArr);
@@ -184,11 +185,11 @@ let UNDEF,
 export default function (obj1, obj2, skipUndef, shallow) {
     var item;
     // if none of the arguments are object then return back
-    if (typeof obj1 !== 'object' && typeof obj2 !== 'object') {
+    if (typeof obj1 !== objectStr && typeof obj2 !== objectStr) {
         return null;
     }
 
-    if (typeof obj2 !== 'object' || obj2 === null) {
+    if (typeof obj2 !== objectStr || obj2 === null) {
         return obj1;
     }
 

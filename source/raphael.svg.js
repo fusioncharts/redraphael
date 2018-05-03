@@ -510,6 +510,7 @@ export default function (R) {
                         square: width,
                         butt: 0
                     }[params['stroke-linecap'] || o.attrs['stroke-linecap']] || 0;
+                    i = value.length;
                     widthFactor = predefValue ? width : 1;
 
                     if (value[0] === 'none') {
@@ -524,7 +525,6 @@ export default function (R) {
                             }
                         }
                     }
-
                     if (R.is(value, arrayStr)) {
                         $(o.node, {
                             'stroke-dasharray': calculatedValues.join(',')

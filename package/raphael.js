@@ -11316,9 +11316,8 @@ exports['default'] = function (R) {
                         l = texts.length;
                     } else {
                         // single line
-                        if (oldAttr.noTSpan !== undefined) {
-                            removeAllChild = true;
-                        }
+                        // If it is a single line text then always remove the children
+                        removeAllChild = true;
                         oldAttr.noTSpan = true; // Always remove old text node
                         l = 1;
                     }

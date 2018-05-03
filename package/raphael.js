@@ -12619,9 +12619,8 @@ exports["default"] = function (R) {
                         }
                     }
                 }
-
                 if (fillOpacity !== -1 || "fill-opacity" in params || "opacity" in params) {
-                    var opacity = ((+a["fill-opacity"] + 1 || 2) - 1) * ((+a.opacity + 1 || 2) - 1) * ((+fillOpacity + 1 || 2) - 1);
+                    var opacity = ((+a["fill-opacity"] + 1 || 2) - 1) * ((+a.opacity + 1 || 2) - 1);
                     opacity = mmin(mmax(opacity, 0), 1);
                     oriOp.opacity = opacity;
                     // if gradient color opacity is set then opacity (applied through the params)

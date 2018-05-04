@@ -510,6 +510,7 @@ export default function (R) {
                         square: width,
                         butt: 0
                     }[params['stroke-linecap'] || o.attrs['stroke-linecap']] || 0;
+                    i = value.length;
                     widthFactor = predefValue ? width : 1;
 
                     if (value[0] === 'none') {
@@ -524,7 +525,6 @@ export default function (R) {
                             }
                         }
                     }
-
                     if (R.is(value, arrayStr)) {
                         $(o.node, {
                             'stroke-dasharray': calculatedValues.join(',')
@@ -1002,9 +1002,8 @@ export default function (R) {
                             texts = Str(text).split(textBreakRegx);
                             l = texts.length;
                         } else { // single line
-                            if (oldAttr.noTSpan !== undefined) {
-                                removeAllChild = true;
-                            }
+                            // If it is a single line text then always remove the children
+                            removeAllChild = true;
                             oldAttr.noTSpan = true; // Always remove old text node
                             l = 1;
                         }

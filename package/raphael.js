@@ -10824,6 +10824,7 @@ exports['default'] = function (R) {
                     square: width,
                     butt: 0
                 }[params['stroke-linecap'] || o.attrs['stroke-linecap']] || 0;
+                i = value.length;
                 widthFactor = predefValue ? width : 1;
 
                 if (value[0] === 'none') {
@@ -10838,7 +10839,6 @@ exports['default'] = function (R) {
                         }
                     }
                 }
-
                 if (R.is(value, arrayStr)) {
                     $(o.node, {
                         'stroke-dasharray': calculatedValues.join(',')
@@ -11316,9 +11316,8 @@ exports['default'] = function (R) {
                         l = texts.length;
                     } else {
                         // single line
-                        if (oldAttr.noTSpan !== undefined) {
-                            removeAllChild = true;
-                        }
+                        // If it is a single line text then always remove the children
+                        removeAllChild = true;
                         oldAttr.noTSpan = true; // Always remove old text node
                         l = 1;
                     }
@@ -12251,16 +12250,10 @@ exports["default"] = function (R) {
                 node = element.node,
                 RefImg = element._.RefImg;
 
-            // if (!RefImg) {
-            //     RefImg = element._.RefImg = new Image();
-            // }
-
             if (attrs.src === undefined) {
                 return;
             }
-            console.log('load', RefImg);
             RefImg.src = src;
-            // element._.RefImg = RefImg;
         };
 
         var has = "hasOwnProperty",
@@ -13189,7 +13182,6 @@ exports["default"] = function (R) {
             }
             return this;
         };
-        var temp = 0;
         /*\
         * Element.on
         [ method ]
@@ -13215,7 +13207,6 @@ exports["default"] = function (R) {
             }
             if (this._ && this._.RefImg) {
                 node = this._.RefImg;
-                console.log('on', temp++);
             } else {
                 node = this.node;
             }
@@ -13381,7 +13372,6 @@ exports["default"] = function (R) {
             res.W = res.H = a.r * 2;
             return res;
         };
-        var count = 0;
         ;
         R._engine.image = function (vml, attrs, group) {
             var path = R._rectPath(attrs.x, attrs.y, attrs.w, attrs.h);
@@ -13393,9 +13383,7 @@ exports["default"] = function (R) {
                 a = res.attrs,
                 node = res.node,
                 fill = node.getElementsByTagName(fillString)[0];
-            console.log('new', res._);
             res._.RefImg = new Image();
-            console.log('created');
             a.src = attrs.src;
             res.X = a.x = attrs.x;
             res.Y = a.y = attrs.y;

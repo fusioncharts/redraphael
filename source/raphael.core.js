@@ -125,6 +125,7 @@ var loaded,
     FUNCTION = 'function',
     COMMA = ',',
     TOKEN1 = '$1',
+    rCheckRegex = /R/i,
     arraySplice = Array.prototype.splice,
     hasPrototypeBug = (function () {
         var a = function () { /* no body */ };
@@ -1461,9 +1462,14 @@ var loaded,
     }
 
     R.sanitizePath = function (pathArg) {
-        var pathStr = pathArg.join ? pathArg.join(COMMA) : pathArg;
-        if (p2s.test(pathCommaRegex)) {
-            pathStr = pathStr.replace(p2s, TOKEN1);
+        var pathStr;
+        pathStr = pathArg.join ? pathArg.join(COMMA) : pathArg;
+        if (rCheckRegex.test(pathStr)) {
+            pathStr = R._pathToAbsolute(pathStr);
+        } else {
+            if (p2s.test(pathCommaRegex)) {
+                pathStr = pathStr.replace(p2s, TOKEN1);
+            }
         }
         return pathStr;
     };

@@ -3950,7 +3950,8 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
 
             // Queuing up the dragStartFn. It is fired if dragmove is fired after dragStart
             this.dragStartFn = function () {
-                eve("raphael.drag.start." + this.id, drag.start_scope || drag.move_scope ||
+                var len = drag.length;
+                eve("raphael.drag.start." + this.id, drag[len - 1].start_scope || drag[len - 1].move_scope ||
                     this, dummyEve, data);
             }
         }

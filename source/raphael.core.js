@@ -5116,6 +5116,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
 
     var animationElements = [],
     requestAnimFrame,
+    UPDATE_TIME_THRESHOLD = 15,
     // This a temporary fix so that animation can be handled from the scheduler module.
     animation = function() {
         var Now = +new Date,
@@ -5132,10 +5133,13 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             if (e.el.removed || e.paused || e.parentEl && e.parentEl.e && e.parentEl.e.paused) {
                 continue;
             }
+            if (new Date().getTime() - Now > UPDATE_TIME_THRESHOLD) {
+                Now = new Date().getTime();
+            }
             var time = Now - e.start,
             ms = e.ms,
             easing = e.easing,
-            from = e.from,
+            from = e.destined[e.tick++ % e.clock],
             diff = e.diff,
             to = e.to,
             t = e.t,
@@ -5165,6 +5169,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             } else {
                 e.status = (e.prev + (e.percent - e.prev) * (time / ms)) / e.anim.top;
             }
+            console.log(from, e.destined);
             origms = ms;
             // If has parentEl
             if (e.parentEl && e.parentEl.animElements) {
@@ -5186,88 +5191,88 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                                 now = +from[attr] + pos * ms * diff[attr];
                                 break;
                             case "colour":
-                                    if (!diff[attr].length) {
-                                        tmpOpacity = (from[attr].opacity + pos * ms * diff[attr].opacity);
-                                        if(isNaN(tmpOpacity)){
-                                            tmpOpacity = 1;
-                                        }
-                                        now = "rgba(" + [
-                                            upto255(round(from[attr].r + pos * ms * diff[attr].r)),
-                                            upto255(round(from[attr].g + pos * ms * diff[attr].g)),
-                                            upto255(round(from[attr].b + pos * ms * diff[attr].b)),
-                                            tmpOpacity
-                                        ].join(",") + ")";
-                                    } else {
-                                        now = [];
-                                        for (i = 0, ii = from[attr].length; i < ii; ++i) {
-                                            if (i === 0) {
-                                                if(from[attr].isRadial || diff[attr].isRadial){
-                                                    radial = "xr(";
-                                                    radial += from[attr][0].f1 * (1 - pos) + diff[attr][0].f1 * pos || '';
-                                                    radial += ',';
-                                                    radial += from[attr][0].f2 * (1 - pos) + diff[attr][0].f2 * pos || '';
-                                                    radial += ',';
-                                                    radial += (from[attr][0].f3 * (1 - pos) + diff[attr][0].f3 * pos) * 100 || '';
-                                                    radial += '%,';
-                                                    radial += from[attr][0].f4 * (1 - pos) + diff[attr][0].f4 * pos || '';
-                                                    radial += ',';
-                                                    radial += from[attr][0].f5 * (1 - pos) + diff[attr][0].f5 * pos;
-                                                    radial += ',';
-                                                    radial += from[attr][0].f6;
-                                                    radial += ')';
-                                                    now.push(radial)
-                                                } else {
-                                                    now.push((from[attr][i] * (1 - pos)) + (pos * diff[attr][i]));
-                                                    if (now[0] <= 0) {
-                                                        now[0] += 360;
-                                                    }
-                                                }
-                                            } else {
-                                                now.push("rgba(" + [
-                                                    upto255(round(from[attr][i].r + pos * ms * diff[attr][i].r)),
-                                                    upto255(round(from[attr][i].g + pos * ms * diff[attr][i].g)),
-                                                    upto255(round(from[attr][i].b + pos * ms * diff[attr][i].b)),
-                                                    (from[attr][i].opacity + pos * ms * diff[attr][i].opacity)
-                                                ].join(",") + "):" + from[attr][i].position);
-                                            }
-                                        }
-                                        now = now.join("-");
-                                        // If radial focus doesnt have a separator
-                                        if(from[attr].isRadial || diff[attr].isRadial){
-                                            now = now.replace('-', '');
-                                        }
+                                if (!diff[attr].length) {
+                                    tmpOpacity = (from[attr].opacity + pos * ms * diff[attr].opacity);
+                                    if(isNaN(tmpOpacity)){
+                                        tmpOpacity = 1;
                                     }
-                                    break;
-                                case "path":
-                                    now = [];
-                                    for (var i = 0, ii = from[attr].length; i < ii; i++) {
-                                        now[i] = [from[attr][i][0]];
-                                        var jj;
-                                        jj = from[attr][i] ? from[attr][i].length : 0;
-                                        for (var j = 1  ; j < jj; j++) {
-                                            now[i][j] = (+from[attr][i][j] + pos * ms * diff[attr][i][j]).toFixed(4);
-                                        }
-                                        now[i] = now[i].join(S);
-                                    }
-                                    now = now.join(S);
-                                    break;
-                                case "transform":
-                                if (diff[attr].real) {
-                                    now = [];
-                                    for (i = 0, ii = from[attr].length; i < ii; i++) {
-                                        now[i] = [from[attr][i][0]];
-                                        for (j = 1, jj = from[attr][i].length; j < jj; j++) {
-                                            now[i][j] = from[attr][i][j] + pos * ms * diff[attr][i][j];
-                                        }
-                                    }
+                                    now = "rgba(" + [
+                                        upto255(round(from[attr].r + pos * ms * diff[attr].r)),
+                                        upto255(round(from[attr].g + pos * ms * diff[attr].g)),
+                                        upto255(round(from[attr].b + pos * ms * diff[attr].b)),
+                                        tmpOpacity
+                                    ].join(",") + ")";
                                 } else {
-                                    var get = function(i) {
-                                        return +from[attr][i] + pos * ms * diff[attr][i];
-                                    };
-                                    // now = [["r", get(2), 0, 0], ["t", get(3), get(4)], ["s", get(0), get(1), 0, 0]];
-                                    now = [["m", get(0), get(1), get(2), get(3), get(4), get(5)]];
+                                    now = [];
+                                    for (i = 0, ii = from[attr].length; i < ii; ++i) {
+                                        if (i === 0) {
+                                            if(from[attr].isRadial || diff[attr].isRadial){
+                                                radial = "xr(";
+                                                radial += from[attr][0].f1 * (1 - pos) + diff[attr][0].f1 * pos || '';
+                                                radial += ',';
+                                                radial += from[attr][0].f2 * (1 - pos) + diff[attr][0].f2 * pos || '';
+                                                radial += ',';
+                                                radial += (from[attr][0].f3 * (1 - pos) + diff[attr][0].f3 * pos) * 100 || '';
+                                                radial += '%,';
+                                                radial += from[attr][0].f4 * (1 - pos) + diff[attr][0].f4 * pos || '';
+                                                radial += ',';
+                                                radial += from[attr][0].f5 * (1 - pos) + diff[attr][0].f5 * pos;
+                                                radial += ',';
+                                                radial += from[attr][0].f6;
+                                                radial += ')';
+                                                now.push(radial)
+                                            } else {
+                                                now.push((from[attr][i] * (1 - pos)) + (pos * diff[attr][i]));
+                                                if (now[0] <= 0) {
+                                                    now[0] += 360;
+                                                }
+                                            }
+                                        } else {
+                                            now.push("rgba(" + [
+                                                upto255(round(from[attr][i].r + pos * ms * diff[attr][i].r)),
+                                                upto255(round(from[attr][i].g + pos * ms * diff[attr][i].g)),
+                                                upto255(round(from[attr][i].b + pos * ms * diff[attr][i].b)),
+                                                (from[attr][i].opacity + pos * ms * diff[attr][i].opacity)
+                                            ].join(",") + "):" + from[attr][i].position);
+                                        }
+                                    }
+                                    now = now.join("-");
+                                    // If radial focus doesnt have a separator
+                                    if(from[attr].isRadial || diff[attr].isRadial){
+                                        now = now.replace('-', '');
+                                    }
                                 }
                                 break;
+                            case "path":
+                                now = [];
+                                for (var i = 0, ii = from[attr].length; i < ii; i++) {
+                                    now[i] = [from[attr][i][0]];
+                                    var jj;
+                                    jj = from[attr][i] ? from[attr][i].length : 0;
+                                    for (var j = 1  ; j < jj; j++) {
+                                        now[i][j] = (+from[attr][i][j] + pos * ms * diff[attr][i][j]).toFixed(4);
+                                    }
+                                    now[i] = now[i].join(S);
+                                }
+                                now = now.join(S);
+                                break;
+                            case "transform":
+                            if (diff[attr].real) {
+                                now = [];
+                                for (i = 0, ii = from[attr].length; i < ii; i++) {
+                                    now[i] = [from[attr][i][0]];
+                                    for (j = 1, jj = from[attr][i].length; j < jj; j++) {
+                                        now[i][j] = from[attr][i][j] + pos * ms * diff[attr][i][j];
+                                    }
+                                }
+                            } else {
+                                var get = function(i) {
+                                    return +from[attr][i] + pos * ms * diff[attr][i];
+                                };
+                                // now = [["r", get(2), 0, 0], ["t", get(3), get(4)], ["s", get(0), get(1), 0, 0]];
+                                now = [["m", get(0), get(1), get(2), get(3), get(4), get(5)]];
+                            }
+                            break;
                             case "csv":
                                 if (attr == "clip-rect") {
                                     now = [];
@@ -5354,6 +5359,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
 
     R.getAnimFrameFn = function () {
         return requestAnimFrame = R.requestAnimFrame ||
+        _win.requestAnimationFrame ||
         _win.webkitRequestAnimationFrame ||
         _win.mozRequestAnimationFrame ||
         _win.oRequestAnimationFrame ||
@@ -6427,9 +6433,49 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         }
         return [fPath1, fPath2];
     }
+    /**
+     * decide the prediction metrics for attributes 
+     */
+    function prophecy (attr) {
+        let destiny;
+        switch (availableAnimAttrs[attr]) {
+            case nu:
+                destiny = 0;
+                break;
+            case "colour":
+                destiny = 3;
+                break;
+            case "path":
+                destiny = 1;
+                break;
+            case "transform":
+                destiny = 1;
+                break;
+            case "csv":
+                destiny = 1;
+                break;
+            case "text-bound":
+                destiny = 2;
+                break;
+            default:
+                destiny = 0;
+        }
+        return {destiny, total: 4};
+    }
 
-
-
+    /**
+     * predicts when and which attributes will apply
+     */
+    function prophet (destined, attr, value) {
+        let _prophecy = prophecy(attr),
+            destiny = _prophecy.destiny,
+            total = _prophecy.total;
+        for (let i = destiny; i < total; i += (destiny + 1)) {
+            !destined[i] && (destined[i] = {});
+            destined[i][attr] = value;
+        }
+        return total;
+    }
     function runAnimation(anim, element, percent, status, totalOrigin, times, parentEl, configObject) {
         percent = toFloat(percent);
         var params,
@@ -6443,6 +6489,8 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         tempDiff,
         change,
         ms = anim.ms,
+        clock,
+        destined = [],
         from = {},
         to = {},
         diff = {};
@@ -6661,6 +6709,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                                 }
                                 break;
                         }
+                       clock =  prophet(destined, attr, from[attr]);
                         if (!change) {
                             delete from[attr];
                             delete to[attr];
@@ -6697,9 +6746,12 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                 stop: false,
                 ms: ms,
                 easing: easyeasy,
+                destined: destined,
                 from: from,
                 diff: diff,
                 to: to,
+                clock: clock,
+                tick: 0,
                 el: element,
                 callback: params.callback,
                 prev: prev,

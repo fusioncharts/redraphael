@@ -6032,6 +6032,7 @@ ef["back-out"] = ef.backOut;
 
 var animationElements = [],
     requestAnimFrame,
+    UPDATE_TIME_THRESHOLD = 15,
 
 // This a temporary fix so that animation can be handled from the scheduler module.
 animation = function animation() {
@@ -6049,10 +6050,13 @@ animation = function animation() {
         if (e.el.removed || e.paused || e.parentEl && e.parentEl.e && e.parentEl.e.paused) {
             continue;
         }
+        if (new Date().getTime() - Now > UPDATE_TIME_THRESHOLD) {
+            Now = new Date().getTime();
+        }
         var time = Now - e.start,
             ms = e.ms,
             easing = e.easing,
-            from = e.from,
+            from = e.destined[e.tick++ % e.clock],
             diff = e.diff,
             to = e.to,
             t = e.t,
@@ -6081,6 +6085,7 @@ animation = function animation() {
         } else {
             e.status = (e.prev + (e.percent - e.prev) * (time / ms)) / e.anim.top;
         }
+        console.log(from, e.destined);
         origms = ms;
         // If has parentEl
         if (e.parentEl && e.parentEl.animElements) {
@@ -6259,7 +6264,7 @@ animation = function animation() {
 };
 
 R.getAnimFrameFn = function () {
-    return requestAnimFrame = R.requestAnimFrame || _win.webkitRequestAnimationFrame || _win.mozRequestAnimationFrame || _win.oRequestAnimationFrame || _win.msRequestAnimationFrame || function (callback) {
+    return requestAnimFrame = R.requestAnimFrame || _win.requestAnimationFrame || _win.webkitRequestAnimationFrame || _win.mozRequestAnimationFrame || _win.oRequestAnimationFrame || _win.msRequestAnimationFrame || function (callback) {
         setTimeout(callback, 16);
     };
 };
@@ -7322,7 +7327,49 @@ function _pathNormalizer(p1, p2) {
     }
     return [fPath1, fPath2];
 }
+/**
+ * decide the prediction metrics for attributes 
+ */
+function prophecy(attr) {
+    var destiny = void 0;
+    switch (availableAnimAttrs[attr]) {
+        case nu:
+            destiny = 0;
+            break;
+        case "colour":
+            destiny = 3;
+            break;
+        case "path":
+            destiny = 1;
+            break;
+        case "transform":
+            destiny = 1;
+            break;
+        case "csv":
+            destiny = 1;
+            break;
+        case "text-bound":
+            destiny = 2;
+            break;
+        default:
+            destiny = 0;
+    }
+    return { destiny: destiny, total: 4 };
+}
 
+/**
+ * predicts when and which attributes will apply
+ */
+function prophet(destined, attr, value) {
+    var _prophecy = prophecy(attr),
+        destiny = _prophecy.destiny,
+        total = _prophecy.total;
+    for (var _i = destiny; _i < total; _i += destiny + 1) {
+        !destined[_i] && (destined[_i] = {});
+        destined[_i][attr] = value;
+    }
+    return total;
+}
 function runAnimation(anim, element, percent, status, totalOrigin, times, parentEl, configObject) {
     percent = toFloat(percent);
     var params,
@@ -7336,6 +7383,8 @@ function runAnimation(anim, element, percent, status, totalOrigin, times, parent
         tempDiff,
         change,
         ms = anim.ms,
+        clock,
+        destined = [],
         from = {},
         to = {},
         diff = {};
@@ -7540,6 +7589,7 @@ function runAnimation(anim, element, percent, status, totalOrigin, times, parent
                             }
                             break;
                     }
+                    clock = prophet(destined, attr, from[attr]);
                     if (!change) {
                         delete from[attr];
                         delete to[attr];
@@ -7575,9 +7625,12 @@ function runAnimation(anim, element, percent, status, totalOrigin, times, parent
             stop: false,
             ms: ms,
             easing: easyeasy,
+            destined: destined,
             from: from,
             diff: diff,
             to: to,
+            clock: clock,
+            tick: 0,
             el: element,
             callback: params.callback,
             prev: prev,

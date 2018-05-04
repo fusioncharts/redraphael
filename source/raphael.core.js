@@ -81,22 +81,22 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             R._url = E;
         }
 
-        if (R.is(first, functionStr)) {
+        if (R.is(first, FUNCTION)) {
             return loaded ? first() : eve.on("raphael.DOMload", first);
         }
-        else if (R.is(first, array)) {
-            return R._engine.create[apply](R, first.splice(0, 3 + R.is(first[0], nu))).add(first);
+        else if (R.is(first, ARRAY)) {
+            return R._engine.create[APPLY](R, first.splice(0, 3 + R.is(first[0], NU))).add(first);
         }
         else {
             arg = getArrayCopy(arguments);
             args = Array.prototype.slice.call(arg, 0);
-            if (R.is(args[args.length - 1], functionStr)) {
+            if (R.is(args[args.length - 1], FUNCTION)) {
                 f = args.pop();
-                return loaded ? f.call(R._engine.create[apply](R, args)) : eve.on("raphael.DOMload", function() {
-                    f.call(R._engine.create[apply](R, args));
+                return loaded ? f.call(R._engine.create[APPLY](R, args)) : eve.on("raphael.DOMload", function() {
+                    f.call(R._engine.create[APPLY](R, args));
                 });
             } else {
-                return R._engine.create[apply](R, arguments);
+                return R._engine.create[APPLY](R, arguments);
             }
         }
     }
@@ -110,21 +110,21 @@ var loaded,
     undef,
     E = '',
     S = ' ',
-    has = 'hasOwnProperty',
-    apply = 'apply',
-    concat = 'concat',
-    nu = 'number',
-    string = 'string',
-    array = 'array',
-    object = 'object',
-    finite = 'finite',
-    split = 'split',
-    none = 'none',
-    black = '#000',
-    nullStr = 'null',
-    functionStr = 'function',
-    commaStr = ',',
-    replace1Token = '$1',
+    HAS = 'hasOwnProperty',
+    APPLY = 'apply',
+    CONCAT = 'concat',
+    NU = 'number',
+    STRING = 'string',
+    ARRAY = 'array',
+    OBJECT = 'object',
+    FINITE = 'finite',
+    SPLIT = 'split',
+    NONE = 'none',
+    BLACK = '#000',
+    NULL = 'null',
+    FUNCTION = 'function',
+    COMMA = ',',
+    TOKEN1 = '$1',
     arraySplice = Array.prototype.splice,
     hasPrototypeBug = (function () {
         var a = function () { /* no body */ };
@@ -139,19 +139,6 @@ var loaded,
 
     supportsTouch = R.supportsTouch = "createTouch" in doc,
 
-    paramCounts = {
-        a: 7,
-        c: 6,
-        h: 1,
-        l: 2,
-        m: 2,
-        r: 4,
-        q: 4,
-        s: 4,
-        t: 2,
-        v: 1,
-        z: 0
-    },
     mStr = 'm',
     lStr = 'l',
     strM = 'M',
@@ -168,15 +155,15 @@ var loaded,
         __data.push([b].concat(__params));
         // ** Special error correction not required for Fusioncharts
         // if (name === mStr && __params.length > 2) {
-        //     __data.push([b][concat](__params.splice(0, 2)));
+        //     __data.push([b][CONCAT](__params.splice(0, 2)));
         //     name = lStr;
         //     b = b === mStr ? lStr : strL;
         // }
         // if (name === 'r') {
-        //     __data.push([b][concat](__params));
+        //     __data.push([b][CONCAT](__params));
         // } else {
         //     while (__params.length >= paramCounts[name]) {
-        //         __data.push([b][concat](__params.splice(0, paramCounts[name])));
+        //         __data.push([b][CONCAT](__params.splice(0, paramCounts[name])));
         //         if (!paramCounts[name]) {
         //             break;
         //         }
@@ -217,7 +204,7 @@ var loaded,
              | // You could also create custom attribute
              | // with multiple parameters:
              | Raphael.customAttributes.hsb = function (h, s, b) {
-             |     return {fill: "hsb(" + [h, s, b].join(commaStr) + ")"};
+             |     return {fill: "hsb(" + [h, s, b].join(COMMA) + ")"};
              | };
              | c.attr({hsb: "0.5 .8 1"});
              | c.animate({hsb: [1, 0, 0.5]}, 1e3);
@@ -253,7 +240,7 @@ var loaded,
              | // You could also create custom attribute
              | // with multiple parameters:
              | paper.customAttributes.hsb = function (h, s, b) {
-             |     return {fill: "hsb(" + [h, s, b].join(commaStr) + ")"};
+             |     return {fill: "hsb(" + [h, s, b].join(COMMA) + ")"};
              | };
              | c.attr({hsb: "0.5 .8 1"});
              | c.animate({hsb: [1, 0, 0.5]}, 1e3);
@@ -295,7 +282,7 @@ var loaded,
         paperproto = R.fn = Paper.prototype = R.prototype,
 
         // Add new dragstart, dragmove and dragend events in order to support touch drag in both touch and hybrid devices
-        events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchstart touchmove touchend touchcancel dragstart dragmove dragend"[split](S),
+        events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchstart touchmove touchend touchcancel dragstart dragmove dragend"[SPLIT](S),
         touchMap = R._touchMap = {
             mousedown: "touchstart",
             mousemove: "touchmove",
@@ -348,8 +335,8 @@ var loaded,
             rg: 1
         },
         availableAttrs = R._availableAttrs = {
-            "arrow-end": none,
-            "arrow-start": none,
+            "arrow-end": NONE,
+            "arrow-start": NONE,
             blur: 0,
             "clip-rect": "0 0 1e9 1e9",
             "clip-path": E,
@@ -392,35 +379,35 @@ var loaded,
             x: 0,
             y: 0,
             "shape-rendering": "auto",
-            alpha: nu
+            alpha: NU
         },
         availableAnimAttrs = R._availableAnimAttrs = {
-            blur: nu,
+            blur: NU,
             "clip-rect": "csv",
             "clip-path": "path",
-            cx: nu,
-            cy: nu,
+            cx: NU,
+            cy: NU,
             fill: "colour",
-            "fill-opacity": nu,
-            "font-size": nu,
-            height: nu,
-            opacity: nu,
+            "fill-opacity": NU,
+            "font-size": NU,
+            height: NU,
+            opacity: NU,
             path: "path",
-            r: nu,
-            rx: nu,
-            ry: nu,
+            r: NU,
+            rx: NU,
+            ry: NU,
             stroke: "colour",
-            "stroke-opacity": nu,
-            "stroke-width": nu,
+            "stroke-opacity": NU,
+            "stroke-width": NU,
             transform: "transform",
-            width: nu,
-            x: nu,
-            y: nu,
+            width: NU,
+            x: NU,
+            y: NU,
             // Required for pie 3d
             "color": "colour",
             "borderColor": "colour",
-            "borderWidth": nu,
-            alpha: nu,
+            "borderWidth": NU,
+            alpha: NU,
             "text-bound": "text-bound"
         },
         eldata = {},
@@ -533,14 +520,14 @@ var loaded,
                 i,
                 ii;
 
-            if (R.is(arg0, object) && !R.is(arg0, array) && arg0.type !== 'group') {
+            if (R.is(arg0, OBJECT) && !R.is(arg0, ARRAY) && arg0.type !== 'group') {
 
                 attrs = arg0;
 
                 if (arg0.path) {
                     pathString = arg0.path;
-                    pathString && !R.is(pathString, string) &&
-                        !R.is(pathString[0], array) && (pathString += E);
+                    pathString && !R.is(pathString, STRING) &&
+                        !R.is(pathString[0], ARRAY) && (pathString += E);
                 }
 
                 for (i = 1, ii = arguments.length; i < ii; i += 2) {
@@ -569,19 +556,19 @@ var loaded,
          = (boolean) is given value is of given type
         \*/
         is = R.is = function(o, type) {
-            if (type === finite) {
-                return !isnan[has](+o);
+            if (type === FINITE) {
+                return !isnan[HAS](+o);
             }
-            if (type === array) {
+            if (type === ARRAY) {
                 return o instanceof Array;
             }
-            if (type === object && (o === undef || o === null)) {
+            if (type === OBJECT && (o === undef || o === null)) {
                 return false;
             }
-            return  (type === nullStr && o === null) ||
+            return  (type === NULL && o === null) ||
                 (type === typeof o && o !== null) ||
-                (type === object && o === Object(o)) ||
-                (type === array && Array.isArray && Array.isArray(o)) ||
+                (type === OBJECT && o === Object(o)) ||
+                (type === ARRAY && Array.isArray && Array.isArray(o)) ||
                 objectToString.call(o).slice(8, -1).toLowerCase() === type;
         },
 
@@ -597,7 +584,7 @@ var loaded,
                 }
                 var res = new obj.constructor;
                 for (var key in obj)
-                    if (key !== "prototype" && obj[has](key)) {
+                    if (key !== "prototype" && obj[HAS](key)) {
                         res[key] = clone(obj[key]);
                     }
                 return res;
@@ -607,7 +594,7 @@ var loaded,
                 }
                 var res = new obj.constructor;
                 for (var key in obj)
-                    if (obj[has](key)) {
+                    if (obj[HAS](key)) {
                         res[key] = clone(obj[key]);
                     }
                 return res;
@@ -749,7 +736,7 @@ var loaded,
         d.innerHTML = '<v:shape adj="1"/>';
         b = d.firstChild;
         b.style.behavior = "url(#default#VML)";
-        if (!(b && typeof b.adj === object)) {
+        if (!(b && typeof b.adj === OBJECT)) {
             R.type = E;
             // return (R.type = E);
         }
@@ -866,13 +853,13 @@ var loaded,
                         value = ((value & 255) << 16) | (value & 65280) | ((value & 16711680) >>> 16);
                         return "#" + ("000000" + value.toString(16)).slice(-6);
                     } catch (e) {
-                        return none;
+                        return NONE;
                     }
                 });
             } else {
                 var i = g.doc.createElement("i");
                 i.title = "Rapha\xebl Colour Picker";
-                i.style.display = none;
+                i.style.display = NONE;
                 g.doc.body.appendChild(i);
                 toHex = cacher(function(color) {
                     i.style.color = color;
@@ -891,12 +878,12 @@ var loaded,
             return this.hex;
         },
         prepareRGB = function(r, g, b) {
-            if (g == null && is(r, object) && "r" in r && "g" in r && "b" in r) {
+            if (g == null && is(r, OBJECT) && "r" in r && "g" in r && "b" in r) {
                 b = r.b;
                 g = r.g;
                 r = r.r;
             }
-            if (g == null && is(r, string)) {
+            if (g == null && is(r, STRING)) {
                 var clr = R.getRGB(r);
                 r = clr.r;
                 g = clr.g;
@@ -918,7 +905,7 @@ var loaded,
                 hex: R.rgb(r, g, b),
                 toString: rgbtoString
             };
-            is(o, finite) && (rgb.opacity = o);
+            is(o, FINITE) && (rgb.opacity = o);
             return rgb;
         };
 
@@ -944,23 +931,23 @@ var loaded,
     \*/
     R.color = function(clr) {
         var rgb;
-        if (R.is(clr, object) && "h" in clr && "s" in clr && "b" in clr) {
+        if (R.is(clr, OBJECT) && "h" in clr && "s" in clr && "b" in clr) {
             rgb = R.hsb2rgb(clr);
             clr.r = rgb.r;
             clr.g = rgb.g;
             clr.b = rgb.b;
             clr.hex = rgb.hex;
-        } else if (R.is(clr, object) && "h" in clr && "s" in clr && lStr in clr) {
+        } else if (R.is(clr, OBJECT) && "h" in clr && "s" in clr && lStr in clr) {
             rgb = R.hsl2rgb(clr);
             clr.r = rgb.r;
             clr.g = rgb.g;
             clr.b = rgb.b;
             clr.hex = rgb.hex;
         } else {
-            if (R.is(clr, string)) {
+            if (R.is(clr, STRING)) {
                 clr = R.getRGB(clr);
             }
-            if (R.is(clr, object) && "r" in clr && "g" in clr && "b" in clr) {
+            if (R.is(clr, OBJECT) && "r" in clr && "g" in clr && "b" in clr) {
                 rgb = R.rgb2hsl(clr);
                 clr.h = rgb.h;
                 clr.s = rgb.s;
@@ -969,7 +956,7 @@ var loaded,
                 clr.v = rgb.b;
             } else {
                 clr = {
-                    hex: none
+                    hex: NONE
                 };
                 clr.r = clr.g = clr.b = clr.h = clr.s = clr.v = clr.l = -1;
             }
@@ -996,7 +983,7 @@ var loaded,
      o }
     \*/
     R.hsb2rgb = function(h, s, v, o) {
-        if (this.is(h, object) && "h" in h && "s" in h && "b" in h) {
+        if (this.is(h, OBJECT) && "h" in h && "s" in h && "b" in h) {
             v = h.b;
             s = h.s;
             h = h.h;
@@ -1034,7 +1021,7 @@ var loaded,
      o }
     \*/
     R.hsl2rgb = function(h, s, l, o) {
-        if (this.is(h, object) && "h" in h && "s" in h && lStr in h) {
+        if (this.is(h, OBJECT) && "h" in h && "s" in h && lStr in h) {
             l = h.l;
             s = h.s;
             h = h.h;
@@ -1142,7 +1129,7 @@ var loaded,
     };
 
     R._path2string = function() {
-        return this.join(commaStr).replace(p2s, replace1Token);
+        return this.join(COMMA).replace(p2s, TOKEN1);
     };
 
     R._cacher = cacher;
@@ -1203,28 +1190,28 @@ var loaded,
             values,
             rgb;
 
-        colour && is(colour, object) && "opacity" in colour &&
+        colour && is(colour, OBJECT) && "opacity" in colour &&
             (opacity = colour.opacity);
         if (!colour || !!((colour = Str(colour)).indexOf("-") + 1)) {
             return {
                 r: -1,
                 g: -1,
                 b: -1,
-                hex: none,
+                hex: NONE,
                 error: 1,
                 toString: clrToString
             };
         }
-        if (colour === none) {
+        if (colour === NONE) {
             return {
                 r: -1,
                 g: -1,
                 b: -1,
-                hex: none,
+                hex: NONE,
                 toString: clrToString
             };
         }
-        !(hsrg[has](colour.toLowerCase().substring(0, 2)) ||
+        !(hsrg[HAS](colour.toLowerCase().substring(0, 2)) ||
             colour.charAt() === "#") && (colour = toHex(colour));
 
 
@@ -1240,7 +1227,7 @@ var loaded,
                 red = toInt((t = rgb[3].charAt(1)) + t, 16);
             }
             if (rgb[4]) {
-                values = rgb[4][split](commaSpaces);
+                values = rgb[4][SPLIT](commaSpaces);
                 red = toFloat(values[0]);
                 values[0].slice(-1) === "%" && (red *= 2.55);
                 green = toFloat(values[1]);
@@ -1251,7 +1238,7 @@ var loaded,
                 values[3] && values[3].slice(-1) === "%" && (opacity /= 100);
             }
             if (rgb[5]) {
-                values = rgb[5][split](commaSpaces);
+                values = rgb[5][SPLIT](commaSpaces);
                 red = toFloat(values[0]);
                 values[0].slice(-1) === "%" && (red *= 2.55);
                 green = toFloat(values[1]);
@@ -1264,7 +1251,7 @@ var loaded,
                 return R.hsb2rgb(red, green, blue, opacity);
             }
             if (rgb[6]) {
-                values = rgb[6][split](commaSpaces);
+                values = rgb[6][SPLIT](commaSpaces);
                 red = toFloat(values[0]);
                 values[0].slice(-1) === "%" && (red *= 2.55);
                 green = toFloat(values[1]);
@@ -1283,14 +1270,14 @@ var loaded,
                 toString: clrToString
             };
             rgb.hex = "#" + (16777216 | blue | (green << 8) | (red << 16)).toString(16).slice(1);
-            R.is(opacity, finite) && (rgb.opacity = opacity);
+            R.is(opacity, FINITE) && (rgb.opacity = opacity);
             return rgb;
         }
         return {
             r: -1,
             g: -1,
             b: -1,
-            hex: none,
+            hex: NONE,
             error: 1,
             toString: clrToString
         };
@@ -1474,9 +1461,9 @@ var loaded,
     }
 
     R.sanitizePath = function (pathArg) {
-        var pathStr = pathArg.join ? pathArg.join(commaStr) : pathArg;
+        var pathStr = pathArg.join ? pathArg.join(COMMA) : pathArg;
         if (p2s.test(pathCommaRegex)) {
-            pathStr = pathStr.replace(p2s, replace1Token);
+            pathStr = pathStr.replace(p2s, TOKEN1);
         }
         return pathStr;
     };
@@ -1501,8 +1488,8 @@ var loaded,
             return pathClone(pth.arr);
         }
         __data = undef;
-        if (R.is(pathString, array)) { 
-            if(R.is(pathString[0], array)) { // rough assumption
+        if (R.is(pathString, ARRAY)) { 
+            if(R.is(pathString[0], ARRAY)) { // rough assumption
              __data = pathClone(pathString);
             } else {
                 var i, subPathArr, l = pathString.length, pathI;
@@ -1548,7 +1535,7 @@ var loaded,
             m: 6
         },
         data = [];
-        if (R.is(TString, array) && R.is(TString[0], array)) { // rough assumption
+        if (R.is(TString, ARRAY) && R.is(TString[0], ARRAY)) { // rough assumption
             data = pathClone(TString);
         }
         if (!data.length) {
@@ -1558,7 +1545,7 @@ var loaded,
                 c.replace(pathValues, function(a, b) {
                     b && params.push(+b);
                 });
-                data.push([b][concat](params));
+                data.push([b][CONCAT](params));
             });
         }
         data.toString = R._path2string;
@@ -1577,7 +1564,7 @@ var loaded,
         // }
         // setTimeout(function() {
         //     for (var key in p)
-        //         if (p[has](key) && key != ps) {
+        //         if (p[HAS](key) && key != ps) {
         //             p[key].sleep--;
         //             !p[key].sleep && delete p[key];
         //         }
@@ -1697,7 +1684,7 @@ var loaded,
      o }
     \*/
     R.bezierBBox = function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y) {
-        if (!R.is(p1x, array)) {
+        if (!R.is(p1x, ARRAY)) {
             p1x = [p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y];
         }
         var bbox = curveDim.apply(null, p1x);
@@ -2068,16 +2055,16 @@ var loaded,
                 Y.push(y);
             } else {
                 var dim = curveDim(x, y, p[1], p[2], p[3], p[4], p[5], p[6]);
-                X = X[concat](dim.min.x, dim.max.x);
-                Y = Y[concat](dim.min.y, dim.max.y);
+                X = X[CONCAT](dim.min.x, dim.max.x);
+                Y = Y[CONCAT](dim.min.y, dim.max.y);
                 x = p[5];
                 y = p[6];
             }
         }
-        var xmin = mmin[apply](0, X),
-        ymin = mmin[apply](0, Y),
-        xmax = mmax[apply](0, X),
-        ymax = mmax[apply](0, Y),
+        var xmin = mmin[APPLY](0, X),
+        ymin = mmin[APPLY](0, Y),
+        xmax = mmax[APPLY](0, X),
+        ymax = mmax[APPLY](0, Y),
         bb = {
             x: xmin,
             y: ymin,
@@ -2099,7 +2086,7 @@ var loaded,
         if (pth.rel) {
             return pathClone(pth.rel);
         }
-        if (!R.is(pathArray, array) || !R.is(pathArray && pathArray[0], array)) { // rough assumption
+        if (!R.is(pathArray, ARRAY) || !R.is(pathArray && pathArray[0], ARRAY)) { // rough assumption
             pathArray = R.parsePathString(pathArray);
         }
         var res = [],
@@ -2176,7 +2163,7 @@ var loaded,
     pathToAbsolute = R._pathToAbsolute = function(pathArray) {
         var pth = paths(pathArray), res;
         if (!pth.abs) {
-            if (!R.is(pathArray, array) || !R.is(pathArray && pathArray[0], array)) { // rough assumption
+            if (!R.is(pathArray, ARRAY) || !R.is(pathArray && pathArray[0], ARRAY)) { // rough assumption
                 pathArray = R.parsePathString(pathArray);
             }
             if (!pathArray || !pathArray.length) {
@@ -2221,13 +2208,13 @@ var loaded,
                             r[1] = +pa[1] + x;
                             break;
                         case "R":
-                            var dots = [x, y][concat](pa.slice(1));
+                            var dots = [x, y][CONCAT](pa.slice(1));
                             for (var j = 2, jj = dots.length; j < jj; j++) {
                                 dots[j] = +dots[j] + x;
                                 dots[++j] = +dots[j] + y;
                             }
                             res.pop();
-                            res = res[concat](catmullRom2bezier(dots, crz));
+                            res = res[CONCAT](catmullRom2bezier(dots, crz));
                             break;
                         case "M":
                             mx = +pa[1] + x;
@@ -2238,10 +2225,10 @@ var loaded,
                             }
                     }
                 } else if (pa[0] === "R") {
-                    dots = [x, y][concat](pa.slice(1));
+                    dots = [x, y][CONCAT](pa.slice(1));
                     res.pop();
-                    res = res[concat](catmullRom2bezier(dots, crz));
-                    r = ["R"][concat](pa.slice(-2));
+                    res = res[CONCAT](catmullRom2bezier(dots, crz));
+                    r = ["R"][CONCAT](pa.slice(-2));
                 } else {
                     for (var k = 0, kk = pa.length; k < kk; k++) {
                         r[k] = pa[k];
@@ -2368,9 +2355,9 @@ var loaded,
         m2[0] = 2 * m1[0] - m2[0];
         m2[1] = 2 * m1[1] - m2[1];
         if (recursive) {
-            return [m2, m3, m4][concat](res);
+            return [m2, m3, m4][CONCAT](res);
         } else {
-            res = [m2, m3, m4][concat](res).join()[split](commaStr);
+            res = [m2, m3, m4][CONCAT](res).join()[SPLIT](COMMA);
             var newres = [];
             for (var i = 0, ii = res.length; i < ii; i++) {
                 newres[i] = i % 2 ? rotate(res[i - 1], res[i], rad).y : rotate(res[i], res[i + 1], rad).x;
@@ -2425,12 +2412,12 @@ var loaded,
         }
         return {
             min: {
-                x: mmin[apply](0, x),
-                y: mmin[apply](0, y)
+                x: mmin[APPLY](0, x),
+                y: mmin[APPLY](0, y)
             },
             max: {
-                x: mmax[apply](0, x),
-                y: mmax[apply](0, y)
+                x: mmax[APPLY](0, x),
+                y: mmax[APPLY](0, y)
             }
         };
     }),
@@ -2476,34 +2463,34 @@ var loaded,
                     d.Y = path[2];
                     break;
                 case "A":
-                    path = ["C"][concat](a2c[apply](0, [d.x, d.y][concat](path.slice(1))));
+                    path = ["C"][CONCAT](a2c[APPLY](0, [d.x, d.y][CONCAT](path.slice(1))));
                     break;
                 case "S":
                     nx = d.x + (d.x - (d.bx || d.x));
                     ny = d.y + (d.y - (d.by || d.y));
-                    path = ["C", nx, ny][concat](path.slice(1));
+                    path = ["C", nx, ny][CONCAT](path.slice(1));
                     break;
                 case "T":
                     d.qx = d.x + (d.x - (d.qx || d.x));
                     d.qy = d.y + (d.y - (d.qy || d.y));
-                    path = ["C"][concat](q2c(d.x, d.y, d.qx, d.qy, path[1], path[2]));
+                    path = ["C"][CONCAT](q2c(d.x, d.y, d.qx, d.qy, path[1], path[2]));
                     break;
                 case "Q":
                     d.qx = path[1];
                     d.qy = path[2];
-                    path = ["C"][concat](q2c(d.x, d.y, path[1], path[2], path[3], path[4]));
+                    path = ["C"][CONCAT](q2c(d.x, d.y, path[1], path[2], path[3], path[4]));
                     break;
                 case "L":
-                    path = ["C"][concat](l2c(d.x, d.y, path[1], path[2]));
+                    path = ["C"][CONCAT](l2c(d.x, d.y, path[1], path[2]));
                     break;
                 case "H":
-                    path = ["C"][concat](l2c(d.x, d.y, path[1], d.y));
+                    path = ["C"][CONCAT](l2c(d.x, d.y, path[1], d.y));
                     break;
                 case "V":
-                    path = ["C"][concat](l2c(d.x, d.y, d.x, path[1]));
+                    path = ["C"][CONCAT](l2c(d.x, d.y, d.x, path[1]));
                     break;
                 case "Z":
-                    path = ["C"][concat](l2c(d.x, d.y, d.X, d.Y));
+                    path = ["C"][CONCAT](l2c(d.x, d.y, d.X, d.Y));
                     break;
             }
             return path;
@@ -2513,7 +2500,7 @@ var loaded,
                 pp[i].shift();
                 var pi = pp[i];
                 while (pi.length) {
-                    pp.splice(i++, 0, ["C"][concat](pi.splice(0, 6)));
+                    pp.splice(i++, 0, ["C"][CONCAT](pi.splice(0, 6)));
                 }
                 pp.splice(i, 1);
                 ii = mmax(p.length, p2 && p2.length || 0);
@@ -2833,7 +2820,7 @@ var loaded,
     };
     R._getContainer = function(x, y, w, h) {
         var container;
-        container = h == null && !R.is(x, object) ? g.doc.getElementById(x) : x;
+        container = h == null && !R.is(x, OBJECT) ? g.doc.getElementById(x) : x;
         if (container == null) {
             return;
         }
@@ -3157,7 +3144,7 @@ var loaded,
          = (string) transform string
         \*/
         matrixproto.toTransformString = function(shorter) {
-            var s = shorter || this[split]();
+            var s = shorter || this[SPLIT]();
             if (s.isSimple) {
                 s.scalex = +s.scalex.toFixed(4);
                 s.scaley = +s.scaley.toFixed(4);
@@ -3188,7 +3175,7 @@ var loaded,
         \*/
         paperproto.safari = function() {
             var rect = this.rect(-99, -99, this.width + 99, this.height + 99).attr({
-                stroke: "none"
+                stroke: NONE
             });
             setTimeout(function() {
                 rect.remove();
@@ -3258,7 +3245,7 @@ var loaded,
                     var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
                         scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
                         target;
-                    if (supportsTouch && touchMap[has](supportsOnlyTouch ? type : dragEventMap[type])) {
+                    if (supportsTouch && touchMap[HAS](supportsOnlyTouch ? type : dragEventMap[type])) {
                         for (var i = 0, ii = e.targetTouches && e.targetTouches.length; i < ii; i++) {
                             target = e.targetTouches[i].target;
                             if (target === obj || (target.nodeName === 'tspan' && target.parentNode === obj)) {
@@ -3352,7 +3339,7 @@ var loaded,
 
                 parent.removeChild(node);
 
-                node.style.display = "none";
+                node.style.display = NONE;
                 node.style.display = display;
                 next ? parent.insertBefore(node, next) : parent.appendChild(node);
             }
@@ -3614,7 +3601,7 @@ var loaded,
     for (var i = events.length; i--; ) {
         (function(eventName) {
             R[eventName] = elproto[eventName] = function(fn, scope) {
-                if (R.is(fn, functionStr)) {
+                if (R.is(fn, FUNCTION)) {
                     this.events = this.events || [];
                     this.events.push({
                         name: eventName,
@@ -3665,9 +3652,9 @@ var loaded,
     elproto.data = function(key, value) {
         var data = eldata[this.id] = eldata[this.id] || {};
         if (arguments.length === 1) {
-            if (R.is(key, object)) {
+            if (R.is(key, OBJECT)) {
                 for (var i in key)
-                    if (key[has](i)) {
+                    if (key[HAS](i)) {
                         this.data(i, key[i]);
                     }
                 return this;
@@ -4107,8 +4094,8 @@ var loaded,
                 "cx", 0,
                 "cy", 0,
                 "r", 0,
-                "fill", none,
-                "stroke", black),
+                "fill", NONE,
+                "stroke", BLACK),
             out = R._engine.circle(paper, attrs, group);
 
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
@@ -4146,8 +4133,8 @@ var loaded,
                 "width", 0,
                 "height", 0,
                 "r", 0,
-                "fill", none,
-                "stroke", black),
+                "fill", NONE,
+                "stroke", BLACK),
             out = R._engine.rect(paper, attrs, group);
 
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
@@ -4179,8 +4166,8 @@ var loaded,
                 "y", 0,
                 "rx", 0,
                 "ry", 0,
-                "fill", none,
-                "stroke", black),
+                "fill", NONE,
+                "stroke", BLACK),
             out = R._engine.ellipse(this, attrs, group);
 
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
@@ -4226,8 +4213,8 @@ var loaded,
             capStyle = (paperConfig && paperConfig["stroke-linecap"]) || "butt",
             attrs = serializeArgs(args,
                 "path", E,
-                "fill", none,
-                "stroke", black,
+                "fill", NONE,
+                "stroke", BLACK,
                 "stroke-linecap", capStyle),
             out = R._engine.path(paper, attrs, group);
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
@@ -4289,8 +4276,8 @@ var loaded,
                 "x", 0,
                 "y", 0,
                 "text", E,
-                "stroke", none,
-                "fill", black,
+                "stroke", NONE,
+                "fill", BLACK,
                 "text-anchor", "middle",
                 "vertical-align", "middle"),
 
@@ -4581,7 +4568,7 @@ var loaded,
         var paper = this,
             width;
         // Check if the first argument is an object or not
-        if (typeof(paramsObj) === object) {
+        if (typeof(paramsObj) === OBJECT) {
             width = paramsObj.width;
             height = paramsObj.height;
             paper.setSize(paramsObj.width, paramsObj.height);
@@ -4600,7 +4587,7 @@ var loaded,
                 height : element.height
             };
         }
-        if (R.is(name, string)) {
+        if (R.is(name, STRING)) {
             return element[name];
         }
 
@@ -5114,9 +5101,9 @@ var loaded,
                 var pos = easing(time / ms);
                 ms = origms;
                 for (var attr in from)
-                    if (from[has](attr)) {
+                    if (from[HAS](attr)) {
                         switch (availableAnimAttrs[attr]) {
-                            case nu:
+                            case 'number':
                                 now = +from[attr] + pos * ms * diff[attr];
                                 break;
                             case "colour":
@@ -5130,7 +5117,7 @@ var loaded,
                                             upto255(round(from[attr].g + pos * ms * diff[attr].g)),
                                             upto255(round(from[attr].b + pos * ms * diff[attr].b)),
                                             tmpOpacity
-                                        ].join(commaStr) + ")";
+                                        ].join(COMMA) + ")";
                                     } else {
                                         now = [];
                                         for (i = 0, ii = from[attr].length; i < ii; ++i) {
@@ -5162,7 +5149,7 @@ var loaded,
                                                     upto255(round(from[attr][i].g + pos * ms * diff[attr][i].g)),
                                                     upto255(round(from[attr][i].b + pos * ms * diff[attr][i].b)),
                                                     (from[attr][i].opacity + pos * ms * diff[attr][i].opacity)
-                                                ].join(commaStr) + "):" + from[attr][i].position);
+                                                ].join(COMMA) + "):" + from[attr][i].position);
                                             }
                                         }
                                         now = now.join("-");
@@ -5212,10 +5199,10 @@ var loaded,
                                 }
                                 break;
                             case "text-bound":
-                                now = [][concat](from[attr]);
+                                now = [][CONCAT](from[attr]);
                                 break;
                             default:
-                                var from2 = [][concat](from[attr]);
+                                var from2 = [][CONCAT](from[attr]);
                                 now = [];
                                 i = that.ca[attr].length;
                                 while (i--) {
@@ -5238,7 +5225,7 @@ var loaded,
                     setTimeout(function() {
                         executeEvent && eve("raphael.anim.frame." + el.id, el, a);
                         executeEvent && eve("raphael.anim.finish." + el.id, el, a);
-                        R.is(f, functionStr) && f.call(el);
+                        R.is(f, FUNCTION) && f.call(el);
                     });
                 })(e.callback, that, e.anim);
 
@@ -5247,7 +5234,7 @@ var loaded,
                 animationElements.splice(l--, 1);
                 if (e.repeat > 1 && !e.next) {
                     for (key in to)
-                        if (to[has](key)) {
+                        if (to[HAS](key)) {
                             init[key] = e.totalOrigin[key];
                         }
                     e.el.attr(init);
@@ -5349,7 +5336,7 @@ var loaded,
             return element;
         }
         if (ms === 0) {
-            if (R.is(callback, functionStr)) {
+            if (R.is(callback, FUNCTION)) {
                 setTimeout(function () {
                     callback.call(element);
                 }, 0);
@@ -5462,7 +5449,7 @@ var loaded,
         this.times = 1;
         if (anim) {
             for (var attr in anim)
-                if (anim[has](attr)) {
+                if (anim[HAS](attr)) {
                     newAnim[toFloat(attr)] = anim[attr];
                     percents.push(toFloat(attr));
                 }
@@ -5641,7 +5628,7 @@ var loaded,
 
             // Solid color operation
             if (arr.length === 1) {
-                if(arr[0] === "none"){
+                if(arr[0] === NONE){
                     arr[0] = "rgba(0,0,0,0)";
                 }
                 // Push angle zero to start
@@ -5927,7 +5914,7 @@ var loaded,
                 i = 0,
                 ii = arr.length,
                 item = [];
-            if (typeof arr === string) {
+            if (typeof arr === STRING) {
                 return arr;
             }
             // Converting the array to string; path type
@@ -6424,14 +6411,14 @@ var loaded,
         }
         if (!isInAnim) {
             for (var attr in params)
-                if (params[has](attr)) {
-                    if (availableAnimAttrs[has](attr) || element.ca[attr]) {
+                if (params[HAS](attr)) {
+                    if (availableAnimAttrs[HAS](attr) || element.ca[attr]) {
                         from[attr] = configObject.from[attr] || element.attr(attr);
                         (from[attr] == null) && (from[attr] = availableAttrs[attr]);
                         to[attr] = params[attr];
                         change = false;
                         switch (availableAnimAttrs[attr]) {
-                            case nu:
+                            case 'number':
                                 tempDiff = to[attr] - from[attr];
                                 (tempDiff || isNaN(tempDiff)) && (change = true);
                                 diff[attr] = tempDiff / ms;
@@ -6445,8 +6432,8 @@ var loaded,
                                 var colorsNormalized = colorNormalizer(from[attr], to[attr], R.getRGB);
                                 from[attr] = colorsNormalized[0];
                                 var toColour = colorsNormalized[1];
-                                if (typeof toColour === string) {
-                                    if(from[attr].toLowerCase() !== "none"){
+                                if (typeof toColour === STRING) {
+                                    if(from[attr].toLowerCase() !== NONE){
                                         from[attr] = R.getRGB(from[attr]);
                                         if(!from[attr].opacity){
                                             from[attr].opacity = 1;
@@ -6459,7 +6446,7 @@ var loaded,
                                             opacity : 0
                                         }
                                     }
-                                    if(to[attr].toLowerCase() !== "none"){
+                                    if(to[attr].toLowerCase() !== NONE){
                                         toColour = R.getRGB(to[attr]);
                                         if(!toColour.opacity){
                                             toColour.opacity = 1;
@@ -6569,8 +6556,8 @@ var loaded,
                                 }
                                 break;
                             case "csv":
-                                var values = Str(params[attr])[split](separator),
-                                from2 = Str(from[attr])[split](separator);
+                                var values = Str(params[attr])[SPLIT](separator),
+                                from2 = Str(from[attr])[SPLIT](separator);
                                 if (attr === "clip-rect") {
                                     from[attr] = from2;
                                     diff[attr] = [];
@@ -6584,8 +6571,8 @@ var loaded,
                                 to[attr] = values;
                                 break;
                             default:
-                                values = [][concat](params[attr]);
-                                from2 = [][concat](from[attr]);
+                                values = [][CONCAT](params[attr]);
+                                from2 = [][CONCAT](from[attr]);
                                 diff[attr] = [];
                                 i = element.ca[attr].length;
                                 while (i--) {
@@ -6602,7 +6589,7 @@ var loaded,
                             delete diff[attr];
                         }
                     }
-                    else if (R._availableAttrs[has](attr) || attr === 'text' || element.ca[attr]) {
+                    else if (R._availableAttrs[HAS](attr) || attr === 'text' || element.ca[attr]) {
                         element.attr(attr, params[attr]);
                         delete params[attr];
                     }
@@ -6685,7 +6672,7 @@ var loaded,
         if (params instanceof Animation) {
             return params;
         }
-        if (R.is(easing, functionStr) || !easing) {
+        if (R.is(easing, FUNCTION) || !easing) {
             callback = callback || easing || null;
             easing = null;
         }
@@ -6696,7 +6683,7 @@ var loaded,
         json,
         attr;
         for (attr in params)
-            if (params[has](attr) && toFloat(attr) != attr && toFloat(attr) + "%" != attr) {
+            if (params[HAS](attr) && toFloat(attr) != attr && toFloat(attr) + "%" != attr) {
                 json = true;
                 p[attr] = params[attr];
             }
@@ -7117,8 +7104,8 @@ var loaded,
     \*/
     R.format = function(token, params) {
         var arg = getArrayCopy(arguments),
-            args = R.is(params, array) ? [0][concat](params) : arg;
-        token && R.is(token, string) && args.length - 1 && (token = token.replace(formatrg, function(str, i) {
+            args = R.is(params, ARRAY) ? [0][CONCAT](params) : arg;
+        token && R.is(token, STRING) && args.length - 1 && (token = token.replace(formatrg, function(str, i) {
             return args[++i] == null ? E : args[i];
         }));
         return token || E;
@@ -7186,14 +7173,14 @@ var loaded,
             ii;
 
         // multi definition
-        if (R.is(name, array)) {
+        if (R.is(name, ARRAY)) {
             for (i = 0, ii = name.length; i < ii; i++) {
                 R.define(name[i]);
             }
             return;
         }
         // object definition
-        else if (R.is(name, object)) {
+        else if (R.is(name, OBJECT)) {
             R.define(name.name, name[name.name], name.ca, name.fn, name.e, name.data);
             return;
         }
@@ -7207,20 +7194,20 @@ var loaded,
                 element = init.apply(this, args),
                 key;
 
-            if (fn && R.is(fn, object)) {
+            if (fn && R.is(fn, OBJECT)) {
                 for (key in fn) {
                     element[key] = fn[key];
                 }
             }
 
-            if (e && R.is(e, object)) {
+            if (e && R.is(e, OBJECT)) {
                 for (key in e) {
                     element[key] && element[key](e[key]);
                 }
             }
 
             if (ca) {
-                if (R.is(ca, functionStr)) {
+                if (R.is(ca, FUNCTION)) {
                     element.ca[name] = ca;
                 }
                 else {

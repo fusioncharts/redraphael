@@ -1131,7 +1131,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                     // do nothing.
                 } else if (cache[end] === cur) {    // when the cur element is the last element of cache
                     start.next = end;
-                    
+
                     newEndStr = cache[end].next;    // Take Id of the next element of the cur element
                     cache[newEndStr].prev = null;   // Make it's previous pointer null so that it doesn't point to cur
 
@@ -1142,24 +1142,24 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                     end = newEndStr;    // end holds the ID of the last element
                 } else {    // when cur element is any element except start and end
                     start.next = args;  // present start node's next pointer should point to the cur node
-                    
+
                     cur.prev = start;   // cur node's prev pointer now points to the present start, making the present start to 2nd position
                     cur.next = null;    // since cur is in front, no one should be ahead of it. hence next = null
 
                     prev.next = nextStr;    // cur's prev node should point to cur's next node
                     next.prev = prev;   // cur's next node should point to cur's prev node
-                    
+
                     start = cur;    // start point to the cur node
                 }
-                
+
                 return start.item;
             }
-            
+
             /******* Cache miss *******/
             // Else, it is a cache miss.
 
             /* ----- deletion process begins here -----
-            *  deletion takes place if cache is full 
+            *  deletion takes place if cache is full
             * */
             if (count > 1e3) {
                 // Take the second last element
@@ -3425,7 +3425,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             x += scrollX;
             y += scrollY;
 
-            //Function to copy some properties of the actual event into the dummy event 
+            //Function to copy some properties of the actual event into the dummy event
             makeSelectiveCopy(dummyEve, e);
 
             data = dummyEve.data = [x - el._drag.x, y - el._drag.y, x, y];
@@ -3923,11 +3923,11 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                 end_scope: end_scope
             });
 
-            //Function to copy some properties of the actual event into the dummy event 
+            //Function to copy some properties of the actual event into the dummy event
             makeSelectiveCopy(dummyEve, e);
 
             data = dummyEve.data = [e.clientX + scrollX, e.clientY + scrollY];
-            
+
             // Attaching handlers for various events
             for (i = 0, ii = dragInfo.onstart.length; i < ii; i ++) {
                 eve.on("raphael.drag.start." + this.id, dragInfo.onstart[i]);
@@ -7216,25 +7216,6 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
 
         return at;
     }, R);
-
-    elproto.crisp = function () {
-        var o = this,
-            attrs = o.attrs,
-            key,
-            attr = {},
-            values = o.attr();
-
-        values = R.crispBound(values.x, values.y, values.width, values.height,
-            values['stroke-width']);
-
-        for (key in values) {
-            if (attrs[key] === values[key]) { // only set attribute if changed
-                delete values[key];
-            }
-        }
-
-        return o.attr(values);
-    };
 
     /*\
      * Raphael.define

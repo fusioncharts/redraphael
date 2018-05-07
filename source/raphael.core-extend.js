@@ -315,6 +315,51 @@ export default function (R) {
         return x >= bbox.x && x <= bbox.x2 && y >= bbox.y && y <= bbox.y2;
     };
 
+    /*\
+     * Raphael.bezierBBox
+     [ method ]
+     **
+     * Utility method
+     **
+     * Return bounding box of a given cubic bezier curve
+     > Parameters
+     - p1x (number) x of the first point of the curve
+     - p1y (number) y of the first point of the curve
+     - c1x (number) x of the first anchor of the curve
+     - c1y (number) y of the first anchor of the curve
+     - c2x (number) x of the second anchor of the curve
+     - c2y (number) y of the second anchor of the curve
+     - p2x (number) x of the second point of the curve
+     - p2y (number) y of the second point of the curve
+     * or
+     - bez (array) array of six points for bezier curve
+     = (object) point information in format:
+     o {
+     o     min: {
+     o         x: (number) x coordinate of the left point
+     o         y: (number) y coordinate of the top point
+     o     }
+     o     max: {
+     o         x: (number) x coordinate of the right point
+     o         y: (number) y coordinate of the bottom point
+     o     }
+     o }
+    \*/
+    R.bezierBBox = function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y) {
+        if (!R.is(p1x, "array")) {
+            p1x = [p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y];
+        }
+        var bbox = curveDim.apply(null, p1x);
+        return {
+            x: bbox.min.x,
+            y: bbox.min.y,
+            x2: bbox.max.x,
+            y2: bbox.max.y,
+            width: bbox.max.x - bbox.min.x,
+            height: bbox.max.y - bbox.min.y
+        };
+    };
+
     /*
      * Paper.getFont
      [ method ]

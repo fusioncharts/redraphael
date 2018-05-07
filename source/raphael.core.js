@@ -782,23 +782,6 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         return rad * rad2deg % 360;
     };
 
-    /*\
-     * Raphael.setWindow
-     [ method ]
-     **
-     * Used when you need to draw in `&lt;iframe>`. Switched window to the iframe one.
-     > Parameters
-     - newwin (window) new window object
-    \*/
-    R.setWindow = function (newwin) {
-        eve("raphael.setWindow", R, g.win, newwin);
-        win = g.win = newwin;
-        doc = g.doc = g.win.document;
-        if (R._engine.initWin) {
-            R._engine.initWin(g.win);
-        }
-    };
-
     var toHex = function (color) {
             if (R.vml) {
                 // http://dean.edwards.name/weblog/2009/10/convert-any-colour-value-to-hex-in-msie/

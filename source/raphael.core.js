@@ -1831,10 +1831,6 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         };
     }
 
-    function interCount(bez1, bez2) {
-        return interHelper(bez1, bez2, 1);
-    }
-
     function interHelper(bez1, bez2, justCount) {
         var bbox1 = R.bezierBBox(bez1),
             bbox2 = R.bezierBBox(bez2);

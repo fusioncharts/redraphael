@@ -1905,9 +1905,6 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         return res;
     }
 
-    R.pathIntersectionNumber = function(path1, path2) {
-        return interPathHelper(path1, path2, 1);
-    };
     function interPathHelper(path1, path2, justCount) {
         path1 = R._path2curve(path1);
         path2 = R._path2curve(path2);

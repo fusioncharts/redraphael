@@ -1184,21 +1184,6 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         return cachedfunction;
     };
 
-    var preload = R._preload = function(src, f) {
-        var img = doc.createElement("img");
-        img.style.cssText = "position:absolute;left:-9999em;top:-9999em";
-        img.onload = function() {
-            f.call(this);
-            this.onload = null;
-            doc.body.removeChild(this);
-        };
-        img.onerror = function() {
-            doc.body.removeChild(this);
-        };
-        doc.body.appendChild(img);
-        img.src = src;
-    };
-
     function clrToString() {
         return this.hex;
     }

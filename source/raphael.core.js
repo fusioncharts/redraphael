@@ -3902,7 +3902,8 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                 ii,
                 jj,
                 kk,
-                dragInfo = this.dragInfo;
+                dragInfo = this.dragInfo,
+                args = [dragMove, undef, g.doc];
 
             this._drag.x = e.clientX + scrollX;
             this._drag.y = e.clientY + scrollY;
@@ -3910,9 +3911,9 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
 
             // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
             if (supportsTouch && !supportsOnlyTouch) {
-                R.dragmove(dragMove).dragend(dragUp);
+                R.dragmove.apply(this, args).dragend.call(this, dragUp, undef, g.doc);
             }
-            R.mousemove.call(this, dragMove, undef, g.doc).mouseup.call(this, dragUp, undef, undef, g.doc);
+            R.mousemove.apply(this, args).mouseup.call(this, dragUp, undef, undef, g.doc);
 
             //Function to copy some properties of the actual event into the dummy event 
             makeSelectiveCopy(dummyEve, e);

@@ -298,6 +298,23 @@ export default function (R) {
             (bbox1.y < bbox2.y2 && bbox1.y > bbox2.y || bbox2.y < bbox1.y2 && bbox2.y > bbox1.y);
     };
 
+    /*\
+     * Raphael.isPointInsideBBox
+     [ method ]
+     **
+     * Utility method
+     **
+     * Returns `true` if given point is inside bounding boxes.
+     > Parameters
+     - bbox (string) bounding box
+     - x (string) x coordinate of the point
+     - y (string) y coordinate of the point
+     = (boolean) `true` if point inside
+    \*/
+    R.isPointInsideBBox = function(bbox, x, y) {
+        return x >= bbox.x && x <= bbox.x2 && y >= bbox.y && y <= bbox.y2;
+    };
+
     /*
      * Paper.getFont
      [ method ]

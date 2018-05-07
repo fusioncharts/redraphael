@@ -1705,23 +1705,6 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         };
     };
 
-    /*\
-     * Raphael.isPointInsideBBox
-     [ method ]
-     **
-     * Utility method
-     **
-     * Returns `true` if given point is inside bounding boxes.
-     > Parameters
-     - bbox (string) bounding box
-     - x (string) x coordinate of the point
-     - y (string) y coordinate of the point
-     = (boolean) `true` if point inside
-    \*/
-    R.isPointInsideBBox = function(bbox, x, y) {
-        return x >= bbox.x && x <= bbox.x2 && y >= bbox.y && y <= bbox.y2;
-    };
-
     function base3(t, p1, p2, p3, p4) {
         var t1 = -3 * p1 + 9 * p2 - 9 * p3 + 3 * p4,
         t2 = t * t1 + 6 * p1 - 12 * p2 + 6 * p3;

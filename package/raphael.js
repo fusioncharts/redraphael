@@ -4291,7 +4291,6 @@ var preventDefault = function preventDefault() {
         };
     }
 }(),
-    drag = [],
     dragMove = function dragMove(e) {
     var x = e.clientX,
         y = e.clientY,
@@ -4301,12 +4300,10 @@ var preventDefault = function preventDefault() {
         data,
         dummyEve = {},
         key,
-        el,
-        j = drag.length;
+        el = this,
+        j = el.dragInfo.onmove.length;
 
     while (j--) {
-        dragi = drag[j];
-        el = dragi.el;
         if (supportsTouch && e.type === 'touchmove') {
             var i = e.touches.length,
                 touch;
@@ -4328,7 +4325,7 @@ var preventDefault = function preventDefault() {
         }
 
         if (el.dragStartFn) {
-            el.dragStartFn();
+            el.dragStartFn(j);
             el.dragStartFn = undefined;
             el.dragInfo._dragmove = true;
         }
@@ -4352,28 +4349,27 @@ var preventDefault = function preventDefault() {
         makeSelectiveCopy(dummyEve, e);
 
         data = dummyEve.data = [x - el._drag.x, y - el._drag.y, x, y];
-        (0, _eve3['default'])("raphael.drag.move." + el.id, dragi.move_scope || el, dummyEve, data);
+        (0, _eve3['default'])("raphael.drag.move." + el.id, el.dragInfo.move_scope[j] || el, dummyEve, data);
     }
 },
     dragUp = function dragUp(e) {
-    R.undragmove(dragMove).undragend(dragUp);
-    R.unmousemove(dragMove).unmouseup(dragUp);
-    var i = drag.length,
-        el,
+    var el = this,
+        dragInfo = el.dragInfo,
+        i = dragInfo.onend.length,
         dragi;
-
     while (i--) {
-        dragi = drag[i];
-        el = dragi.el;
         if (!el.dragInfo._dragmove) {
             continue;
         } else {
             el.dragInfo._dragmove = undefined;
         }
-        dragi.el._drag = {};
-        (0, _eve3['default'])("raphael.drag.end." + dragi.el.id, dragi.end_scope || dragi.start_scope || dragi.move_scope || dragi.el, e);
+        el._drag = {};
+        (0, _eve3['default'])("raphael.drag.end." + el.id, dragInfo.end_scope[i] || dragInfo.start_scope[i] || dragInfo.move_scope[i] || el, e);
     }
-    drag = [];
+
+    // After execution of the callbacks the eventListeners are removed
+    R.undragmove.call(el, dragMove).undragend.call(el, dragUp);
+    R.unmousemove.call(el, dragMove).unmouseup.call(el, dragUp);
 },
 
 
@@ -4603,13 +4599,15 @@ elproto = R.el = {};
 \*/
 for (var i = events.length; i--;) {
     (function (eventName) {
-        R[eventName] = elproto[eventName] = function (fn, scope) {
+        // tragetElem is introducded if we want to add the evt listener on a different dom based on some
+        // specific events, eg - dragMovde and dragEnd
+        R[eventName] = elproto[eventName] = function (fn, scope, tragetElem) {
             if (R.is(fn, "function")) {
                 this.events = this.events || [];
                 this.events.push({
                     name: eventName,
                     f: fn,
-                    unbind: addEvent(this.shape || this.node || g.doc, eventName, fn, scope || this)
+                    unbind: addEvent(tragetElem || this.shape || this.node || g.doc, eventName, fn, scope || this)
                 });
             }
             return this;
@@ -4709,9 +4707,9 @@ var downables = [],
     this.untrack = null;
     return this.fn && this.fn.apply(this.scope || this.el, arguments);
 };
-elproto.mouseup = function (fn, scope, track) {
+elproto.mouseup = function (fn, scope, track, tragetElem) {
     if (!track) {
-        return R.mouseup.apply(this, arguments);
+        return R.mouseup.apply(this, [fn, scope, tragetElem]);
     }
     downables.push(track = {
         el: this,
@@ -4808,10 +4806,10 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
         start_scope: [],
         end_scope: []
     });
-    onmove && dragInfo.onmove.push(onmove);
-    onstart && dragInfo.onstart.push(onstart);
-    onend && dragInfo.onend.push(onend);
-    // Scopes are not stored as when called via element.on, there is no provision for provifing scope
+    // Storing the callback functions and scopes in any
+    onmove && dragInfo.onmove.push(onmove) && dragInfo.move_scope.push(move_scope);
+    onstart && dragInfo.onstart.push(onstart) && dragInfo.start_scope.push(start_scope);
+    onend && dragInfo.onend.push(onend) && dragInfo.end_scope.push(end_scope);
 
     this.dragFn = this.dragFn || function (e) {
         var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
@@ -4833,16 +4831,9 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
 
         // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
         if (supportsTouch && !supportsOnlyTouch) {
-            !drag.length && R.dragmove(dragMove).dragend(dragUp);
+            R.dragmove(dragMove).dragend(dragUp);
         }
-        !drag.length && R.mousemove(dragMove).mouseup(dragUp);
-
-        drag.push({
-            el: this,
-            move_scope: move_scope,
-            start_scope: start_scope,
-            end_scope: end_scope
-        });
+        R.mousemove.call(this, dragMove, undef, g.doc).mouseup.call(this, dragUp, undef, undef, g.doc);
 
         //Function to copy some properties of the actual event into the dummy event 
         makeSelectiveCopy(dummyEve, e);
@@ -4870,8 +4861,8 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
         }
 
         // Queuing up the dragStartFn. It is fired if dragmove is fired after dragStart
-        this.dragStartFn = function () {
-            (0, _eve3['default'])("raphael.drag.start." + this.id, drag.start_scope || drag.move_scope || this, dummyEve, data);
+        this.dragStartFn = function (i) {
+            (0, _eve3['default'])("raphael.drag.start." + this.id, this.dragInfo.start_scope[i] || this.dragInfo.move_scope[i] || this, dummyEve, data);
         };
     };
     this._drag = {};
@@ -4926,7 +4917,7 @@ elproto.undrag = function () {
         }
     }
 
-    !draggable.length && R.unmousemove(dragMove).unmouseup(dragUp);
+    !draggable.length && R.unmousemove.call(this, dragMove).unmouseup.call(this, dragUp);
     delete this._drag;
 };
 
@@ -4946,7 +4937,7 @@ elproto.undragmove = function () {
         }
     }
 
-    !draggable.length && R.unmousemove(dragMove).unmouseup(dragUp);
+    !draggable.length && R.unmousemove.call(this, dragMove).unmouseup.call(this, dragUp);
 };
 
 /*\
@@ -4961,7 +4952,6 @@ elproto.undragend = function () {
         if (draggable[i].el == this && draggable[i].onend) {
             draggable.splice(i, 1);
             _eve3['default'].unbind("raphael.drag.end." + this.id);
-            this.dragInfo.onend = undefined;
         }
     }
 

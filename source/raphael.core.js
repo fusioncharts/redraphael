@@ -1905,33 +1905,6 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         return res;
     }
 
-    /*\
-     * Raphael.pathIntersection
-     [ method ]
-     **
-     * Utility method
-     **
-     * Finds intersections of two paths
-     > Parameters
-     - path1 (string) path string
-     - path2 (string) path string
-     = (array) dots of intersection
-     o [
-     o     {
-     o         x: (number) x coordinate of the point
-     o         y: (number) y coordinate of the point
-     o         t1: (number) t value for segment of path1
-     o         t2: (number) t value for segment of path2
-     o         segment1: (number) order number for segment of path1
-     o         segment2: (number) order number for segment of path2
-     o         bez1: (array) eight coordinates representing beziér curve for the segment of path1
-     o         bez2: (array) eight coordinates representing beziér curve for the segment of path2
-     o     }
-     o ]
-    \*/
-    R.pathIntersection = function(path1, path2) {
-        return interPathHelper(path1, path2);
-    };
     R.pathIntersectionNumber = function(path1, path2) {
         return interPathHelper(path1, path2, 1);
     };

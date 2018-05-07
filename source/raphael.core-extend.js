@@ -271,6 +271,33 @@ export default function (R) {
         (interPathHelper(path, [["M", x, y], ["V", bbox.y2 + 10]], 1) % 2 == 1))
     };
 
+    /*\
+     * Raphael.isBBoxIntersect
+     [ method ]
+     **
+     * Utility method
+     **
+     * Returns `true` if two bounding boxes intersect
+     > Parameters
+     - bbox1 (string) first bounding box
+     - bbox2 (string) second bounding box
+     = (boolean) `true` if they intersect
+    \*/
+    R.isBBoxIntersect = function(bbox1, bbox2) {
+        var i = R.isPointInsideBBox;
+        return i(bbox2, bbox1.x, bbox1.y) ||
+            i(bbox2, bbox1.x2, bbox1.y) ||
+            i(bbox2, bbox1.x, bbox1.y2) ||
+            i(bbox2, bbox1.x2, bbox1.y2) ||
+            i(bbox1, bbox2.x, bbox2.y) ||
+            i(bbox1, bbox2.x2, bbox2.y) ||
+            i(bbox1, bbox2.x, bbox2.y2) ||
+            i(bbox1, bbox2.x2, bbox2.y2) ||
+            (bbox1.x < bbox2.x2 && bbox1.x > bbox2.x ||
+                bbox2.x < bbox1.x2 && bbox2.x > bbox1.x) &&
+            (bbox1.y < bbox2.y2 && bbox1.y > bbox2.y || bbox2.y < bbox1.y2 && bbox2.y > bbox1.y);
+    };
+
     /*
      * Paper.getFont
      [ method ]

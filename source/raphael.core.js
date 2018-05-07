@@ -1722,33 +1722,6 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         return x >= bbox.x && x <= bbox.x2 && y >= bbox.y && y <= bbox.y2;
     };
 
-    /*\
-     * Raphael.isBBoxIntersect
-     [ method ]
-     **
-     * Utility method
-     **
-     * Returns `true` if two bounding boxes intersect
-     > Parameters
-     - bbox1 (string) first bounding box
-     - bbox2 (string) second bounding box
-     = (boolean) `true` if they intersect
-    \*/
-    R.isBBoxIntersect = function(bbox1, bbox2) {
-        var i = R.isPointInsideBBox;
-        return i(bbox2, bbox1.x, bbox1.y) ||
-            i(bbox2, bbox1.x2, bbox1.y) ||
-            i(bbox2, bbox1.x, bbox1.y2) ||
-            i(bbox2, bbox1.x2, bbox1.y2) ||
-            i(bbox1, bbox2.x, bbox2.y) ||
-            i(bbox1, bbox2.x2, bbox2.y) ||
-            i(bbox1, bbox2.x, bbox2.y2) ||
-            i(bbox1, bbox2.x2, bbox2.y2) ||
-            (bbox1.x < bbox2.x2 && bbox1.x > bbox2.x ||
-                bbox2.x < bbox1.x2 && bbox2.x > bbox1.x) &&
-            (bbox1.y < bbox2.y2 && bbox1.y > bbox2.y || bbox2.y < bbox1.y2 && bbox2.y > bbox1.y);
-    };
-
     function base3(t, p1, p2, p3, p4) {
         var t1 = -3 * p1 + 9 * p2 - 9 * p3 + 3 * p4,
         t2 = t * t1 + 6 * p1 - 12 * p2 + 6 * p3;

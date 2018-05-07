@@ -3243,7 +3243,10 @@ var loaded,
         if (g.doc.addEventListener) {
             return function(obj, type, fn, element) {
                 var realName = supportsOnlyTouch && touchMap[type] || type,
-                    f;
+                    f,
+                    args = {capture: false};
+                // Passive event is set false only when it is a touch device and a dragEvent
+                supportsTouch && element._drag && (args.passive = false)
 
                 touchMap[dragEventMap[type]] && (realName = touchMap[dragEventMap[type]]);
 
@@ -3266,9 +3269,9 @@ var loaded,
                     }
                     return fn.call(element, e, e.clientX + scrollX, e.clientY + scrollY);
                 };
-                obj.addEventListener(realName, f, {passive: false, capture:false});
+                obj.addEventListener(realName, f, args);
                 return function() {
-                    obj.removeEventListener(realName, f, {passive: false, capture:false});
+                    obj.removeEventListener(realName, f, args);
                     return true;
                 };
             };
@@ -3294,8 +3297,6 @@ var loaded,
         }
     })(),
 
-    drag = [],
-
     dragMove = function(e) {
         var x = e.clientX,
             y = e.clientY,
@@ -3305,12 +3306,10 @@ var loaded,
             data,
             dummyEve = {},
             key,
-            el,
-            j = drag.length;
+            el = this,
+            j = el.dragInfo.onmove.length;
 
         while (j--) {
-            dragi = drag[j];
-            el = dragi.el;
             if (supportsTouch && e.type === 'touchmove') {
                 var i = e.touches.length,
                 touch;
@@ -3332,7 +3331,7 @@ var loaded,
             }
 
             if (el.dragStartFn) {
-                el.dragStartFn();
+                el.dragStartFn(j);
                 el.dragStartFn = undefined;
                 el.dragInfo._dragmove = true;
             }
@@ -3356,28 +3355,28 @@ var loaded,
             makeSelectiveCopy(dummyEve, e);
 
             data = dummyEve.data = [x - el._drag.x, y - el._drag.y, x, y];
-            eve("raphael.drag.move." + el.id, dragi.move_scope || el, dummyEve, data);
+            eve("raphael.drag.move." + el.id, el.dragInfo.move_scope[j] || el, dummyEve, data);
         }
     },
     dragUp = function(e) {
-        R.undragmove(dragMove).undragend(dragUp);
-        R.unmousemove(dragMove).unmouseup(dragUp);
-        var i = drag.length,
-            el,
+        var el = this,
+            dragInfo = el.dragInfo,
+            i = dragInfo.onend.length,
             dragi;
-
         while (i--) {
-            dragi = drag[i];
-            el = dragi.el
             if (!el.dragInfo._dragmove) {
                 continue;
             } else {
                 el.dragInfo._dragmove = undefined;
             }
-            dragi.el._drag = {};
-            eve("raphael.drag.end." + dragi.el.id, dragi.end_scope || dragi.start_scope || dragi.move_scope || dragi.el, e);
+            el._drag = {};
+            eve("raphael.drag.end." + el.id, dragInfo.end_scope[i] || dragInfo.start_scope[i] ||
+                dragInfo.move_scope[i] || el, e);
         }
-        drag = [];
+
+        // After execution of the callbacks the eventListeners are removed
+        R.undragmove.call(el, dragMove).undragend.call(el, dragUp);
+        R.unmousemove.call(el, dragMove).unmouseup.call(el, dragUp);
     },
 
     /*\
@@ -3606,13 +3605,15 @@ var loaded,
     \*/
     for (var i = events.length; i--; ) {
         (function(eventName) {
-            R[eventName] = elproto[eventName] = function(fn, scope) {
+            // tragetElem is introducded if we want to add the evt listener on a different dom based on some
+            // specific events, eg - dragMovde and dragEnd
+            R[eventName] = elproto[eventName] = function(fn, scope, tragetElem) {
                 if (R.is(fn, FUNCTION)) {
                     this.events = this.events || [];
                     this.events.push({
                         name: eventName,
                         f: fn,
-                        unbind: addEvent(this.shape || this.node || g.doc, eventName, fn, scope || this)
+                        unbind: addEvent(tragetElem || this.shape || this.node || g.doc, eventName, fn, scope || this)
                     });
                 }
                 return this;
@@ -3713,9 +3714,9 @@ var loaded,
             return this.fn && this.fn.apply(this.scope || this.el, arguments);
 
         };
-    elproto.mouseup = function (fn, scope, track) {
+    elproto.mouseup = function (fn, scope, track, tragetElem) {
         if (!track) {
-            return R.mouseup.apply(this, arguments);
+            return R.mouseup.apply(this, [fn, scope, tragetElem]);
         }
         downables.push(track = {
             el: this,
@@ -3813,10 +3814,11 @@ var loaded,
             start_scope: [],
             end_scope: []
         });
-        onmove && (dragInfo.onmove.push(onmove));
-        onstart && (dragInfo.onstart.push(onstart));
-        onend && (dragInfo.onend.push(onend));
-        // Scopes are not stored as when called via element.on, there is no provision for provifing scope
+        // Storing the callback functions and scopes in any
+        onmove && dragInfo.onmove.push(onmove) && dragInfo.move_scope.push(move_scope);
+        onstart && dragInfo.onstart.push(onstart) && dragInfo.start_scope.push(start_scope);
+        onend && dragInfo.onend.push(onend) && dragInfo.end_scope.push(end_scope);
+
 
         this.dragFn = this.dragFn || function (e) {
             var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
@@ -3830,7 +3832,8 @@ var loaded,
                 ii,
                 jj,
                 kk,
-                dragInfo = this.dragInfo;
+                dragInfo = this.dragInfo,
+                args = [dragMove, undef, g.doc];
 
             this._drag.x = e.clientX + scrollX;
             this._drag.y = e.clientY + scrollY;
@@ -3838,17 +3841,9 @@ var loaded,
 
             // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
             if (supportsTouch && !supportsOnlyTouch) {
-                !drag.length && R.dragmove(dragMove).dragend(dragUp);
+                R.dragmove.apply(this, args).dragend.call(this, dragUp, undef, g.doc);
             }
-            !drag.length && R.mousemove(dragMove).mouseup(dragUp);
-
-
-            drag.push({
-                el: this,
-                move_scope: move_scope,
-                start_scope: start_scope,
-                end_scope: end_scope
-            });
+            R.mousemove.apply(this, args).mouseup.call(this, dragUp, undef, undef, g.doc);
 
             //Function to copy some properties of the actual event into the dummy event 
             makeSelectiveCopy(dummyEve, e);
@@ -3876,8 +3871,8 @@ var loaded,
             }
 
             // Queuing up the dragStartFn. It is fired if dragmove is fired after dragStart
-            this.dragStartFn = function () {
-                eve("raphael.drag.start." + this.id, drag.start_scope || drag.move_scope ||
+            this.dragStartFn = function (i) {
+                eve("raphael.drag.start." + this.id, this.dragInfo.start_scope[i] || this.dragInfo.move_scope[i] ||
                     this, dummyEve, data);
             }
         }
@@ -3933,7 +3928,7 @@ var loaded,
             }
         }
 
-        !draggable.length && R.unmousemove(dragMove).unmouseup(dragUp);
+        !draggable.length && R.unmousemove.call(this, dragMove).unmouseup.call(this, dragUp);
         delete this._drag;
     };
 
@@ -3953,7 +3948,7 @@ var loaded,
             }
         }
 
-        !draggable.length && R.unmousemove(dragMove).unmouseup(dragUp);
+        !draggable.length && R.unmousemove.call(this, dragMove).unmouseup.call(this, dragUp);
     };
 
     /*\
@@ -3968,7 +3963,6 @@ var loaded,
             if (draggable[i].el === this && draggable[i].onend) {
                 draggable.splice(i, 1);
                 eve.unbind("raphael.drag.end." + this.id);
-                this.dragInfo.onend = undefined;
             }
         }
 

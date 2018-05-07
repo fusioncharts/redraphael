@@ -4241,7 +4241,10 @@ var preventDefault = function preventDefault() {
     if (g.doc.addEventListener) {
         return function (obj, type, fn, element) {
             var realName = supportsOnlyTouch && touchMap[type] || type,
-                f;
+                f,
+                args = { capture: false };
+            // Passive event is set false only when it is a touch device and a dragEvent
+            supportsTouch && element._drag && (args.passive = false);
 
             touchMap[dragEventMap[type]] && (realName = touchMap[dragEventMap[type]]);
 
@@ -4264,9 +4267,9 @@ var preventDefault = function preventDefault() {
                 }
                 return fn.call(element, e, e.clientX + scrollX, e.clientY + scrollY);
             };
-            obj.addEventListener(realName, f, { passive: false, capture: false });
+            obj.addEventListener(realName, f, args);
             return function () {
-                obj.removeEventListener(realName, f, { passive: false, capture: false });
+                obj.removeEventListener(realName, f, args);
                 return true;
             };
         };

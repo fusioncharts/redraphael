@@ -2290,47 +2290,6 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         el.next = el2;
     },
 
-        /*\
-         * Raphael.toMatrix
-         [ method ]
-         **
-         * Utility method
-         **
-         * Returns matrix of transformations applied to a given path
-         > Parameters
-         - path (string) path string
-         - transform (string|array) transformation string
-         = (object) @Matrix
-        \*/
-    toMatrix = R.toMatrix = function(path, transform) {
-        var bb = pathDimensions(path),
-        el = {
-            _: {
-                transform: E
-            },
-            getBBox: function() {
-                return bb;
-            }
-        };
-        extractTransform(el, transform);
-        return el.matrix;
-    },
-
-        /*\
-         * Raphael.transformPath
-         [ method ]
-         **
-         * Utility method
-         **
-         * Returns path transformed by a given transformation
-         > Parameters
-         - path (string) path string
-         - transform (string|array) transformation string
-         = (string) path
-        \*/
-    transformPath = R.transformPath = function(path, transform) {
-        return mapPath(path, toMatrix(path, transform));
-    },
     extractTransform = R._extractTransform = function(el, tstr) {
         if (tstr == null) {
             return el._.transform;

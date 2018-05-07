@@ -55,6 +55,48 @@ export default function (R) {
                 y: top,
                 x: left
             };
+        },
+
+        /*\
+            * Raphael.transformPath
+            [ method ]
+            **
+            * Utility method
+            **
+            * Returns path transformed by a given transformation
+            > Parameters
+            - path (string) path string
+            - transform (string|array) transformation string
+            = (string) path
+        \*/
+        transformPath = R.transformPath = function(path, transform) {
+            return mapPath(path, toMatrix(path, transform));
+        },
+
+        /*\
+            * Raphael.toMatrix
+            [ method ]
+            **
+            * Utility method
+            **
+            * Returns matrix of transformations applied to a given path
+            > Parameters
+            - path (string) path string
+            - transform (string|array) transformation string
+            = (object) @Matrix
+        \*/
+        toMatrix = R.toMatrix = function(path, transform) {
+            var bb = pathDimensions(path),
+            el = {
+                _: {
+                    transform: E
+                },
+                getBBox: function() {
+                    return bb;
+                }
+            };
+            extractTransform(el, transform);
+            return el.matrix;
         };
 
     /*

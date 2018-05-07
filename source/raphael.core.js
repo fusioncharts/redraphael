@@ -1390,45 +1390,6 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         return "#" + (16777216 | b | (g << 8) | (r << 16)).toString(16).slice(1);
     });
 
-    /*\
-     * Raphael.getColor
-     [ method ]
-     **
-     * On each call returns next colour in the spectrum. To reset it back to red call @Raphael.getColor.reset
-     > Parameters
-     - value (number) #optional brightness, default is `0.75`
-     = (string) hex representation of the colour.
-    \*/
-    R.getColor = function(value) {
-        var start = this.getColor.start = this.getColor.start || {
-            h: 0,
-            s: 1,
-            b: value || .75
-        },
-        rgb = this.hsb2rgb(start.h, start.s, start.b);
-        start.h += .075;
-        if (start.h > 1) {
-            start.h = 0;
-            start.s -= .2;
-            start.s <= 0 && (this.getColor.start = {
-                h: 0,
-                s: 1,
-                b: start.b
-            });
-        }
-        return rgb.hex;
-    };
-
-    /*\
-     * Raphael.getColor.reset
-     [ method ]
-     **
-     * Resets spectrum position for @Raphael.getColor back to red.
-    \*/
-    R.getColor.reset = function() {
-        delete this.start;
-    };
-
     // http://schepers.cc/getting-to-the-point
     function catmullRom2bezier(crp, z) {
         var d = [];

@@ -462,10 +462,10 @@ export default function (R) {
                             }
                             break;
                         case 'arrow-start':
-                            addArrow(o, value);
+                            R.addArrow(o, value);
                             break;
                         case 'arrow-end':
-                            addArrow(o, value, 1);
+                            R.addArrow(o, value, 1);
                             break;
                         case 'clip-path':
                             var pathClip = true;
@@ -515,8 +515,8 @@ export default function (R) {
                                 });
                                 o._.dirty = 1;
                                 if (o._.arrows) {
-                                    'startString' in o._.arrows && addArrow(o, o._.arrows.startString);
-                                    'endString' in o._.arrows && addArrow(o, o._.arrows.endString, 1);
+                                    'startString' in o._.arrows && R.addArrow(o, o._.arrows.startString);
+                                    'endString' in o._.arrows && R.addArrow(o, o._.arrows.endString, 1);
                                 }
                             }
                             break;
@@ -605,8 +605,8 @@ export default function (R) {
                                 addDashes(o, attrs['stroke-dasharray'], params);
                             }
                             if (o._.arrows) {
-                                'startString' in o._.arrows && addArrow(o, o._.arrows.startString);
-                                'endString' in o._.arrows && addArrow(o, o._.arrows.endString, 1);
+                                'startString' in o._.arrows && R.addArrow(o, o._.arrows.startString);
+                                'endString' in o._.arrows && R.addArrow(o, o._.arrows.endString, 1);
                             }
                             break;
                         case 'stroke-dasharray':
@@ -705,8 +705,8 @@ export default function (R) {
                                     delete o._.strokeOpacityDirty;
                                 }
                                 if (o._.arrows) {
-                                    'startString' in o._.arrows && addArrow(o, o._.arrows.startString);
-                                    'endString' in o._.arrows && addArrow(o, o._.arrows.endString, 1);
+                                    'startString' in o._.arrows && R.addArrow(o, o._.arrows.startString);
+                                    'endString' in o._.arrows && R.addArrow(o, o._.arrows.endString, 1);
                                 }
                             }
                             break;
@@ -1475,6 +1475,15 @@ export default function (R) {
 
             res.type = 'rect';
             attrs.rx = attrs.ry = attrs.r;
+            // Apply the attribute if provided
+            attrs && res.attr(attrs);
+            return res;
+        };
+        R._engine.ellipse = function (svg, attrs, group) {
+            var el = $('ellipse'),
+                res = new Element(el, svg, group);
+
+            res.type = 'ellipse';
             // Apply the attribute if provided
             attrs && res.attr(attrs);
             return res;

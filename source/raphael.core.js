@@ -6748,6 +6748,25 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
         return at;
     }, R);
 
+    elproto.crisp = function () {
+        var o = this,
+            attrs = o.attrs,
+            key,
+            attr = {},
+            values = o.attr();
+
+        values = R.crispBound(values.x, values.y, values.width, values.height,
+            values['stroke-width']);
+
+        for (key in values) {
+            if (attrs[key] === values[key]) { // only set attribute if changed
+                delete values[key];
+            }
+        }
+
+        return o.attr(values);
+    };
+
     /*\
      * Raphael.define
      [ method ]

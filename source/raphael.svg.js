@@ -19,15 +19,26 @@ export default function (R) {
             vAignStr = 'vertical-align',
             lineHeightStr = 'line-height',
             fontSizeStr = 'font-size',
+            // fontFamilyStr = 'font-family',
+            imageStr = 'image',
+            noneStr = 'none',
+            notToTuneStr = '_do-not-tune',
             textStr = 'text',
             rtlStr = 'rtl',
             arrayStr = 'array',
             middleStr = 'middle',
             pxStr = 'px',
             initialStr = 'initial',
+            fnStr = 'function',
             brStr = '<br>',
+            hiddenStr = 'hidden',
+            visibleStr = 'visible',
+            objectStr = 'object',
+            fillStr = 'fill',
+            transformStr = 'transform',
+            visibilityStr = 'visibility',
             IESplTspanAttr = {
-                visibility: 'hidden',
+                visibility: hiddenStr,
                 'font-size': '0px'
             },
             Str = String,
@@ -70,7 +81,29 @@ export default function (R) {
                 crisp: 'crispEdges',
                 precision: 'geometricPrecision'
             },
-            markerCounter = {};
+            markerCounter = {},
+            preLoad = function (elem, ig, isURL, paper) {
+                R._preload(isURL[1], function () {
+                    var w = this.offsetWidth,
+                        h = this.offsetHeight;
+                    $(elem, {
+                        width: w,
+                        height: h
+                    });
+                    $(ig, {
+                        width: w,
+                        height: h
+                    });
+                    paper.safari();
+                });
+            },
+            quickExtend = function (obj1, obj2) {
+                if (obj2) {
+                    for (var key in obj2) {
+                        obj1[key] = obj2[key];
+                    }
+                }
+            };
 
         R.cachedFontHeight = {};
 
@@ -117,22 +150,17 @@ export default function (R) {
         };
 
         var $ = R._createNode = function (el, attr) {
-            // Create the element
-                if (typeof el === 'string') {
+                // Create the element
+                if (typeof el === typeStringSTR) { // eslint-disable-line valid-typeof
                     el = R._g.doc.createElementNS(svgNSStr, el);
                 }
-                // else {
-
-                // }
                 if (attr) {
                     var key;
                     for (key in attr) {
-                        if (attr[has](key)) {
-                            if (xlinkRegx.test(key)) {
-                                el.setAttributeNS(xlink, key.replace(xlinkRegx, E), attr[key]);
-                            } else {
-                                el.setAttribute(key, attr[key]);
-                            }
+                        if (xlinkRegx.test(key)) {
+                            el.setAttributeNS(xlink, key.replace(xlinkRegx, E), attr[key]);
+                        } else {
+                            el.setAttribute(key, attr[key]);
                         }
                     }
                 }
@@ -373,14 +401,14 @@ export default function (R) {
                         dx = 1;
                         refX = isEnd ? 4 : 1;
                         attr = {
-                            fill: 'none',
+                            fill: noneStr,
                             stroke: attrs.stroke
                         };
                     } else {
                         refX = dx = w / 2;
                         attr = {
                             fill: attrs.stroke,
-                            stroke: 'none'
+                            stroke: noneStr
                         };
                     }
                     if (o._.arrows) {
@@ -394,7 +422,7 @@ export default function (R) {
                     } else {
                         o._.arrows = {};
                     }
-                    if (type !== 'none') {
+                    if (type !== noneStr) {
                         var pathId = 'raphael-marker-' + type,
                             markerId = 'raphael-marker-' + se + type + w + h + '-obj' + o.id;
                         if (!R._g.doc.getElementById(pathId)) {
@@ -481,8 +509,8 @@ export default function (R) {
             // redraphael internally changes the "none" value to "0", thus the stroke/border becomes invisible
             // To fix this issue now instead of setting the value as `0` for `stroke-dasharray` attribute
             // now using `none` string as none is a w3c standard value for stroke-dasharray
-                '': ['none'],
-                'none': ['none'],
+                '': [noneStr],
+                'none': [noneStr],
                 '-': [3, 1],
                 '.': [1, 1],
                 '-.': [3, 1, 1, 1],
@@ -495,40 +523,40 @@ export default function (R) {
                 '--..': [8, 3, 1, 3, 1, 3]
             },
             addDashes = function (o, value, params) {
-                var predefValue = dasharray[Str(value).toLowerCase()],
-                    calculatedValues,
-                    width,
-                    butt,
-                    i,
-                    widthFactor;
+                if (value !== undefined) {
+                    var predefValue = dasharray[value.toLowerCase && value.toLowerCase()],
+                        calculatedValues,
+                        width,
+                        butt,
+                        i,
+                        widthFactor;
 
-                value = predefValue || ((value !== undefined) && [].concat(value));
-                if (value) {
-                    width = o.attrs['stroke-width'] || 1;
-                    butt = {
-                        round: width,
-                        square: width,
-                        butt: 0
-                    }[params['stroke-linecap'] || o.attrs['stroke-linecap']] || 0;
-                    i = value.length;
-                    widthFactor = predefValue ? width : 1;
+                    value = predefValue || ([].concat(value));
+                    if (R.is(value, arrayStr)) {
+                        width = params['stroke-width'] || o.attrs['stroke-width'] || 1;
+                        butt = {
+                            round: width,
+                            square: width,
+                            butt: 0
+                        }[params['stroke-linecap'] || o.attrs['stroke-linecap']] || 0;
+                        i = value.length;
+                        widthFactor = predefValue ? width : 1;
 
-                    if (value[0] === 'none') {
-                        calculatedValues = value;
-                    } else {
-                        calculatedValues = [];
-                        while (i--) {
-                            calculatedValues[i] = (value[i] * widthFactor + ((i % 2) ? 1 : -1) * butt);
-                            calculatedValues[i] <= 0 && (calculatedValues[i] = 0.01 + (width <= 1 ? butt : 0));
-                            if (isNaN(calculatedValues[i])) {
-                                calculatedValues[i] = 0;
+                        if (value[0] === noneStr) {
+                            calculatedValues = value;
+                        } else {
+                            calculatedValues = [];
+                            while (i--) {
+                                calculatedValues[i] = (value[i] * widthFactor + ((i % 2) ? 1 : -1) * butt);
+                                calculatedValues[i] <= 0 && (calculatedValues[i] = 0.01 + (width <= 1 ? butt : 0));
+                                if (isNaN(calculatedValues[i])) {
+                                    calculatedValues[i] = 0;
+                                }
                             }
                         }
-                    }
-                    if (R.is(value, arrayStr)) {
-                        $(o.node, {
+                        return {
                             'stroke-dasharray': calculatedValues.join(',')
-                        });
+                        };
                     }
                 }
             },
@@ -540,385 +568,349 @@ export default function (R) {
                 var node = o.node,
                     attrs = o.attrs,
                     paper = o.paper,
-                    s = node.style,
-                    vis = s.visibility,
+                    // s = node.style,
+                    // vis = s.visibility,
                     el,
-                    preLoad = function (elem, ig, isURL) {
-                        R._preload(isURL[1], function () {
-                            var w = this.offsetWidth,
-                                h = this.offsetHeight;
-                            $(elem, {
-                                width: w,
-                                height: h
-                            });
-                            $(ig, {
-                                width: w,
-                                height: h
-                            });
-                            paper.safari();
-                        });
-                    };
+                    att,
+                    finalAttr = {},
+                    finalS = {},
+                    value,
+                    pathClip,
+                    rect;
 
-                s.visibility = 'hidden';
-                if (o.type === 'image') {
+                // s.visibility = hiddenStr;
+                if (o.type === imageStr) {
                     loadRefImage(o, params);
                 }
-                for (var att in params) {
-                    if (params[has](att)) {
-                        if (!R._availableAttrs[has](att)) {
-                            continue;
-                        }
-                        var value = params[att];
-                        attrs[att] = value;
-                        if (value === E) {
-                            delete o.attrs[att];
+                for (att in params) {
+                    if (att in R._availableAttrs) {
+                        value = params[att];
+                        if (value === E && att in attrs) {
+                            delete attrs[att];
                             node.removeAttribute(att);
-                            continue;
-                        }
-                        switch (att) {
-                        case 'blur':
-                            o.blur(value);
-                            break;
-                        case 'href':
-                        case 'title':
-                        case 'target':
-                            var pn = node.parentNode;
-                            if (pn.tagName.toLowerCase() !== 'a') {
-                                if (value === E) { break; }
-                                var hl = $('a');
-                                hl.raphael = true;
-                                hl.raphaelid = node.raphaelid;
-                                pn.insertBefore(hl, node);
-                                hl.appendChild(node);
-                                pn = hl;
-                            }
-                            if (att === 'target') {
-                                pn.setAttributeNS(xlink, 'show', value === 'blank' ? 'new' : value);
-                            } else {
-                                pn.setAttributeNS(xlink, att, value);
-                            }
-                            node.titleNode = pn;
-                            break;
-                        case 'cursor':
-                            s.cursor = value;
-                            break;
-                        case 'transform':
-                            o.transform(value);
-                            break;
-                        case 'rotation':
-                            if (R.is(value, arrayStr)) {
-                                o.rotate.apply(o, value);
-                            } else {
-                                o.rotate(value);
-                            }
-                            break;
-                        case 'arrow-start':
-                            addArrow(o, value);
-                            break;
-                        case 'arrow-end':
-                            addArrow(o, value, 1);
-                            break;
-                        case 'clip-path':
-                            var pathClip = true;
-                            // falls through
-                        case 'clip-rect':
-                            var rect = !pathClip && Str(value).split(separator);
-                            o._.clipispath = !!pathClip;
-                            if (pathClip || rect.length === 4) {
-                                o.clip && o.clip.parentNode.parentNode.removeChild(o.clip.parentNode);
-                                var rc = $(pathClip ? 'path' : 'rect');
-                                el = $('clipPath');
-                                el.id = R.getElementID(R.createUUID());
-                                $(rc, pathClip ? {
-                                    d: value ? attrs['clip-path'] = R._pathToAbsolute(value) : R._availableAttrs.path,
-                                    fill: 'none'
-                                } : {
-                                    x: rect[0],
-                                    y: rect[1],
-                                    width: rect[2],
-                                    height: rect[3],
-                                    transform: o.matrix.invert()
-                                });
-                                el.appendChild(rc);
-                                paper.defs.appendChild(el);
-                                $(node, {
-                                    'clip-path': "url('" + R._url + '#' + el.id + "')"
-                                });
-                                o.clip = rc;
-                            }
-                            if (!value) {
-                                var path = node.getAttribute('clip-path');
-                                if (path) {
-                                    var clip = R._g.doc.getElementById(path.replace(/(^url\(#|\)$)/g, E));
-                                    clip && clip.parentNode.removeChild(clip);
-                                    $(node, {
-                                        'clip-path': E
-                                    });
-                                    document.documentMode === 11 && node.removeAttribute('clip-path');
-                                    delete o.clip;
+                        } else {
+                            attrs[att] = value;
+                            switch (att) {
+                            case 'blur':
+                                o.blur(value);
+                                break;
+                            case 'href':
+                            case 'title':
+                            case 'target':
+                                var pn = node.parentNode;
+                                if (pn.tagName.toLowerCase() !== 'a') {
+                                    if (value === E) { break; }
+                                    var hl = $('a');
+                                    hl.raphael = true;
+                                    hl.raphaelid = node.raphaelid;
+                                    pn.insertBefore(hl, node);
+                                    hl.appendChild(node);
+                                    pn = hl;
                                 }
-                            }
-                            break;
-                        case 'path':
-                            if (o.type === 'path') {
-                                $(node, {
-                                    d: value ? attrs.path = R._pathToAbsolute(value) : R._availableAttrs.path
-                                });
-                                o._.dirty = 1;
-                                if (o._.arrows) {
-                                    'startString' in o._.arrows && addArrow(o, o._.arrows.startString);
-                                    'endString' in o._.arrows && addArrow(o, o._.arrows.endString, 1);
+                                if (att === 'target') {
+                                    pn.setAttributeNS(xlink, 'show', value === 'blank' ? 'new' : value);
+                                } else {
+                                    pn.setAttributeNS(xlink, att, value);
                                 }
-                            }
-                            break;
-                        case 'width':
-                            node.setAttribute(att, value);
-                            o._.dirty = 1;
-                            if (attrs.fx) {
-                                att = 'x';
-                                value = attrs.x;
-                            } else {
+                                node.titleNode = pn;
                                 break;
-                            }
-                            // falls through
-                        case 'x':
-                            if (attrs.fx) {
-                                value = -attrs.x - (attrs.width || 0);
-                            }
-                            // falls through
-                        case 'rx':
-                            if (att === 'rx' && o.type === 'rect') {
+                            case 'cursor':
+                                finalS.cursor = value;
                                 break;
-                            }
-                            // falls through
-                        case 'cx':
-                            node.setAttribute(att, value);
-                            o.pattern && updatePosition(o);
-                            o._.dirty = 1;
-                            break;
-                        case 'height':
-                            node.setAttribute(att, value);
-                            o._.dirty = 1;
-                            if (attrs.fy) {
-                                att = 'y';
-                                value = attrs.y;
-                            } else {
+                            case 'transform':
+                                o.transform(value);
                                 break;
-                            }
-                            // falls through
-                        case 'y':
-                            // For text don't apply y attribute as it will be applied during tuneText
-                            if (o.type === textStr) {
+                            case 'rotation':
+                                if (R.is(value, arrayStr)) {
+                                    o.rotate.apply(o, value);
+                                } else {
+                                    o.rotate(value);
+                                }
                                 break;
-                            }
-                            if (attrs.fy) {
-                                value = -attrs.y - (attrs.height || 0);
-                            }
-                            // falls through
-                        case 'ry':
-                            if (att === 'ry' && o.type === 'rect') {
+                            case 'arrow-start':
+                                addArrow(o, value);
                                 break;
-                            }
-                            // falls through
-                        case 'cy':
-                            node.setAttribute(att, value);
-                            o.pattern && updatePosition(o);
-                            o._.dirty = 1;
-                            break;
-                        case 'r':
-                            if (o.type === 'rect') {
-                                $(node, {
-                                    rx: value,
-                                    ry: value
-                                });
-                            } else {
-                                node.setAttribute(att, value);
-                            }
-                            o._.dirty = 1;
-                            break;
-                        case 'src':
-                            if (o.type === 'image') {
-                                node.setAttributeNS(xlink, 'href', value);
-                            }
-                            break;
-                        case 'stroke-width':
-                            if (o._.sx !== 1 || o._.sy !== 1) {
-                                value /= mmax(abs(o._.sx), abs(o._.sy)) || 1;
-                            }
-                            if (paper._vbSize) {
-                                value *= paper._vbSize;
-                            }
-                            if (zeroStrokeFix && value === 0) {
-                                value = 0.000001;
-                            }
-                            node.setAttribute(att, value);
-                            if (attrs['stroke-dasharray']) {
-                                addDashes(o, attrs['stroke-dasharray'], params);
-                            }
-                            if (o._.arrows) {
-                                'startString' in o._.arrows && addArrow(o, o._.arrows.startString);
-                                'endString' in o._.arrows && addArrow(o, o._.arrows.endString, 1);
-                            }
-                            break;
-                        case 'stroke-dasharray':
-                            addDashes(o, value, params);
-                            break;
-                        case 'fill':
-                            var isURL = Str(value).match(R._ISURL);
-                            if (isURL) {
-                                el = $('pattern');
-                                var ig = $('image');
-                                el.id = R.getElementID(R.createUUID());
-                                $(el, {
-                                    x: 0,
-                                    y: 0,
-                                    patternUnits: 'userSpaceOnUse',
-                                    height: 1,
-                                    width: 1
-                                });
-                                $(ig, {
-                                    x: 0,
-                                    y: 0,
-                                    'xlink:href': isURL[1]
-                                });
-                                el.appendChild(ig);
-                                preLoad(el, ig, isURL);
-                                paper.defs.appendChild(el);
-                                s.fill = "url('" + R._url + '#' + el.id + "')";
-                                $(node, {
-                                    fill: s.fill
-                                });
-
-                                o.pattern = el;
-                                o.pattern && updatePosition(o);
+                            case 'arrow-end':
+                                addArrow(o, value, 1);
                                 break;
-                            }
-                            var clr = R.getRGB(value);
-                            if (!clr.error) {
-                                delete params.gradient;
-                                delete attrs.gradient;
-                                // !R.is(attrs.opacity, "undefined") &&
-                                //     R.is(params.opacity, "undefined") &&
-                                //     $(node, {
-                                //         opacity: attrs.opacity
-                                //     });
-                                !R.is(attrs['fill-opacity'], 'undefined') &&
-                                    R.is(params['fill-opacity'], 'undefined') &&
-                                    $(node, {
-                                        'fill-opacity': attrs['fill-opacity']
+                            case 'clip-path':
+                                pathClip = true;
+                                // falls through
+                            case 'clip-rect':
+                                rect = !pathClip && Str(value).split(separator);
+                                o._.clipispath = !!pathClip;
+                                if (pathClip || rect.length === 4) {
+                                    o.clip && o.clip.parentNode.parentNode.removeChild(o.clip.parentNode);
+                                    var rc = $(pathClip ? 'path' : 'rect');
+                                    el = $('clipPath');
+                                    el.id = R.getElementID(R.createUUID());
+                                    $(rc, pathClip ? {
+                                        d: value ? attrs['clip-path'] = R._pathToAbsolute(value) : R._availableAttrs.path,
+                                        fill: noneStr
+                                    } : {
+                                        x: rect[0],
+                                        y: rect[1],
+                                        width: rect[2],
+                                        height: rect[3],
+                                        transform: o.matrix.invert()
                                     });
-                                o.gradient && updateGradientReference(o);
-                            } else if ((o.type === 'circle' || o.type === 'ellipse' || Str(value).charAt() !== 'r') && addGradientFill(o, value)) {
-                                // The reason for this block of code is not known, hence it is commented out as it is causeing issues in
-                                // IE8 browser for gradient color
-                                /* if ("opacity" in attrs || "fill-opacity" in attrs) {
-                                    var gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\(#|\)$/g, E));
-                                    if (gradient) {
-                                        var stops = gradient.getElementsByTagName("stop");
-                                        $(stops[stops.length - 1], {
-                                            "stop-opacity": ("opacity" in attrs ? attrs.opacity : 1) * ("fill-opacity" in attrs ? attrs["fill-opacity"] : 1)
-                                        });
+                                    el.appendChild(rc);
+                                    paper.defs.appendChild(el);
+                                    finalAttr['clip-path'] = "url('" + R._url + '#' + el.id + "')";
+                                    o.clip = rc;
+                                }
+                                if (!value) {
+                                    var path = node.getAttribute('clip-path');
+                                    if (path) {
+                                        var clip = R._g.doc.getElementById(path.replace(/(^url\(#|\)$)/g, E));
+                                        clip && clip.parentNode.removeChild(clip);
+                                        finalAttr['clip-path'] = E;
+                                        document.documentMode === 11 && node.removeAttribute('clip-path');
+                                        delete o.clip;
                                     }
-                                } */
-                                attrs.gradient = value;
-                                // attrs.fill = "none";
-                                s.fill = E;
+                                }
                                 break;
-                            }
-                            if (clr[has]('opacity')) {
-                                $(node, {
-                                    'fill-opacity': (s.fillOpacity =
-                                        (clr.opacity > 1 ? clr.opacity / 100 : clr.opacity))
-                                });
-                                o._.fillOpacityDirty = true;
-                            } else if (o._.fillOpacityDirty && R.is(attrs['fill-opacity'], 'undefined') &&
-                                    R.is(params['fill-opacity'], 'undefined')) {
-                                node.removeAttribute('fill-opacity');
-                                s.fillOpacity = E;
-                                delete o._.fillOpacityDirty;
-                            }
-                            // falls through
-                        case 'stroke':
-                            clr = R.getRGB(value);
-                            node.setAttribute(att, clr.hex);
-                            s[att] = clr.hex;
-                            if (att === 'stroke') { // remove stroke opacity when stroke is set to none
-                                if (clr[has]('opacity')) {
-                                    $(node, {
-                                        'stroke-opacity': (s.strokeOpacity =
-                                            (clr.opacity > 1 ? clr.opacity / 100 : clr.opacity))
-                                    });
-                                    o._.strokeOpacityDirty = true;
-                                } else if (o._.strokeOpacityDirty && R.is(attrs['stroke-opacity'], 'undefined') &&
-                                        R.is(params['stroke-opacity'], 'undefined')) {
-                                    node.removeAttribute('stroke-opacity');
-                                    s.strokeOpacity = E;
-                                    delete o._.strokeOpacityDirty;
+                            case 'path':
+                                if (o.type === 'path') {
+                                    finalAttr.d = value ? attrs.path = (R._stopabsolutePath ? R.sanitizePath(value) : R._pathToAbsolute(value)) : R._availableAttrs.path;
+                                    o._.dirty = 1;
+                                    if (o._.arrows) {
+                                        'startString' in o._.arrows && addArrow(o, o._.arrows.startString);
+                                        'endString' in o._.arrows && addArrow(o, o._.arrows.endString, 1);
+                                    }
+                                }
+                                break;
+                            case 'width':
+                                finalAttr[att] = value;
+                                o._.dirty = 1;
+                                if (attrs.fx) {
+                                    att = 'x';
+                                    value = attrs.x;
+                                } else {
+                                    break;
+                                }
+                                // falls through
+                            case 'x':
+                                if (attrs.fx) {
+                                    value = -attrs.x - (attrs.width || 0);
+                                }
+                                // falls through
+                            case 'rx':
+                                if (att === 'rx' && o.type === 'rect') {
+                                    break;
+                                }
+                                // falls through
+                            case 'cx':
+                                finalAttr[att] = value;
+                                o.pattern && updatePosition(o);
+                                o._.dirty = 1;
+                                break;
+                            case 'height':
+                                finalAttr[att] = value;
+                                o._.dirty = 1;
+                                if (attrs.fy) {
+                                    att = 'y';
+                                    value = attrs.y;
+                                } else {
+                                    break;
+                                }
+                                // falls through
+                            case 'y':
+                                // For text don't apply y attribute as it will be applied during tuneText
+                                if (o.type === textStr) {
+                                    break;
+                                }
+                                if (attrs.fy) {
+                                    value = -attrs.y - (attrs.height || 0);
+                                }
+                                // falls through
+                            case 'ry':
+                                if (att === 'ry' && o.type === 'rect') {
+                                    break;
+                                }
+                                // falls through
+                            case 'cy':
+                                finalAttr[att] = value;
+                                o.pattern && updatePosition(o);
+                                o._.dirty = 1;
+                                break;
+                            case 'r':
+                                if (o.type === 'rect') {
+                                    finalAttr.rx = finalAttr.ry = value;
+                                } else {
+                                    finalAttr[att] = value;
+                                }
+                                o._.dirty = 1;
+                                break;
+                            case 'src':
+                                if (o.type === imageStr) {
+                                    node.setAttributeNS(xlink, 'href', value);
+                                }
+                                break;
+                            case 'stroke-width':
+                                if (o._.sx !== 1 || o._.sy !== 1) {
+                                    value /= mmax(abs(o._.sx), abs(o._.sy)) || 1;
+                                }
+                                if (paper._vbSize) {
+                                    value *= paper._vbSize;
+                                }
+                                if (zeroStrokeFix && value === 0) {
+                                    value = 0.000001;
+                                }
+                                finalAttr[att] = value;
+                                // if this time we have no stroke-dasharray param but last time we have then update it according to new stroke-width
+                                if (!params['stroke-dasharray'] && attrs['stroke-dasharray']) {
+                                    quickExtend(finalAttr, addDashes(o, attrs['stroke-dasharray'], params));
                                 }
                                 if (o._.arrows) {
                                     'startString' in o._.arrows && addArrow(o, o._.arrows.startString);
                                     'endString' in o._.arrows && addArrow(o, o._.arrows.endString, 1);
                                 }
+                                break;
+                            case 'stroke-dasharray':
+                                quickExtend(finalAttr, addDashes(o, value, params));
+                                break;
+                            case 'fill':
+                                var isURL = R._ISURL.test(value);
+                                if (isURL) {
+                                    el = $('pattern');
+                                    var ig = $(imageStr);
+                                    el.id = R.getElementID(R.createUUID());
+                                    $(el, {
+                                        x: 0,
+                                        y: 0,
+                                        patternUnits: 'userSpaceOnUse',
+                                        height: 1,
+                                        width: 1
+                                    });
+                                    $(ig, {
+                                        x: 0,
+                                        y: 0,
+                                        'xlink:href': isURL[1]
+                                    });
+                                    el.appendChild(ig);
+                                    preLoad(el, ig, isURL, paper);
+                                    paper.defs.appendChild(el);
+                                    finalAttr.fill = "url('" + R._url + '#' + el.id + "')";
+
+                                    o.pattern = el;
+                                    o.pattern && updatePosition(o);
+                                    break;
+                                }
+                                var clr = R.getRGB(value);
+                                if (!clr.error) {
+                                    delete params.gradient;
+                                    delete attrs.gradient;
+                                    // !R.is(attrs.opacity, "undefined") &&
+                                    //     R.is(params.opacity, "undefined") &&
+                                    //     finalAttr[opacity] = attrs.opacity;
+                                    !R.is(attrs['fill-opacity'], 'undefined') && R.is(params['fill-opacity'], 'undefined') && (finalAttr['fill-opacity'] = attrs['fill-opacity']);
+                                    o.gradient && updateGradientReference(o);
+                                } else if ((o.type === 'circle' || o.type === 'ellipse' || Str(value).charAt() !== 'r') && addGradientFill(o, value)) {
+                                    // The reason for this block of code is not known, hence it is commented out as it is causeing issues in
+                                    // IE8 browser for gradient color
+                                    /* if ("opacity" in attrs || "fill-opacity" in attrs) {
+                                        var gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\(#|\)$/g, E));
+                                        if (gradient) {
+                                            var stops = gradient.getElementsByTagName("stop");
+                                            $(stops[stops.length - 1], {
+                                                "stop-opacity": ("opacity" in attrs ? attrs.opacity : 1) * ("fill-opacity" in attrs ? attrs["fill-opacity"] : 1)
+                                            });
+                                        }
+                                    } */
+                                    attrs.gradient = value;
+                                    // attrs.fill = "none";
+                                    break;
+                                }
+                                if (clr[has]('opacity')) {
+                                    finalAttr['fill-opacity'] = clr.opacity > 1 ? clr.opacity / 100 : clr.opacity;
+                                    o._.fillOpacityDirty = true;
+                                } else if (o._.fillOpacityDirty && R.is(attrs['fill-opacity'], 'undefined') &&
+                                        R.is(params['fill-opacity'], 'undefined')) {
+                                    node.removeAttribute('fill-opacity');
+                                    delete o._.fillOpacityDirty;
+                                }
+                                // falls through
+                            case 'stroke':
+                                clr = R.getRGB(value);
+                                finalAttr[att] = clr.hex;
+                                if (att === 'stroke') { // remove stroke opacity when stroke is set to none
+                                    if (clr[has]('opacity')) {
+                                        finalAttr['stroke-opacity'] = clr.opacity > 1 ? clr.opacity / 100 : clr.opacity;
+                                        o._.strokeOpacityDirty = true;
+                                    } else if (o._.strokeOpacityDirty && R.is(attrs['stroke-opacity'], 'undefined') &&
+                                            R.is(params['stroke-opacity'], 'undefined')) {
+                                        node.removeAttribute('stroke-opacity');
+                                        delete o._.strokeOpacityDirty;
+                                    }
+                                    if (o._.arrows) {
+                                        'startString' in o._.arrows && addArrow(o, o._.arrows.startString);
+                                        'endString' in o._.arrows && addArrow(o, o._.arrows.endString, 1);
+                                    }
+                                }
+                                break;
+                            case 'gradient':
+                                (o.type === 'circle' || o.type === 'ellipse' || Str(value).charAt() !== 'r') && addGradientFill(o, value);
+                                break;
+                            case 'visibility':
+                                value === hiddenStr ? o.hide() : o.show();
+                                break;
+                            case 'opacity':
+                                // if (attrs.gradient && !attrs[has]("stroke-opacity")) {
+                                //     finalAttr["stroke-opacity"] = value > 1 ? value / 100 : value;
+                                // }
+                                value = value > 1 ? value / 100 : value;
+                                finalAttr.opacity = value;
+                                break;
+                            // fall
+                            case 'fill-opacity':
+                                // if (attrs.gradient) {
+                                //     gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\([\'\"]#|[\'\"]\)$/g, E));
+                                //     if (gradient) {
+                                //         stops = gradient.getElementsByTagName("stop");
+                                //         l = stops.length;
+                                //         for (i = 0; i < l; i += 1) {
+                                //           $(stops[i], {
+                                //               "stop-opacity": value
+                                //           });
+                                //         }
+                                //     }
+                                //     break;
+                                // }
+                                value = value > 1 ? value / 100 : value;
+                                finalAttr['fill-opacity'] = value;
+                                break;
+                            case 'shape-rendering':
+                                o.attrs[att] = value = shapeRenderingAttrs[value] || value || 'auto';
+                                finalAttr[att] = value;
+                                node.style.shapeRendering = value;
+                                break;
+
+                            case 'line-height': // do not apply
+                            case 'vertical-align': // do not apply
+                                break;
+                            default:
+                                att === fontSizeStr && (value = toInt(value, 10) + 'px');
+                                o._.dirty = 1;
+                                finalAttr[att] = value;
+                                if (dashedAttr2CSSMap[att]) {
+                                    finalS[dashedAttr2CSSMap[att]] = value;
+                                }
+                                break;
                             }
-                            break;
-                        case 'gradient':
-                            (o.type === 'circle' || o.type === 'ellipse' || Str(value).charAt() !== 'r') && addGradientFill(o, value);
-                            break;
-                        case 'line-height': // do not apply
-                        case 'vertical-align': // do not apply
-                            break;
-                        case 'visibility':
-                            value === 'hidden' ? o.hide() : o.show();
-                            break;
-                        case 'opacity':
-                            // if (attrs.gradient && !attrs[has]("stroke-opacity")) {
-                            //     $(node, {
-                            //         "stroke-opacity": value > 1 ? value / 100 : value
-                            //     });
-                            // }
-                            value = value > 1 ? value / 100 : value;
-                            $(node, {
-                                'opacity': value
-                            });
-                            s.opacity = value;
-                            break;
-                        // fall
-                        case 'fill-opacity':
-                            // if (attrs.gradient) {
-                            //     gradient = R._g.doc.getElementById(node.getAttribute("fill").replace(/^url\([\'\"]#|[\'\"]\)$/g, E));
-                            //     if (gradient) {
-                            //         stops = gradient.getElementsByTagName("stop");
-                            //         l = stops.length;
-                            //         for (i = 0; i < l; i += 1) {
-                            //           $(stops[i], {
-                            //               "stop-opacity": value
-                            //           });
-                            //         }
-                            //     }
-                            //     break;
-                            // }
-                            value = value > 1 ? value / 100 : value;
-                            $(node, {
-                                'fill-opacity': value
-                            });
-                            s.fillOpacity = value;
-                            break;
-                        case 'shape-rendering':
-                            o.attrs[att] = value = shapeRenderingAttrs[value] || value || 'auto';
-                            node.setAttribute(att, value);
-                            node.style.shapeRendering = value;
-                            break;
-                        default:
-                            att === fontSizeStr && (value = toInt(value, 10) + 'px');
-                            s[dashedAttr2CSSMap[att]] = value;
-                            o._.dirty = 1;
-                            node.setAttribute(att, value);
-                            break;
                         }
                     }
                 }
-                (o.type === 'text' && !params['_do-not-tune']) && tuneText(o, params);
-                s.visibility = vis;
+                // Finally apply the styles
+                for (att in finalS) {
+                    node.style[att] = finalS[att];
+                }
+                // Finally apply the attributes
+                for (att in finalAttr) {
+                    node.setAttribute(att, finalAttr[att]);
+                }
+                (o.type === textStr && !params[notToTuneStr]) && tuneText(o, params);
+                // s.visibility = vis;
             },
             /*
             * Keeps the follower element in sync with the leaders.
@@ -1002,9 +994,8 @@ export default function (R) {
                             texts = Str(text).split(textBreakRegx);
                             l = texts.length;
                         } else { // single line
-                            if (oldAttr.noTSpan !== undefined) {
-                                removeAllChild = true;
-                            }
+                            // If it is a single line text then always remove the children
+                            removeAllChild = true;
                             oldAttr.noTSpan = true; // Always remove old text node
                             l = 1;
                         }
@@ -1271,7 +1262,7 @@ export default function (R) {
         elproto.hide = function () {
             var o = this;
             updateFollowers(o, 'hide');
-            !o.removed && o.paper.safari(o.node.style.display = 'none');
+            !o.removed && o.paper.safari(o.node.style.display = noneStr);
             return o;
         };
 
@@ -1322,7 +1313,7 @@ export default function (R) {
             R._tear(o, o.parent);
 
             for (i in o) {
-                o[i] = typeof o[i] === 'function' ? R._removedFactory(i) : null;
+                o[i] = typeof o[i] === fnStr ? R._removedFactory(i) : null;
             }
 
             o.removed = true;
@@ -1340,7 +1331,7 @@ export default function (R) {
             if (isIE && isText) {
                 fn = showRecursively(o);
             } else {
-                if (node.style.display === 'none') {
+                if (node.style.display === noneStr) {
                     o.show();
                     hide = true;
                 }
@@ -1381,45 +1372,50 @@ export default function (R) {
             if (this.removed) {
                 return this;
             }
-            var key,
+            var elem = this,
+                attrs = this.attrs,
+                key,
                 finalParam = {},
                 i,
                 ii,
                 params,
                 subkey,
                 par,
-                follower;
+                follower,
+                invokedCa = elem._invokedCa || (elem._invokedCa = {}),
+                ca,
+                caObj = this.ca;
             // get all, return all applied attributes
             if (name == null) {
                 var res = {};
-                for (key in this.attrs) {
-                    if (this.attrs[has](key)) {
-                        res[key] = this.attrs[key];
+                for (key in attrs) {
+                    if (attrs[has](key)) {
+                        res[key] = attrs[key];
                     }
                 }
-                res.gradient && res.fill === 'none' && (res.fill = res.gradient) && delete res.gradient;
+                res.gradient && res.fill === noneStr && (res.fill = res.gradient) && delete res.gradient;
                 res.transform = this._.transform;
-                res.visibility = this.node.style.display === 'none' ? 'hidden' : 'visible';
+                res.visibility = this.node.style.display === noneStr ? hiddenStr : visibleStr;
                 return res;
             } else {
                 if (value == null) {
-                    if (R.is(name, 'object')) { // Provided as an object
+                    if (R.is(name, objectStr)) { // Provided as an object
                         params = name;
                     } else if (R.is(name, typeStringSTR)) { // get one, return the value of the given attribute
-                        if (name === 'fill' && this.attrs.fill === 'none' && this.attrs.gradient) {
-                            return this.attrs.gradient;
+                        if (name === fillStr && attrs.fill === noneStr && attrs.gradient) {
+                            return attrs.gradient;
                         }
-                        if (name === 'transform') {
+                        if (name === transformStr) {
                             return this._.transform;
                         }
-                        if (name === 'visibility') {
-                            return this.node.style.display === 'none' ? 'hidden' : 'visible';
+                        if (name === visibilityStr) {
+                            return this.node.style.display === noneStr ? hiddenStr : visibleStr;
                         }
 
-                        if (name in this.attrs) {
-                            return this.attrs[name];
-                        } else if (R.is(this.ca[name], 'function')) {
-                            return this.ca[name].def;
+                        if (name in attrs) {
+                            return attrs[name];
+                        } else if (R.is(caObj[name], fnStr)) {
+                            return caObj[name].def;
                         }
                         return R._availableAttrs[name];
                     }
@@ -1437,20 +1433,19 @@ export default function (R) {
                 // For each param
                 for (key in params) {
                     // check if that is a Custom attribute or not
-                    if (this.ca[key] && params[has](key) && R.is(this.ca[key], 'function') && !this.ca['_invoked' + key]) {
-                        this.ca['_invoked' + key] = true; // prevent recursion
-                        par = this.ca[key].apply(this, [].concat(params[key]));
-                        delete this.ca['_invoked' + key];
+                    ca = caObj[key];
+                    if (ca && !invokedCa[key] && R.is(ca, fnStr)) {
+                        invokedCa[key] = true; // prevent recursion
+                        par = ca.apply(this, [].concat(params[key]));
+                        invokedCa[key] = false;
 
                         // If the custom attribute create another set of attribute to be updated
                         // Then add them in the attribute list
                         for (subkey in par) {
-                            if (par[has](subkey)) {
-                                finalParam[subkey] = par[subkey];
-                            }
+                            finalParam[subkey] = par[subkey];
                         }
                         // Add the attribute in attrs
-                        this.attrs[key] = params[key];
+                        attrs[key] = params[key];
                     } else {
                         finalParam[key] = params[key];
                     }
@@ -1668,12 +1663,12 @@ export default function (R) {
             return res;
         };
         R._engine.image = function (svg, attrs, group) {
-            var el = $('image'),
+            var el = $(imageStr),
                 res = new Element(el, svg, group, true);
 
             res._.group = group || svg;
-            res.type = 'image';
-            el.setAttribute('preserveAspectRatio', 'none');
+            res.type = imageStr;
+            el.setAttribute('preserveAspectRatio', noneStr);
             // Apply the attribute if provided
             attrs && res.attr(attrs);
             return res;
@@ -1883,7 +1878,7 @@ export default function (R) {
             this.desc && this.desc.parentNode.removeChild(this.desc);
             this.canvas.parentNode && this.canvas.parentNode.removeChild(this.canvas);
             for (i in this) {
-                this[i] = typeof this[i] === 'function' ? R._removedFactory(i) : null;
+                this[i] = typeof this[i] === fnStr ? R._removedFactory(i) : null;
             }
             this.removed = true;
         };

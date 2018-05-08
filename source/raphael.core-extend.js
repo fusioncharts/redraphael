@@ -97,6 +97,100 @@ export default function (R) {
             };
             extractTransform(el, transform);
             return el.matrix;
+        },
+        pathToRelative = R._pathToRelative = function(pathArray) {
+            var pth = paths(pathArray);
+            if (pth.rel) {
+                return pathClone(pth.rel);
+            }
+            if (!R.is(pathArray, array) || !R.is(pathArray && pathArray[0], array)) { // rough assumption
+                pathArray = R.parsePathString(pathArray);
+            }
+            var res = [],
+            x = 0,
+            y = 0,
+            mx = 0,
+            my = 0,
+            start = 0;
+            if (pathArray[0][0] == "M") {
+                x = pathArray[0][1];
+                y = pathArray[0][2];
+                mx = x;
+                my = y;
+                start++;
+                res.push(["M", x, y]);
+            }
+            for (var i = start, ii = pathArray.length; i < ii; i++) {
+                var r = res[i] = [],
+                pa = pathArray[i];
+                if (pa[0] != lowerCase.call(pa[0])) {
+                    r[0] = lowerCase.call(pa[0]);
+                    switch (r[0]) {
+                        case "a":
+                            r[1] = pa[1];
+                            r[2] = pa[2];
+                            r[3] = pa[3];
+                            r[4] = pa[4];
+                            r[5] = pa[5];
+                            r[6] = +(pa[6] - x).toFixed(3);
+                            r[7] = +(pa[7] - y).toFixed(3);
+                            break;
+                        case "v":
+                            r[1] = +(pa[1] - y).toFixed(3);
+                            break;
+                        case "m":
+                            mx = pa[1];
+                            my = pa[2];
+                        default:
+                            for (var j = 1, jj = pa.length; j < jj; j++) {
+                                r[j] = +(pa[j] - ((j % 2) ? x : y)).toFixed(3);
+                            }
+                    }
+                } else {
+                    r = res[i] = [];
+                    if (pa[0] == "m") {
+                        mx = pa[1] + x;
+                        my = pa[2] + y;
+                    }
+                    for (var k = 0, kk = pa.length; k < kk; k++) {
+                        res[i][k] = pa[k];
+                    }
+                }
+                var len = res[i].length;
+                switch (res[i][0]) {
+                    case "z":
+                        x = mx;
+                        y = my;
+                        break;
+                    case "h":
+                        x += +res[i][len - 1];
+                        break;
+                    case "v":
+                        y += +res[i][len - 1];
+                        break;
+                    default:
+                        x += +res[i][len - 2];
+                        y += +res[i][len - 1];
+                }
+            }
+            res.toString = R._path2string;
+            pth.rel = pathClone(res);
+            return res;
+        },
+
+        preload = R._preload = function(src, f) {
+            var img = doc.createElement("img");
+            img.style.cssText = "position:absolute;left:-9999em;top:-9999em";
+            img.onload = function() {
+                f.call(this);
+                this.onload = null;
+                doc.body.removeChild(this);
+            };
+            img.onerror = function() {
+                doc.body.removeChild(this);
+            };
+            doc.body.appendChild(img);
+            img.src = src;
         };
 
     /*
@@ -588,6 +682,64 @@ export default function (R) {
         }
     };
 
+    /*\
+     * Raphael.setWindow
+     [ method ]
+     **
+     * Used when you need to draw in `&lt;iframe>`. Switched window to the iframe one.
+     > Parameters
+     - newwin (window) new window object
+    \*/
+    R.setWindow = function (newwin) {
+        eve("raphael.setWindow", R, g.win, newwin);
+        win = g.win = newwin;
+        doc = g.doc = g.win.document;
+        if (R._engine.initWin) {
+            R._engine.initWin(g.win);
+        }
+    };
+
+    /*\
+     * Raphael.getColor
+     [ method ]
+     **
+     * On each call returns next colour in the spectrum. To reset it back to red call @Raphael.getColor.reset
+     > Parameters
+     - value (number) #optional brightness, default is `0.75`
+     = (string) hex representation of the colour.
+    \*/
+    R.getColor = function(value) {
+        var start = this.getColor.start = this.getColor.start || {
+            h: 0,
+            s: 1,
+            b: value || .75
+        },
+        rgb = this.hsb2rgb(start.h, start.s, start.b);
+        start.h += .075;
+        if (start.h > 1) {
+            start.h = 0;
+            start.s -= .2;
+            start.s <= 0 && (this.getColor.start = {
+                h: 0,
+                s: 1,
+                b: start.b
+            });
+        }
+        return rgb.hex;
+    };
+
+    /*\
+     * Raphael.getColor.reset
+     [ method ]
+     **
+     * Resets spectrum position for @Raphael.getColor back to red.
+    \*/
+    R.getColor.reset = function() {
+        delete this.start;
+    };
+
+    R.pathToRelative = pathToRelative;
+
     /*
      * Paper.getFont
      [ method ]
@@ -1004,6 +1156,33 @@ export default function (R) {
         return this;
     };
 
+    elproto.blur = function (size) {
+        // Experimental. No Safari support. Use it on your own risk.
+        var t = this;
+        if (+size !== 0) {
+            var fltr = $('filter'),
+                blur = $('feGaussianBlur');
+            t.attrs.blur = size;
+            fltr.id = R.getElementID(R.createUUID());
+            $(blur, {
+                stdDeviation: +size || 1.5
+            });
+            fltr.appendChild(blur);
+            t.paper.defs.appendChild(fltr);
+            t._blur = fltr;
+            $(t.node, {
+                filter: "url('" + R._url + '#' + fltr.id + "')"
+            });
+        } else {
+            if (t._blur) {
+                t._blur.parentNode.removeChild(t._blur);
+                delete t._blur;
+                delete t.attrs.blur;
+            }
+            t.node.removeAttribute('filter');
+        }
+    };
+
     /*
      * Set.push
      [ method ]
@@ -1236,6 +1415,14 @@ export default function (R) {
         return ret;
     };
 
+    function inter(bez1, bez2) {
+        return interHelper(bez1, bez2);
+    }
+
+    function interCount(bez1, bez2) {
+        return interHelper(bez1, bez2, 1);
+    }
+
     function interHelper(bez1, bez2, justCount) {
         var bbox1 = R.bezierBBox(bez1),
             bbox2 = R.bezierBBox(bez2);
@@ -1301,6 +1488,13 @@ export default function (R) {
         }
         return res;
     }
+
+    R.pathIntersection = function(path1, path2) {
+        return interPathHelper(path1, path2);
+    };
+    R.pathIntersectionNumber = function(path1, path2) {
+        return interPathHelper(path1, path2, 1);
+    };
 
     function interPathHelper(path1, path2, justCount) {
         path1 = R._path2curve(path1);

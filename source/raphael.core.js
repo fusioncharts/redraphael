@@ -4291,14 +4291,6 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
 
     R.getPointAtLength = getPointAtLength;
 
-    R.getSubpath = function(path, from, to) {
-        if (this.getTotalLength(path) - to < 1e-6) {
-            return getSubpathsAtLength(path, from).end;
-        }
-        var a = getSubpathsAtLength(path, to, 1);
-        return from ? getSubpathsAtLength(a, from).end : a;
-    };
-
     /*\
      * Raphael.getTotalLength
      [ method ]
@@ -4344,27 +4336,6 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             return;
         }
         return getPointAtLength(this.attrs.path, length);
-    };
-
-    /*\
-     * Raphael.getSubpath
-     [ method ]
-     **
-     * Return subpath of a given path from given length to given length.
-     **
-     > Parameters
-     **
-     - path (string) SVG path string
-     - from (number) position of the start of the segment
-     - to (number) position of the end of the segment
-     **
-     = (string) pathstring for the segment
-    \*/
-    elproto.getSubpath = function(from, to) {
-        if (this.type != "path") {
-            return;
-        }
-        return R.getSubpath(this.attrs.path, from, to);
     };
 
     /*\

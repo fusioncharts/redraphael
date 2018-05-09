@@ -738,6 +738,36 @@ export default function (R) {
         delete this.start;
     };
 
+    /*\
+     * Raphael.hsb
+     [ method ]
+     **
+     * Converts HSB values to hex representation of the colour.
+     > Parameters
+     - h (number) hue
+     - s (number) saturation
+     - b (number) value or brightness
+     = (string) hex representation of the colour.
+    \*/
+    R.hsb = cacher(function(h, s, b) {
+        return R.hsb2rgb(h, s, b).hex;
+    });
+
+    /*\
+     * Raphael.hsl
+     [ method ]
+     **
+     * Converts HSL values to hex representation of the colour.
+     > Parameters
+     - h (number) hue
+     - s (number) saturation
+     - l (number) luminosity
+     = (string) hex representation of the colour.
+    \*/
+    R.hsl = cacher(function(h, s, l) {
+        return R.hsl2rgb(h, s, l).hex;
+    });
+
     R.pathToRelative = pathToRelative;
 
     /*

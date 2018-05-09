@@ -288,10 +288,10 @@ export default function (R) {
                 params["font-style"] && (textpathStyle.fontStyle = params["font-style"]);
             }
             if ("arrow-start" in params) {
-                R.addArrow(res, params["arrow-start"]);
+                R.addArrow && R.addArrow(res, params["arrow-start"]);
             }
             if ("arrow-end" in params) {
-                R.addArrow(res, params["arrow-end"], 1);
+                R.addArrow && R.addArrow(res, params["arrow-end"], 1);
             }
             if (params.opacity != null ||
                 params["stroke-width"] != null ||

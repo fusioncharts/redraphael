@@ -916,22 +916,6 @@ export default function (R) {
             return this;
         };
 
-        elproto.blur = function(size) {
-            var s = this.node.runtimeStyle,
-            f = s.filter;
-            f = f.replace(blurregexp, E);
-            if (+size !== 0) {
-                this.attrs.blur = size;
-                s.filter = f + S + ms + ".Blur(pixelradius=" + (+size || 1.5) + ")";
-                s.margin = R.format("-{0}px 0 0 -{0}px", round(+size || 1.5));
-            } else {
-                s.filter = f;
-                s.margin = 0;
-                delete this.attrs.blur;
-            }
-            return this;
-        };
-
         /*\
         * Element.on
         [ method ]

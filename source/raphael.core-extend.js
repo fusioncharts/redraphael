@@ -1187,29 +1187,47 @@ export default function (R) {
     };
 
     elproto.blur = function (size) {
-        // Experimental. No Safari support. Use it on your own risk.
-        var t = this;
-        if (+size !== 0) {
-            var fltr = $('filter'),
-                blur = $('feGaussianBlur');
-            t.attrs.blur = size;
-            fltr.id = R.getElementID(R.createUUID());
-            $(blur, {
-                stdDeviation: +size || 1.5
-            });
-            fltr.appendChild(blur);
-            t.paper.defs.appendChild(fltr);
-            t._blur = fltr;
-            $(t.node, {
-                filter: "url('" + R._url + '#' + fltr.id + "')"
-            });
-        } else {
-            if (t._blur) {
-                t._blur.parentNode.removeChild(t._blur);
-                delete t._blur;
-                delete t.attrs.blur;
+        if (R.svg) {
+            // Experimental. No Safari support. Use it on your own risk.
+            var t = this;
+            if (+size !== 0) {
+                var fltr = $('filter'),
+                    blur = $('feGaussianBlur');
+                t.attrs.blur = size;
+                fltr.id = R.getElementID(R.createUUID());
+                $(blur, {
+                    stdDeviation: +size || 1.5
+                });
+                fltr.appendChild(blur);
+                t.paper.defs.appendChild(fltr);
+                t._blur = fltr;
+                $(t.node, {
+                    filter: "url('" + R._url + '#' + fltr.id + "')"
+                });
+            } else {
+                if (t._blur) {
+                    t._blur.parentNode.removeChild(t._blur);
+                    delete t._blur;
+                    delete t.attrs.blur;
+                }
+                t.node.removeAttribute('filter');
             }
-            t.node.removeAttribute('filter');
+        } else if (R.vml) {
+            var s = this.node.runtimeStyle,
+            f = s.filter;
+            f = f.replace(blurregexp, E);
+            if (+size !== 0) {
+                this.attrs.blur = size;
+                s.filter = f + S + ms + ".Blur(pixelradius=" + (+size || 1.5) + ")";
+                s.margin = R.format("-{0}px 0 0 -{0}px", round(+size || 1.5));
+            } else {
+                s.filter = f;
+                s.margin = 0;
+                delete this.attrs.blur;
+            }
+            return this;
+        } else if (R.canvas) {
+            return this;
         }
     };
 

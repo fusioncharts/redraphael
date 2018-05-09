@@ -696,20 +696,6 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
     R.type = (win.ENABLE_RED_CANVAS && (win.CanvasRenderingContext2D || doc.createElement('canvas').getContext)) ? "CANVAS" :
             (win.SVGAngle || doc.implementation.hasFeature("http://www.w3.org/TR/SVG11/feature#BasicStructure", "1.1") ? "SVG" : "VML");
 
-    if (R.type == "VML") {
-        var d = doc.createElement("div"),
-            b;
-
-        d.innerHTML = '<v:shape adj="1"/>';
-        b = d.firstChild;
-        b.style.behavior = "url(#default#VML)";
-        if (!(b && typeof b.adj == object)) {
-            R.type = E;
-            // return (R.type = E);
-        }
-        d = null;
-    }
-
     /*\
      * Raphael.svg
      [ property (boolean) ]
@@ -727,34 +713,6 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
     R._Paper = Paper;
     R._id = 0;
     R._oid = 0;
-
-    /*\
-     * Raphael.angle
-     [ method ]
-     **
-     * Returns angle between two or three points
-     > Parameters
-     - x1 (number) x coord of first point
-     - y1 (number) y coord of first point
-     - x2 (number) x coord of second point
-     - y2 (number) y coord of second point
-     - x3 (number) #optional x coord of third point
-     - y3 (number) #optional y coord of third point
-     = (number) angle in degrees.
-    \*/
-    R.angle = function (x1, y1, x2, y2, x3, y3) {
-        if (x3 == null) {
-            var x = x1 - x2,
-            y = y1 - y2;
-            if (!x && !y) {
-                return 0;
-            }
-            return (180 + math.atan2(-y, -x) * rad2deg + 360) % 360;
-        }
-        else {
-            return R.angle(x1, y1, x3, y3) - R.angle(x2, y2, x3, y3);
-        }
-    };
 
     /*\
      * Raphael.rad
@@ -4023,91 +3981,6 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             paper._createDOMNodes(defs, elemObj[key], returnObj[key]);
         }
         return returnObj;
-    };
-
-    /*\
-     * Paper.removeDefs
-     [ method ]
-     **
-     * Remove a particular definition of given id from paper
-     **
-     > Parameters
-     **
-     - id (string) id of the element to remove
-     **
-     > Usage
-     | paper.removeDefs(id);
-    \*/
-    paperproto.removeDefs = function (id) {
-        if (!R.svg) {
-            return;
-        }
-        var element = R._g.doc.getElementById(id);
-        element && element.remove();
-    };
-
-    /*\
-     * Paper.updateDefs
-     [ method ]
-     **
-     * Update definitions in paper
-     **
-     > Parameters
-     **
-     - id (string or object) id of the element or the element node itself
-     - attrObj (object) attribute of the element object with it's children attributes nested
-     - hardUpdateChildren (boolean) determines whether to create new children if child elements are less than
-       the children in attrObj or remove children in same manner
-     **
-     > Usage
-     | paper.updateDefs(id, {
-     |      width: '100%',
-     |      height: '100%',
-     |      children: [{
-     |          dx: '2'
-     |      }]
-     |   }, true);
-     | // Updates element of given id
-     | // Updates the child element if present and create new child if found less than the children in attrObj
-     | // and delete a child in same manner according to value of 'hardUpdateChildren'
-    \*/
-    paperproto.updateDefs = function (id, attrObj, hardUpdateChildren) {
-        if (!R.svg) {
-            return;
-        }
-        var paper = this,
-            element = !(id instanceof Node) ? R._g.doc.getElementById(id) : id,
-            attrKey,
-            i,
-            diff,
-            len,
-            children = attrObj.children || [],
-            elemChildren,
-            childId,
-            attr = {};
-
-        (hardUpdateChildren === undefined) && (hardUpdateChildren = true);
-
-        if (element) {
-            for (attrKey in attrObj) {
-                if (attrKey !== 'tagName' && attrKey !== 'children') {
-                    element.setAttribute(attrKey, attrObj[attrKey]);
-                }
-            }
-            elemChildren = element.children;
-            for (i = 0, len = children.length; i < len; i++) {
-                childId = children[i].id;
-                elemChildren[i] ? paper.updateDefs(childId || elemChildren[i], children[i]) :
-                    hardUpdateChildren && paper._createDOMNodes(element, children[i]);
-            }
-            if (hardUpdateChildren) {
-                diff = elemChildren.length - i;
-                while (diff > 0) {
-                    elemChildren[elemChildren.length - 1].remove();
-                    diff--;
-                }
-            }
-        }
     };
 
     /*\

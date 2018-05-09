@@ -12,6 +12,20 @@ import { getArrayCopy } from "./raphael.lib";
 */
 // Define _window as window object in case of indivual file inclusion.
 export default function (R) {
+    if (R.type == "VML") {
+        var d = doc.createElement("div"),
+            b;
+
+        d.innerHTML = '<v:shape adj="1"/>';
+        b = d.firstChild;
+        b.style.behavior = "url(#default#VML)";
+        if (!(b && typeof b.adj == object)) {
+            R.type = E;
+            // return (R.type = E);
+        }
+        d = null;
+    }
+
     if (R.vml) {
         var has = "hasOwnProperty",
         Str = String,

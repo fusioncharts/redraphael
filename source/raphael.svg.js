@@ -81,6 +81,15 @@ export default function (R) {
                 crisp: 'crispEdges',
                 precision: 'geometricPrecision'
             },
+            nav = R._g.win.navigator.userAgent.toLowerCase(),
+            isIE9 = function () {
+              var verIE = (nav.indexOf('msie') != -1) ? parseInt(nav.split('msie')[1]) : false;
+              if (verIE && (verIE === 9)) {
+                return true;
+              } else {
+                return false;
+              }
+            },
             markerCounter = {},
             preLoad = function (elem, ig, isURL, paper) {
                 R._preload(isURL[1], function () {
@@ -155,12 +164,15 @@ export default function (R) {
                     el = R._g.doc.createElementNS(svgNSStr, el);
                 }
                 if (attr) {
-                    var key;
+                    var key,
+                      value;
                     for (key in attr) {
+                        // IE9 cannot convert the value to string while applying 'transform' attribute
+                        value = isIE9 ? Str(attr[key]) : attr[key];
                         if (xlinkRegx.test(key)) {
-                            el.setAttributeNS(xlink, key.replace(xlinkRegx, E), attr[key]);
+                            el.setAttributeNS(xlink, key.replace(xlinkRegx, E), value);
                         } else {
-                            el.setAttribute(key, attr[key]);
+                            el.setAttribute(key, value);
                         }
                     }
                 }

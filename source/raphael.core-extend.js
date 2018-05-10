@@ -1,4 +1,4 @@
-import { getArrayCopy } from "./raphael.lib";
+import { getArrayCopy, cacher } from "./raphael.lib";
 
 /**
  * All non fusincharts related functionalities of redRaphael is listed here

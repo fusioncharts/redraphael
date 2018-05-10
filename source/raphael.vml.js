@@ -27,6 +27,7 @@ export default function (R) {
         eve = R.eve,
         ms = " progid:DXImageTransform.Microsoft",
         arrayShift = Array.prototype.shift,
+        doc = R._g.doc,
         f = doc.createElement("div"),
         b,
         S = " ",
@@ -144,7 +145,7 @@ export default function (R) {
         f.innerHTML = '<v:shape adj="1"/>';
         b = f.firstChild;
         b.style.behavior = "url(#default#VML)";
-        if (!(b && typeof b.adj == object)) {
+        if (!(b && typeof b.adj == 'object')) {
             R.type = E;
             // return (R.type = E);
         }

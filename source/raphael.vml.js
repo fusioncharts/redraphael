@@ -12,20 +12,6 @@ import { getArrayCopy } from "./raphael.lib";
 */
 // Define _window as window object in case of indivual file inclusion.
 export default function (R) {
-    if (R.type == "VML") {
-        var d = doc.createElement("div"),
-            b;
-
-        d.innerHTML = '<v:shape adj="1"/>';
-        b = d.firstChild;
-        b.style.behavior = "url(#default#VML)";
-        if (!(b && typeof b.adj == object)) {
-            R.type = E;
-            // return (R.type = E);
-        }
-        d = null;
-    }
-
     if (R.vml) {
         var has = "hasOwnProperty",
         Str = String,
@@ -41,6 +27,8 @@ export default function (R) {
         eve = R.eve,
         ms = " progid:DXImageTransform.Microsoft",
         arrayShift = Array.prototype.shift,
+        f = doc.createElement("div"),
+        b,
         S = " ",
         E = "",
         map = {
@@ -153,6 +141,15 @@ export default function (R) {
             }
             s.visibility = "visible";
         };
+        f.innerHTML = '<v:shape adj="1"/>';
+        b = f.firstChild;
+        b.style.behavior = "url(#default#VML)";
+        if (!(b && typeof b.adj == object)) {
+            R.type = E;
+            // return (R.type = E);
+        }
+        f = null;
+
         R._url = E;
         R.toString = function() {
             return  "Your browser doesn\u2019t support SVG. Falling down to VML.\nYou are running Rapha\xebl " + this.version;

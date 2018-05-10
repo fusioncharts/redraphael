@@ -5139,7 +5139,8 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             var time = Now - e.start,
             ms = e.ms,
             easing = e.easing,
-            from = e.destined[e.tick++ % e.clock],
+            // from = e.destined[e.tick++ % e.clock],
+            from = e.from,
             diff = e.diff,
             to = e.to,
             t = e.t,
@@ -5169,7 +5170,6 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
             } else {
                 e.status = (e.prev + (e.percent - e.prev) * (time / ms)) / e.anim.top;
             }
-            console.log(from, e.destined);
             origms = ms;
             // If has parentEl
             if (e.parentEl && e.parentEl.animElements) {
@@ -6464,18 +6464,97 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
     }
 
     /**
-     * predicts when and which attributes will apply
+     * calculate L.C.M. of numbers
      */
-    function prophet (destined, attr, value) {
-        let _prophecy = prophecy(attr),
-            destiny = _prophecy.destiny,
-            total = _prophecy.total;
-        for (let i = destiny; i < total; i += (destiny + 1)) {
-            !destined[i] && (destined[i] = {});
-            destined[i][attr] = value;
-        }
-        return total;
+    function lcm(x, y) {
+        if ((typeof x !== 'number') || (typeof y !== 'number')) 
+         return false;
+        return (!x || !y) ? 0 : Math.abs((x * y) / gcd(x, y));
     }
+    /**
+     * calculate G.C.D. of two number
+     */
+    function gcd(x, y) {
+        x = Math.abs(x);
+        y = Math.abs(y);
+        while(y) {
+            var t = y;
+            y = x % y;
+            x = t;
+        }
+        return x;
+    }
+
+    /**
+     * sorts two number
+     */
+    function sortFn(a, b) {
+        return a - b
+    };
+    /**
+     * bucketing the available animatable attributes so that animation frames can be lite
+     */
+    function Bucket () {
+        this.iteratee = {};
+        this._cost = {};
+        this._frameThreshold = 10000;
+    };
+
+    let bucketProto = Bucket.prototype;
+
+    bucketProto.setFrameThreshold = function (threshold) {
+        this._frameThreshold = threshold;
+    };
+    /**
+     * store attributes and its repeat value
+     */
+    bucketProto.setAttribute = function (name, value, repeat, cost) {
+        let iteratee = this.iteratee,
+            _cost = this._cost;
+        iteratee[repeat] || (iteratee[repeat] = {});
+        iteratee[repeat][name] = value;
+        _cost[repeat] || (_cost[repeat] = 0);
+        _cost[repeat] += (cost || 0);
+    };
+    /**
+     * calculate total number of iterations based on the all repeat values
+     */
+    bucketProto._getTotalIteration = function () {
+        this.totalIteration = 1;
+        let repeats = Object.keys(this.iteratee);
+        for (let i = 0, len = repeats.length; i < len; i++) {
+            this.totalIteration = lcm(this.totalIteration, +repeats[i]);
+        }
+        return this.totalIteration;
+    };
+    /**
+     * build the final bucket
+     */
+    bucketProto.getBucket = function () {
+        let _this = this,
+            bucket = [],
+            iteratee = _this.iteratee,
+            repeats = Object.keys(iteratee).sort(sortFn),
+            step,
+            list,
+            _cost = this._cost,
+            nRepeats = repeats.length,
+            len = _this._getTotalIteration();
+        for (let j = 0; j < nRepeats; j++) {
+            step = +repeats[j];
+            for (let i = step - 1; i < len; i+= step) {
+                bucket[i] || (bucket[i] = {});
+                // stores the list of the quantum bucket
+                list = bucket[i].list || (bucket[i].list = []);
+                list.push(step);
+                // calculate total cost for current bucket
+                bucket[i].totalCost || (bucket[i].totalCost = 0);
+                bucket[i].totalCost += _cost[step];
+            }
+        }
+        return bucket;
+    };
+
     function runAnimation(anim, element, percent, status, totalOrigin, times, parentEl, configObject) {
         percent = toFloat(percent);
         var params,
@@ -6709,7 +6788,6 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                                 }
                                 break;
                         }
-                       clock =  prophet(destined, attr, from[attr]);
                         if (!change) {
                             delete from[attr];
                             delete to[attr];
@@ -6736,6 +6814,9 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
                 }
             }
             timestamp = params.start || anim.start || +new Date;
+            // if (!Object.keys(diff).length) {
+            //     debugger;
+            // }
             element.e =  e = {
                 anim: anim,
                 percent: percent,

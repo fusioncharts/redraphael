@@ -82,14 +82,14 @@ export default function (R) {
                 precision: 'geometricPrecision'
             },
             nav = R._g.win.navigator.userAgent.toLowerCase(),
-            isIE9 = function () {
+            isIE9 = (function () {
               var verIE = (nav.indexOf('msie') != -1) ? parseInt(nav.split('msie')[1]) : false;
               if (verIE && (verIE === 9)) {
                 return true;
               } else {
                 return false;
               }
-            },
+            })(),
             markerCounter = {},
             preLoad = function (elem, ig, isURL, paper) {
                 R._preload(isURL[1], function () {

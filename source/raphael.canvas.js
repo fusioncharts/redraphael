@@ -2658,10 +2658,6 @@ export default function (R) {
             return this;
         };
 
-        elproto.blur = function(size) {
-            return this;
-        };
-
         elproto.on = function(eventType, handler) {
             var el = this,
                 listeners = el.listeners;

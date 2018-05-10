@@ -11953,8 +11953,9 @@ exports['default'] = function (R) {
         * Bind handler function for a particular event to Element
         * @param eventType - Type of event
         * @param handler - Function to be called on the firing of the event
+        * @param doNotModifyEvent - Boolean value that determines if the event has to be modified for touch devices
         \ */
-        elproto.on = function (eventType, handler) {
+        elproto.on = function (eventType, handler, doNotModifyEvent) {
             var elem = this,
                 node,
                 fn,
@@ -11976,7 +11977,7 @@ exports['default'] = function (R) {
 
             fn = handler;
             oldEventType = eventType;
-            if (R.supportsTouch) {
+            if (R.supportsTouch && !doNotModifyEvent) {
                 eventType = R._touchMap[eventType] || eventType === 'click' && 'touchstart' || eventType;
                 if (eventType !== oldEventType) {
                     // store the new listeners for removeEventListener
@@ -11995,6 +11996,9 @@ exports['default'] = function (R) {
                         newFn: fn,
                         newEvt: eventType
                     });
+                    // also attach the original event, mainly because of the
+                    // discrepancy in behaviour for hybrid devices.
+                    elem.on(oldEventType, handler, true);
                 }
             }
             if (this._ && this._.RefImg) {

@@ -81,6 +81,15 @@ export default function (R) {
                 crisp: 'crispEdges',
                 precision: 'geometricPrecision'
             },
+            nav = R._g.win.navigator.userAgent.toLowerCase(),
+            isIE9 = (function () {
+              var verIE = (nav.indexOf('msie') != -1) ? parseInt(nav.split('msie')[1]) : false;
+              if (verIE && (verIE === 9)) {
+                return true;
+              } else {
+                return false;
+              }
+            })(),
             markerCounter = {},
             preLoad = function (elem, ig, isURL, paper) {
                 R._preload(isURL[1], function () {
@@ -155,12 +164,15 @@ export default function (R) {
                     el = R._g.doc.createElementNS(svgNSStr, el);
                 }
                 if (attr) {
-                    var key;
+                    var key,
+                      value;
                     for (key in attr) {
+                        // IE9 cannot convert the value to string while applying 'transform' attribute
+                        value = isIE9 ? Str(attr[key]) : attr[key];
                         if (xlinkRegx.test(key)) {
-                            el.setAttributeNS(xlink, key.replace(xlinkRegx, E), attr[key]);
+                            el.setAttributeNS(xlink, key.replace(xlinkRegx, E), value);
                         } else {
-                            el.setAttribute(key, attr[key]);
+                            el.setAttribute(key, value);
                         }
                     }
                 }
@@ -351,157 +363,6 @@ export default function (R) {
                 $(o.pattern, {
                     patternTransform: o.matrix.invert() + ' translate(' + bbox.x + ',' + bbox.y + ')'
                 });
-            },
-            addArrow = function (o, value, isEnd) {
-                if (o.type === 'path') {
-                    var values = Str(value).toLowerCase().split('-'),
-                        p = o.paper,
-                        se = isEnd ? 'end' : 'start',
-                        node = o.node,
-                        attrs = o.attrs,
-                        stroke = attrs['stroke-width'],
-                        i = values.length,
-                        type = 'classic',
-                        from,
-                        to,
-                        dx,
-                        refX,
-                        attr,
-                        w = 3,
-                        h = 3,
-                        t = 5;
-                    while (i--) {
-                        switch (values[i]) {
-                        case 'block':
-                        case 'classic':
-                        case 'oval':
-                        case 'diamond':
-                        case 'open':
-                        case 'none':
-                            type = values[i];
-                            break;
-                        case 'wide':
-                            h = 5;
-                            break;
-                        case 'narrow':
-                            h = 2;
-                            break;
-                        case 'long':
-                            w = 5;
-                            break;
-                        case 'short':
-                            w = 2;
-                            break;
-                        }
-                    }
-                    if (type === 'open') {
-                        w += 2;
-                        h += 2;
-                        t += 2;
-                        dx = 1;
-                        refX = isEnd ? 4 : 1;
-                        attr = {
-                            fill: noneStr,
-                            stroke: attrs.stroke
-                        };
-                    } else {
-                        refX = dx = w / 2;
-                        attr = {
-                            fill: attrs.stroke,
-                            stroke: noneStr
-                        };
-                    }
-                    if (o._.arrows) {
-                        if (isEnd) {
-                            o._.arrows.endPath && markerCounter[o._.arrows.endPath]--;
-                            o._.arrows.endMarker && markerCounter[o._.arrows.endMarker]--;
-                        } else {
-                            o._.arrows.startPath && markerCounter[o._.arrows.startPath]--;
-                            o._.arrows.startMarker && markerCounter[o._.arrows.startMarker]--;
-                        }
-                    } else {
-                        o._.arrows = {};
-                    }
-                    if (type !== noneStr) {
-                        var pathId = 'raphael-marker-' + type,
-                            markerId = 'raphael-marker-' + se + type + w + h + '-obj' + o.id;
-                        if (!R._g.doc.getElementById(pathId)) {
-                            p.defs.appendChild($($('path'), {
-                                'stroke-linecap': 'round',
-                                d: markers[type],
-                                id: pathId
-                            }));
-                            markerCounter[pathId] = 1;
-                        } else {
-                            markerCounter[pathId]++;
-                        }
-                        var marker = R._g.doc.getElementById(markerId),
-                            use;
-                        if (!marker) {
-                            marker = $($('marker'), {
-                                id: markerId,
-                                markerHeight: h,
-                                markerWidth: w,
-                                orient: 'auto',
-                                refX: refX,
-                                refY: h / 2
-                            });
-                            use = $($('use'), {
-                                'xlink:href': '#' + pathId,
-                                transform: (isEnd ? 'rotate(180 ' + w / 2 + S + h / 2 + ') ' : E) + 'scale(' + w / t + ',' + h / t + ')',
-                                'stroke-width': (1 / ((w / t + h / t) / 2)).toFixed(4)
-                            });
-                            marker.appendChild(use);
-                            p.defs.appendChild(marker);
-                            markerCounter[markerId] = 1;
-                        } else {
-                            markerCounter[markerId]++;
-                            use = marker.getElementsByTagName('use')[0];
-                        }
-                        $(use, attr);
-                        var delta = dx * (type !== 'diamond' && type !== 'oval');
-                        if (isEnd) {
-                            from = o._.arrows.startdx * stroke || 0;
-                            to = R.getTotalLength(attrs.path) - delta * stroke;
-                        } else {
-                            from = delta * stroke;
-                            to = R.getTotalLength(attrs.path) - (o._.arrows.enddx * stroke || 0);
-                        }
-                        attr = {};
-                        attr['marker-' + se] = "url('" + R._url + '#' + markerId + "')";
-                        if (to || from) {
-                            attr.d = R.getSubpath(attrs.path, from, to);
-                        }
-                        $(node, attr);
-                        o._.arrows[se + 'Path'] = pathId;
-                        o._.arrows[se + 'Marker'] = markerId;
-                        o._.arrows[se + 'dx'] = delta;
-                        o._.arrows[se + 'Type'] = type;
-                        o._.arrows[se + typeStringSTR] = value;
-                    } else {
-                        if (isEnd) {
-                            from = o._.arrows.startdx * stroke || 0;
-                            to = R.getTotalLength(attrs.path) - from;
-                        } else {
-                            from = 0;
-                            to = R.getTotalLength(attrs.path) - (o._.arrows.enddx * stroke || 0);
-                        }
-                        o._.arrows[se + 'Path'] && $(node, {
-                            d: R.getSubpath(attrs.path, from, to)
-                        });
-                        delete o._.arrows[se + 'Path'];
-                        delete o._.arrows[se + 'Marker'];
-                        delete o._.arrows[se + 'dx'];
-                        delete o._.arrows[se + 'Type'];
-                        delete o._.arrows[se + typeStringSTR];
-                    }
-                    for (attr in markerCounter) {
-                        if (markerCounter[has](attr) && !markerCounter[attr]) {
-                            var item = R._g.doc.getElementById(attr);
-                            item && item.parentNode.removeChild(item);
-                        }
-                    }
-                }
             },
             dasharray = {
             // In Firefox 37.0.1 the value of "stroke-dasharray" attribute `0` make the stroke/border invisible.
@@ -763,8 +624,8 @@ export default function (R) {
                                     quickExtend(finalAttr, addDashes(o, attrs['stroke-dasharray'], params));
                                 }
                                 if (o._.arrows) {
-                                    'startString' in o._.arrows && addArrow(o, o._.arrows.startString);
-                                    'endString' in o._.arrows && addArrow(o, o._.arrows.endString, 1);
+                                    'startString' in o._.arrows && R.addArrow && R.addArrow(o, o._.arrows.startString);
+                                    'endString' in o._.arrows && R.addArrow && R.addArrow(o, o._.arrows.endString, 1);
                                 }
                                 break;
                             case 'stroke-dasharray':
@@ -1463,33 +1324,6 @@ export default function (R) {
             }
         };
 
-        elproto.blur = function (size) {
-            // Experimental. No Safari support. Use it on your own risk.
-            var t = this;
-            if (+size !== 0) {
-                var fltr = $('filter'),
-                    blur = $('feGaussianBlur');
-                t.attrs.blur = size;
-                fltr.id = R.getElementID(R.createUUID());
-                $(blur, {
-                    stdDeviation: +size || 1.5
-                });
-                fltr.appendChild(blur);
-                t.paper.defs.appendChild(fltr);
-                t._blur = fltr;
-                $(t.node, {
-                    filter: "url('" + R._url + '#' + fltr.id + "')"
-                });
-            } else {
-                if (t._blur) {
-                    t._blur.parentNode.removeChild(t._blur);
-                    delete t._blur;
-                    delete t.attrs.blur;
-                }
-                t.node.removeAttribute('filter');
-            }
-        };
-
         /* \
         * Element.on
         [ method ]
@@ -1497,8 +1331,9 @@ export default function (R) {
         * Bind handler function for a particular event to Element
         * @param eventType - Type of event
         * @param handler - Function to be called on the firing of the event
+        * @param doNotModifyEvent - Boolean value that determines if the event has to be modified for touch devices
         \ */
-        elproto.on = function (eventType, handler) {
+        elproto.on = function (eventType, handler, doNotModifyEvent) {
             var elem = this,
                 node,
                 fn,
@@ -1520,7 +1355,7 @@ export default function (R) {
 
             fn = handler;
             oldEventType = eventType;
-            if (R.supportsTouch) {
+            if (R.supportsTouch && !doNotModifyEvent) {
                 eventType = R._touchMap[eventType] ||
                     (eventType === 'click' && 'touchstart') || eventType;
                 if (eventType !== oldEventType) {
@@ -1540,6 +1375,9 @@ export default function (R) {
                         newFn: fn,
                         newEvt: eventType
                     });
+                    // also attach the original event, mainly because of the
+                    // discrepancy in behaviour for hybrid devices.
+                    elem.on(oldEventType, handler, true);
                 }
             }
             if (this._ && this._.RefImg) {

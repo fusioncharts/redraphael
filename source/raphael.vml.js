@@ -27,6 +27,8 @@ export default function (R) {
         eve = R.eve,
         ms = " progid:DXImageTransform.Microsoft",
         arrayShift = Array.prototype.shift,
+        f = doc.createElement("div"),
+        b,
         S = " ",
         E = "",
         map = {
@@ -139,44 +141,20 @@ export default function (R) {
             }
             s.visibility = "visible";
         };
+        f.innerHTML = '<v:shape adj="1"/>';
+        b = f.firstChild;
+        b.style.behavior = "url(#default#VML)";
+        if (!(b && typeof b.adj == object)) {
+            R.type = E;
+            // return (R.type = E);
+        }
+        f = null;
+
         R._url = E;
         R.toString = function() {
             return  "Your browser doesn\u2019t support SVG. Falling down to VML.\nYou are running Rapha\xebl " + this.version;
         };
-        var addArrow = function(o, value, isEnd) {
-            var values = Str(value).toLowerCase().split("-"),
-            se = isEnd ? "end" : "start",
-            i = values.length,
-            type = "classic",
-            w = "medium",
-            h = "medium";
-            while (i--) {
-                switch (values[i]) {
-                    case "block":
-                    case "classic":
-                    case "oval":
-                    case "diamond":
-                    case "open":
-                    case "none":
-                        type = values[i];
-                        break;
-                    case "wide":
-                    case "narrow":
-                        h = values[i];
-                        break;
-                    case "long":
-                    case "short":
-                        w = values[i];
-                        break;
-                }
-            }
-            var stroke = o.node.getElementsByTagName("stroke")[0];
-            stroke[se + "arrow"] = type;
-            stroke[se + "arrowlength"] = w;
-            stroke[se + "arrowwidth"] = h;
-        },
-
-        applyCustomAttributes = function (o, attrs) {
+        var applyCustomAttributes = function (o, attrs) {
             for (var key in attrs) {
                 eve("raphael.attr." + key + "." + o.id, o, attrs[key], key);
                 o.ca[key] && o.attr(key, attrs[key]);
@@ -321,10 +299,10 @@ export default function (R) {
                 params["font-style"] && (textpathStyle.fontStyle = params["font-style"]);
             }
             if ("arrow-start" in params) {
-                addArrow(res, params["arrow-start"]);
+                R.addArrow && R.addArrow(res, params["arrow-start"]);
             }
             if ("arrow-end" in params) {
-                addArrow(res, params["arrow-end"], 1);
+                R.addArrow && R.addArrow(res, params["arrow-end"], 1);
             }
             if (params.opacity != null ||
                 params["stroke-width"] != null ||
@@ -948,21 +926,6 @@ export default function (R) {
             return this;
         };
 
-        elproto.blur = function(size) {
-            var s = this.node.runtimeStyle,
-            f = s.filter;
-            f = f.replace(blurregexp, E);
-            if (+size !== 0) {
-                this.attrs.blur = size;
-                s.filter = f + S + ms + ".Blur(pixelradius=" + (+size || 1.5) + ")";
-                s.margin = R.format("-{0}px 0 0 -{0}px", round(+size || 1.5));
-            } else {
-                s.filter = f;
-                s.margin = 0;
-                delete this.attrs.blur;
-            }
-            return this;
-        };
         /*\
         * Element.on
         [ method ]

@@ -355,7 +355,12 @@ var cacher = function (f, scope, postprocessor, key, maxCache, sharedCache, firs
         } else { // hit then conect the prev and next of hit to each other
             if (cur.__prev) {
                 cache[cur.__prev].__next = cur.__next;
-                cur.__next && (cur.__next.__prev = cur.__prev);
+                // Not the last element
+                if (cur.__next) {
+                    cur.__next.__prev = cur.__prev;
+                } else { // is the last element then update the end element
+                    cache.__end = cur.__prev;
+                }
             }
         }
         // this is not the start element then set it as the start element

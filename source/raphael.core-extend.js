@@ -103,7 +103,7 @@ export default function (R) {
             if (pth.rel) {
                 return pathClone(pth.rel);
             }
-            if (!R.is(pathArray, array) || !R.is(pathArray && pathArray[0], array)) { // rough assumption
+            if (!R.is(pathArray, ARRAY) || !R.is(pathArray && pathArray[0], ARRAY)) { // rough assumption
                 pathArray = R.parsePathString(pathArray);
             }
             var res = [],
@@ -112,13 +112,13 @@ export default function (R) {
             mx = 0,
             my = 0,
             start = 0;
-            if (pathArray[0][0] == "M") {
+            if (pathArray[0][0] === strM) {
                 x = pathArray[0][1];
                 y = pathArray[0][2];
                 mx = x;
                 my = y;
                 start++;
-                res.push(["M", x, y]);
+                res.push([strM, x, y]);
             }
             for (var i = start, ii = pathArray.length; i < ii; i++) {
                 var r = res[i] = [],
@@ -138,7 +138,7 @@ export default function (R) {
                         case "v":
                             r[1] = +(pa[1] - y).toFixed(3);
                             break;
-                        case "m":
+                        case 'm':
                             mx = pa[1];
                             my = pa[2];
                         default:
@@ -148,7 +148,7 @@ export default function (R) {
                     }
                 } else {
                     r = res[i] = [];
-                    if (pa[0] == "m") {
+                    if (pa[0] === mStr) {
                         mx = pa[1] + x;
                         my = pa[2] + y;
                     }
@@ -403,8 +403,8 @@ export default function (R) {
     R.isPointInsidePath = function(path, x, y) {
         var bbox = R.pathBBox(path);
         return R.isPointInsideBBox(bbox, x, y) &&
-        ((interPathHelper(path, [["M", x, y], ["H", bbox.x2 + 10]], 1) % 2 == 1) ||
-        (interPathHelper(path, [["M", x, y], ["V", bbox.y2 + 10]], 1) % 2 == 1))
+        ((interPathHelper(path, [[strM, x, y], ["H", bbox.x2 + 10]], 1) % 2 === 1) ||
+        (interPathHelper(path, [[strM, x, y], ["V", bbox.y2 + 10]], 1) % 2 === 1))
     };
 
     /*\
@@ -482,7 +482,7 @@ export default function (R) {
      o }
     \*/
     R.bezierBBox = function(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y) {
-        if (!R.is(p1x, "array")) {
+        if (!R.is(p1x, ARRAY)) {
             p1x = [p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y];
         }
         var bbox = curveDim.apply(null, p1x);
@@ -578,14 +578,14 @@ export default function (R) {
                     dx = 1;
                     refX = isEnd ? 4 : 1;
                     attr = {
-                        fill: 'none',
+                        fill: noneStr,
                         stroke: attrs.stroke
                     };
                 } else {
                     refX = dx = w / 2;
                     attr = {
                         fill: attrs.stroke,
-                        stroke: 'none'
+                        stroke: noneStr
                     };
                 }
                 if (o._.arrows) {
@@ -599,7 +599,7 @@ export default function (R) {
                 } else {
                     o._.arrows = {};
                 }
-                if (type !== 'none') {
+                if (type !== noneStr) {
                     var pathId = 'raphael-marker-' + type,
                         markerId = 'raphael-marker-' + se + type + w + h + '-obj' + o.id;
                     if (!R._g.doc.getElementById(pathId)) {
@@ -1655,7 +1655,7 @@ export default function (R) {
                 cj = abs(dj1.x - dj.x) < .001 ? "y" : "x",
                 is = intersect(di.x, di.y, di1.x, di1.y, dj.x, dj.y, dj1.x, dj1.y);
                 if (is) {
-                    if (xy[is.x.toFixed(4)] == is.y.toFixed(4)) {
+                    if (xy[is.x.toFixed(4)] === is.y.toFixed(4)) {
                         continue;
                     }
                     xy[is.x.toFixed(4)] = is.y.toFixed(4);
@@ -1679,13 +1679,36 @@ export default function (R) {
         return res;
     }
 
+    /*\
+     * Raphael.pathIntersection
+     [ method ]
+     **
+     * Utility method
+     **
+     * Finds intersections of two paths
+     > Parameters
+     - path1 (string) path string
+     - path2 (string) path string
+     = (array) dots of intersection
+     o [
+     o     {
+     o         x: (number) x coordinate of the point
+     o         y: (number) y coordinate of the point
+     o         t1: (number) t value for segment of path1
+     o         t2: (number) t value for segment of path2
+     o         segment1: (number) order number for segment of path1
+     o         segment2: (number) order number for segment of path2
+     o         bez1: (array) eight coordinates representing beziér curve for the segment of path1
+     o         bez2: (array) eight coordinates representing beziér curve for the segment of path2
+     o     }
+     o ]
+    \*/
     R.pathIntersection = function(path1, path2) {
         return interPathHelper(path1, path2);
     };
     R.pathIntersectionNumber = function(path1, path2) {
         return interPathHelper(path1, path2, 1);
     };
-
     function interPathHelper(path1, path2, justCount) {
         path1 = R._path2curve(path1);
         path2 = R._path2curve(path2);
@@ -1693,11 +1716,11 @@ export default function (R) {
         res = justCount ? 0 : [];
         for (var i = 0, ii = path1.length; i < ii; i++) {
             var pi = path1[i];
-            if (pi[0] == "M") {
+            if (pi[0] === strM) {
                 x1 = x1m = pi[1];
                 y1 = y1m = pi[2];
             } else {
-                if (pi[0] == "C") {
+                if (pi[0] === "C") {
                     bez1 = [x1, y1].concat(pi.slice(1));
                     x1 = bez1[6];
                     y1 = bez1[7];
@@ -1708,11 +1731,11 @@ export default function (R) {
                 }
                 for (var j = 0, jj = path2.length; j < jj; j++) {
                     var pj = path2[j];
-                    if (pj[0] == "M") {
+                    if (pj[0] === strM) {
                         x2 = x2m = pj[1];
                         y2 = y2m = pj[2];
                     } else {
-                        if (pj[0] == "C") {
+                        if (pj[0] === "C") {
                             bez2 = [x2, y2].concat(pj.slice(1));
                             x2 = bez2[6];
                             y2 = bez2[7];

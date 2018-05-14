@@ -13416,7 +13416,7 @@ exports["default"] = function (R) {
         R._engine.group = function (vml, id, group) {
             var el = R._g.doc.createElement("div"),
                 className,
-                universalClassName = this._HTMLClassName,
+                universalClassName = vml._HTMLClassName,
                 p = new Element(el, vml, group);
 
             el.style.cssText = cssDot;

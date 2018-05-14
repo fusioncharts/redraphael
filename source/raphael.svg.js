@@ -1910,6 +1910,9 @@ export default function (R) {
             }
             this.removed = true;
         };
+        R.prototype.setHTMLClassName = function () {
+            // blank functiom
+        };
         // var setproto = R.st;
         // for (var method in elproto)
         //     if (elproto[has](method) && !setproto[has](method)) {

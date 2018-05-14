@@ -11649,6 +11649,7 @@ exports["default"] = function (R) {
                 fn,
                 i,
                 l,
+                node,
                 oldEventType;
             if (this.removed) {
                 return this;
@@ -11930,6 +11931,9 @@ exports["default"] = function (R) {
                 this[i] = typeof this[i] == "function" ? R._removedFactory(i) : null;
             }
             this.removed = true;
+        };
+        R.prototype.setHTMLClassName = function () {
+            // blank functiom
         };
         // var setproto = R.st;
         // for (var method in elproto)
@@ -12966,11 +12970,16 @@ exports["default"] = function (R) {
 
         R._engine.group = function (vml, id, group) {
             var el = R._g.doc.createElement("div"),
+                className,
+                universalClassName = this._HTMLClassName,
                 p = new Element(el, vml, group);
 
             el.style.cssText = cssDot;
             p._id = id || E;
-            id && (el.className = 'raphael-group-' + p.id + '-' + id);
+            id && (className = el.className = 'raphael-group-' + p.id + '-' + id);
+            if (universalClassName) {
+                el.className = className ? className + ' ' + universalClassName : universalClassName;
+            }
             (group || vml).canvas.appendChild(el);
 
             p.type = 'group';
@@ -13273,6 +13282,9 @@ exports["default"] = function (R) {
             return true;
         };
 
+        R.prototype.setHTMLClassName = function (className) {
+            this._HTMLClassName = className;
+        };
         // var setproto = R.st;
         // for (var method in elproto)
         //     if (elproto[has](method) && !setproto[has](method)) {

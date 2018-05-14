@@ -1,3 +1,5 @@
+import { getArrayCopy } from "../raphael.lib";
+
 /**!
  * RedRaphael Triangle shape definition
  */
@@ -55,7 +57,7 @@ _window.Raphael && (_window.Raphael.define && function (R) {
         // Constructor of the component goes here. Must be same name as the name of the component.
         trianglepath: function () { // args: [x1, y1, x2, y2, x3, y3, r1, r2, r3]
             var paper = this,
-                args = arguments,
+                args = getArrayCopy(arguments),
                 group = R._lastArgIfGroup(args),
                 face = paper.path(group),
                 argsLen = args.length,

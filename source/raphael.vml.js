@@ -1,3 +1,5 @@
+import { getArrayCopy } from "./raphael.lib";
+
 /**!
 * RedRaphael 1.0.0 - JavaScript Vector Library VML Module
 * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
@@ -25,6 +27,9 @@ export default function (R) {
         eve = R.eve,
         ms = " progid:DXImageTransform.Microsoft",
         arrayShift = Array.prototype.shift,
+        doc = R._g.doc,
+        f = doc.createElement("div"),
+        b,
         S = " ",
         E = "",
         map = {
@@ -137,44 +142,20 @@ export default function (R) {
             }
             s.visibility = "visible";
         };
+        f.innerHTML = '<v:shape adj="1"/>';
+        b = f.firstChild;
+        b.style.behavior = "url(#default#VML)";
+        if (!(b && typeof b.adj == 'object')) {
+            R.type = E;
+            // return (R.type = E);
+        }
+        f = null;
+
         R._url = E;
         R.toString = function() {
             return  "Your browser doesn\u2019t support SVG. Falling down to VML.\nYou are running Rapha\xebl " + this.version;
         };
-        var addArrow = function(o, value, isEnd) {
-            var values = Str(value).toLowerCase().split("-"),
-            se = isEnd ? "end" : "start",
-            i = values.length,
-            type = "classic",
-            w = "medium",
-            h = "medium";
-            while (i--) {
-                switch (values[i]) {
-                    case "block":
-                    case "classic":
-                    case "oval":
-                    case "diamond":
-                    case "open":
-                    case "none":
-                        type = values[i];
-                        break;
-                    case "wide":
-                    case "narrow":
-                        h = values[i];
-                        break;
-                    case "long":
-                    case "short":
-                        w = values[i];
-                        break;
-                }
-            }
-            var stroke = o.node.getElementsByTagName("stroke")[0];
-            stroke[se + "arrow"] = type;
-            stroke[se + "arrowlength"] = w;
-            stroke[se + "arrowwidth"] = h;
-        },
-
-        applyCustomAttributes = function (o, attrs) {
+        var applyCustomAttributes = function (o, attrs) {
             for (var key in attrs) {
                 eve("raphael.attr." + key + "." + o.id, o, attrs[key], key);
                 o.ca[key] && o.attr(key, attrs[key]);
@@ -196,7 +177,13 @@ export default function (R) {
             res = o;
             oriOp = res.oriOp || (res.oriOp = {});
             for (var par in params)
-                if (params[has](par) && params[par] !== '') {
+                // Not setting any black property
+                if (params[par] === '') {
+                    node.removeAttribute(par);
+                    delete a[par];
+                    delete params[par];
+                    continue;
+                } else if (params[has](par)) {
                     a[par] = params[par];
                 }
             if (newpath) {
@@ -313,10 +300,10 @@ export default function (R) {
                 params["font-style"] && (textpathStyle.fontStyle = params["font-style"]);
             }
             if ("arrow-start" in params) {
-                addArrow(res, params["arrow-start"]);
+                R.addArrow && R.addArrow(res, params["arrow-start"]);
             }
             if ("arrow-end" in params) {
-                addArrow(res, params["arrow-end"], 1);
+                R.addArrow && R.addArrow(res, params["arrow-end"], 1);
             }
             if (params.opacity != null ||
                 params["stroke-width"] != null ||
@@ -336,6 +323,7 @@ export default function (R) {
                 fill = fill && fill[0];
                 !fill && (newfill = fill = createNode(fillString));
                 if (o.type == "image" && params.src) {
+                    LoadRefImage(o, params);
                     fill.src = params.src;
                 }
                 params.fill && (fill.on = true);
@@ -377,9 +365,8 @@ export default function (R) {
                         }
                     }
                 }
-
                 if (fillOpacity !== -1 || "fill-opacity" in params || "opacity" in params) {
-                    var opacity = ((+a["fill-opacity"] + 1 || 2) - 1) * ((+a.opacity + 1 || 2) - 1) * ((+fillOpacity + 1 || 2) - 1);
+                    var opacity = ((+a["fill-opacity"] + 1 || 2) - 1) * ((+a.opacity + 1 || 2) - 1);
                     opacity = mmin(mmax(opacity, 0), 1);
                     oriOp.opacity = opacity;
                     // if gradient color opacity is set then opacity (applied through the params)
@@ -515,7 +502,7 @@ export default function (R) {
             var i,
                 ii,
                 followerElem,
-                args = arguments,
+                args = getArrayCopy(arguments),
                 o = arrayShift.call(args),
                 fnName = arrayShift.call(args);
             for (i = 0, ii = o.followers.length; i < ii; i++) {
@@ -940,22 +927,6 @@ export default function (R) {
             return this;
         };
 
-        elproto.blur = function(size) {
-            var s = this.node.runtimeStyle,
-            f = s.filter;
-            f = f.replace(blurregexp, E);
-            if (+size !== 0) {
-                this.attrs.blur = size;
-                s.filter = f + S + ms + ".Blur(pixelradius=" + (+size || 1.5) + ")";
-                s.margin = R.format("-{0}px 0 0 -{0}px", round(+size || 1.5));
-            } else {
-                s.filter = f;
-                s.margin = 0;
-                delete this.attrs.blur;
-            }
-            return this;
-        };
-
         /*\
         * Element.on
         [ method ]
@@ -979,11 +950,17 @@ export default function (R) {
                 this.drag(null, null, handler);
                 return this;
             }
-            if (this.node.attachEvent) {
-                this.node.attachEvent('on'+ eventType, handler);
+            if (this._ && this._.RefImg) {
+                node = this._.RefImg;
+
+            } else {
+                node = this.node;
+            }
+            if (node.attachEvent) {
+                node.attachEvent('on'+ eventType, handler);
             }
             else {
-                this.node['on'+ eventType] = function() {
+                node['on'+ eventType] = function() {
                     var evt = R._g.win.event;
                     evt.target = evt.srcElement;
                     handler(evt);
@@ -1150,6 +1127,17 @@ export default function (R) {
             res.W = res.H = a.r * 2;
             return res;
         };
+        function LoadRefImage (element, attrs) {
+            var src = attrs.src,
+                parent = element._.group,
+                node = element.node,
+                RefImg = element._.RefImg;
+
+            if (attrs.src === undefined) {
+                return;
+            }
+            RefImg.src = src;
+        };
         R._engine.image = function(vml, attrs, group) {
             var path = R._rectPath(attrs.x, attrs.y, attrs.w, attrs.h);
 
@@ -1160,7 +1148,7 @@ export default function (R) {
                 a = res.attrs,
                 node = res.node,
                 fill = node.getElementsByTagName(fillString)[0];
-
+            res._.RefImg = new Image();
             a.src = attrs.src;
             res.X = a.x = attrs.x;
             res.Y = a.y = attrs.y;

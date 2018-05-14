@@ -20,7 +20,7 @@ module.exports = function (config) {
         webpackMiddleware: {
             stats: "errors-only"
         },
-        reporters: ['progress'],
+        reporters: [ 'mocha', 'kjhtml' ],
         port: 9876,
         colors: true,
         logLevel: config.LOG_INFO,

@@ -2757,8 +2757,8 @@ var loaded,
     })(),
 
     dragMove = function(e) {
-        var x = e.clientX,
-            y = e.clientY,
+        var x = e.clientX || (e.changedTouches && e.changedTouches[0].clientX),
+            y = e.clientY || (e.changedTouches && e.changedTouches[0].clientY),
             scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
             scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
             dragi,
@@ -3291,11 +3291,14 @@ var loaded,
                 ii,
                 jj,
                 kk,
+                _dragX,
+                _dragY,
                 dragInfo = this.dragInfo,
                 args = [dragMove, undef, g.doc];
 
-            this._drag.x = e.clientX + scrollX;
-            this._drag.y = e.clientY + scrollY;
+            // In hybrid devices, sometimes the e.clientX and e.clientY is not defined
+            this._drag.x = _dragX = (e.clientX || (e.changedTouches && e.changedTouches[0].clientX)) + scrollX;
+            this._drag.y = _dragY = (e.clientY || (e.changedTouches && e.changedTouches[0].clientY)) + scrollY;
             this._drag.id = e.identifier;
 
             // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
@@ -3307,7 +3310,7 @@ var loaded,
             //Function to copy some properties of the actual event into the dummy event
             makeSelectiveCopy(dummyEve, e);
 
-            data = dummyEve.data = [e.clientX + scrollX, e.clientY + scrollY];
+            data = dummyEve.data = [_dragX, _dragY];
 
             // Attaching handlers for various events
             for (i = 0, ii = dragInfo.onstart.length; i < ii; i ++) {

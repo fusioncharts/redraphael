@@ -952,6 +952,7 @@ export default function (R) {
             }
             if (this._ && this._.RefImg) {
                 node = this._.RefImg;
+
             } else {
                 node = this.node;
             }
@@ -1127,15 +1128,10 @@ export default function (R) {
                 node = element.node,
                 RefImg = element._.RefImg;
 
-            if (!RefImg) {
-                RefImg = element._.RefImg = new Image();
-            }
-
             if (attrs.src === undefined) {
                 return;
             }
             RefImg.src = src;
-            element._.RefImg = RefImg;
         };
         R._engine.image = function(vml, attrs, group) {
             var path = R._rectPath(attrs.x, attrs.y, attrs.w, attrs.h);
@@ -1147,7 +1143,7 @@ export default function (R) {
                 a = res.attrs,
                 node = res.node,
                 fill = node.getElementsByTagName(fillString)[0];
-
+            res._.RefImg = new Image();
             a.src = attrs.src;
             res.X = a.x = attrs.x;
             res.Y = a.y = attrs.y;

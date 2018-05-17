@@ -1012,11 +1012,16 @@ export default function (R) {
 
         R._engine.group = function(vml, id, group) {
             var el = R._g.doc.createElement("div"),
+                className,
+                universalClassName = vml._HTMLClassName,
                 p = new Element(el, vml, group);
 
             el.style.cssText = cssDot;
             p._id = id || E;
-            id && (el.className = 'raphael-group-' + p.id + '-' + id);
+            id && (className = el.className = 'raphael-group-' + p.id + '-' + id);
+            if (universalClassName) {
+                el.className = className ? className + ' ' + universalClassName : universalClassName;
+            }
             (group || vml).canvas.appendChild(el);
 
             p.type = 'group';
@@ -1332,6 +1337,9 @@ export default function (R) {
             return true;
         };
 
+        R.prototype.setHTMLClassName = function (className) {
+            this._HTMLClassName = className;
+        };
         // var setproto = R.st;
         // for (var method in elproto)
         //     if (elproto[has](method) && !setproto[has](method)) {

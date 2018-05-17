@@ -3860,8 +3860,8 @@ var preventDefault = function preventDefault() {
     }
 }(),
     dragMove = function dragMove(e) {
-    var x = e.clientX,
-        y = e.clientY,
+    var x = e.clientX || e.changedTouches && e.changedTouches[0].clientX,
+        y = e.clientY || e.changedTouches && e.changedTouches[0].clientY,
         scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
         scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
         dragi,
@@ -4391,11 +4391,14 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
             ii,
             jj,
             kk,
+            _dragX,
+            _dragY,
             dragInfo = this.dragInfo,
             args = [dragMove, undef, g.doc];
 
-        this._drag.x = e.clientX + scrollX;
-        this._drag.y = e.clientY + scrollY;
+        // In hybrid devices, sometimes the e.clientX and e.clientY is not defined
+        this._drag.x = _dragX = (e.clientX || e.changedTouches && e.changedTouches[0].clientX) + scrollX;
+        this._drag.y = _dragY = (e.clientY || e.changedTouches && e.changedTouches[0].clientY) + scrollY;
         this._drag.id = e.identifier;
 
         // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
@@ -4407,7 +4410,7 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
         //Function to copy some properties of the actual event into the dummy event
         makeSelectiveCopy(dummyEve, e);
 
-        data = dummyEve.data = [e.clientX + scrollX, e.clientY + scrollY];
+        data = dummyEve.data = [_dragX, _dragY];
 
         // Attaching handlers for various events
         for (i = 0, ii = dragInfo.onstart.length; i < ii; i++) {
@@ -12370,6 +12373,9 @@ exports['default'] = function (R) {
             }
             this.removed = true;
         };
+        R.prototype.setHTMLClassName = function () {
+            // blank functiom
+        };
         // var setproto = R.st;
         // for (var method in elproto)
         //     if (elproto[has](method) && !setproto[has](method)) {
@@ -13409,11 +13415,16 @@ exports["default"] = function (R) {
 
         R._engine.group = function (vml, id, group) {
             var el = R._g.doc.createElement("div"),
+                className,
+                universalClassName = vml._HTMLClassName,
                 p = new Element(el, vml, group);
 
             el.style.cssText = cssDot;
             p._id = id || E;
-            id && (el.className = 'raphael-group-' + p.id + '-' + id);
+            id && (className = el.className = 'raphael-group-' + p.id + '-' + id);
+            if (universalClassName) {
+                el.className = className ? className + ' ' + universalClassName : universalClassName;
+            }
             (group || vml).canvas.appendChild(el);
 
             p.type = 'group';
@@ -13717,6 +13728,9 @@ exports["default"] = function (R) {
             return true;
         };
 
+        R.prototype.setHTMLClassName = function (className) {
+            this._HTMLClassName = className;
+        };
         // var setproto = R.st;
         // for (var method in elproto)
         //     if (elproto[has](method) && !setproto[has](method)) {

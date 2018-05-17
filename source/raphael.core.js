@@ -487,9 +487,9 @@ var loaded,
                 jj,
                 pathi;
 
-            path = path2curve(path);
+            path = path2curve(path).slice(0);
             for (i = 0, ii = path.length; i < ii; i++) {
-                pathi = path[i];
+                pathi = path[i] = path[i].slice(0);
                 for (j = 1, jj = pathi.length; j < jj; j += 2) {
                     x = matrix.x(pathi[j], pathi[j + 1]);
                     y = matrix.y(pathi[j], pathi[j + 1]);

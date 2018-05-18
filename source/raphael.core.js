@@ -1740,6 +1740,7 @@ var loaded,
                         default:
                             for (j = 1, jj = pa.length; j < jj; j++) {
                                 r[j] = +pa[j] + ((j % 2) ? x : y);
+                                (j % 2) ? (x = r[j]) : (y = r[j]);
                             }
                     }
                 } else if (pa[0] === "R") {

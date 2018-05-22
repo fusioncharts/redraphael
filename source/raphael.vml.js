@@ -161,7 +161,27 @@ export default function (R) {
                 o.ca[key] && o.attr(key, attrs[key]);
             }
         },
-
+        styles = ['font', 'line-height', 'font-family', 'font-weight', 'font-style', 'font-size'],
+        getComputedFontStyle = function (o) {
+            var style = {},
+                _break,
+                i,
+                len = styles.length,
+                attrs;
+            while (o.paper && o.paper.canvas) {
+                attrs = o.attrs;
+                _break = true;
+                for (i = 0; i < len; i++) {
+                    if (!style[styles[i]]) {
+                        style[styles[i]] = attrs[styles[i]];
+                        _break = false;
+                    }
+                }
+                if (_break) break;
+                o = o.parent;
+            }
+            return style;
+        },
         setFillAndStroke = R._setFillAndStroke = function(o, params) {
             if (!o.paper.canvas) return;
             // o.paper.canvas.style.display = "none";
@@ -430,19 +450,20 @@ export default function (R) {
             }
             if (res.type == "text") {
                 res.paper.canvas.style.display = E;
-                var span = res.paper.span,
+                var span = window.span1 = res.paper.span,
                 m = 100,
-                fontSize = a.font && a.font.match(/\d+(?:\.\d*)?(?=px)/),
-                lineHeight = a['line-height'] && (a['line-height']+E).match(/\d+(?:\.\d*)?(?=px)/);
+                _style = getComputedFontStyle(res),
+                fontSize = _style.font && _style.font.match(/\d+(?:\.\d*)?(?=px)/),
+                lineHeight = _style['line-height'] && (_style['line-height']+E).match(/\d+(?:\.\d*)?(?=px)/);
                 s = span.style;
-                a.font && (s.font = a.font);
-                a["font-family"] && (s.fontFamily = a["font-family"]);
-                a["font-weight"] && (s.fontWeight = a["font-weight"]);
-                a["font-style"] && (s.fontStyle = a["font-style"]);
-                fontSize = toFloat(a["font-size"] || fontSize && fontSize[0]) || 10;
+                _style.font && (s.font = _style.font);
+                _style["font-family"] && (s.fontFamily = _style["font-family"]);
+                _style["font-weight"] && (s.fontWeight = _style["font-weight"]);
+                _style["font-style"] && (s.fontStyle = _style["font-style"]);
+                fontSize = toFloat(_style["font-size"] || fontSize && fontSize[0]) || 10;
                 s.fontSize = fontSize * m + "px";
-                lineHeight = toFloat(a["line-height"] || lineHeight && lineHeight[0]) || 12;
-                a["line-height"] && (s.lineHeight = lineHeight * m + 'px');
+                lineHeight = toFloat(_style["line-height"] || lineHeight && lineHeight[0] || fontSize * 1.2) || 12;
+                s.lineHeight = lineHeight * m + 'px';
                 R.is(params.text, 'array') && (params.text = res.textpath.string = params.text.join('\n').replace(/<br\s*?\/?>/ig, '\n'));
                 res.textpath.string && (span.innerHTML = Str(res.textpath.string).replace(/</g, "&#60;").replace(/&/g, "&#38;").replace(/\n/g, "<br>"));
                 var brect = span.getBoundingClientRect();

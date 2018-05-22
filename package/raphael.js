@@ -11095,7 +11095,7 @@ exports['default'] = function (R) {
                     value = params[att];
                     if (value === E && att in attrs) {
                         delete attrs[att];
-                        node.removeAttribute(att);
+                        node.removeAttribute(att === 'src' ? 'href' : att);
                     } else {
                         attrs[att] = value;
                         switch (att) {

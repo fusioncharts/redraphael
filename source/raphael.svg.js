@@ -68,6 +68,7 @@ export default function (R) {
             S = ' ',
             xlink = 'http://www.w3.org/1999/xlink',
             svgNSStr = 'http://www.w3.org/2000/svg',
+            isIpad = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform),
             typeStringSTR = 'string',
             markers = {
                 block: 'M5,0 0,2.5 5,5z',
@@ -1377,7 +1378,7 @@ export default function (R) {
                     });
                     // also attach the original event, mainly because of the
                     // discrepancy in behaviour for hybrid devices.
-                    elem.on(oldEventType, handler, true);
+                    !isIpad && elem.on(oldEventType, handler, true);
                 }
             }
             if (this._ && this._.RefImg) {

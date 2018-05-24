@@ -355,7 +355,6 @@ export default function (R) {
                 });
 
                 s.fill = E;
-                s.fillOpacity = 1;
                 return 1;
             },
             updatePosition = function (o) {

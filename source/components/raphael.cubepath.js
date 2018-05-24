@@ -1,3 +1,5 @@
+import { getArrayCopy } from "../raphael.lib";
+
 /**!
  * RedRaphael PolyPath shape definition
  */
@@ -27,7 +29,7 @@ _window.Raphael && (_window.Raphael.define && function (R) {
 
         cubepath: function () { // args: [x, y, w, h, zw, zh]
             var paper = this,
-                args = arguments,
+                args = getArrayCopy(arguments),
                 group = R._lastArgIfGroup(args),
                 face;
 

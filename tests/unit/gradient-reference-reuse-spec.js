@@ -1,4 +1,4 @@
-var Raphael = require('../../lib/raphael');
+import Raphael from '../../source/raphael';
 
 describe("Gradient fill feature of Raphel.Paper.Element", function () {
     var paper,

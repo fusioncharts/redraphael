@@ -10721,6 +10721,7 @@ exports['default'] = function (R) {
             S = ' ',
             xlink = 'http://www.w3.org/1999/xlink',
             svgNSStr = 'http://www.w3.org/2000/svg',
+            isIpad = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform),
             typeStringSTR = 'string',
             markers = {
             block: 'M5,0 0,2.5 5,5z',
@@ -12035,9 +12036,10 @@ exports['default'] = function (R) {
                         newFn: fn,
                         newEvt: eventType
                     });
-                    // also attach the original event, mainly because of the
+                    // also attach the original event except Ipad(as ipad fires both touchstart touchend
+                    // and mousedown mouseup casuing same callback called twice), mainly because of the
                     // discrepancy in behaviour for hybrid devices.
-                    elem.on(oldEventType, handler, true);
+                    !isIpad && elem.on(oldEventType, handler, true);
                 }
             }
             if (this._ && this._.RefImg) {

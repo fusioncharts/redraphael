@@ -12437,13 +12437,14 @@ exports["default"] = function (R) {
         var LoadRefImage = function LoadRefImage(element, attrs) {
             var src = attrs.src,
                 parent = element._.group,
-                node = element.node,
-                RefImg = element._.RefImg;
-
+                node = element.node;
+            if (!element._.RefImg) {
+                element._.RefImg = new Image();
+            }
             if (attrs.src === undefined) {
                 return;
             }
-            RefImg.src = src;
+            element._.RefImg.src = src;
         };
 
         var has = "hasOwnProperty",
@@ -13533,6 +13534,8 @@ exports["default"] = function (R) {
         };
         ;
         R._engine.image = function (vml, attrs, group) {
+            attrs.w || (attrs.w = attrs.width);
+            attrs.h || (attrs.h = attrs.height);
             var path = R._rectPath(attrs.x, attrs.y, attrs.w, attrs.h);
 
             attrs.path = path;
@@ -13542,7 +13545,7 @@ exports["default"] = function (R) {
                 a = res.attrs,
                 node = res.node,
                 fill = node.getElementsByTagName(fillString)[0];
-            res._.RefImg = new Image();
+            !res._.RefImg && (res._.RefImg = new Image());
             a.src = attrs.src;
             res.X = a.x = attrs.x;
             res.Y = a.y = attrs.y;

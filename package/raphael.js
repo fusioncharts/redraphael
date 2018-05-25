@@ -12036,7 +12036,8 @@ exports['default'] = function (R) {
                         newFn: fn,
                         newEvt: eventType
                     });
-                    // also attach the original event, mainly because of the
+                    // also attach the original event except Ipad(as ipad fires both touchstart touchend
+                    // and mousedown mouseup casuing same callback called twice), mainly because of the
                     // discrepancy in behaviour for hybrid devices.
                     !isIpad && elem.on(oldEventType, handler, true);
                 }

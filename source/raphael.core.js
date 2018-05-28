@@ -107,6 +107,7 @@ var _win = (typeof window !== "undefined" ? window : typeof global !== "undefine
     // RedRaphael = R;
 
 var loaded,
+    UNDEF,
     undef,
     E = '',
     S = ' ',
@@ -2758,8 +2759,8 @@ var loaded,
     })(),
 
     dragMove = function(e) {
-        var x = e.clientX || (e.changedTouches && e.changedTouches[0].clientX),
-            y = e.clientY || (e.changedTouches && e.changedTouches[0].clientY),
+        var x = e.clientX !== UNDEF ? e.clientX : (e.changedTouches && e.changedTouches[0].clientX),
+            y = e.clientY !== UNDEF ? e.clientY : (e.changedTouches && e.changedTouches[0].clientY),
             scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
             scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
             dragi,
@@ -3298,8 +3299,10 @@ var loaded,
                 args = [dragMove, undef, g.doc];
 
             // In hybrid devices, sometimes the e.clientX and e.clientY is not defined
-            this._drag.x = _dragX = (e.clientX || (e.changedTouches && e.changedTouches[0].clientX)) + scrollX;
-            this._drag.y = _dragY = (e.clientY || (e.changedTouches && e.changedTouches[0].clientY)) + scrollY;
+            this._drag.x = _dragX = (e.clientX !== UNDEF ? e.clientX : (e.changedTouches &&
+                e.changedTouches[0].clientX)) + scrollX;
+            this._drag.y = _dragY = (e.clientY !== UNDEF ? e.clientY : (e.changedTouches &&
+                e.changedTouches[0].clientY)) + scrollY;
             this._drag.id = e.identifier;
 
             // Add the drag events for the browsers that doesn't fire mouse event on touch and drag

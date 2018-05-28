@@ -43,6 +43,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
 /******/
+/******/ 	// identity function for calling harmony imports with the correct context
+/******/ 	__webpack_require__.i = function(value) { return value; };
+/******/
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
@@ -70,7 +73,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 40);
+/******/ 	return __webpack_require__(__webpack_require__.s = 75);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -99,9 +102,19 @@ module.exports = function (it, key) {
 /* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var dP = __webpack_require__(3);
-var createDesc = __webpack_require__(13);
-module.exports = __webpack_require__(4) ? function (object, key, value) {
+// Thank's IE8 for his funny defineProperty
+module.exports = !__webpack_require__(13)(function () {
+  return Object.defineProperty({}, 'a', { get: function () { return 7; } }).a != 7;
+});
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var dP = __webpack_require__(4);
+var createDesc = __webpack_require__(15);
+module.exports = __webpack_require__(2) ? function (object, key, value) {
   return dP.f(object, key, createDesc(1, value));
 } : function (object, key, value) {
   object[key] = value;
@@ -110,15 +123,15 @@ module.exports = __webpack_require__(4) ? function (object, key, value) {
 
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var anObject = __webpack_require__(10);
-var IE8_DOM_DEFINE = __webpack_require__(32);
-var toPrimitive = __webpack_require__(20);
+var anObject = __webpack_require__(11);
+var IE8_DOM_DEFINE = __webpack_require__(33);
+var toPrimitive = __webpack_require__(26);
 var dP = Object.defineProperty;
 
-exports.f = __webpack_require__(4) ? Object.defineProperty : function defineProperty(O, P, Attributes) {
+exports.f = __webpack_require__(2) ? Object.defineProperty : function defineProperty(O, P, Attributes) {
   anObject(O);
   P = toPrimitive(P, true);
   anObject(Attributes);
@@ -132,21 +145,11 @@ exports.f = __webpack_require__(4) ? Object.defineProperty : function defineProp
 
 
 /***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// Thank's IE8 for his funny defineProperty
-module.exports = !__webpack_require__(12)(function () {
-  return Object.defineProperty({}, 'a', { get: function () { return 7; } }).a != 7;
-});
-
-
-/***/ }),
 /* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // to indexed object, toObject with fallback for non-array-like ES3 strings
-var IObject = __webpack_require__(50);
+var IObject = __webpack_require__(55);
 var defined = __webpack_require__(17);
 module.exports = function (it) {
   return IObject(defined(it));
@@ -158,7 +161,7 @@ module.exports = function (it) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var store = __webpack_require__(24)('wks');
-var uid = __webpack_require__(14);
+var uid = __webpack_require__(16);
 var Symbol = __webpack_require__(0).Symbol;
 var USE_SYMBOL = typeof Symbol == 'function';
 
@@ -174,25 +177,13 @@ $exports.store = store;
 /* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = { "default": __webpack_require__(43), __esModule: true };
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = { "default": __webpack_require__(61), __esModule: true };
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
 "use strict";
 
 
 exports.__esModule = true;
 exports.cacher = exports.showRecursively = exports.loadRefImage = exports.dashedAttr2CSSMap = exports.getArrayCopy = exports.merge = undefined;
 
-var _iterator = __webpack_require__(7);
+var _iterator = __webpack_require__(9);
 
 var _iterator2 = _interopRequireDefault(_iterator);
 
@@ -596,18 +587,19 @@ exports.showRecursively = showRecursively;
 exports.cacher = cacher;
 
 /***/ }),
-/* 10 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isObject = __webpack_require__(11);
-module.exports = function (it) {
-  if (!isObject(it)) throw TypeError(it + ' is not an object!');
-  return it;
-};
-
+module.exports = { "default": __webpack_require__(47), __esModule: true };
 
 /***/ }),
-/* 11 */
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = { "default": __webpack_require__(48), __esModule: true };
+
+/***/ }),
+/* 10 */
 /***/ (function(module, exports) {
 
 module.exports = function (it) {
@@ -616,7 +608,26 @@ module.exports = function (it) {
 
 
 /***/ }),
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var isObject = __webpack_require__(10);
+module.exports = function (it) {
+  if (!isObject(it)) throw TypeError(it + ' is not an object!');
+  return it;
+};
+
+
+/***/ }),
 /* 12 */
+/***/ (function(module, exports) {
+
+var core = module.exports = { version: '2.5.6' };
+if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
+
+
+/***/ }),
+/* 13 */
 /***/ (function(module, exports) {
 
 module.exports = function (exec) {
@@ -629,7 +640,14 @@ module.exports = function (exec) {
 
 
 /***/ }),
-/* 13 */
+/* 14 */
+/***/ (function(module, exports) {
+
+module.exports = true;
+
+
+/***/ }),
+/* 15 */
 /***/ (function(module, exports) {
 
 module.exports = function (bitmap, value) {
@@ -643,7 +661,7 @@ module.exports = function (bitmap, value) {
 
 
 /***/ }),
-/* 14 */
+/* 16 */
 /***/ (function(module, exports) {
 
 var id = 0;
@@ -654,7 +672,149 @@ module.exports = function (key) {
 
 
 /***/ }),
-/* 15 */
+/* 17 */
+/***/ (function(module, exports) {
+
+// 7.2.1 RequireObjectCoercible(argument)
+module.exports = function (it) {
+  if (it == undefined) throw TypeError("Can't call method on  " + it);
+  return it;
+};
+
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports) {
+
+// IE 8- don't enum bug keys
+module.exports = (
+  'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'
+).split(',');
+
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports) {
+
+module.exports = {};
+
+
+/***/ }),
+/* 20 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// 19.1.2.14 / 15.2.3.14 Object.keys(O)
+var $keys = __webpack_require__(38);
+var enumBugKeys = __webpack_require__(18);
+
+module.exports = Object.keys || function keys(O) {
+  return $keys(O, enumBugKeys);
+};
+
+
+/***/ }),
+/* 21 */
+/***/ (function(module, exports) {
+
+exports.f = {}.propertyIsEnumerable;
+
+
+/***/ }),
+/* 22 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var def = __webpack_require__(4).f;
+var has = __webpack_require__(1);
+var TAG = __webpack_require__(6)('toStringTag');
+
+module.exports = function (it, tag, stat) {
+  if (it && !has(it = stat ? it : it.prototype, TAG)) def(it, TAG, { configurable: true, value: tag });
+};
+
+
+/***/ }),
+/* 23 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var shared = __webpack_require__(24)('keys');
+var uid = __webpack_require__(16);
+module.exports = function (key) {
+  return shared[key] || (shared[key] = uid(key));
+};
+
+
+/***/ }),
+/* 24 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var core = __webpack_require__(12);
+var global = __webpack_require__(0);
+var SHARED = '__core-js_shared__';
+var store = global[SHARED] || (global[SHARED] = {});
+
+(module.exports = function (key, value) {
+  return store[key] || (store[key] = value !== undefined ? value : {});
+})('versions', []).push({
+  version: core.version,
+  mode: __webpack_require__(14) ? 'pure' : 'global',
+  copyright: '© 2018 Denis Pushkarev (zloirock.ru)'
+});
+
+
+/***/ }),
+/* 25 */
+/***/ (function(module, exports) {
+
+// 7.1.4 ToInteger
+var ceil = Math.ceil;
+var floor = Math.floor;
+module.exports = function (it) {
+  return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
+};
+
+
+/***/ }),
+/* 26 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// 7.1.1 ToPrimitive(input [, PreferredType])
+var isObject = __webpack_require__(10);
+// instead of the ES6 spec version, we didn't implement @@toPrimitive case
+// and the second argument - flag - preferred type is a string
+module.exports = function (it, S) {
+  if (!isObject(it)) return it;
+  var fn, val;
+  if (S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it))) return val;
+  if (typeof (fn = it.valueOf) == 'function' && !isObject(val = fn.call(it))) return val;
+  if (!S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it))) return val;
+  throw TypeError("Can't convert object to primitive value");
+};
+
+
+/***/ }),
+/* 27 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var global = __webpack_require__(0);
+var core = __webpack_require__(12);
+var LIBRARY = __webpack_require__(14);
+var wksExt = __webpack_require__(28);
+var defineProperty = __webpack_require__(4).f;
+module.exports = function (name) {
+  var $Symbol = core.Symbol || (core.Symbol = LIBRARY ? {} : global.Symbol || {});
+  if (name.charAt(0) != '_' && !(name in $Symbol)) defineProperty($Symbol, name, { value: wksExt.f(name) });
+};
+
+
+/***/ }),
+/* 28 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports.f = __webpack_require__(6);
+
+
+/***/ }),
+/* 29 */
 /***/ (function(module, exports) {
 
 var g;
@@ -681,230 +841,13 @@ module.exports = g;
 
 
 /***/ }),
-/* 16 */
-/***/ (function(module, exports) {
-
-// 7.1.4 ToInteger
-var ceil = Math.ceil;
-var floor = Math.floor;
-module.exports = function (it) {
-  return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
-};
-
-
-/***/ }),
-/* 17 */
-/***/ (function(module, exports) {
-
-// 7.2.1 RequireObjectCoercible(argument)
-module.exports = function (it) {
-  if (it == undefined) throw TypeError("Can't call method on  " + it);
-  return it;
-};
-
-
-/***/ }),
-/* 18 */
-/***/ (function(module, exports) {
-
-module.exports = true;
-
-
-/***/ }),
-/* 19 */
-/***/ (function(module, exports) {
-
-var core = module.exports = { version: '2.5.1' };
-if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
-
-
-/***/ }),
-/* 20 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// 7.1.1 ToPrimitive(input [, PreferredType])
-var isObject = __webpack_require__(11);
-// instead of the ES6 spec version, we didn't implement @@toPrimitive case
-// and the second argument - flag - preferred type is a string
-module.exports = function (it, S) {
-  if (!isObject(it)) return it;
-  var fn, val;
-  if (S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it))) return val;
-  if (typeof (fn = it.valueOf) == 'function' && !isObject(val = fn.call(it))) return val;
-  if (!S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it))) return val;
-  throw TypeError("Can't convert object to primitive value");
-};
-
-
-/***/ }),
-/* 21 */
-/***/ (function(module, exports) {
-
-module.exports = {};
-
-
-/***/ }),
-/* 22 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// 19.1.2.14 / 15.2.3.14 Object.keys(O)
-var $keys = __webpack_require__(36);
-var enumBugKeys = __webpack_require__(25);
-
-module.exports = Object.keys || function keys(O) {
-  return $keys(O, enumBugKeys);
-};
-
-
-/***/ }),
-/* 23 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var shared = __webpack_require__(24)('keys');
-var uid = __webpack_require__(14);
-module.exports = function (key) {
-  return shared[key] || (shared[key] = uid(key));
-};
-
-
-/***/ }),
-/* 24 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var global = __webpack_require__(0);
-var SHARED = '__core-js_shared__';
-var store = global[SHARED] || (global[SHARED] = {});
-module.exports = function (key) {
-  return store[key] || (store[key] = {});
-};
-
-
-/***/ }),
-/* 25 */
-/***/ (function(module, exports) {
-
-// IE 8- don't enum bug keys
-module.exports = (
-  'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'
-).split(',');
-
-
-/***/ }),
-/* 26 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var def = __webpack_require__(3).f;
-var has = __webpack_require__(1);
-var TAG = __webpack_require__(6)('toStringTag');
-
-module.exports = function (it, tag, stat) {
-  if (it && !has(it = stat ? it : it.prototype, TAG)) def(it, TAG, { configurable: true, value: tag });
-};
-
-
-/***/ }),
-/* 27 */
-/***/ (function(module, exports, __webpack_require__) {
-
-exports.f = __webpack_require__(6);
-
-
-/***/ }),
-/* 28 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var global = __webpack_require__(0);
-var core = __webpack_require__(19);
-var LIBRARY = __webpack_require__(18);
-var wksExt = __webpack_require__(27);
-var defineProperty = __webpack_require__(3).f;
-module.exports = function (name) {
-  var $Symbol = core.Symbol || (core.Symbol = LIBRARY ? {} : global.Symbol || {});
-  if (name.charAt(0) != '_' && !(name in $Symbol)) defineProperty($Symbol, name, { value: wksExt.f(name) });
-};
-
-
-/***/ }),
-/* 29 */
-/***/ (function(module, exports) {
-
-exports.f = {}.propertyIsEnumerable;
-
-
-/***/ }),
 /* 30 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-"use strict";
+var toString = {}.toString;
 
-var LIBRARY = __webpack_require__(18);
-var $export = __webpack_require__(31);
-var redefine = __webpack_require__(34);
-var hide = __webpack_require__(2);
-var has = __webpack_require__(1);
-var Iterators = __webpack_require__(21);
-var $iterCreate = __webpack_require__(48);
-var setToStringTag = __webpack_require__(26);
-var getPrototypeOf = __webpack_require__(55);
-var ITERATOR = __webpack_require__(6)('iterator');
-var BUGGY = !([].keys && 'next' in [].keys()); // Safari has buggy iterators w/o `next`
-var FF_ITERATOR = '@@iterator';
-var KEYS = 'keys';
-var VALUES = 'values';
-
-var returnThis = function () { return this; };
-
-module.exports = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCED) {
-  $iterCreate(Constructor, NAME, next);
-  var getMethod = function (kind) {
-    if (!BUGGY && kind in proto) return proto[kind];
-    switch (kind) {
-      case KEYS: return function keys() { return new Constructor(this, kind); };
-      case VALUES: return function values() { return new Constructor(this, kind); };
-    } return function entries() { return new Constructor(this, kind); };
-  };
-  var TAG = NAME + ' Iterator';
-  var DEF_VALUES = DEFAULT == VALUES;
-  var VALUES_BUG = false;
-  var proto = Base.prototype;
-  var $native = proto[ITERATOR] || proto[FF_ITERATOR] || DEFAULT && proto[DEFAULT];
-  var $default = $native || getMethod(DEFAULT);
-  var $entries = DEFAULT ? !DEF_VALUES ? $default : getMethod('entries') : undefined;
-  var $anyNative = NAME == 'Array' ? proto.entries || $native : $native;
-  var methods, key, IteratorPrototype;
-  // Fix native
-  if ($anyNative) {
-    IteratorPrototype = getPrototypeOf($anyNative.call(new Base()));
-    if (IteratorPrototype !== Object.prototype && IteratorPrototype.next) {
-      // Set @@toStringTag to native iterators
-      setToStringTag(IteratorPrototype, TAG, true);
-      // fix for some old engines
-      if (!LIBRARY && !has(IteratorPrototype, ITERATOR)) hide(IteratorPrototype, ITERATOR, returnThis);
-    }
-  }
-  // fix Array#{values, @@iterator}.name in V8 / FF
-  if (DEF_VALUES && $native && $native.name !== VALUES) {
-    VALUES_BUG = true;
-    $default = function values() { return $native.call(this); };
-  }
-  // Define iterator
-  if ((!LIBRARY || FORCED) && (BUGGY || VALUES_BUG || !proto[ITERATOR])) {
-    hide(proto, ITERATOR, $default);
-  }
-  // Plug for library
-  Iterators[NAME] = $default;
-  Iterators[TAG] = returnThis;
-  if (DEFAULT) {
-    methods = {
-      values: DEF_VALUES ? $default : getMethod(VALUES),
-      keys: IS_SET ? $default : getMethod(KEYS),
-      entries: $entries
-    };
-    if (FORCED) for (key in methods) {
-      if (!(key in proto)) redefine(proto, key, methods[key]);
-    } else $export($export.P + $export.F * (BUGGY || VALUES_BUG), NAME, methods);
-  }
-  return methods;
+module.exports = function (it) {
+  return toString.call(it).slice(8, -1);
 };
 
 
@@ -912,10 +855,24 @@ module.exports = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCE
 /* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
+var isObject = __webpack_require__(10);
+var document = __webpack_require__(0).document;
+// typeof document.createElement is 'object' in old IE
+var is = isObject(document) && isObject(document.createElement);
+module.exports = function (it) {
+  return is ? document.createElement(it) : {};
+};
+
+
+/***/ }),
+/* 32 */
+/***/ (function(module, exports, __webpack_require__) {
+
 var global = __webpack_require__(0);
-var core = __webpack_require__(19);
-var ctx = __webpack_require__(46);
-var hide = __webpack_require__(2);
+var core = __webpack_require__(12);
+var ctx = __webpack_require__(52);
+var hide = __webpack_require__(3);
+var has = __webpack_require__(1);
 var PROTOTYPE = 'prototype';
 
 var $export = function (type, name, source) {
@@ -933,7 +890,7 @@ var $export = function (type, name, source) {
   for (key in source) {
     // contains in native
     own = !IS_FORCED && target && target[key] !== undefined;
-    if (own && key in exports) continue;
+    if (own && has(exports, key)) continue;
     // export native or passed
     out = own ? target[key] : source[key];
     // prevent global pollution for namespaces
@@ -976,32 +933,88 @@ module.exports = $export;
 
 
 /***/ }),
-/* 32 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = !__webpack_require__(4) && !__webpack_require__(12)(function () {
-  return Object.defineProperty(__webpack_require__(33)('div'), 'a', { get: function () { return 7; } }).a != 7;
-});
-
-
-/***/ }),
 /* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isObject = __webpack_require__(11);
-var document = __webpack_require__(0).document;
-// typeof document.createElement is 'object' in old IE
-var is = isObject(document) && isObject(document.createElement);
-module.exports = function (it) {
-  return is ? document.createElement(it) : {};
-};
+module.exports = !__webpack_require__(2) && !__webpack_require__(13)(function () {
+  return Object.defineProperty(__webpack_require__(31)('div'), 'a', { get: function () { return 7; } }).a != 7;
+});
 
 
 /***/ }),
 /* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(2);
+"use strict";
+
+var LIBRARY = __webpack_require__(14);
+var $export = __webpack_require__(32);
+var redefine = __webpack_require__(39);
+var hide = __webpack_require__(3);
+var Iterators = __webpack_require__(19);
+var $iterCreate = __webpack_require__(57);
+var setToStringTag = __webpack_require__(22);
+var getPrototypeOf = __webpack_require__(63);
+var ITERATOR = __webpack_require__(6)('iterator');
+var BUGGY = !([].keys && 'next' in [].keys()); // Safari has buggy iterators w/o `next`
+var FF_ITERATOR = '@@iterator';
+var KEYS = 'keys';
+var VALUES = 'values';
+
+var returnThis = function () { return this; };
+
+module.exports = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCED) {
+  $iterCreate(Constructor, NAME, next);
+  var getMethod = function (kind) {
+    if (!BUGGY && kind in proto) return proto[kind];
+    switch (kind) {
+      case KEYS: return function keys() { return new Constructor(this, kind); };
+      case VALUES: return function values() { return new Constructor(this, kind); };
+    } return function entries() { return new Constructor(this, kind); };
+  };
+  var TAG = NAME + ' Iterator';
+  var DEF_VALUES = DEFAULT == VALUES;
+  var VALUES_BUG = false;
+  var proto = Base.prototype;
+  var $native = proto[ITERATOR] || proto[FF_ITERATOR] || DEFAULT && proto[DEFAULT];
+  var $default = $native || getMethod(DEFAULT);
+  var $entries = DEFAULT ? !DEF_VALUES ? $default : getMethod('entries') : undefined;
+  var $anyNative = NAME == 'Array' ? proto.entries || $native : $native;
+  var methods, key, IteratorPrototype;
+  // Fix native
+  if ($anyNative) {
+    IteratorPrototype = getPrototypeOf($anyNative.call(new Base()));
+    if (IteratorPrototype !== Object.prototype && IteratorPrototype.next) {
+      // Set @@toStringTag to native iterators
+      setToStringTag(IteratorPrototype, TAG, true);
+      // fix for some old engines
+      if (!LIBRARY && typeof IteratorPrototype[ITERATOR] != 'function') hide(IteratorPrototype, ITERATOR, returnThis);
+    }
+  }
+  // fix Array#{values, @@iterator}.name in V8 / FF
+  if (DEF_VALUES && $native && $native.name !== VALUES) {
+    VALUES_BUG = true;
+    $default = function values() { return $native.call(this); };
+  }
+  // Define iterator
+  if ((!LIBRARY || FORCED) && (BUGGY || VALUES_BUG || !proto[ITERATOR])) {
+    hide(proto, ITERATOR, $default);
+  }
+  // Plug for library
+  Iterators[NAME] = $default;
+  Iterators[TAG] = returnThis;
+  if (DEFAULT) {
+    methods = {
+      values: DEF_VALUES ? $default : getMethod(VALUES),
+      keys: IS_SET ? $default : getMethod(KEYS),
+      entries: $entries
+    };
+    if (FORCED) for (key in methods) {
+      if (!(key in proto)) redefine(proto, key, methods[key]);
+    } else $export($export.P + $export.F * (BUGGY || VALUES_BUG), NAME, methods);
+  }
+  return methods;
+};
 
 
 /***/ }),
@@ -1009,9 +1022,9 @@ module.exports = __webpack_require__(2);
 /***/ (function(module, exports, __webpack_require__) {
 
 // 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
-var anObject = __webpack_require__(10);
-var dPs = __webpack_require__(49);
-var enumBugKeys = __webpack_require__(25);
+var anObject = __webpack_require__(11);
+var dPs = __webpack_require__(60);
+var enumBugKeys = __webpack_require__(18);
 var IE_PROTO = __webpack_require__(23)('IE_PROTO');
 var Empty = function () { /* empty */ };
 var PROTOTYPE = 'prototype';
@@ -1019,7 +1032,7 @@ var PROTOTYPE = 'prototype';
 // Create object with fake `null` prototype: use iframe Object with cleared prototype
 var createDict = function () {
   // Thrash, waste and sodomy: IE GC bug
-  var iframe = __webpack_require__(33)('iframe');
+  var iframe = __webpack_require__(31)('iframe');
   var i = enumBugKeys.length;
   var lt = '<';
   var gt = '>';
@@ -1055,6 +1068,26 @@ module.exports = Object.create || function create(O, Properties) {
 /* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
+// 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
+var $keys = __webpack_require__(38);
+var hiddenKeys = __webpack_require__(18).concat('length', 'prototype');
+
+exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
+  return $keys(O, hiddenKeys);
+};
+
+
+/***/ }),
+/* 37 */
+/***/ (function(module, exports) {
+
+exports.f = Object.getOwnPropertySymbols;
+
+
+/***/ }),
+/* 38 */
+/***/ (function(module, exports, __webpack_require__) {
+
 var has = __webpack_require__(1);
 var toIObject = __webpack_require__(5);
 var arrayIndexOf = __webpack_require__(51)(false);
@@ -1075,45 +1108,14 @@ module.exports = function (object, names) {
 
 
 /***/ }),
-/* 37 */
-/***/ (function(module, exports) {
-
-var toString = {}.toString;
-
-module.exports = function (it) {
-  return toString.call(it).slice(8, -1);
-};
-
-
-/***/ }),
-/* 38 */
-/***/ (function(module, exports) {
-
-exports.f = Object.getOwnPropertySymbols;
-
-
-/***/ }),
 /* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
-// 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
-var $keys = __webpack_require__(36);
-var hiddenKeys = __webpack_require__(25).concat('length', 'prototype');
-
-exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
-  return $keys(O, hiddenKeys);
-};
+module.exports = __webpack_require__(3);
 
 
 /***/ }),
 /* 40 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(41);
-
-
-/***/ }),
-/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1121,23 +1123,23 @@ module.exports = __webpack_require__(41);
 
 exports.__esModule = true;
 
-var _raphael = __webpack_require__(42);
+var _raphael = __webpack_require__(44);
 
 var _raphael2 = _interopRequireDefault(_raphael);
 
-var _raphael3 = __webpack_require__(72);
+var _raphael3 = __webpack_require__(43);
 
 var _raphael4 = _interopRequireDefault(_raphael3);
 
-var _raphael5 = __webpack_require__(73);
+var _raphael5 = __webpack_require__(45);
 
 var _raphael6 = _interopRequireDefault(_raphael5);
 
-var _raphael7 = __webpack_require__(74);
+var _raphael7 = __webpack_require__(46);
 
 var _raphael8 = _interopRequireDefault(_raphael7);
 
-var _raphael9 = __webpack_require__(75);
+var _raphael9 = __webpack_require__(42);
 
 var _raphael10 = _interopRequireDefault(_raphael9);
 
@@ -1155,7 +1157,7 @@ exports['default'] = _raphael2['default'];
 module.exports = exports['default'];
 
 /***/ }),
-/* 42 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1163,7 +1165,4847 @@ module.exports = exports['default'];
 
 exports.__esModule = true;
 
-var _iterator = __webpack_require__(7);
+var _raphael = __webpack_require__(7);
+
+// Copyright (c) 2017 Adobe Systems Incorporated. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ┌────────────────────────────────────────────────────────────┐ \\
+// │ Eve 0.5.3 - JavaScript Events Library                      │ \\
+// ├────────────────────────────────────────────────────────────┤ \\
+// │ Author Dmitry Baranovskiy (http://dmitry.baranovskiy.com/) │ \\
+// └────────────────────────────────────────────────────────────┘ \\
+
+exports["default"] = function (glob) {
+    var version = "0.5.3",
+        has = "hasOwnProperty",
+        separator = /[\.\/]/,
+        comaseparator = /\s*,\s*/,
+        wildcard = "*",
+        fun = function fun() {},
+        numsort = function numsort(a, b) {
+        return a - b;
+    },
+        current_event,
+        stop,
+        events = { n: {} },
+        firstDefined = function firstDefined() {
+        for (var i = 0, ii = this.length; i < ii; i++) {
+            if (typeof this[i] != "undefined") {
+                return this[i];
+            }
+        }
+    },
+        lastDefined = function lastDefined() {
+        var i = this.length;
+        while (--i) {
+            if (typeof this[i] != "undefined") {
+                return this[i];
+            }
+        }
+    },
+        objtos = Object.prototype.toString,
+        Str = String,
+        isArray = Array.isArray || function (ar) {
+        return ar instanceof Array || objtos.call(ar) == "[object Array]";
+    },
+
+    /*\
+     * eve
+     [ method ]
+      * Fires event with given `name`, given scope and other parameters.
+      - name (string) name of the *event*, dot (`.`) or slash (`/`) separated
+     - scope (object) context for the event handlers
+     - varargs (...) the rest of arguments will be sent to event handlers
+      = (object) array of returned values from the listeners. Array has two methods `.firstDefined()` and `.lastDefined()` to get first or last not `undefined` value.
+    \*/
+    eve = function eve(name, scope) {
+        var e = events,
+            oldstop = stop,
+            arg = (0, _raphael.getArrayCopy)(arguments),
+            args = Array.prototype.slice.call(arg, 2),
+            listeners = eve.listeners(name),
+            z = 0,
+            f = false,
+            l,
+            indexed = [],
+            queue = {},
+            out = [],
+            ce = current_event,
+            errors = [];
+        out.firstDefined = firstDefined;
+        out.lastDefined = lastDefined;
+        current_event = name;
+        stop = 0;
+        for (var i = 0, ii = listeners.length; i < ii; i++) {
+            if ("zIndex" in listeners[i]) {
+                indexed.push(listeners[i].zIndex);
+                if (listeners[i].zIndex < 0) {
+                    queue[listeners[i].zIndex] = listeners[i];
+                }
+            }
+        }indexed.sort(numsort);
+        while (indexed[z] < 0) {
+            l = queue[indexed[z++]];
+            out.push(l.apply(scope, args));
+            if (stop) {
+                stop = oldstop;
+                return out;
+            }
+        }
+        for (i = 0; i < ii; i++) {
+            l = listeners[i];
+            if ("zIndex" in l) {
+                if (l.zIndex == indexed[z]) {
+                    out.push(l.apply(scope, args));
+                    if (stop) {
+                        break;
+                    }
+                    do {
+                        z++;
+                        l = queue[indexed[z]];
+                        l && out.push(l.apply(scope, args));
+                        if (stop) {
+                            break;
+                        }
+                    } while (l);
+                } else {
+                    queue[l.zIndex] = l;
+                }
+            } else {
+                out.push(l.apply(scope, args));
+                if (stop) {
+                    break;
+                }
+            }
+        }
+        stop = oldstop;
+        current_event = ce;
+        return out;
+    };
+    // Undocumented. Debug only.
+    eve._events = events;
+    /*\
+     * eve.listeners
+     [ method ]
+      * Internal method which gives you array of all event handlers that will be triggered by the given `name`.
+      - name (string) name of the event, dot (`.`) or slash (`/`) separated
+      = (array) array of event handlers
+    \*/
+    eve.listeners = function (name) {
+        var names = isArray(name) ? name : name.split(separator),
+            e = events,
+            item,
+            items,
+            k,
+            i,
+            ii,
+            j,
+            jj,
+            nes,
+            es = [e],
+            out = [];
+        for (i = 0, ii = names.length; i < ii; i++) {
+            nes = [];
+            for (j = 0, jj = es.length; j < jj; j++) {
+                e = es[j].n;
+                items = [e[names[i]], e[wildcard]];
+                k = 2;
+                while (k--) {
+                    item = items[k];
+                    if (item) {
+                        nes.push(item);
+                        out = out.concat(item.f || []);
+                    }
+                }
+            }
+            es = nes;
+        }
+        return out;
+    };
+    /*\
+     * eve.separator
+     [ method ]
+      * If for some reasons you don’t like default separators (`.` or `/`) you can specify yours
+     * here. Be aware that if you pass a string longer than one character it will be treated as
+     * a list of characters.
+      - separator (string) new separator. Empty string resets to default: `.` or `/`.
+    \*/
+    eve.separator = function (sep) {
+        if (sep) {
+            sep = Str(sep).replace(/(?=[\.\^\]\[\-])/g, "\\");
+            sep = "[" + sep + "]";
+            separator = new RegExp(sep);
+        } else {
+            separator = /[\.\/]/;
+        }
+    };
+    /*\
+     * eve.on
+     [ method ]
+     **
+     * Binds given event handler with a given name. You can use wildcards “`*`” for the names:
+     | eve.on("*.under.*", f);
+     | eve("mouse.under.floor"); // triggers f
+     * Use @eve to trigger the listener.
+     **
+     - name (string) name of the event, dot (`.`) or slash (`/`) separated, with optional wildcards
+     - f (function) event handler function
+     **
+     - name (array) if you don’t want to use separators, you can use array of strings
+     - f (function) event handler function
+     **
+     = (function) returned function accepts a single numeric parameter that represents z-index of the handler. It is an optional feature and only used when you need to ensure that some subset of handlers will be invoked in a given order, despite of the order of assignment.
+     > Example:
+     | eve.on("mouse", eatIt)(2);
+     | eve.on("mouse", scream);
+     | eve.on("mouse", catchIt)(1);
+     * This will ensure that `catchIt` function will be called before `eatIt`.
+     *
+     * If you want to put your handler before non-indexed handlers, specify a negative value.
+     * Note: I assume most of the time you don’t need to worry about z-index, but it’s nice to have this feature “just in case”.
+    \*/
+    eve.on = function (name, f) {
+        if (typeof f != "function") {
+            return function () {};
+        }
+        var names = isArray(name) ? isArray(name[0]) ? name : [name] : Str(name).split(comaseparator);
+        for (var i = 0, ii = names.length; i < ii; i++) {
+            (function (name) {
+                var names = isArray(name) ? name : Str(name).split(separator),
+                    e = events,
+                    exist;
+                for (var i = 0, ii = names.length; i < ii; i++) {
+                    e = e.n;
+                    e = e.hasOwnProperty(names[i]) && e[names[i]] || (e[names[i]] = { n: {} });
+                }
+                e.f = e.f || [];
+                for (i = 0, ii = e.f.length; i < ii; i++) {
+                    if (e.f[i] == f) {
+                        exist = true;
+                        break;
+                    }
+                }!exist && e.f.push(f);
+            })(names[i]);
+        }
+        return function (zIndex) {
+            if (+zIndex == +zIndex) {
+                f.zIndex = +zIndex;
+            }
+        };
+    };
+    /*\
+     * eve.f
+     [ method ]
+     **
+     * Returns function that will fire given event with optional arguments.
+     * Arguments that will be passed to the result function will be also
+     * concated to the list of final arguments.
+     | el.onclick = eve.f("click", 1, 2);
+     | eve.on("click", function (a, b, c) {
+     |     console.log(a, b, c); // 1, 2, [event object]
+     | });
+     - event (string) event name
+     - varargs (…) and any other arguments
+     = (function) possible event handler function
+    \*/
+    eve.f = function (event) {
+        var args = (0, _raphael.getArrayCopy)(arguments),
+            attrs = [].slice.call(args, 1);
+        return function () {
+            eve.apply(null, [event, null].concat(attrs).concat([].slice.call(args, 0)));
+        };
+    };
+    /*\
+     * eve.stop
+     [ method ]
+     **
+     * Is used inside an event handler to stop the event, preventing any subsequent listeners from firing.
+    \*/
+    eve.stop = function () {
+        stop = 1;
+    };
+    /*\
+     * eve.nt
+     [ method ]
+     **
+     * Could be used inside event handler to figure out actual name of the event.
+     **
+     - subname (string) #optional subname of the event
+     **
+     = (string) name of the event, if `subname` is not specified
+     * or
+     = (boolean) `true`, if current event’s name contains `subname`
+    \*/
+    eve.nt = function (subname) {
+        var cur = isArray(current_event) ? current_event.join(".") : current_event;
+        if (subname) {
+            return new RegExp("(?:\\.|\\/|^)" + subname + "(?:\\.|\\/|$)").test(cur);
+        }
+        return cur;
+    };
+    /*\
+     * eve.nts
+     [ method ]
+     **
+     * Could be used inside event handler to figure out actual name of the event.
+     **
+     **
+     = (array) names of the event
+    \*/
+    eve.nts = function () {
+        return isArray(current_event) ? current_event : current_event.split(separator);
+    };
+    /*\
+     * eve.off
+     [ method ]
+     **
+     * Removes given function from the list of event listeners assigned to given name.
+     * If no arguments specified all the events will be cleared.
+     **
+     - name (string) name of the event, dot (`.`) or slash (`/`) separated, with optional wildcards
+     - f (function) event handler function
+    \*/
+    /*\
+     * eve.unbind
+     [ method ]
+     **
+     * See @eve.off
+    \*/
+    eve.off = eve.unbind = function (name, f) {
+        if (!name) {
+            eve._events = events = { n: {} };
+            return;
+        }
+        var names = isArray(name) ? isArray(name[0]) ? name : [name] : Str(name).split(comaseparator);
+        if (names.length > 1) {
+            for (var i = 0, ii = names.length; i < ii; i++) {
+                eve.off(names[i], f);
+            }
+            return;
+        }
+        names = isArray(name) ? name : Str(name).split(separator);
+        var e,
+            key,
+            splice,
+            i,
+            ii,
+            j,
+            jj,
+            cur = [events],
+            inodes = [];
+        for (i = 0, ii = names.length; i < ii; i++) {
+            for (j = 0; j < cur.length; j += splice.length - 2) {
+                splice = [j, 1];
+                e = cur[j].n;
+                if (names[i] != wildcard) {
+                    if (e[names[i]]) {
+                        splice.push(e[names[i]]);
+                        inodes.unshift({
+                            n: e,
+                            name: names[i]
+                        });
+                    }
+                } else {
+                    for (key in e) {
+                        if (e[has](key)) {
+                            splice.push(e[key]);
+                            inodes.unshift({
+                                n: e,
+                                name: key
+                            });
+                        }
+                    }
+                }
+                cur.splice.apply(cur, splice);
+            }
+        }
+        for (i = 0, ii = cur.length; i < ii; i++) {
+            e = cur[i];
+            while (e.n) {
+                if (f) {
+                    if (e.f) {
+                        for (j = 0, jj = e.f.length; j < jj; j++) {
+                            if (e.f[j] == f) {
+                                e.f.splice(j, 1);
+                                break;
+                            }
+                        }!e.f.length && delete e.f;
+                    }
+                    for (key in e.n) {
+                        if (e.n[has](key) && e.n[key].f) {
+                            var funcs = e.n[key].f;
+                            for (j = 0, jj = funcs.length; j < jj; j++) {
+                                if (funcs[j] == f) {
+                                    funcs.splice(j, 1);
+                                    break;
+                                }
+                            }!funcs.length && delete e.n[key].f;
+                        }
+                    }
+                } else {
+                    delete e.f;
+                    for (key in e.n) {
+                        if (e.n[has](key) && e.n[key].f) {
+                            delete e.n[key].f;
+                        }
+                    }
+                }
+                e = e.n;
+            }
+        }
+        // prune inner nodes in path
+        prune: for (i = 0, ii = inodes.length; i < ii; i++) {
+            e = inodes[i];
+            for (key in e.n[e.name].f) {
+                // not empty (has listeners)
+                continue prune;
+            }
+            for (key in e.n[e.name].n) {
+                // not empty (has children)
+                continue prune;
+            }
+            // is empty
+            delete e.n[e.name];
+        }
+    };
+    /*\
+     * eve.once
+     [ method ]
+     **
+     * Binds given event handler with a given name to only run once then unbind itself.
+     | eve.once("login", f);
+     | eve("login"); // triggers f
+     | eve("login"); // no listeners
+     * Use @eve to trigger the listener.
+     **
+     - name (string) name of the event, dot (`.`) or slash (`/`) separated, with optional wildcards
+     - f (function) event handler function
+     **
+     = (function) same return function as @eve.on
+    \*/
+    eve.once = function (name, f) {
+        var f2 = function f2() {
+            eve.off(name, f2);
+            return f.apply(this, arguments);
+        };
+        return eve.on(name, f2);
+    };
+    /*\
+     * eve.version
+     [ property (string) ]
+     **
+     * Current version of the library.
+    \*/
+    eve.version = version;
+    eve.toString = function () {
+        return "You are running Eve " + version;
+    };
+    glob.eve = eve;
+    // typeof module != "undefined" && module.exports ? module.exports = eve : typeof define === "function" && define.amd ? define("eve", [], function() { return eve; }) : glob.eve = eve;
+    return eve;
+}(typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : null);
+
+module.exports = exports["default"];
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(29)))
+
+/***/ }),
+/* 42 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+exports.__esModule = true;
+
+var _iterator = __webpack_require__(9);
+
+var _iterator2 = _interopRequireDefault(_iterator);
+
+var _symbol = __webpack_require__(8);
+
+var _symbol2 = _interopRequireDefault(_symbol);
+
+var _typeof = typeof _symbol2['default'] === "function" && typeof _iterator2['default'] === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof _symbol2['default'] === "function" && obj.constructor === _symbol2['default'] && obj !== _symbol2['default'].prototype ? "symbol" : typeof obj; }; /*jslint forin: true, regexp: true, todo: true, white: false, browser: true,
+                                                                                                                                                                                                                                                                                                                                         sloppy: true, white: true, eqeq: false, newcap: true, nomen: true */
+
+/*global FusionCharts */
+
+/**
+ * Raphael Canvas Extension
+ */
+
+exports['default'] = function (R) {
+    if (R.canvas) {
+        var win = R._g.win,
+            doc = R._g.doc,
+            g = R._g,
+            STRING = 'string',
+            PX = 'px',
+            separator = /[, ]+/,
+            Str = win.String,
+            toInt = win.parseInt,
+            toFloat = win.parseFloat,
+            math = win.Math,
+            mmax = math.max,
+            mmin = math.min,
+            pi = math.PI,
+            mathFloor = math.floor,
+            eve = R.eve,
+            paperproto = R.fn,
+            elproto = R.el,
+            setproto = R.st,
+            clone = R.clone,
+            deg2rad = pi / 180,
+            rad2deg = 180 / pi,
+            DEFAULT_FILL = "#fff",
+            DEFAULT_STROKE = "#000",
+            has = "hasOwnProperty",
+            S = " ",
+
+        /** @todo: detect touch */
+        supportsTouch = 'ontouchstart' in win || navigator.msMaxTouchPoints > 0,
+            events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchstart touchmove touchend touchcancel".split(S),
+            noHandle = false,
+            $,
+            FauxNode,
+            Element,
+            draggable = [],
+            drag = [],
+            dragMove = function dragMove(e) {
+            var x = e.clientX,
+                y = e.clientY,
+                scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
+                scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
+                dragi,
+                j = drag.length;
+            while (j--) {
+                dragi = drag[j];
+                if (supportsTouch) {
+                    var i = e.touches.length,
+                        touch;
+                    while (i--) {
+                        touch = e.touches[i];
+                        if (touch.identifier == dragi.el._drag.id) {
+                            x = touch.clientX;
+                            y = touch.clientY;
+                            (e.originalEvent ? e.originalEvent : e).preventDefault();
+                            break;
+                        }
+                    }
+                } else {
+                    e.preventDefault();
+                }
+
+                //var node = dragi.el.node;
+                //o,
+                //next = node.nextSibling,
+                //parent = node.parentNode,
+                //display = node.style.display;
+
+                /** @todo: implement raphael.drag.over */
+
+                //g.win.opera && parent.removeChild(node);
+                //node.style.display = "none";
+                //o = dragi.el.paper.getElementByPoint(x, y);
+                //node.style.display = display;
+                //g.win.opera && (next ? parent.insertBefore(node, next) : parent.appendChild(node));
+                //o && eve("raphael.drag.over." + dragi.el.id, dragi.el, o);
+                x += scrollX;
+                y += scrollY;
+                eve("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, x - dragi.el._drag.x, y - dragi.el._drag.y, x, y, e);
+            }
+        },
+            dragUp = function dragUp(e) {
+            R.unmousemove(dragMove).unmouseup(dragUp);
+            var i = drag.length,
+                dragi;
+            while (i--) {
+                dragi = drag[i];
+                dragi.el._drag = {};
+                dragi.onendHandler && eve("raphael.drag.end." + dragi.el.id, dragi.end_scope || dragi.start_scope || dragi.move_scope || dragi.el, e);
+            }
+            drag = [];
+        };
+
+        $ = R._createNode = function (el, attr) {
+            if (attr) {
+                if ((typeof el === 'undefined' ? 'undefined' : _typeof(el)) === STRING) {
+                    el = $(el);
+                }
+                for (var key in attr) {
+                    if (attr.hasOwnProperty(key)) {
+                        el.setAttribute(key, Str(attr[key]));
+                    }
+                }
+            } else {
+                el = doc.createElement(el);
+            }
+            return el;
+        };
+
+        R._getConnectedNodes = function (node) {
+            return {
+                above: [],
+                below: []
+            };
+        };
+
+        R._getTargetNode = function (coords) {
+            var x = coords[0],
+                y = coords[1];
+        };
+
+        R._containerEventHandler = function (event) {
+            event = event || win.event;
+
+            if (noHandle) {
+                return;
+            }
+
+            /** @todo: do not use offsetX and offsetY */
+            var x = event.offsetX,
+                //mathFloor(event.pageX || (event.clientX + doc.body.scrollLeft + doc.documentElement.scrollLeft) || 0),
+            y = event.offsetY,
+                //mathFloor(event.pageY || (event.clientY + doc.body.scrollTop + doc.documentElement.scrollTop) || 0),
+            type = event.type,
+                node = R._getTargetNode([x, y]);
+
+            //console.log(type + ":: x: " + x + " y: " + y);
+
+            /*
+            if (typeof node.listeners[type] === 'function') {
+                node.listeners[type].call(node, e);
+            }*/
+        };
+
+        FauxNode = function FauxNode(parent) {
+            this.type = "basic";
+
+            this.owner = parent;
+
+            // Element reference needed to get attrs so that there is no need to
+            // maintain a redundant copy.
+            this._rElement = null;
+
+            // False if this element does not need mouse interactivity.
+            this.mouseInteractions = false;
+            this.matrix = null;
+
+            // An outline path that will be the outline of the shape or in case of
+            // text the rect that bounds the text.
+            this.outlinePath = null;
+
+            this.conf = {};
+        };
+
+        FauxNode.prototype = {
+
+            constructor: FauxNode,
+
+            /**
+             * This method does the complete rendering of the element, including
+             * (re)setting the bbox and image map.
+             *
+             * @returns {_L10.FauxNode.prototype}
+             */
+            render: function render() {
+
+                var o = this;
+
+                o.draw();
+                o.setBBox();
+
+                return o;
+            },
+
+            /**
+             * Applies the transforms and clipping to the context and draws the
+             * element.
+             *
+             * @returns {undefined}
+             */
+            draw: function draw() {
+                var o = this,
+                    ctx = o.context,
+                    el = o._rElement,
+                    m = el.matrix,
+                    isClipped = o.isClipped,
+                    attrs = o.validateAttrs(),
+                    cr,
+                    end;
+
+                // After the validation the attributes need to be set to the element
+                // as validateAttrs works on a copy of the attrs object.
+                el.attrs = attrs;
+
+                ctx.save();
+
+                ctx.fillStyle = attrs.fill;
+                ctx.strokeStyle = attrs.stroke;
+                ctx.lineWidth = attrs['stroke-width'];
+
+                // Applying the clip before the context is transformed as is the case
+                // in case of SVG.
+                if (cr = attrs['clip-rect']) {
+                    cr = cr.split(" ");
+                    ctx.rect(cr[0], cr[1], cr[2], cr[3]);
+                    ctx.clip();
+                    isClipped = o.isClipped = true;
+                }
+
+                o.applyTransform(m);
+
+                o.paint();
+
+                ctx.restore();
+            },
+
+            /**
+             * Parse the attributes provided to paint the element shape using the
+             * canvas context.
+             *
+             * Overridden by individual derived FauxNodes
+             */
+            paint: function paint() {},
+
+            /**
+             * The redraw of the FauxNodes is to be handled by the CanvasObjectModel
+             * instance as it involves redrawing all the elements corresponsing to
+             * that canvas in the proper order.
+             */
+            redraw: function redraw() {
+                this.COMInstance.redraw(this);
+            },
+
+            /**
+             * Clears the rectangle corresponding to the bounding box of the node.
+             */
+            clear: function clear() {
+                var o = this,
+                    ctx = o.context,
+                    bbox = o._bbox;
+
+                /** @todo: while clearing the stroke-width also needs to be accounted for. */
+                if (bbox) {
+                    ctx.clearRect(bbox.x, bbox.y, bbox.width, bbox.height);
+                }
+            },
+
+            /**
+             * Creates the area node in the image map so that mouse interactivity
+             * can be emulated using it.
+             */
+            addMouseInteractivity: function addMouseInteractivity() {
+                var o = this,
+                    attrs = o._rElement.attrs,
+                    bbox = o._bbox,
+                    map = o.owner.wrapper._map,
+                    shape = o.type === 'circle' ? 'circle' : 'rect',
+                    coords = shape === 'circle' ? [attrs.cx, attrs.cy, attrs.r].join(",") : [bbox.x, bbox.y, bbox.x2, bbox.y2].join(","),
+                    area,
+                    end;
+
+                area = $('area', { shape: shape, coords: coords });
+                if (map.firstChild) {
+                    map.insertBefore(area, map.firstChild);
+                } else {
+                    map.appendChild(area);
+                }
+
+                /** @todo: should be put this check here */
+                o._mouseArea = area;
+
+                // Needed for paths.
+                o.eventListeners = {};
+            },
+
+            /**
+             * Update the coords of the area node (image map) corresponding to the FauxNode
+             * after it has been modified by changing attributes.
+             */
+            updateMapAreaCoords: function updateMapAreaCoords() {
+                var o = this,
+                    oArea = o._mouseArea,
+                    bbox = o._bbox;
+
+                if (oArea) {
+                    //o.context.strokeRect(bbox.x, bbox.y, bbox.width, bbox.height);
+                    if (o instanceof CircleFauxNode) {
+                        var r = bbox.width / 2;
+                        oArea.setAttribute('coords', [bbox.x + r, bbox.y + r, r].join(","));
+                    } else {
+                        oArea.setAttribute('coords', [bbox.x, bbox.y, bbox.x2, bbox.y2].join(","));
+                    }
+                }
+            },
+
+            /**
+             * Applies the transform given the transformation matrix to the context.
+             *
+             * @param {type} matrix
+             * @param {type} bbox
+             * @param {type} dontsetbbox
+             *
+             * @returns {_L10.FauxNode.prototype.transformBBox.tbox}
+             */
+            applyTransform: function applyTransform(m) {
+                var o = this,
+                    ctx = o.context,
+                    split;
+
+                if (m) {
+                    split = m.split();
+                    ctx.translate(split.dx, split.dy);
+                    !split.noRotation && ctx.rotate(deg2rad * split.rotate);
+                    ctx.scale(split.scalex, split.scaley);
+                }
+            },
+
+            /**
+             *
+             */
+            setBBox: function setBBox() {
+                var o = this,
+                    el = o._rElement,
+                    m = el.matrix,
+                    parent = o.owner,
+                    pm = parent.getTransformMatrix && parent.getTransformMatrix();
+
+                if (pm) {
+                    pm = pm.clone();
+                    pm.add(m);
+                    m = pm;
+                }
+
+                if (o.outlinePath) {
+                    o._bbox = R.pathBBox(R.transformPath(o.outlinePath, m.toTransformString()).toString());
+                } else {
+                    o.setShapeBBox(m);
+                }
+
+                o._mouseArea && o.updateMapAreaCoords();
+            },
+
+            getBBox: function getBBox() {
+                return this._bbox;
+            },
+
+            drawPath: function drawPath(path) {
+                var o = this,
+                    ctx = o.context,
+                    len = path && path.length || 0,
+                    pp = PathParser,
+                    i = 0,
+                    command,
+                    x,
+                    y,
+                    end;
+
+                // The PathParser object has been borrowed from canvg. All 3rd party attributions implied.
+                pp.reset();
+                pp.setTokens(path);
+
+                //var bb = new BoundingBox();
+                if (ctx != null) {
+                    ctx.beginPath();
+                }
+
+                while (!pp.isEnd()) {
+                    pp.nextCommand();
+                    switch (pp.command) {
+                        case 'M':
+                        case 'm':
+                            var p = pp.getAsCurrentPoint();
+                            pp.addMarker(p);
+                            //bb.addPoint(p.x, p.y);
+                            if (ctx != null) {
+                                ctx.moveTo(p.x, p.y);
+                            }
+                            pp.start = pp.current;
+                            while (!pp.isCommandOrEnd()) {
+                                var p = pp.getAsCurrentPoint();
+                                pp.addMarker(p, pp.start);
+                                //bb.addPoint(p.x, p.y);
+                                if (ctx != null) {
+                                    ctx.lineTo(p.x, p.y);
+                                }
+                            }
+                            break;
+                        case 'L':
+                        case 'l':
+                            while (!pp.isCommandOrEnd()) {
+                                var c = pp.current;
+                                var p = pp.getAsCurrentPoint();
+                                pp.addMarker(p, c);
+                                //bb.addPoint(p.x, p.y);
+                                if (ctx != null) {
+                                    ctx.lineTo(p.x, p.y);
+                                }
+                            }
+                            break;
+                        case 'H':
+                        case 'h':
+                            while (!pp.isCommandOrEnd()) {
+                                var newP = new Point((pp.isRelativeCommand() ? pp.current.x : 0) + pp.getScalar(), pp.current.y);
+                                pp.addMarker(newP, pp.current);
+                                pp.current = newP;
+                                //bb.addPoint(pp.current.x, pp.current.y);
+                                if (ctx != null) {
+                                    ctx.lineTo(pp.current.x, pp.current.y);
+                                }
+                            }
+                            break;
+                        case 'V':
+                        case 'v':
+                            while (!pp.isCommandOrEnd()) {
+                                var newP = new Point(pp.current.x, (pp.isRelativeCommand() ? pp.current.y : 0) + pp.getScalar());
+                                pp.addMarker(newP, pp.current);
+                                pp.current = newP;
+                                //bb.addPoint(pp.current.x, pp.current.y);
+                                if (ctx != null) {
+                                    ctx.lineTo(pp.current.x, pp.current.y);
+                                }
+                            }
+                            break;
+                        case 'C':
+                        case 'c':
+                            while (!pp.isCommandOrEnd()) {
+                                var curr = pp.current;
+                                var p1 = pp.getPoint();
+                                var cntrl = pp.getAsControlPoint();
+                                var cp = pp.getAsCurrentPoint();
+                                pp.addMarker(cp, cntrl, p1);
+                                //bb.addBezierCurve(curr.x, curr.y, p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
+                                if (ctx != null) {
+                                    ctx.bezierCurveTo(p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
+                                }
+                            }
+                            break;
+                        case 'S':
+                        case 's':
+                            while (!pp.isCommandOrEnd()) {
+                                var curr = pp.current;
+                                var p1 = pp.getReflectedControlPoint();
+                                var cntrl = pp.getAsControlPoint();
+                                var cp = pp.getAsCurrentPoint();
+                                pp.addMarker(cp, cntrl, p1);
+                                //bb.addBezierCurve(curr.x, curr.y, p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
+                                if (ctx != null) {
+                                    ctx.bezierCurveTo(p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
+                                }
+                            }
+                            break;
+                        case 'Q':
+                        case 'q':
+                            while (!pp.isCommandOrEnd()) {
+                                var curr = pp.current;
+                                var cntrl = pp.getAsControlPoint();
+                                var cp = pp.getAsCurrentPoint();
+                                pp.addMarker(cp, cntrl, cntrl);
+                                //bb.addQuadraticCurve(curr.x, curr.y, cntrl.x, cntrl.y, cp.x, cp.y);
+                                if (ctx != null) ctx.quadraticCurveTo(cntrl.x, cntrl.y, cp.x, cp.y);
+                            }
+                            break;
+                        case 'T':
+                        case 't':
+                            while (!pp.isCommandOrEnd()) {
+                                var curr = pp.current;
+                                var cntrl = pp.getReflectedControlPoint();
+                                pp.control = cntrl;
+                                var cp = pp.getAsCurrentPoint();
+                                pp.addMarker(cp, cntrl, cntrl);
+                                //bb.addQuadraticCurve(curr.x, curr.y, cntrl.x, cntrl.y, cp.x, cp.y);
+                                if (ctx != null) ctx.quadraticCurveTo(cntrl.x, cntrl.y, cp.x, cp.y);
+                            }
+                            break;
+                        case 'A':
+                        case 'a':
+                            while (!pp.isCommandOrEnd()) {
+                                var curr = pp.current;
+                                var rx = pp.getScalar();
+                                var ry = pp.getScalar();
+                                var xAxisRotation = pp.getScalar() * (Math.PI / 180.0);
+                                var largeArcFlag = pp.getScalar();
+                                var sweepFlag = pp.getScalar();
+                                var cp = pp.getAsCurrentPoint();
+
+                                // Conversion from endpoint to center parameterization
+                                // http://www.w3.org/TR/SVG11/implnote.html#ArcImplementationNotes
+                                // x1', y1'
+                                var currp = new Point(Math.cos(xAxisRotation) * (curr.x - cp.x) / 2.0 + Math.sin(xAxisRotation) * (curr.y - cp.y) / 2.0, -Math.sin(xAxisRotation) * (curr.x - cp.x) / 2.0 + Math.cos(xAxisRotation) * (curr.y - cp.y) / 2.0);
+                                // adjust radii
+                                var l = Math.pow(currp.x, 2) / Math.pow(rx, 2) + Math.pow(currp.y, 2) / Math.pow(ry, 2);
+                                if (l > 1) {
+                                    rx *= Math.sqrt(l);
+                                    ry *= Math.sqrt(l);
+                                }
+                                // cx', cy'
+                                var s = (largeArcFlag == sweepFlag ? -1 : 1) * Math.sqrt((Math.pow(rx, 2) * Math.pow(ry, 2) - Math.pow(rx, 2) * Math.pow(currp.y, 2) - Math.pow(ry, 2) * Math.pow(currp.x, 2)) / (Math.pow(rx, 2) * Math.pow(currp.y, 2) + Math.pow(ry, 2) * Math.pow(currp.x, 2)));
+                                if (isNaN(s)) s = 0;
+                                var cpp = new Point(s * rx * currp.y / ry, s * -ry * currp.x / rx);
+                                // cx, cy
+                                var centp = new Point((curr.x + cp.x) / 2.0 + Math.cos(xAxisRotation) * cpp.x - Math.sin(xAxisRotation) * cpp.y, (curr.y + cp.y) / 2.0 + Math.sin(xAxisRotation) * cpp.x + Math.cos(xAxisRotation) * cpp.y);
+                                // vector magnitude
+                                var m = function m(v) {
+                                    return Math.sqrt(Math.pow(v[0], 2) + Math.pow(v[1], 2));
+                                };
+                                // ratio between two vectors
+                                var r = function r(u, v) {
+                                    return (u[0] * v[0] + u[1] * v[1]) / (m(u) * m(v));
+                                };
+                                // angle between two vectors
+                                var a = function a(u, v) {
+                                    return (u[0] * v[1] < u[1] * v[0] ? -1 : 1) * Math.acos(r(u, v));
+                                };
+                                // initial angle
+                                var a1 = a([1, 0], [(currp.x - cpp.x) / rx, (currp.y - cpp.y) / ry]);
+                                // angle delta
+                                var u = [(currp.x - cpp.x) / rx, (currp.y - cpp.y) / ry];
+                                var v = [(-currp.x - cpp.x) / rx, (-currp.y - cpp.y) / ry];
+                                var ad = a(u, v);
+                                if (r(u, v) <= -1) ad = Math.PI;
+                                if (r(u, v) >= 1) ad = 0;
+
+                                // for markers
+                                var dir = 1 - sweepFlag ? 1.0 : -1.0;
+                                var ah = a1 + dir * (ad / 2.0);
+                                var halfWay = new Point(centp.x + rx * Math.cos(ah), centp.y + ry * Math.sin(ah));
+                                pp.addMarkerAngle(halfWay, ah - dir * Math.PI / 2);
+                                pp.addMarkerAngle(cp, ah - dir * Math.PI);
+
+                                //bb.addPoint(cp.x, cp.y); // TODO: this is too naive, make it better
+                                if (ctx != null) {
+                                    var r = rx > ry ? rx : ry;
+                                    var sx = rx > ry ? 1 : rx / ry;
+                                    var sy = rx > ry ? ry / rx : 1;
+
+                                    ctx.translate(centp.x, centp.y);
+                                    ctx.rotate(xAxisRotation);
+                                    ctx.scale(sx, sy);
+                                    ctx.arc(0, 0, r, a1, a1 + ad, 1 - sweepFlag);
+                                    ctx.scale(1 / sx, 1 / sy);
+                                    ctx.rotate(-xAxisRotation);
+                                    ctx.translate(-centp.x, -centp.y);
+                                }
+                            }
+                            break;
+                        case 'Z':
+                        case 'z':
+                            if (ctx != null) ctx.closePath();
+                            pp.current = pp.start;
+                    }
+                }
+
+                o.outlinePath = path;
+
+                return o;
+            },
+
+            /**
+             * Methods to add and remove event listeners emulating the DOM of
+             * standard browsers (and also the non-standard one).
+             */
+            addEventListener: function addEventListener() {
+                var o = this,
+                    args = arguments,
+                    eventName = args && args[0],
+                    handler = args && args[1],
+                    area,
+                    checkPathHandler,
+                    end;
+
+                if (!o._mouseArea) {
+                    o.addMouseInteractivity();
+                }
+
+                area = o._mouseArea;
+
+                if (typeof eventName === 'string' && typeof handler === 'function') {
+                    /*
+                    * If the shape has an associated path then we need to check if
+                    * the mouse is within the co-ordinates of the path.
+                    */
+                    if (o._path) {
+
+                        /*
+                        * If the event being listened to is mouseover, mouseout or
+                        * mousemove then the mouse position has to be constantly
+                        * monitored and the event handler called explicitly when
+                        * appropriate.
+                        */
+                        if (eventName === 'mouseover' || eventName === 'mouseout' || eventName === 'mousemove') {
+
+                            if (!o._mousemoveAdded) {
+                                var startListening = function (node) {
+
+                                    var isInside = false,
+                                        isOutside = true,
+                                        transition = false;
+
+                                    return function (event) {
+                                        /** @todo: replace layerX and layerY with
+                                         * standard ways of determining mouse position.
+                                         */
+                                        var x = event.layerX,
+                                            y = event.layerY;
+
+                                        transition = false;
+                                        /*
+                                        * Check if the current position of the mouse
+                                        * pointer lies within the path or not.
+                                        */
+                                        if (R.isPointInsidePath(node._transformPath, x, y)) {
+                                            /*
+                                            * @todo: fix isPointInsidePath to return the
+                                            * proper result when the mouse pointer is on
+                                            * the same horizontal/vertical lines as one
+                                            * of the vertices of the path.
+                                            */
+                                            isInside = true;
+                                            if (isOutside) {
+                                                isOutside = false;
+                                                transition = true;
+                                            }
+                                        } else {
+                                            isOutside = true;
+                                            if (isInside) {
+                                                isInside = false;
+                                                transition = true;
+                                            }
+                                        }
+
+                                        // Based on the state of the flags, fire the
+                                        // appropriate event handlers.
+                                        if (isOutside && transition && node.eventListeners['mouseout']) {
+                                            node.eventListeners['mouseout'].apply(this, arguments);
+                                        }
+                                        if (isInside) {
+                                            if (transition && node.eventListeners['mouseover']) {
+                                                node.eventListeners['mouseover'].apply(this, arguments);
+                                            }
+                                            if (node.eventListeners['mousemove']) {
+                                                node.eventListeners['mousemove'].apply(this, arguments);
+                                            }
+                                        }
+                                    };
+                                }(o);
+
+                                area.addEventListener('mousemove', startListening, false);
+                                o._mousemoveAdded = true;
+                            }
+
+                            o.eventListeners[eventName] = handler;
+                        } else {
+                            var checkPathHandler = function (node, handler) {
+                                return function (event) {
+                                    if (R.isPointInsidePath(node._path, event.layerX, event.layerY)) {
+                                        handler.apply(this, arguments);
+                                    }
+                                };
+                            }(o, handler);
+
+                            area.addEventListener(eventName, checkPathHandler, false);
+                        }
+                    } else {
+                        area.addEventListener(eventName, handler, false);
+                    }
+                }
+            },
+
+            removeEventListener: function removeEventListener() {
+                var o = this,
+                    args = arguments,
+                    eventName = args && args[0],
+                    handler = args && args[1],
+                    area,
+                    end;
+
+                if (!o._mouseArea) {
+                    return;
+                }
+                area = o._mouseArea;
+
+                if (typeof eventName === 'string' && typeof handler === 'function') {
+                    area.removeEventListener(eventName, handler);
+                }
+            },
+
+            attachEvent: function attachEvent() {},
+
+            detachEvent: function detachEvent() {},
+
+            validateAttrs: function validateAttrs(attrs) {
+
+                var o = this,
+                    elAttrs = clone(o._rElement.attrs),
+                    attr,
+                    val;
+
+                if (attrs === null) {
+                    if (o._isValid) {
+                        return elAttrs;
+                    } else {
+                        o._isValid = true;
+                    }
+                }
+
+                attrs = attrs || elAttrs;
+
+                for (attr in attrs) {
+                    val = attrs[attr];
+
+                    switch (attr) {
+
+                        default:
+                            continue;
+                    }
+                }
+
+                return attrs;
+            },
+
+            attrs: function attrs() {}
+        };
+
+        var NodeListItem = function NodeListItem(node) {
+            this.node = node;
+            this.next = null;
+            this.prev = null;
+        },
+            NodeList = function NodeList() {
+            this.top = null;
+            this.bottom = null;
+        };
+
+        NodeList.prototype = {
+
+            constructor: NodeList,
+
+            add: function add(node) {
+
+                node = new NodeListItem(node);
+
+                if (!this.bottom) {
+                    this.bottom = node;
+                }
+                if (this.top) {
+                    this.top.next = node;
+                }
+                node.next = null;
+                node.prev = this.top;
+
+                this.top = node;
+            },
+
+            addList: function addList(list) {
+                if (!this.bottom) {
+                    this.bottom = list.bottom;
+                }
+
+                if (this.top) {
+                    this.top.next = list.bottom;
+                    list.bottom.prev = this.top;
+                }
+
+                this.top = list.top;
+            },
+
+            toFront: function toFront(node) {
+                if (this.top === node) {
+                    return false;
+                }
+
+                if (this.bottom === node) {
+                    this.bottom = node.next;
+                }
+
+                //var map = node.node.canvas._map,
+                //    area = node.node._mouseArea;
+
+                node.prev && (node.prev.next = node.next);
+                node.next && (node.next.prev = node.prev);
+
+                this.top.next = node;
+                node.prev = this.top;
+                node.next = null;
+
+                this.top = node;
+
+                /*if (map.firstChild) {
+                    map.insertBefore(area, map.firstChild);
+                }
+                else {
+                    map.appendChild(area);
+                }
+                 node.redraw();*/
+            },
+
+            toBack: function toBack(node) {
+                if (this.bottom === node) {
+                    return false;
+                }
+
+                if (this.top === node) {
+                    this.top = node.prev;
+                }
+
+                //var map = node.canvas._map,
+                //    area = node._mouseArea;
+
+                node.prev && (node.prev.next = node.next);
+                node.next && (node.next.prev = node.prev);
+
+                this.bottom.prev = node;
+                node.prev = null;
+                node.next = this.bottom;
+
+                this.bottom = node;
+
+                /*map.appendChild(area);
+                 node.redraw();*/
+            },
+
+            insertBefore: function insertBefore() {},
+
+            insertAfter: function insertAfter() {},
+
+            each: function each(fn, args) {
+                var item = this.bottom;
+
+                while (item) {
+                    fn.apply(item.node, args);
+                    item = item.next;
+                }
+            },
+
+            iterate: function iterate(fn, args) {
+                var item = this.bottom,
+                    retVal = true;
+
+                while (item) {
+                    retVal = fn.apply(item.node, args);
+
+                    if (retVal === false) {
+                        break;
+                    }
+
+                    item = item.next;
+                }
+            },
+
+            dispose: function dispose() {
+
+                this.each(function () {
+                    this.node.dispose && this.node.dispose();
+                });
+
+                this.top = null;
+                this.bottom = null;
+            }
+        };
+
+        /**
+         *
+            ncowner, a NodeCollection that corresponds to the collection of which
+            the layer neing created  is a part
+             above, a NodeCollection iterator, that indicated the collection the layer has to be rendered. If
+            not provided then this is the first layer of ncowner.
+        */
+        var CanvasLayer = function CanvasLayer(ncowner, canvas) {
+            this.items = new NodeList();
+
+            this.owner = ncowner;
+            //this.above = above;
+            this.element = null;
+
+            if (canvas) {
+                this.element = canvas;
+            } else {
+                this.init();
+            }
+        };
+
+        CanvasLayer.prototype = {
+            constructor: CanvasLayer,
+
+            appendChild: function appendChild() {
+                var o = this,
+                    ownerWrapper = o.owner.wrapper,
+                    ele = this.element;
+
+                if (ownerWrapper._image) {
+                    ownerWrapper.insertBefore(ele, ownerWrapper._image);
+                } else {
+                    ownerWrapper.appendChild(ele);
+                }
+            },
+
+            insertBefore: function insertBefore() {},
+
+            insertAfter: function insertAfter() {},
+
+            init: function init() {
+                this.element = $("canvas");
+                // CHECKPOINT: width and height in %?
+                $(this.element, {
+                    width: this.owner.wrapper.offsetWidth,
+                    height: this.owner.wrapper.offsetHeight
+                });
+
+                this.element.style.cssText = "position:absolute;left:0;top:0;";
+
+                this.appendChild();
+            },
+
+            getCanvas: function getCanvas() {
+                return this.element;
+            },
+
+            getContext: function getContext() {
+                return this.element.getContext('2d');
+            },
+
+            addToLayer: function addToLayer(node) {
+                this.items.add(node);
+            },
+
+            mergeWithLayerOnTop: function mergeWithLayerOnTop(layerObj) {
+                this.items.addList(layerObj.items);
+                layerObj.dispose(true);
+            },
+
+            mergeWithLayerOnBottom: function mergeWithLayerOnBottom(layerObj) {
+                layerObj.items.addList(this.items);
+                this.items = layerObj.items;
+                layerObj.dispose(true);
+            },
+
+            dispose: function dispose(softDispose) {
+
+                if (!softDispose) {
+                    this.items.each(function () {
+                        this.dispose();
+                    });
+                }
+
+                this.items = null;
+                this.owner = null;
+
+                this.element.parentNode.removeChild(this.element);
+                this.element = null;
+            }
+        };
+
+        var NodeCollection = function NodeCollection(parent, wrapper, canvas) {
+
+            this.nodeItems = new NodeList();
+            this.collectionItems = new NodeList();
+            this.layerItems = new NodeList();
+
+            this.owner = this.parent = parent;
+            this.layerOnTop = null;
+
+            this.currentLayer = null;
+            this.baseLayer = null;
+
+            if (wrapper) {
+                this.wrapper = wrapper;
+                this.currentLayer = this.baseLayer = new CanvasLayer(this, canvas);
+            } else {
+                this.init();
+            }
+        };
+
+        NodeCollection.prototype = {
+            constructor: NodeCollection,
+
+            init: function init() {
+
+                var o = this,
+                    parent = o.parent,
+                    imageMap = parent.wrapper._image,
+                    wrapper = $("div");
+
+                // Hacky but need a refernce to the image map to addEventListeners.
+                wrapper.style.cssText = "width:100%;height:100%;position:absolute;left:0;top:0;";
+
+                wrapper._map = parent.wrapper._map;
+
+                if (imageMap) {
+                    parent.wrapper.insertBefore(wrapper, imageMap);
+                } else {
+                    parent.wrapper.appendChild(wrapper);
+                }
+
+                o.wrapper = wrapper;
+                o.currentLayer = o.baseLayer = new CanvasLayer(o);
+            },
+
+            getCurrentContext: function getCurrentContext() {
+                return this.currentLayer.getContext();
+            },
+
+            setLayerOnTop: function setLayerOnTop(layerObj) {
+                this.layerOnTop = layerObj;
+            },
+
+            getCurrentCanvas: function getCurrentCanvas() {
+                return this.currentLayer.getCanvas();
+            },
+
+            addNode: function addNode(node) {
+                this.nodeItems.add(node);
+
+                if (node.type === "group") {
+                    this.addCollection(node);
+                } else {
+                    this.currentLayer.addToLayer(node);
+                }
+            },
+
+            addCollection: function addCollection(collectionNode) {
+
+                collectionNode = collectionNode || new NodeCollection(this);
+
+                this.collectionItems.add(collectionNode);
+                this.currentLayer = new CanvasLayer(this);
+                this.layerItems.add(this.currentLayer);
+                collectionNode.setLayerOnTop(this.currentLayer);
+            },
+
+            dispose: function dispose() {
+                this.nodeItems.dispose();
+                this.collectionItems.dispose();
+                this.layerItems.dispose();
+                this.owner = this.parent = null;
+
+                this.ownerLayer = null;
+                this.currentLayer = null;
+                this.baseLayer = null;
+            }
+        };
+
+        /**
+         * The CanvasObjectModel will be a layer of abstraction above the individual
+         * FauxNodes created to emulate the DOM in case of canvas rendering.
+         * The engine will be the point of contact for Raphael._engine that will be
+         * the direct consumer of the FauxNodes.
+         */
+        var CanvasObjectModel = function CanvasObjectModel(cnvs, wrpr, width, height) {
+
+            var com = this,
+                root = new NodeCollection(null, wrpr, cnvs);
+
+            //root.set
+
+            com.width = width;
+            com.height = height;
+
+            com.createNode = function (type, parent) {
+
+                parent = parent || root;
+
+                var node,
+                    nodeItems = parent.nodeItems,
+                    layer = parent.currentLayer,
+                    canvasEle = layer.getCanvas();
+
+                switch (type) {
+                    case 'rect':
+                        node = new RectFauxNode(parent);
+                        break;
+
+                    case 'circle':
+                        node = new CircleFauxNode(parent);
+                        break;
+
+                    case 'path':
+                        node = new PathFauxNode(parent);
+                        break;
+
+                    case 'text':
+                        node = new TextFauxNode(parent);
+                        break;
+
+                    case 'group':
+                        node = new GroupFauxNode(parent);
+                        parent.addCollection(node);
+                        break;
+
+                    default:
+                        node = new FauxNode(canvasEle);
+                }
+
+                node.COMInstance = this;
+                nodeItems.add(node);
+                layer.addToLayer(node);
+
+                return node;
+            };
+
+            /**
+             * This method is needed to redraw a node. Redraw is to be handled at the
+             * COM level as redrawing one node needs all the (connected) nodes to be
+             * redrawn in the right order.
+             *
+             * @param {type} node The node that needs to be redrawn.
+             *
+             * @returns {undefined}
+             */
+            com.redraw = function (node) {
+
+                // Check if node is a group or a shape.
+                var nodeList, childNode, layer;
+
+                if (node.type === "group") {
+                    nodeList = node.nodeItems;
+                    node.render();
+                } else {
+
+                    layer = node.layer;
+                    nodeList = layer.items;
+                    childNode = nodeList.bottom;
+
+                    // Clear the canvas.
+                    layer.element.width = layer.element.width;
+
+                    while (childNode) {
+                        fNode = childNode.node;
+                        fNode.type !== "group" && fNode.render();
+                        childNode = childNode.next;
+                    }
+                }
+            };
+
+            com.insertBefore = function (node) {};
+
+            com.insertAfter = function (node) {};
+
+            com.removeNode = function (node) {};
+
+            com.refreshNode = function (node) {};
+
+            com.refreshAll = function () {};
+        };
+
+        Point = function Point(x, y) {
+            this.x = x;
+            this.y = y;
+        };
+
+        Point.prototype.angleTo = function (p) {
+            return Math.atan2(p.y - this.y, p.x - this.x);
+        };
+
+        Point.prototype.applyTransform = function (v) {
+            var xp = this.x * v[0] + this.y * v[2] + v[4];
+            var yp = this.x * v[1] + this.y * v[3] + v[5];
+            this.x = xp;
+            this.y = yp;
+        };
+
+        PathParser = new function () {
+
+            this.tokens = null;
+
+            this.setTokens = function (d) {
+                if (typeof d === 'string') {
+                    this.tokens = d.split(' ');
+                } else {
+                    this.tokens = d;
+                }
+            };
+
+            this.reset = function () {
+                this.i = -1;
+                this.command = '';
+                this.previousCommand = '';
+                this.start = new Point(0, 0);
+                this.control = new Point(0, 0);
+                this.current = new Point(0, 0);
+                this.points = [];
+                this.angles = [];
+            };
+
+            this.isEnd = function () {
+                return this.i >= this.tokens.length - 1;
+            };
+
+            this.isCommandOrEnd = function () {
+                if (this.isEnd()) {
+                    return true;
+                }
+
+                return this.tokens[this.i + 1].toString().match(/^[A-Za-z]$/) != null;
+            };
+
+            this.isRelativeCommand = function () {
+                switch (this.command) {
+                    case 'm':
+                    case 'l':
+                    case 'h':
+                    case 'v':
+                    case 'c':
+                    case 's':
+                    case 'q':
+                    case 't':
+                    case 'a':
+                    case 'z':
+                        return true;
+                        break;
+                }
+                return false;
+            };
+
+            this.getToken = function () {
+                this.i++;
+                return this.tokens[this.i];
+            };
+
+            this.getScalar = function () {
+                return parseFloat(this.getToken());
+            };
+
+            this.nextCommand = function () {
+                this.previousCommand = this.command;
+                this.command = this.getToken();
+            };
+
+            this.getPoint = function () {
+                var p = new Point(this.getScalar(), this.getScalar());
+                return this.makeAbsolute(p);
+            };
+
+            this.getAsControlPoint = function () {
+                var p = this.getPoint();
+                this.control = p;
+                return p;
+            };
+
+            this.getAsCurrentPoint = function () {
+                var p = this.getPoint();
+                this.current = p;
+                return p;
+            };
+
+            this.getReflectedControlPoint = function () {
+                if (this.previousCommand.toLowerCase() != 'c' && this.previousCommand.toLowerCase() != 's' && this.previousCommand.toLowerCase() != 'q' && this.previousCommand.toLowerCase() != 't') {
+                    return this.current;
+                }
+
+                // reflect point
+                var p = new Point(2 * this.current.x - this.control.x, 2 * this.current.y - this.control.y);
+                return p;
+            };
+
+            this.makeAbsolute = function (p) {
+                if (this.isRelativeCommand()) {
+                    p.x += this.current.x;
+                    p.y += this.current.y;
+                }
+                return p;
+            };
+
+            this.addMarker = function (p, from, priorTo) {
+                // if the last angle isn't filled in because we didn't have this point yet ...
+                if (priorTo != null && this.angles.length > 0 && this.angles[this.angles.length - 1] == null) {
+                    this.angles[this.angles.length - 1] = this.points[this.points.length - 1].angleTo(priorTo);
+                }
+                this.addMarkerAngle(p, from == null ? null : from.angleTo(p));
+            };
+
+            this.addMarkerAngle = function (p, a) {
+                this.points.push(p);
+                this.angles.push(a);
+            };
+
+            this.getMarkerPoints = function () {
+                return this.points;
+            };
+
+            this.getMarkerAngles = function () {
+                for (var i = 0; i < this.angles.length; i++) {
+                    if (this.angles[i] == null) {
+                        for (var j = i + 1; j < this.angles.length; j++) {
+                            if (this.angles[j] != null) {
+                                this.angles[i] = this.angles[j];
+                                break;
+                            }
+                        }
+                    }
+                }
+                return this.angles;
+            };
+        }();
+
+        /**
+         * The FauxNode is the adapter written to give DOM node like handling to the
+         * shapes that are create using canvas object model.
+         */
+
+        RectFauxNode = function RectFauxNode(parentObj) {
+            this.type = "rect";
+            this._isValid = false;
+
+            this.parent = this.owner = parentObj;
+            this.context = parentObj.getCurrentContext();
+            this.layer = parentObj.currentLayer;
+        };
+
+        RectFauxNode.prototype = R.extend(new FauxNode(), {
+
+            constructor: RectFauxNode,
+
+            paint: function paint() {
+
+                var o = this,
+                    ctx = o.context,
+
+                // CHECKPOINT 3. Rename validateAttrs to getValidAttrs?
+                attrs = o.validateAttrs(),
+                    x = attrs.x,
+                    y = attrs.y,
+                    w = attrs.width,
+                    h = attrs.height,
+                    r = attrs.r,
+
+                /** @todo: provide support for rx, ry */
+                rx = r || attrs.rx,
+                    ry = r || attrs.ry;
+
+                if (attrs.r) {
+                    path = ["M", x + rx, y, "L", x + w - rx, y].concat(["A", rx, ry, 0, 0, 1, x + w, y + ry]).concat(["L", x + w, y + h - ry]).concat(["A", rx, ry, 0, 0, 1, x + w - rx, y + h]).concat(["L", x + rx, y + h]).concat(["A", rx, ry, 0, 0, 1, x, y + h - ry]).concat(["L", x, y + ry]).concat(["A", rx, ry, 0, 0, 1, x + rx, y, "Z"]);
+                } else {
+                    path = ["M", x, y, "H", x + w, "V", y + h, "H", x, "V", y, "Z"];
+                }
+
+                o.drawPath(path);
+
+                if (attrs['stroke-width']) {
+                    var strokeAlpha = attrs['stroke-opacity'] === undefined ? attrs['opacity'] : attrs['stroke-opacity'];
+                    if (strokeAlpha !== undefined) {
+                        ctx.globalAlpha = strokeAlpha;
+                    }
+                    ctx.stroke();
+                }
+                var fillAlpha = attrs['fill-opacity'] === undefined ? attrs['opacity'] : attrs['fill-opacity'];
+                if (fillAlpha !== undefined) {
+                    ctx.globalAlpha = fillAlpha;
+                }
+                ctx.fill();
+
+                return;
+            },
+
+            validateAttrs: function validateAttrs(attrs) {
+                var o = this,
+                    elAttrs = clone(o._rElement.attrs),
+                    attr,
+                    val;
+
+                if (attrs === null) {
+                    if (o._isValid) {
+                        return elAttrs;
+                    } else {
+                        o._isValid = true;
+                    }
+                }
+
+                attrs = attrs || elAttrs;
+
+                for (attr in attrs) {
+                    val = attrs[attr];
+
+                    switch (attr) {
+                        case "r":
+                            var w = elAttrs.width,
+                                h = elAttrs.height,
+                                maxR = mmin(w, h) / 2;
+
+                            if (val > maxR) {
+                                attrs.r = maxR;
+                            }
+
+                            if (val < 0) {
+                                attrs.r = 0;
+                            }
+                            break;
+
+                        case "width":
+                        case "height":
+                            if (val < 0) {
+                                attrs[attr] = 0;
+                            };
+                            break;
+
+                        default:
+                            continue;
+                    }
+                }
+
+                return attrs;
+            },
+
+            setShapeBBox: function setShapeBBox(m) {
+                var o = this,
+                    el = o._rElement,
+                    attrs = el.attrs,
+                    sX = m.get(0),
+                    sY = m.get(3),
+                    tX = m.get(4),
+                    tY = m.get(5),
+                    strokeW = attrs['stroke-width'];
+
+                o._bbox = {
+                    x: attrs.x * sX + tX - strokeW,
+                    y: attrs.y * sY + tY - strokeW,
+                    width: attrs.width * sX + 2 * strokeW,
+                    height: attrs.height * sY + 2 * strokeW
+                };
+
+                o._bbox.x2 = o._bbox.x + o._bbox.width;
+                o._bbox.y2 = o._bbox.y + o._bbox.height;
+
+                o.X = o._bbox.x;
+                o.Y = o._bbox.y;
+                o.W = o._bbox.width;
+                o.H = o._bbox.height;
+            }
+        });
+
+        var CircleFauxNode = function CircleFauxNode(parentObj) {
+            this.type = "circle";
+            this._isValid = false;
+
+            this.parent = this.owner = parentObj;
+            this.context = parentObj.getCurrentContext();
+            this.layer = parentObj.currentLayer;
+        },
+            PathFauxNode = function PathFauxNode(parentObj) {
+            this.type = "path";
+            this._isValid = false;
+
+            this.parent = this.owner = parentObj;
+            this.context = parentObj.getCurrentContext();
+            this.layer = parentObj.currentLayer;
+        },
+            TextFauxNode = function TextFauxNode(parentObj) {
+            this.type = "text";
+            this._isValid = false;
+
+            this.parent = this.owner = parentObj;
+            this.context = parentObj.getCurrentContext();
+            this.layer = parentObj.currentLayer;
+        },
+            GroupFauxNode = function GroupFauxNode(parent, width, height) {
+
+            this.type = "group";
+
+            this.nodeItems = new NodeList();
+            this.collectionItems = new NodeList();
+            this.layerItems = new NodeList();
+
+            this.owner = this.parent = parent;
+            this.layerOnTop = parent.currentLayer;
+
+            this.currentLayer = null;
+            this.baseLayer = null;
+
+            this.init();
+        };
+
+        CircleFauxNode.prototype = R.extend(new FauxNode(), {
+
+            constructor: CircleFauxNode,
+
+            paint: function paint() {
+                var o = this,
+                    ctx = o.context,
+                    attrs = o.validateAttrs(),
+                    x = attrs.cx,
+                    y = attrs.cy,
+                    r = attrs.r,
+
+                /** @todo: provide support for rx, ry */
+                rx = r || attrs.rx,
+                    ry = r || attrs.ry;
+
+                if (attrs.r) {
+
+                    o.drawPath(["M", x + r, y, "A", rx, ry, 0, 1, 0, x - r, y, "A", rx, ry, 0, 1, 0, x + r, y, "Z"]);
+
+                    if (attrs['stroke-width']) {
+                        var strokeAlpha = attrs['stroke-opacity'] === undefined ? attrs['opacity'] : attrs['stroke-opacity'];
+                        if (strokeAlpha !== undefined) {
+                            ctx.globalAlpha = strokeAlpha;
+                        }
+                        ctx.stroke();
+                    }
+                    var fillAlpha = attrs['fill-opacity'] === undefined ? attrs['opacity'] : attrs['fill-opacity'];
+                    if (fillAlpha !== undefined) {
+                        ctx.globalAlpha = fillAlpha;
+                    }
+                    ctx.fill();
+                }
+
+                return;
+            },
+
+            setShapeBBox: function setShapeBBox(m) {
+                var o = this,
+                    el = o._rElement,
+                    attrs = el.attrs,
+                    sX = m.get(0),
+                    sY = m.get(3),
+                    tX = m.get(4),
+                    tY = m.get(5),
+                    strokeW = attrs['stroke-width'];
+
+                o._bbox = {
+                    x: tX + (attrs.cx - attrs.r) * sX - strokeW,
+                    y: tY + (attrs.cy - attrs.r) * sY - strokeW,
+                    width: 2 * (strokeW + attrs.r * sX),
+                    height: 2 * (attrs.r * sY + strokeW)
+                };
+
+                o._bbox.x2 = o._bbox.x + o._bbox.width;
+                o._bbox.y2 = o._bbox.y + o._bbox.height;
+
+                o.X = o._bbox.x;
+                o.Y = o._bbox.y;
+                o.W = o._bbox.width;
+                o.H = o._bbox.height;
+            }
+        });
+
+        PathFauxNode.prototype = R.extend(new FauxNode(), {
+
+            constructor: PathFauxNode,
+
+            paint: function paint() {
+                var o = this,
+                    el = o._rElement,
+                    attrs = el.attrs,
+                    path = el.attr('path'),
+                    m = el.matrix,
+                    ctx = o.context;
+
+                // 1. Get the path from the path attribute
+                // 2. Accept paths in different array formats.
+                // 3. Optimize as this can potentially be a huge pain-point.
+                // 4. Draw path mapping M,L,H,V etc to canvas APIs
+                o.drawPath(path);
+                o._transformPath = R.transformPath(path, m.toTransformString());
+
+                var strokeAlpha = attrs['stroke-opacity'] === undefined ? attrs['opacity'] : attrs['stroke-opacity'];
+                if (strokeAlpha !== undefined) {
+                    ctx.globalAlpha = strokeAlpha;
+                }
+                ctx.stroke();
+                var fillAlpha = attrs['fill-opacity'] === undefined ? attrs['opacity'] : attrs['fill-opacity'];
+                if (fillAlpha !== undefined) {
+                    ctx.globalAlpha = fillAlpha;
+                }
+                ctx.fill();
+
+                return;
+            }
+        });
+
+        TextFauxNode.prototype = R.extend(new FauxNode(), {
+
+            constructor: TextFauxNode,
+
+            paint: function paint() {
+                var o = this,
+                    el = o._rElement,
+                    attrs = el.attr(),
+                    text = attrs['text'],
+                    stroke = attrs['stroke'],
+                    valign = attrs['vertical-align'],
+                    halign = attrs['text-anchor'],
+                    x = attrs['x'],
+                    y = attrs['y'],
+                    m = el.matrix,
+                    ctx = o.context,
+                    path;
+
+                // apply the font styles, if any
+
+                // find the dimensions of the text using the given styles.
+                // All the dimensions should be present in the attrs user provided OR default.
+                var fontSize = attrs['font-size'] || 10,
+                    lineHeight = attrs['line-height'] || toInt(fontSize, 10) * 1.2,
+                    fontArr = ["normal", fontSize, attrs['font']];
+
+                // draw the text.
+                ctx.fillStyle = stroke;
+                ctx.font = fontArr.join(" ");
+
+                if (text) {
+                    var texts = Str(text).split(/\n|<br\s*?\/?>/ig),
+                        totalHeight = texts.length * lineHeight,
+                        totalWidth = -Infinity,
+                        startX = Infinity,
+                        startY,
+                        width,
+                        textX,
+                        textY;
+
+                    if (valign === "top") {
+                        startY = y + lineHeight;
+                    } else if (valign === "middle") {
+                        startY = y - totalHeight / 2 + lineHeight / 2;
+                    } else {
+                        // valign is bottom.
+                        startY = y - totalHeight + lineHeight;
+                    }
+
+                    for (var i = 0, ii = texts.length; i < ii; i += 1) {
+
+                        text = texts[i];
+                        textY = startY + lineHeight * i;
+                        width = ctx.measureText(text).width;
+
+                        if (halign === "start") {
+                            textX = x;
+                        } else if (halign === "middle") {
+                            textX = x - width / 2;
+                        } else {
+                            textX = x - width;
+                        }
+
+                        totalWidth = mmax(totalWidth, width);
+                        startX = mmin(startX, textX);
+
+                        ctx.fillText(text, textX, textY);
+                    }
+
+                    el._textdirty = false;
+                }
+
+                o.outlinePath = ["M", startX, startY - lineHeight / 1.4, "H", startX + totalWidth, "V", startY - lineHeight + totalHeight, "H", startX, "V", startY - lineHeight / 1.4];
+
+                return;
+            }
+        });
+
+        GroupFauxNode.prototype = R.extend(R.extend(new FauxNode(), NodeCollection.prototype), {
+
+            constructor: GroupFauxNode,
+
+            draw: function draw() {
+
+                // Clear the group canvas first.
+                this.layerItems.each(function () {
+                    this.element.width = this.element.width;
+                });
+
+                FauxNode.prototype.draw.apply(this, arguments);
+            },
+
+            /**
+             * This method does the complete rendering of the element, including
+             * (re)setting the bbox and image map.
+             *
+             * @returns {_L10.FauxNode.prototype}
+             */
+            render: function render() {
+
+                var o = this;
+
+                o.draw();
+                o.setBBox();
+
+                return o;
+            },
+
+            paint: function paint() {
+                var o = this,
+                    list = o.nodeList,
+                    el = o._rElement,
+                    canvas = o.canvas,
+                    attrs = el.attrs,
+                    childNode = list.bottom;
+
+                /** @todo: Clean this up */
+                if (attrs.opacity !== undefined) {
+                    this.layerItems.each(function () {
+                        this.getContext().globalAlpha = attrs.opacity;
+                    });
+                }
+
+                while (childNode) {
+                    childNode.render();
+                    childNode = childNode.next;
+                }
+            },
+
+            setBBox: function setBBox() {},
+
+            addMouseInteractivity: function addMouseInteractivity() {},
+
+            applyTransform: function applyTransform(m) {
+                var o = this,
+                    parent = o.parent,
+                    parentMatrix = parent.getTransformMatrix && parent.getTransformMatrix();
+
+                // Parent is a group element with a transformation applied to it.
+                if (parentMatrix) {
+                    o.matrixApplied = parentMatrix.clone();
+                    o.matrixApplied.add(m.a, m.b, m.c, m.d, m.e, m.f);
+                } else {
+                    o.matrixApplied = m;
+                }
+
+                this.layerItems.each(function () {
+                    FauxNode.prototype.applyTransform.apply(this, [o.matrixApplied]);
+                });
+            },
+
+            getTransformMatrix: function getTransformMatrix() {
+                return this.matrixApplied;
+            }
+        });
+
+        Element = function Element(node, paper, group) {
+            var o = this,
+                parent = group || paper;
+
+            o.node = o[0] = node;
+            node.raphael = true;
+            node.raphaelid = o.id = R._oid++;
+            node._rElement = o;
+
+            o.X = 0;
+            o.Y = 0;
+
+            o.attrs = o.attrs || {};
+            o.styles = o.styles || {};
+            o.followers = o.followers || [];
+
+            o.paper = paper;
+            o.com = parent.com;
+
+            o.ca = o.customAttributes = o.customAttributes || new paper._CustomAttributes();
+
+            o.matrix = R.matrix();
+            o._ = {
+                transform: [],
+                sx: 1,
+                sy: 1,
+                dx: 0,
+                dy: 0,
+                deg: 0
+            };
+
+            o.parent = parent;
+            !parent.bottom && (parent.bottom = o);
+
+            o.prev = parent.top || null;
+            parent.top && (parent.top.next = o);
+            parent.top = o;
+            o.next = null;
+        };
+
+        Element.prototype = elproto;
+        elproto.constructor = Element;
+
+        var repaint = function repaint(el, finalAttrs, positionChanged, dimensionChanged) {
+
+            var node = getNode(el),
+                preC = R._getConnectedNodes(node),
+                attrs = el.attrs,
+                elAbove = preC.above,
+                elBelow = preC.below,
+                len,
+                attr,
+                i;
+
+            for (attr in finalAttrs) {
+                attrs[attr] = finalAttrs[attr];
+            }
+
+            node.redraw();
+        },
+            setFillAndStroke = function setFillAndStroke(el, params) {
+
+            var attrs = el.attrs,
+                node = el.node,
+                finalAttrs = {},
+                att,
+                val,
+                needsRepaint = false,
+                positionChanged = false,
+                dimensionChanged = false,
+                i;
+
+            for (att in params) {
+                if (params[has](att)) {
+                    if (!R._availableAttrs[has](att)) {
+                        continue;
+                    }
+                    val = params[att];
+
+                    switch (att) {
+
+                        case 'fill-opacity':
+                        case 'opacity':
+                        case 'stroke-opcaity':
+                        case 'stroke':
+                        case 'fill':
+                            finalAttrs[att] = val;
+                            needsRepaint = true;
+                            break;
+
+                        case 'stroke-width':
+                        case "cx":
+                        case "cy":
+                        case "x":
+                        case "y":
+                            finalAttrs[att] = val;
+                            positionChanged = true;
+                            break;
+
+                        case "width":
+                        case "height":
+                            finalAttrs[att] = val;
+                            dimensionChanged = true;
+                            break;
+
+                        case "clip-rect":
+                            finalAttrs[att] = val;
+                            needsRepaint = true;
+                            break;
+
+                        case "font-size":
+                        case "font":
+                        case "vertical-align":
+                        case "text-anchor":
+                            finalAttrs[att] = val;
+                            needsRepaint = true;
+
+                        default:
+                            continue;
+                    }
+                }
+            }
+
+            tuneText(el, params, finalAttrs);
+
+            finalAttrs = node.validateAttrs(finalAttrs);
+
+            if (needsRepaint || positionChanged || dimensionChanged) {
+                repaint(el, finalAttrs, positionChanged, dimensionChanged);
+            }
+        },
+            leading = 1.2,
+            tuneText = function tuneText(el, params, finalAttrs) {
+            if (el.type != "text" || !(params[has]("text") || params[has]("font") || params[has]("font-size") || params[has]("x") || params[has]("y") || params[has]("line-height") || params[has]("vertical-align"))) {
+                return;
+            }
+
+            var a = el.attr(),
+                fontSize = params['font-size'] || a['font-size'] || 10,
+                lineHeight = toFloat(params['line-height'] || a['line-height']) || toInt(fontSize, 10) * leading,
+                valign = params["vertical-align"] || a["vertical-align"] || "middle";
+
+            if (isNaN(lineHeight)) {
+                lineHeight = fontSize * leading;
+            }
+
+            finalAttrs['font-size'] = toInt(fontSize, 10) + "px";
+            finalAttrs['font'] = params['font'] || a['font'] || 'Verdana';
+            finalAttrs['vertical-align'] = valign;
+            finalAttrs['x'] = params['x'] || a['x'] || 0;
+            finalAttrs['y'] = params['y'] || a['y'] || 0;
+            finalAttrs['line-height'] = toInt(lineHeight, 10);
+            finalAttrs['text-anchor'] = params['text-anchor'] || a['text-anchor'] || 'middle';
+        };
+
+        R._engine.initWin = function (win) {
+            win = win;
+            doc = win.document;
+        };
+
+        R._engine.setSize = function (w, h) {
+            var paper = this,
+                cs = paper.canvas.style;
+
+            cs.width = (paper.width = +w || paper.width) + PX;
+            cs.height = (paper.height = +h || paper.height) + PX;
+            /** @todo call setViewBox from setSize() */
+            return paper;
+        };
+        /** @todo implement setViewBox() */
+        R._engine.create = function () {
+            var con = R._getContainer.apply(0, arguments) || {},
+                container = con.container,
+                x = con.x,
+                y = con.y,
+                width = con.width,
+                height = con.height,
+
+            //handler = R._containerEventHandler,
+            wrapper,
+                cssText,
+                image,
+                mmap,
+                i,
+                paper,
+                canvas;
+
+            if (!container) {
+                throw new Error("Canvas container not found.");
+            }
+
+            paper = new R._Paper();
+            paper.canvas = wrapper = $("div");
+
+            x = x || 0;
+            y = y || 0;
+            paper.width = width = width || 512;
+            paper.height = height = height || 342;
+            paper.left = paper.top = 0;
+
+            if (container == 1) {
+                wrapper.style.cssText = cssText + R.format(";width:100%;height:100%;position:absolute;left:{0}px;top:{1}px;", [x, y]);
+                doc.body.appendChild(wrapper);
+            } else {
+                wrapper.style.cssText = cssText + ";width:100%;height:100%;position:absolute";
+                if (container.firstChild) {
+                    container.insertBefore(wrapper, container.firstChild);
+                } else {
+                    container.appendChild(wrapper);
+                }
+            }
+
+            cssText = "overflow:hidden;-webkit-tap-highlight-color:rgba(0,0,0,0);" + "-webkit-user-select:none;-moz-user-select:-moz-none;" + "-khtml-user-select:none;-ms-user-select:none;user-select:none;" + "-o-user-select:none;cursor:default;" + R.format("width:{0}px;height:{1}px;", [width, height]);
+
+            // Create the canvas element and set it to occupy full space. Retain a
+            // reference to its context.
+            canvas = $("canvas");
+            canvas.style.cssText = "position:absolute;left:0;top:0";
+            canvas.setAttribute('width', paper.width);
+            canvas.setAttribute('height', paper.height);
+
+            paper.com = new CanvasObjectModel(canvas, wrapper, paper.width, paper.height);
+
+            wrapper.appendChild(canvas);
+
+            image = $("img");
+
+            // Easter egg idea! :)
+            image.src = "image1.png";
+
+            image.style.cssText = "opacity: 0;z-index: 100;background: transparent;position: absolute;left: 0;top: 0;width: " + width + "px;height: " + height + "px";
+            wrapper.appendChild(image);
+
+            mmap = $("map");
+
+            mmap.setAttribute("name", "mousemap");
+            mmap.setAttribute("id", "mousemap"); // Needed for FF.
+
+            wrapper.appendChild(mmap);
+
+            image.setAttribute("usemap", "#mousemap");
+            wrapper._image = image;
+            wrapper._map = mmap;
+
+            return paper;
+        };
+
+        var getNode = R._engine.getNode = function (el) {
+            return el.node || el[0].node;
+        };
+
+        R._engine.getLastNode = function (el) {
+            return el.node || el[el.length - 1].node;
+        };
+
+        R._engine.rect = function (paper, x, y, w, h, r, group) {
+
+            var node = paper.com.createNode('rect', group && group.node),
+                el = new Element(node, paper, group),
+                attrs = el.attrs;
+
+            attrs.x = x;
+            attrs.y = y;
+            attrs.width = w;
+            attrs.height = h;
+            attrs.fill = "#fff";
+            attrs.stroke = "#000";
+            attrs['stroke-width'] = 1;
+            attrs.r = r || 0;
+            attrs.rx = r || 0;
+            attrs.ry = r || 0;
+
+            el.type = "rect";
+
+            node.render();
+            return el;
+        };
+
+        R._engine.circle = function (paper, x, y, r, group) {
+            var node = paper.com.createNode('circle', group && group.node),
+                el = new Element(node, paper, group),
+                attrs = el.attrs;
+
+            attrs.cx = x;
+            attrs.cy = y;
+            attrs.r = r;
+            attrs.fill = 'none';
+            attrs.stroke = '#000';
+            attrs['stroke-width'] = 1;
+
+            el.type = "circle";
+
+            node.render();
+            return el;
+        };
+
+        R._engine.ellipse = function (paper, x, y, rx, ry, group) {
+            var node = new FauxNode(),
+                el = new Element(node, paper, group);
+
+            el.type = "ellipse";
+            return el;
+        };
+
+        R._engine.image = function (paper, src, x, y, w, h, group) {
+            var node = new FauxNode(),
+                el = new Element(node, paper, group);
+
+            el.type = "image";
+            return el;
+        };
+
+        R._engine.text = function (paper, x, y, text, group) {
+            var node = paper.com.createNode('text', group && group.node),
+                el = new Element(node, paper, group),
+                attrs = el.attrs;
+
+            attrs.x = x;
+            attrs.y = y;
+            attrs.text = text;
+            attrs.fill = 'none';
+            attrs.stroke = '#000';
+            attrs.font = 'Verdana';
+            attrs['font-size'] = '12px';
+            attrs['vertical-align'] = 'middle';
+            attrs['text-anchor'] = 'middle';
+
+            el.type = "text";
+            node.render();
+            return el;
+        };
+
+        R._engine.path = function (pathString, paper, group) {
+            var node = paper.com.createNode('path', group && group.node),
+                el = new Element(node, paper, group),
+                attrs = el.attrs;
+
+            attrs.path = pathString;
+            attrs.fill = "#fff";
+            attrs.stroke = "#000";
+            attrs['stroke-width'] = 1;
+
+            el.type = "path";
+
+            node.render();
+
+            return el;
+        };
+
+        R._engine.group = function (paper, id, group) {
+
+            var node = paper.com.createNode('group', group && group.node),
+                el = new Element(node, paper, group),
+                wrapper = node.wrapper;
+
+            id && wrapper.setAttribute('class', ['red', id].join('-'));
+
+            el.canvas = wrapper;
+
+            //(group && group.canvas.appendChild(wrapper)) || paper.canvas.appendChild(wrapper);
+
+            el.type = "group";
+            return el;
+        };
+
+        elproto._getBBox = function () {
+            if (this.removed) {
+                return {};
+            }
+
+            return {
+                x: this.X + (this.bbx || 0) - this.W / 2,
+                y: this.Y + (this.bby || 0) - this.H / 2,
+                width: this.W,
+                height: this.H
+            };
+        };
+
+        /***** ELEMENT REORDERING / RESTRUCTING *****/
+
+        elproto.toFront = function () {
+            if (this.removed) {
+                return this;
+            }
+
+            var o = this,
+                thisNode = o.node,
+                parent = o.parent,
+                parentNode = thisNode.owner,
+                followers = o.followers,
+                follower,
+                i,
+                ii;
+
+            if (R._tofront(o, parent)) {
+                if (elproto.type === "group") {
+                    parent.canvas.appendChild(thisNode);
+                } else {
+                    parentNode.nodeList.tofront(thisNode);
+                }
+            }
+
+            for (i = 0, ii = followers.length; i < ii; i++) {
+                (follower = followers[i]).stalk && follower.el[follower.stalk](o);
+            }
+
+            return o;
+        };
+
+        elproto.toBack = function () {
+            if (this.removed) {
+                return this;
+            }
+
+            var o = this,
+                thisNode = o.node,
+                parent = o.parent,
+                parentNode = thisNode.owner,
+                followers = o.followers,
+                follower,
+                i,
+                ii;
+
+            if (R._toback(o, parent)) {
+                if (elproto.type === "group") {
+                    parent.canvas.appendChild(thisNode);
+                } else {
+                    parentNode.nodeList.toback(thisNode);
+                }
+            }
+
+            for (i = 0, ii = followers.length; i < ii; i++) {
+                (follower = followers[i]).stalk && follower.el[follower.stalk](o);
+            }
+
+            return o;
+        };
+
+        elproto.insertAfter = function (element) {
+            if (this.removed) {
+                return this;
+            }
+
+            var o = this,
+                thisNode = o.node,
+                thatNode = element.node,
+                parentNode = thatNode.owner,
+                followers = o.followers,
+                follower,
+                i,
+                ii;
+
+            if (thatNode.next) {
+                parentNode.nodeList.insertBefore(thisNode, thatNode.next);
+            } else {
+                parentNode.appendChild(thisNode);
+            }
+
+            R._insertafter(o, element, o.parent, element.parent);
+
+            for (i = 0, ii = followers.length; i < ii; i++) {
+                (follower = followers[i]).stalk && follower.el[follower.stalk](element);
+            }
+
+            return o;
+        };
+
+        elproto.insertBefore = function (element) {
+            if (this.removed) {
+                return this;
+            }
+
+            var o = this,
+                thisNode = o.node,
+                thatNode = element.node,
+                parentNode = thatNode.owner,
+                followers = o.followers,
+                follower,
+                i,
+                ii;
+
+            if (thatNode) {
+                parentNode.nodeList.insertBefore(thisNode, thatNode);
+            } else {
+                parentNode.appendChild(thisNode);
+            }
+
+            R._insertafter(o, element, o.parent, element.parent);
+
+            for (i = 0, ii = followers.length; i < ii; i++) {
+                (follower = followers[i]).stalk && follower.el[follower.stalk](element);
+            }
+
+            return o;
+        };
+
+        elproto.appendChild = function (element) {
+            return this;
+        };
+
+        elproto.removeChild = function (element) {
+            return this;
+        };
+
+        /***** ELEMENT REORDERING / RESTRUCTING *****/
+
+        elproto.attr = function (name, value) {
+            if (this.removed) {
+                return this;
+            }
+
+            var o = this,
+                attrs = o.attrs,
+                ca = o.ca,
+                names,
+                params,
+                par,
+                res,
+                key,
+                out,
+                subkey,
+                delkeys,
+                follower,
+                ii,
+                i;
+
+            // fetch a copy of all attributes
+            if (name == null) {
+                res = {};
+                for (key in attrs) {
+                    if (attrs.hasOwnProperty(key)) {
+                        res[key] = attrs[key];
+                    }
+                }res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
+                res.transform = o._.transform;
+                /** @todo res.visibility = o.node.style.display === "none" ? "hidden" : "visible"; */
+                return res;
+            }
+
+            // fetch a single value
+            if (value == null && R.is(name, "string")) {
+                if (name == "fill" && attrs.fill == "none" && attrs.gradient) {
+                    return attrs.gradient;
+                }
+                if (name == "transform") {
+                    return o._.transform;
+                }
+                /** @todo if (name == "visibility") {
+                    return this.node.style.display === "none" ? "hidden" : "visible";
+                }*/
+
+                names = name.split(separator), out = {};
+
+                for (i = 0, ii = names.length; i < ii; i++) {
+                    name = names[i];
+                    if (name in attrs) {
+                        out[name] = attrs[name];
+                    } else if (R.is(ca[name], "function")) {
+                        out[name] = ca[name].def;
+                    } else {
+                        out[name] = R._availableAttrs[name];
+                    }
+                }
+                return ii - 1 ? out : out[names[0]];
+            }
+
+            // fetch specific attributes
+            if (value == null && R.is(name, "array")) {
+                out = {};
+                for (i = 0, ii = name.length; i < ii; i++) {
+                    out[name[i]] = o.attr(name[i]);
+                }
+                return out;
+            }
+
+            // prepare setter params
+            if (value != null) {
+                params = {};
+                params[name] = value;
+            } else if (name != null && R.is(name, "object")) {
+                params = name;
+            }
+
+            if (R.stopEvent !== false) {
+                for (key in params) {
+                    eve("raphael.attr." + key + "." + o.id, o, params[key], key);
+                }
+            }
+
+            delkeys = {};
+            for (key in ca) {
+
+                if (ca[key] && params.hasOwnProperty(key) && R.is(ca[key], "function") && !ca['_invoked' + key]) {
+
+                    ca['_invoked' + key] = true; // prevent recursion
+                    par = ca[key].apply(o, [].concat(params[key]));
+                    delete ca['_invoked' + key];
+
+                    for (subkey in par) {
+                        if (par.hasOwnProperty(subkey)) {
+                            params[subkey] = par[subkey];
+                        }
+                    }
+                    attrs[key] = params[key];
+                    if (par === false) {
+                        delkeys[key] = params[key];
+                        delete params[key];
+                    }
+                }
+            }
+
+            setFillAndStroke(this, params);
+
+            for (i = 0, ii = o.followers.length; i < ii; i++) {
+                follower = o.followers[i];
+                follower.cb && !follower.cb.call(follower.el, params, o) || follower.el.attr(params);
+            }
+
+            for (subkey in delkeys) {
+                params[subkey] = delkeys[subkey];
+            }
+            return this;
+        };
+
+        /**************** Drag *********************/
+        elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_scope) {
+
+            function start(e) {
+                (e.originalEvent || e).preventDefault();
+                var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
+                    scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft;
+                this._drag.x = e.clientX + scrollX;
+                this._drag.y = e.clientY + scrollY;
+                this._drag.id = e.identifier;
+                !drag.length && R.mousemove(dragMove).mouseup(dragUp);
+                drag.push({
+                    el: this,
+                    move_scope: move_scope,
+                    start_scope: start_scope,
+                    end_scope: end_scope,
+                    onmoveHandler: onmove,
+                    onstartHandler: onstart,
+                    onendHandler: onend
+                });
+                onstart && eve.on("raphael.drag.start." + this.id, onstart);
+                onmove && eve.on("raphael.drag.move." + this.id, onmove);
+                onend && eve.on("raphael.drag.end." + this.id, onend);
+                onstart && eve("raphael.drag.start." + this.id, start_scope || move_scope || this, e.clientX + scrollX, e.clientY + scrollY, e);
+            }
+            this._drag = {};
+            draggable.push({
+                el: this,
+                start: start
+            });
+            this.mousedown(start);
+            return this;
+        };
+
+        elproto.undrag = function () {
+            var i = draggable.length;
+            while (i--) {
+                if (draggable[i].el == this) {
+                    this.unmousedown(draggable[i].start);
+                    draggable.splice(i, 1);
+                    eve.unbind("raphael.drag.*." + this.id);
+                }
+            }!draggable.length && R.unmousemove(dragMove).unmouseup(dragUp);
+        };
+
+        /***************** Drag *****************/
+        /************ TRANSFORMATIONS *************/
+
+        elproto.rotate = function (deg, cx, cy) {
+
+            var o = this,
+                bbox;
+            if (o.removed) {
+                return o;
+            }
+            deg = Str(deg).split(separator);
+            if (deg.length - 1) {
+                cx = toFloat(deg[1]);
+                cy = toFloat(deg[2]);
+            }
+            deg = toFloat(deg[0]);
+            cy == null && (cx = cy);
+            if (cx == null || cy == null) {
+                bbox = o.getBBox(1);
+                cx = bbox.x + bbox.width / 2;
+                cy = bbox.y + bbox.height / 2;
+            }
+            o.transform(o._.transform.concat([["r", deg, cx, cy]]));
+            return o;
+        };
+
+        elproto.scale = function (sx, sy, cx, cy) {
+            var o = this,
+                bbox;
+            if (o.removed) {
+                return o;
+            }
+            sx = Str(sx).split(separator);
+            if (sx.length - 1) {
+                sy = toFloat(sx[1]);
+                cx = toFloat(sx[2]);
+                cy = toFloat(sx[3]);
+            }
+            sx = toFloat(sx[0]);
+            sy == null && (sy = sx);
+            cy == null && (cx = cy);
+            if (cx == null || cy == null) {
+                bbox = o.getBBox(1);
+            }
+            cx = cx == null ? bbox.x + bbox.width / 2 : cx;
+            cy = cy == null ? bbox.y + bbox.height / 2 : cy;
+            o.transform(o._.transform.concat([["s", sx, sy, cx, cy]]));
+
+            return o;
+        };
+
+        elproto.translate = function (dx, dy) {
+            var o = this;
+            if (o.removed) {
+                return o;
+            }
+            dx = Str(dx).split(separator);
+            if (dx.length - 1) {
+                dy = toFloat(dx[1]);
+            }
+            dx = toFloat(dx[0]) || 0;
+            dy = +dy || 0;
+            o.transform(o._.transform.concat([["t", dx, dy]]));
+
+            return o;
+        };
+
+        elproto.transform = function (tstr) {
+
+            var o = this,
+                _ = o._,
+                sw;
+
+            if (tstr === null) {
+                return _.transform;
+            }
+
+            R._extractTransform(o, tstr);
+
+            /** @todo: what changes to be made here in the context of canvas */
+            /*o.clip && !_.clipispath && $(o.clip, {
+                transform: o.matrix.invert()
+            });
+            o.pattern && updatePosition(o); */
+            if (_.sx != 1 || _.sy != 1) {
+                sw = o.attrs[has]("stroke-width") ? o.attrs["stroke-width"] : 1;
+                o.attr({
+                    "stroke-width": sw
+                });
+            }
+
+            o.node && o.node.redraw();
+
+            return o;
+        };
+
+        /************ TRANSFORMATIONS *************/
+
+        elproto.hide = function () {
+            return this;
+        };
+
+        elproto.show = function () {
+            return this;
+        };
+
+        elproto.on = function (eventType, handler) {
+            var el = this,
+                listeners = el.listeners;
+
+            if (!listeners) {
+                listeners = el.listeners = {};
+            }
+
+            if (!listeners[eventType]) {
+                listeners[eventType] = [];
+            }
+
+            listeners[eventType].push(handler);
+        };
+
+        elproto.remove = function () {
+            return this;
+        };
+
+        paperproto.clear = function () {
+            eve("raphael.clear", this);
+            return this;
+        };
+
+        paperproto.remove = function () {
+            if (this.removed) {
+                return;
+            }
+
+            var paper = this,
+                canvas = paper.canvas,
+                pn = canvas.parentNode,
+                i;
+
+            eve("raphael.remove", paper);
+            pn.removeChild(canvas);
+
+            for (i in paper) {
+                paper[i] = typeof paper[i] == "function" ? R._removedFactory(i) : null;
+            }
+
+            this.removed = true;
+        };
+
+        R.toString = function () {
+            return "Your browser supports canvas.\nYou are running RedRaphael " + R.version;
+        };
+
+        for (var method in elproto) {
+            if (elproto.hasOwnProperty(method) && !setproto.hasOwnProperty(method)) {
+                setproto[method] = function (methodname) {
+                    return function () {
+                        var arg = arguments;
+                        return this.forEach(function (el) {
+                            el[methodname].apply(el, arg);
+                        });
+                    };
+                }(method);
+            }
+        };
+    }
+};
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+module.exports = exports['default'];
+
+/***/ }),
+/* 43 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {
+
+exports.__esModule = true;
+
+exports['default'] = function (R) {
+    var _win = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : null,
+        g = {
+        doc: _win.document,
+        win: _win
+    },
+        elproto = R.el,
+        has = 'hasOwnProperty',
+        apply = 'apply',
+        object = 'object',
+        array = 'array',
+        string = 'string',
+        split = 'split',
+        finite = 'finite',
+        separator = /[, ]+/,
+        oldRaphael = {
+        was: Object.prototype[has].call(g.win, 'Raphael'),
+        is: g.win.Raphael
+    },
+        E = '',
+        mmax = Math.max,
+        mmin = Math.min,
+        paperproto = R.fn,
+        getPath = R._getPath,
+        Str = String,
+
+    // Set
+    Set = function Set(items) {
+        this.items = [];
+        this.length = 0;
+        this.type = 'set';
+        if (items) {
+            for (var i = 0, ii = items.length; i < ii; i++) {
+                if (items[i] && (items[i].constructor == elproto.constructor || items[i].constructor == Set)) {
+                    this[this.items.length] = this.items[this.items.length] = items[i];
+                    this.length++;
+                }
+            }
+        }
+    },
+        setproto = Set.prototype,
+        getOffset = function getOffset(elem) {
+        var box = elem.getBoundingClientRect(),
+            doc = elem.ownerDocument,
+            body = doc.body,
+            docElem = doc.documentElement,
+            clientTop = docElem.clientTop || body.clientTop || 0,
+            clientLeft = docElem.clientLeft || body.clientLeft || 0,
+            top = box.top + (g.win.pageYOffset || docElem.scrollTop || body.scrollTop) - clientTop,
+            left = box.left + (g.win.pageXOffset || docElem.scrollLeft || body.scrollLeft) - clientLeft;
+        return {
+            y: top,
+            x: left
+        };
+    },
+
+
+    /*\
+        * Raphael.transformPath
+        [ method ]
+        **
+        * Utility method
+        **
+        * Returns path transformed by a given transformation
+        > Parameters
+        - path (string) path string
+        - transform (string|array) transformation string
+        = (string) path
+    \*/
+    transformPath = R.transformPath = function (path, transform) {
+        return mapPath(path, toMatrix(path, transform));
+    },
+
+
+    /*\
+        * Raphael.toMatrix
+        [ method ]
+        **
+        * Utility method
+        **
+        * Returns matrix of transformations applied to a given path
+        > Parameters
+        - path (string) path string
+        - transform (string|array) transformation string
+        = (object) @Matrix
+    \*/
+    toMatrix = R.toMatrix = function (path, transform) {
+        var bb = pathDimensions(path),
+            el = {
+            _: {
+                transform: E
+            },
+            getBBox: function getBBox() {
+                return bb;
+            }
+        };
+        extractTransform(el, transform);
+        return el.matrix;
+    },
+        pathToRelative = R._pathToRelative = function (pathArray) {
+        var pth = paths(pathArray);
+        if (pth.rel) {
+            return pathClone(pth.rel);
+        }
+        if (!R.is(pathArray, ARRAY) || !R.is(pathArray && pathArray[0], ARRAY)) {
+            // rough assumption
+            pathArray = R.parsePathString(pathArray);
+        }
+        var res = [],
+            x = 0,
+            y = 0,
+            mx = 0,
+            my = 0,
+            start = 0;
+        if (pathArray[0][0] === strM) {
+            x = pathArray[0][1];
+            y = pathArray[0][2];
+            mx = x;
+            my = y;
+            start++;
+            res.push([strM, x, y]);
+        }
+        for (var i = start, ii = pathArray.length; i < ii; i++) {
+            var r = res[i] = [],
+                pa = pathArray[i];
+            if (pa[0] != lowerCase.call(pa[0])) {
+                r[0] = lowerCase.call(pa[0]);
+                switch (r[0]) {
+                    case "a":
+                        r[1] = pa[1];
+                        r[2] = pa[2];
+                        r[3] = pa[3];
+                        r[4] = pa[4];
+                        r[5] = pa[5];
+                        r[6] = +(pa[6] - x).toFixed(3);
+                        r[7] = +(pa[7] - y).toFixed(3);
+                        break;
+                    case "v":
+                        r[1] = +(pa[1] - y).toFixed(3);
+                        break;
+                    case 'm':
+                        mx = pa[1];
+                        my = pa[2];
+                    default:
+                        for (var j = 1, jj = pa.length; j < jj; j++) {
+                            r[j] = +(pa[j] - (j % 2 ? x : y)).toFixed(3);
+                        }
+                }
+            } else {
+                r = res[i] = [];
+                if (pa[0] === mStr) {
+                    mx = pa[1] + x;
+                    my = pa[2] + y;
+                }
+                for (var k = 0, kk = pa.length; k < kk; k++) {
+                    res[i][k] = pa[k];
+                }
+            }
+            var len = res[i].length;
+            switch (res[i][0]) {
+                case "z":
+                    x = mx;
+                    y = my;
+                    break;
+                case "h":
+                    x += +res[i][len - 1];
+                    break;
+                case "v":
+                    y += +res[i][len - 1];
+                    break;
+                default:
+                    x += +res[i][len - 2];
+                    y += +res[i][len - 1];
+            }
+        }
+        res.toString = R._path2string;
+        pth.rel = pathClone(res);
+        return res;
+    },
+        preload = R._preload = function (src, f) {
+        var img = doc.createElement("img");
+        img.style.cssText = "position:absolute;left:-9999em;top:-9999em";
+        img.onload = function () {
+            f.call(this);
+            this.onload = null;
+            doc.body.removeChild(this);
+        };
+        img.onerror = function () {
+            doc.body.removeChild(this);
+        };
+        doc.body.appendChild(img);
+        img.src = src;
+    };
+
+    /*
+     * Raphael.st
+     [ property (object) ]
+     **
+     * You can add your own method to elements and sets. It is wise to add a set method for each element method
+     * you added, so you will be able to call the same method on sets too.
+     **
+     * See also @Raphael.el.
+     > Usage
+     | Raphael.el.red = function () {
+     |     this.attr({fill: '#f00'});
+     | };
+     | Raphael.st.red = function () {
+     |     this.forEach(function (el) {
+     |         el.red();
+     |     });
+     | };
+     | // then use it
+     | paper.set(paper.circle(100, 100, 20), paper.circle(110, 100, 20)).red();
+    */
+    R.st = setproto;
+
+    /*
+     * Raphael.snapTo
+     [ method ]
+     **
+     * Snaps given value to given grid.
+     > Parameters
+     - values (array|number) given array of values or step of the grid
+     - value (number) value to adjust
+     - tolerance (number) #optional tolerance for snapping. Default is `10`.
+     = (number) adjusted value.
+    */
+    R.snapTo = function (values, value, tolerance) {
+        var rem, i;
+
+        if (!R.is(tolerance, finite)) {
+            tolerance = 10;
+        }
+
+        if (R.is(values, array)) {
+            i = values.length;
+            while (i--) {
+                if (Math.abs(values[i] - value) <= tolerance) {
+                    return values[i];
+                }
+            }
+        } else {
+            values = +values;
+            rem = value % values;
+
+            if (rem < tolerance) {
+                return value - rem;
+            }
+            if (rem > values - tolerance) {
+                return value - rem + values;
+            }
+        }
+        return value;
+    };
+
+    /*
+     * Raphael.registerFont
+     [ method ]
+     **
+     * Adds given font to the registered set of fonts for Raphaël. Should be used as an internal call from within Cufón’s font file.
+     * Returns original parameter, so it could be used with chaining.
+     # <a href='http://wiki.github.com/sorccu/cufon/about'>More about Cufón and how to convert your font form TTF, OTF, etc to JavaScript file.</a>
+     **
+     > Parameters
+     **
+     - font (object) the font to register
+     = (object) the font you passed in
+     > Usage
+     | Cufon.registerFont(Raphael.registerFont({…}));
+    */
+    R.registerFont = function (font) {
+        if (!font.face) {
+            return font;
+        }
+        this.fonts = this.fonts || {};
+        var fontcopy = {
+            w: font.w,
+            face: {},
+            glyphs: {}
+        },
+            family = font.face['font-family'];
+        for (var prop in font.face) {
+            if (font.face[has](prop)) {
+                fontcopy.face[prop] = font.face[prop];
+            }
+        }if (this.fonts[family]) {
+            this.fonts[family].push(fontcopy);
+        } else {
+            this.fonts[family] = [fontcopy];
+        }
+        if (!font.svg) {
+            fontcopy.face['units-per-em'] = g.win.parseInt(font.face['units-per-em'], 10);
+            for (var glyph in font.glyphs) {
+                if (font.glyphs[has](glyph)) {
+                    var path = font.glyphs[glyph];
+                    fontcopy.glyphs[glyph] = {
+                        w: path.w,
+                        k: {},
+                        d: path.d && 'M' + path.d.replace(/[mlcxtrv]/g, function (command) {
+                            return {
+                                l: 'L',
+                                c: 'C',
+                                x: 'z',
+                                t: 'm',
+                                r: 'l',
+                                v: 'c'
+                            }[command] || 'M';
+                        }) + 'z'
+                    };
+                    if (path.k) {
+                        for (var k in path.k) {
+                            if (path[has](k)) {
+                                fontcopy.glyphs[glyph].k[k] = path.k[k];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return font;
+    };
+
+    /*
+     * Raphael.fullfill
+     [ method ]
+     **
+     * A little bit more advanced format function than @Raphael.format. Replaces construction of type “`{<name>}`” to the corresponding argument.
+     **
+     > Parameters
+     **
+     - token (string) string to format
+     - json (object) object which properties will be used as a replacement
+     = (string) formated string
+     > Usage
+     | // this will draw a rectangular shape equivalent to 'M10,20h40v50h-40z'
+     | paper.path(Raphael.fullfill('M{x},{y}h{dim.width}v{dim.height}h{dim['negative width']}z', {
+     |     x: 10,
+     |     y: 20,
+     |     dim: {
+     |         width: 40,
+     |         height: 50,
+     |         'negative width': -40
+     |     }
+     | }));
+    */
+    R.fullfill = function () {
+        var tokenRegex = /\{([^\}]+)\}/g,
+            objNotationRegex = /(?:(?:^|\.)(.+?)(?=\[|\.|$|\()|\[('|')(.+?)\2\])(\(\))?/g,
+            // matches .xxxxx or ['xxxxx'] to run over object properties
+        replacer = function replacer(all, key, obj) {
+            var res = obj;
+            key.replace(objNotationRegex, function (all, name, quote, quotedName, isFunc) {
+                name = name || quotedName;
+                if (res) {
+                    if (name in res) {
+                        res = res[name];
+                    }
+                    typeof res == 'function' && isFunc && (res = res());
+                }
+            });
+            res = (res == null || res == obj ? all : res) + '';
+            return res;
+        };
+        return function (str, obj) {
+            return String(str).replace(tokenRegex, function (all, key) {
+                return replacer(all, key, obj);
+            });
+        };
+    }();
+
+    /*
+     * Raphael.ninja
+     [ method ]
+     **
+     * If you want to leave no trace of Raphaël (Well, Raphaël creates only one global variable `Raphael`, but anyway.) You can use `ninja` method.
+     * Beware, that in this case plugins could stop working, because they are depending on global variable existance.
+     **
+     = (object) Raphael object
+     > Usage
+     | (function (local_raphael) {
+     |     var paper = local_raphael(10, 10, 320, 200);
+     |     …
+     | })(Raphael.ninja());
+    */
+    R.ninja = function () {
+        oldRaphael.was ? g.win.Raphael = oldRaphael.is : delete g.win.Raphael;
+        return R;
+    };
+
+    /*\
+     * Raphael.isPointInsidePath
+     [ method ]
+     **
+     * Utility method
+     **
+     * Returns `true` if given point is inside a given closed path.
+     > Parameters
+     - path (string) path string
+     - x (number) x of the point
+     - y (number) y of the point
+     = (boolean) true, if point is inside the path
+    \*/
+    R.isPointInsidePath = function (path, x, y) {
+        var bbox = R.pathBBox(path);
+        return R.isPointInsideBBox(bbox, x, y) && (interPathHelper(path, [[strM, x, y], ["H", bbox.x2 + 10]], 1) % 2 === 1 || interPathHelper(path, [[strM, x, y], ["V", bbox.y2 + 10]], 1) % 2 === 1);
+    };
+
+    /*\
+     * Raphael.isBBoxIntersect
+     [ method ]
+     **
+     * Utility method
+     **
+     * Returns `true` if two bounding boxes intersect
+     > Parameters
+     - bbox1 (string) first bounding box
+     - bbox2 (string) second bounding box
+     = (boolean) `true` if they intersect
+    \*/
+    R.isBBoxIntersect = function (bbox1, bbox2) {
+        var i = R.isPointInsideBBox;
+        return i(bbox2, bbox1.x, bbox1.y) || i(bbox2, bbox1.x2, bbox1.y) || i(bbox2, bbox1.x, bbox1.y2) || i(bbox2, bbox1.x2, bbox1.y2) || i(bbox1, bbox2.x, bbox2.y) || i(bbox1, bbox2.x2, bbox2.y) || i(bbox1, bbox2.x, bbox2.y2) || i(bbox1, bbox2.x2, bbox2.y2) || (bbox1.x < bbox2.x2 && bbox1.x > bbox2.x || bbox2.x < bbox1.x2 && bbox2.x > bbox1.x) && (bbox1.y < bbox2.y2 && bbox1.y > bbox2.y || bbox2.y < bbox1.y2 && bbox2.y > bbox1.y);
+    };
+
+    /*\
+     * Raphael.isPointInsideBBox
+     [ method ]
+     **
+     * Utility method
+     **
+     * Returns `true` if given point is inside bounding boxes.
+     > Parameters
+     - bbox (string) bounding box
+     - x (string) x coordinate of the point
+     - y (string) y coordinate of the point
+     = (boolean) `true` if point inside
+    \*/
+    R.isPointInsideBBox = function (bbox, x, y) {
+        return x >= bbox.x && x <= bbox.x2 && y >= bbox.y && y <= bbox.y2;
+    };
+
+    /*\
+     * Raphael.bezierBBox
+     [ method ]
+     **
+     * Utility method
+     **
+     * Return bounding box of a given cubic bezier curve
+     > Parameters
+     - p1x (number) x of the first point of the curve
+     - p1y (number) y of the first point of the curve
+     - c1x (number) x of the first anchor of the curve
+     - c1y (number) y of the first anchor of the curve
+     - c2x (number) x of the second anchor of the curve
+     - c2y (number) y of the second anchor of the curve
+     - p2x (number) x of the second point of the curve
+     - p2y (number) y of the second point of the curve
+     * or
+     - bez (array) array of six points for bezier curve
+     = (object) point information in format:
+     o {
+     o     min: {
+     o         x: (number) x coordinate of the left point
+     o         y: (number) y coordinate of the top point
+     o     }
+     o     max: {
+     o         x: (number) x coordinate of the right point
+     o         y: (number) y coordinate of the bottom point
+     o     }
+     o }
+    \*/
+    R.bezierBBox = function (p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y) {
+        if (!R.is(p1x, ARRAY)) {
+            p1x = [p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y];
+        }
+        var bbox = curveDim.apply(null, p1x);
+        return {
+            x: bbox.min.x,
+            y: bbox.min.y,
+            x2: bbox.max.x,
+            y2: bbox.max.y,
+            width: bbox.max.x - bbox.min.x,
+            height: bbox.max.y - bbox.min.y
+        };
+    };
+
+    R.addArrow = function (o, value, isEnd) {
+        if (R.vml) {
+            var values = Str(value).toLowerCase().split("-"),
+                se = isEnd ? "end" : "start",
+                i = values.length,
+                type = "classic",
+                w = "medium",
+                h = "medium";
+            while (i--) {
+                switch (values[i]) {
+                    case "block":
+                    case "classic":
+                    case "oval":
+                    case "diamond":
+                    case "open":
+                    case "none":
+                        type = values[i];
+                        break;
+                    case "wide":
+                    case "narrow":
+                        h = values[i];
+                        break;
+                    case "long":
+                    case "short":
+                        w = values[i];
+                        break;
+                }
+            }
+            var stroke = o.node.getElementsByTagName("stroke")[0];
+            stroke[se + "arrow"] = type;
+            stroke[se + "arrowlength"] = w;
+            stroke[se + "arrowwidth"] = h;
+        } else if (R.svg) {
+            if (o.type === 'path') {
+                var values = Str(value).toLowerCase().split('-'),
+                    p = o.paper,
+                    se = isEnd ? 'end' : 'start',
+                    node = o.node,
+                    attrs = o.attrs,
+                    stroke = attrs['stroke-width'],
+                    i = values.length,
+                    type = 'classic',
+                    from,
+                    to,
+                    dx,
+                    refX,
+                    attr,
+                    w = 3,
+                    h = 3,
+                    t = 5;
+                while (i--) {
+                    switch (values[i]) {
+                        case 'block':
+                        case 'classic':
+                        case 'oval':
+                        case 'diamond':
+                        case 'open':
+                        case 'none':
+                            type = values[i];
+                            break;
+                        case 'wide':
+                            h = 5;
+                            break;
+                        case 'narrow':
+                            h = 2;
+                            break;
+                        case 'long':
+                            w = 5;
+                            break;
+                        case 'short':
+                            w = 2;
+                            break;
+                    }
+                }
+                if (type === 'open') {
+                    w += 2;
+                    h += 2;
+                    t += 2;
+                    dx = 1;
+                    refX = isEnd ? 4 : 1;
+                    attr = {
+                        fill: noneStr,
+                        stroke: attrs.stroke
+                    };
+                } else {
+                    refX = dx = w / 2;
+                    attr = {
+                        fill: attrs.stroke,
+                        stroke: noneStr
+                    };
+                }
+                if (o._.arrows) {
+                    if (isEnd) {
+                        o._.arrows.endPath && markerCounter[o._.arrows.endPath]--;
+                        o._.arrows.endMarker && markerCounter[o._.arrows.endMarker]--;
+                    } else {
+                        o._.arrows.startPath && markerCounter[o._.arrows.startPath]--;
+                        o._.arrows.startMarker && markerCounter[o._.arrows.startMarker]--;
+                    }
+                } else {
+                    o._.arrows = {};
+                }
+                if (type !== noneStr) {
+                    var pathId = 'raphael-marker-' + type,
+                        markerId = 'raphael-marker-' + se + type + w + h + '-obj' + o.id;
+                    if (!R._g.doc.getElementById(pathId)) {
+                        p.defs.appendChild($($('path'), {
+                            'stroke-linecap': 'round',
+                            d: markers[type],
+                            id: pathId
+                        }));
+                        markerCounter[pathId] = 1;
+                    } else {
+                        markerCounter[pathId]++;
+                    }
+                    var marker = R._g.doc.getElementById(markerId),
+                        use;
+                    if (!marker) {
+                        marker = $($('marker'), {
+                            id: markerId,
+                            markerHeight: h,
+                            markerWidth: w,
+                            orient: 'auto',
+                            refX: refX,
+                            refY: h / 2
+                        });
+                        use = $($('use'), {
+                            'xlink:href': '#' + pathId,
+                            transform: (isEnd ? 'rotate(180 ' + w / 2 + S + h / 2 + ') ' : E) + 'scale(' + w / t + ',' + h / t + ')',
+                            'stroke-width': (1 / ((w / t + h / t) / 2)).toFixed(4)
+                        });
+                        marker.appendChild(use);
+                        p.defs.appendChild(marker);
+                        markerCounter[markerId] = 1;
+                    } else {
+                        markerCounter[markerId]++;
+                        use = marker.getElementsByTagName('use')[0];
+                    }
+                    $(use, attr);
+                    var delta = dx * (type !== 'diamond' && type !== 'oval');
+                    if (isEnd) {
+                        from = o._.arrows.startdx * stroke || 0;
+                        to = R.getTotalLength(attrs.path) - delta * stroke;
+                    } else {
+                        from = delta * stroke;
+                        to = R.getTotalLength(attrs.path) - (o._.arrows.enddx * stroke || 0);
+                    }
+                    attr = {};
+                    attr['marker-' + se] = "url('" + R._url + '#' + markerId + "')";
+                    if (to || from) {
+                        attr.d = R.getSubpath(attrs.path, from, to);
+                    }
+                    $(node, attr);
+                    o._.arrows[se + 'Path'] = pathId;
+                    o._.arrows[se + 'Marker'] = markerId;
+                    o._.arrows[se + 'dx'] = delta;
+                    o._.arrows[se + 'Type'] = type;
+                    o._.arrows[se + typeStringSTR] = value;
+                } else {
+                    if (isEnd) {
+                        from = o._.arrows.startdx * stroke || 0;
+                        to = R.getTotalLength(attrs.path) - from;
+                    } else {
+                        from = 0;
+                        to = R.getTotalLength(attrs.path) - (o._.arrows.enddx * stroke || 0);
+                    }
+                    o._.arrows[se + 'Path'] && $(node, {
+                        d: R.getSubpath(attrs.path, from, to)
+                    });
+                    delete o._.arrows[se + 'Path'];
+                    delete o._.arrows[se + 'Marker'];
+                    delete o._.arrows[se + 'dx'];
+                    delete o._.arrows[se + 'Type'];
+                    delete o._.arrows[se + typeStringSTR];
+                }
+                for (attr in markerCounter) {
+                    if (markerCounter[has](attr) && !markerCounter[attr]) {
+                        var item = R._g.doc.getElementById(attr);
+                        item && item.parentNode.removeChild(item);
+                    }
+                }
+            }
+        }
+    };
+
+    /*\
+     * Raphael.setWindow
+     [ method ]
+     **
+     * Used when you need to draw in `&lt;iframe>`. Switched window to the iframe one.
+     > Parameters
+     - newwin (window) new window object
+    \*/
+    R.setWindow = function (newwin) {
+        eve("raphael.setWindow", R, g.win, newwin);
+        win = g.win = newwin;
+        doc = g.doc = g.win.document;
+        if (R._engine.initWin) {
+            R._engine.initWin(g.win);
+        }
+    };
+
+    /*\
+     * Raphael.getColor
+     [ method ]
+     **
+     * On each call returns next colour in the spectrum. To reset it back to red call @Raphael.getColor.reset
+     > Parameters
+     - value (number) #optional brightness, default is `0.75`
+     = (string) hex representation of the colour.
+    \*/
+    R.getColor = function (value) {
+        var start = this.getColor.start = this.getColor.start || {
+            h: 0,
+            s: 1,
+            b: value || .75
+        },
+            rgb = this.hsb2rgb(start.h, start.s, start.b);
+        start.h += .075;
+        if (start.h > 1) {
+            start.h = 0;
+            start.s -= .2;
+            start.s <= 0 && (this.getColor.start = {
+                h: 0,
+                s: 1,
+                b: start.b
+            });
+        }
+        return rgb.hex;
+    };
+
+    /*\
+     * Raphael.getColor.reset
+     [ method ]
+     **
+     * Resets spectrum position for @Raphael.getColor back to red.
+    \*/
+    R.getColor.reset = function () {
+        delete this.start;
+    };
+
+    /*\
+     * Raphael.hsb
+     [ method ]
+     **
+     * Converts HSB values to hex representation of the colour.
+     > Parameters
+     - h (number) hue
+     - s (number) saturation
+     - b (number) value or brightness
+     = (string) hex representation of the colour.
+    \*/
+    R.hsb = (0, _raphael.cacher)(function (h, s, b) {
+        return R.hsb2rgb(h, s, b).hex;
+    });
+
+    /*\
+     * Raphael.hsl
+     [ method ]
+     **
+     * Converts HSL values to hex representation of the colour.
+     > Parameters
+     - h (number) hue
+     - s (number) saturation
+     - l (number) luminosity
+     = (string) hex representation of the colour.
+    \*/
+    R.hsl = (0, _raphael.cacher)(function (h, s, l) {
+        return R.hsl2rgb(h, s, l).hex;
+    });
+
+    /*\
+     * Raphael.angle
+     [ method ]
+     **
+     * Returns angle between two or three points
+     > Parameters
+     - x1 (number) x coord of first point
+     - y1 (number) y coord of first point
+     - x2 (number) x coord of second point
+     - y2 (number) y coord of second point
+     - x3 (number) #optional x coord of third point
+     - y3 (number) #optional y coord of third point
+     = (number) angle in degrees.
+    \*/
+    R.angle = function (x1, y1, x2, y2, x3, y3) {
+        if (x3 == null) {
+            var x = x1 - x2,
+                y = y1 - y2;
+            if (!x && !y) {
+                return 0;
+            }
+            return (180 + math.atan2(-y, -x) * rad2deg + 360) % 360;
+        } else {
+            return R.angle(x1, y1, x3, y3) - R.angle(x2, y2, x3, y3);
+        }
+    };
+
+    R.getSubpath = function (path, from, to) {
+        if (this.getTotalLength(path) - to < 1e-6) {
+            return getSubpathsAtLength(path, from).end;
+        }
+        var a = getSubpathsAtLength(path, to, 1);
+        return from ? getSubpathsAtLength(a, from).end : a;
+    };
+
+    R.pathToRelative = pathToRelative;
+
+    /*
+     * Paper.getFont
+     [ method ]
+     **
+     * Finds font object in the registered fonts by given parameters. You could specify only one word from the font name, like “Myriad” for “Myriad Pro”.
+     **
+     > Parameters
+     **
+     - family (string) font family name or any word from it
+     - weight (string) #optional font weight
+     - style (string) #optional font style
+     - stretch (string) #optional font stretch
+     = (object) the font object
+     > Usage
+     | paper.print(100, 100, 'Test string', paper.getFont('Times', 800), 30);
+    */
+    paperproto.getFont = function (family, weight, style, stretch) {
+        stretch = stretch || 'normal';
+        style = style || 'normal';
+        weight = +weight || {
+            normal: 400,
+            bold: 700,
+            lighter: 300,
+            bolder: 800
+        }[weight] || 400;
+        if (!R.fonts) {
+            return;
+        }
+        var font = R.fonts[family];
+        if (!font) {
+            var name = new RegExp('(^|\\s)' + family.replace(/[^\w\d\s+!~.:_-]/g, E) + '(\\s|$)', 'i');
+            for (var fontName in R.fonts) {
+                if (R.fonts[has](fontName)) {
+                    if (name.test(fontName)) {
+                        font = R.fonts[fontName];
+                        break;
+                    }
+                }
+            }
+        }
+        var thefont;
+        if (font) {
+            for (var i = 0, ii = font.length; i < ii; i++) {
+                thefont = font[i];
+                if (thefont.face['font-weight'] == weight && (thefont.face['font-style'] == style || !thefont.face['font-style']) && thefont.face['font-stretch'] == stretch) {
+                    break;
+                }
+            }
+        }
+        return thefont;
+    };
+
+    /*
+     * Paper.print
+     [ method ]
+     **
+     * Creates path that represent given text written using given font at given position with given size.
+     * Result of the method is path element that contains whole text as a separate path.
+     **
+     > Parameters
+     **
+     - x (number) x position of the text
+     - y (number) y position of the text
+     - string (string) text to print
+     - font (object) font object, see @Paper.getFont
+     - size (number) #optional size of the font, default is `16`
+     - origin (string) #optional could be `'baseline'` or `'middle'`, default is `'middle'`
+     - letter_spacing (number) #optional number in range `-1..1`, default is `0`
+     = (object) resulting path element, which consist of all letters
+     > Usage
+     | var txt = r.print(10, 50, 'print', r.getFont('Museo'), 30).attr({fill: '#fff'});
+    */
+    paperproto.print = function (x, y, string, font, size, origin, letterSpacing) {
+        origin = origin || 'middle'; // baseline|middle
+        letterSpacing = mmax(mmin(letterSpacing || 0, 1), -1);
+        var letters = Str(string)[split](E),
+            shift = 0,
+            notfirst = 0,
+            path = E,
+            scale;
+        R.is(font, string) && (font = this.getFont(font));
+        if (font) {
+            scale = (size || 16) / font.face['units-per-em'];
+            var bb = font.face.bbox[split](separator),
+                top = +bb[0],
+                lineHeight = bb[3] - bb[1],
+                shifty = 0,
+                height = +bb[1] + (origin == 'baseline' ? lineHeight + +font.face.descent : lineHeight / 2);
+            for (var i = 0, ii = letters.length; i < ii; i++) {
+                if (letters[i] == '\n') {
+                    shift = 0;
+                    curr = 0;
+                    notfirst = 0;
+                    shifty += lineHeight;
+                } else {
+                    var prev = notfirst && font.glyphs[letters[i - 1]] || {},
+                        curr = font.glyphs[letters[i]];
+                    shift += notfirst ? (prev.w || font.w) + (prev.k && prev.k[letters[i]] || 0) + font.w * letterSpacing : 0;
+                    notfirst = 1;
+                }
+                if (curr && curr.d) {
+                    path += R.transformPath(curr.d, ['t', shift * scale, shifty * scale, 's', scale, scale, top, height, 't', (x - top) / scale, (y - height) / scale]);
+                }
+            }
+        }
+        return this.path(path).attr({
+            fill: '#000',
+            stroke: 'none'
+        });
+    };
+
+    /*
+     * Paper.add
+     [ method ]
+     **
+     * Imports elements in JSON array in format `{type: type, <attributes>}`
+     **
+     > Parameters
+     **
+     - json (array)
+     = (object) resulting set of imported elements
+     > Usage
+     | paper.add([
+     |     {
+     |         type: 'circle',
+     |         cx: 10,
+     |         cy: 10,
+     |         r: 5
+     |     },
+     |     {
+     |         type: 'rect',
+     |         x: 10,
+     |         y: 10,
+     |         width: 10,
+     |         height: 10,
+     |         fill: '#fc0'
+     |     }
+     | ]);
+    */
+    paperproto.add = function (json) {
+        if (R.is(json, 'array')) {
+            var res = this.set(),
+                i = 0,
+                ii = json.length,
+                j;
+            for (; i < ii; i++) {
+                j = json[i] || {};
+                elements[has](j.type) && res.push(this[j.type]().attr(j));
+            }
+        }
+        return res;
+    };
+    /*
+     * Paper.getElementByPoint
+     [ method ]
+     **
+     * Returns you topmost element under given point.
+     **
+     = (object) Raphaël element object
+     > Parameters
+     **
+     - x (number) x coordinate from the top left corner of the window
+     - y (number) y coordinate from the top left corner of the window
+     > Usage
+     | paper.getElementByPoint(mouseX, mouseY).attr({stroke: '#f00'});
+    */
+    paperproto.getElementByPoint = function (x, y) {
+        var paper = this,
+            svg = paper.canvas,
+            target = g.doc.elementFromPoint(x, y);
+        if (g.win.opera && target.tagName == 'svg') {
+            var so = getOffset(svg),
+                sr = svg.createSVGRect();
+            sr.x = x - so.x;
+            sr.y = y - so.y;
+            sr.width = sr.height = 1;
+            var hits = svg.getIntersectionList(sr, null);
+            if (hits.length) {
+                target = hits[hits.length - 1];
+            }
+        }
+        if (!target) {
+            return null;
+        }
+        while (target.parentNode && target != svg.parentNode && !target.raphael) {
+            target = target.parentNode;
+        }
+        target == paper.canvas.parentNode && (target = svg);
+        target = target && target.raphael ? paper.getById(target.raphaelid) : null;
+        return target;
+    };
+
+    /*
+     * Paper.getElementsByBBox
+     [ method ]
+     **
+     * Returns set of elements that have an intersecting bounding box
+     **
+     > Parameters
+     **
+     - bbox (object) bbox to check with
+     = (object) @Set
+     */
+    paperproto.getElementsByBBox = function (bbox) {
+        var set = this.set();
+        this.forEach(function (el) {
+            if (R.isBBoxIntersect(el.getBBox(), bbox)) {
+                set.push(el);
+            }
+        });
+        return set;
+    };
+
+    /*
+     * Paper.forEach
+     [ method ]
+     **
+     * Executes given function for each element on the paper
+     *
+     * If callback function returns `false` it will stop loop running.
+     **
+     > Parameters
+     **
+     - callback (function) function to run
+     - thisArg (object) context object for the callback
+     = (object) Paper object
+     > Usage
+     | paper.forEach(function (el) {
+     |     el.attr({ stroke: 'blue' });
+     | });
+    */
+    paperproto.forEach = function (callback, thisArg) {
+        var bot = this.bottom;
+        while (bot) {
+            if (callback.call(thisArg, bot) === false) {
+                return this;
+            }
+            bot = bot.next;
+        }
+        return this;
+    };
+
+    /*
+     * Paper.getElementsByPoint
+     [ method ]
+     **
+     * Returns set of elements that have common point inside
+     **
+     > Parameters
+     **
+     - x (number) x coordinate of the point
+     - y (number) y coordinate of the point
+     = (object) @Set
+    */
+    paperproto.getElementsByPoint = function (x, y) {
+        var set = this.set();
+        this.forEach(function (el) {
+            if (el.isPointInside(x, y)) {
+                set.push(el);
+            }
+        });
+        return set;
+    };
+
+    /*
+     * Paper.set
+     [ method ]
+     **
+     * Creates array-like object to keep and operate several elements at once.
+     * Warning: it doesn’t create any elements for itself in the page, it just groups existing elements.
+     * Sets act as pseudo elements — all methods available to an element can be used on a set.
+     = (object) array-like object that represents set of elements
+     **
+     > Usage
+     | var st = paper.set();
+     | st.push(
+     |     paper.circle(10, 10, 5),
+     |     paper.circle(30, 10, 5)
+     | );
+     | st.attr({fill: 'red'}); // changes the fill of both circles
+    */
+    paperproto.set = function (itemsArray) {
+        var args = (0, _raphael.getArrayCopy)(arguments);
+        !R.is(itemsArray, 'array') && (itemsArray = Array.prototype.splice.call(args, 0, args.length));
+        var out = new Set(itemsArray);
+        this.__set__ && this.__set__.push(out);
+        return out;
+    };
+
+    /*
+     * Paper.setStart
+     [ method ]
+     **
+     * Creates @Paper.set. All elements that will be created after calling this method and before calling
+     * @Paper.setFinish will be added to the set.
+     **
+     > Usage
+     | paper.setStart();
+     | paper.circle(10, 10, 5),
+     | paper.circle(30, 10, 5)
+     | var st = paper.setFinish();
+     | st.attr({fill: 'red'}); // changes the fill of both circles
+    */
+    paperproto.setStart = function (set) {
+        this.__set__ = set || this.set();
+    };
+
+    /*
+     * Paper.setFinish
+     [ method ]
+     **
+     * See @Paper.setStart. This method finishes catching and returns resulting set.
+     **
+     = (object) set
+    */
+    paperproto.setFinish = function (set) {
+        var out = this.__set__;
+        delete this.__set__;
+        return out;
+    };
+
+    /*\
+     * Paper.removeDefs
+     [ method ]
+     **
+     * Remove a particular definition of given id from paper
+     **
+     > Parameters
+     **
+     - id (string) id of the element to remove
+     **
+     > Usage
+     | paper.removeDefs(id);
+    \*/
+    paperproto.removeDefs = function (id) {
+        if (!R.svg) {
+            return;
+        }
+        var element = R._g.doc.getElementById(id);
+        element && element.remove();
+    };
+
+    /*\
+     * Paper.updateDefs
+     [ method ]
+     **
+     * Update definitions in paper
+     **
+     > Parameters
+     **
+     - id (string or object) id of the element or the element node itself
+     - attrObj (object) attribute of the element object with it's children attributes nested
+     - hardUpdateChildren (boolean) determines whether to create new children if child elements are less than
+       the children in attrObj or remove children in same manner
+     **
+     > Usage
+     | paper.updateDefs(id, {
+     |      width: '100%',
+     |      height: '100%',
+     |      children: [{
+     |          dx: '2'
+     |      }]
+     |   }, true);
+     | // Updates element of given id
+     | // Updates the child element if present and create new child if found less than the children in attrObj
+     | // and delete a child in same manner according to value of 'hardUpdateChildren'
+    \*/
+    paperproto.updateDefs = function (id, attrObj, hardUpdateChildren) {
+        if (!R.svg) {
+            return;
+        }
+        var paper = this,
+            element = !(id instanceof Node) ? R._g.doc.getElementById(id) : id,
+            attrKey,
+            i,
+            diff,
+            len,
+            children = attrObj.children || [],
+            elemChildren,
+            childId,
+            attr = {};
+
+        hardUpdateChildren === undefined && (hardUpdateChildren = true);
+
+        if (element) {
+            for (attrKey in attrObj) {
+                if (attrKey !== 'tagName' && attrKey !== 'children') {
+                    element.setAttribute(attrKey, attrObj[attrKey]);
+                }
+            }
+            elemChildren = element.children;
+            for (i = 0, len = children.length; i < len; i++) {
+                childId = children[i].id;
+                elemChildren[i] ? paper.updateDefs(childId || elemChildren[i], children[i]) : hardUpdateChildren && paper._createDOMNodes(element, children[i]);
+            }
+            if (hardUpdateChildren) {
+                diff = elemChildren.length - i;
+                while (diff > 0) {
+                    elemChildren[elemChildren.length - 1].remove();
+                    diff--;
+                }
+            }
+        }
+    };
+
+    /*
+     * Element.isPointInside
+     [ method ]
+     **
+     * Determine if given point is inside this element’s shape
+     **
+     > Parameters
+     **
+     - x (number) x coordinate of the point
+     - y (number) y coordinate of the point
+     = (boolean) `true` if point inside the shape
+    */
+    elproto.isPointInside = function (x, y) {
+        var rp = this.realPath = this.realPath || getPath[this.type](this),
+            tr;
+        return R.isPointInsidePath((tr = this.attr('transform')) && tr.length && R.transformPath(rp, tr) || rp, x, y);
+    };
+
+    /*
+     * Element.glow
+     [ method ]
+     **
+     * Return set of elements that create glow-like effect around given element. See @Paper.set.
+     *
+     * Note: Glow is not connected to the element. If you change element attributes it won’t adjust itself.
+     **
+     > Parameters
+     **
+     - glow (object) #optional parameters object with all properties optional:
+     o {
+     o     width (number) size of the glow, default is `10`
+     o     fill (boolean) will it be filled, default is `false`
+     o     opacity (number) opacity, default is `0.5`
+     o     offsetx (number) horizontal offset, default is `0`
+     o     offsety (number) vertical offset, default is `0`
+     o     color (string) glow colour, default is `black`
+     o }
+     = (object) @Paper.set of elements that represents glow
+    */
+    elproto.glow = function (glow) {
+        if (this.type == 'text') {
+            return null;
+        }
+        glow = glow || {};
+        var s = {
+            width: (glow.width || 10) + (+this.attr('stroke-width') || 1),
+            fill: glow.fill || false,
+            opacity: glow.opacity || 0.5,
+            offsetx: glow.offsetx || 0,
+            offsety: glow.offsety || 0,
+            color: glow.color || '#000'
+        },
+            c = s.width / 2,
+            r = this.paper,
+            out = r.set(),
+            path = this.realPath || getPath[this.type](this);
+        path = this.matrix ? R.mapPath(path, this.matrix) : path;
+        for (var i = 1; i < c + 1; i++) {
+            out.push(r.path(path).attr({
+                stroke: s.color,
+                fill: s.fill ? s.color : 'none',
+                'stroke-linejoin': 'round',
+                'stroke-linecap': 'round',
+                'stroke-width': +(s.width / c * i).toFixed(3),
+                opacity: +(s.opacity / c).toFixed(3)
+            }));
+        }
+        return out.insertBefore(this).translate(s.offsetx, s.offsety);
+    };
+
+    /*
+     * Element.setTime
+     [ method ]
+     **
+     * Sets the status of animation of the element in milliseconds. Similar to @Element.status method.
+     **
+     > Parameters
+     **
+     - anim (object) animation object
+     - value (number) number of milliseconds from the beginning of the animation
+     **
+     = (object) original element if `value` is specified
+     * Note, that during animation following events are triggered:
+     *
+     * On each animation frame event `anim.frame.<id>`, on start `anim.start.<id>` and on end `anim.finish.<id>`.
+    */
+    elproto.setTime = function (anim, value) {
+        if (anim && value != null) {
+            this.status(anim, mmin(value, anim.ms) / anim.ms);
+        }
+        return this;
+    };
+
+    elproto.blur = function (size) {
+        if (R.svg) {
+            // Experimental. No Safari support. Use it on your own risk.
+            var t = this;
+            if (+size !== 0) {
+                var fltr = $('filter'),
+                    blur = $('feGaussianBlur');
+                t.attrs.blur = size;
+                fltr.id = R.getElementID(R.createUUID());
+                $(blur, {
+                    stdDeviation: +size || 1.5
+                });
+                fltr.appendChild(blur);
+                t.paper.defs.appendChild(fltr);
+                t._blur = fltr;
+                $(t.node, {
+                    filter: "url('" + R._url + '#' + fltr.id + "')"
+                });
+            } else {
+                if (t._blur) {
+                    t._blur.parentNode.removeChild(t._blur);
+                    delete t._blur;
+                    delete t.attrs.blur;
+                }
+                t.node.removeAttribute('filter');
+            }
+        } else if (R.vml) {
+            var s = this.node.runtimeStyle,
+                f = s.filter;
+            f = f.replace(blurregexp, E);
+            if (+size !== 0) {
+                this.attrs.blur = size;
+                s.filter = f + S + ms + ".Blur(pixelradius=" + (+size || 1.5) + ")";
+                s.margin = R.format("-{0}px 0 0 -{0}px", round(+size || 1.5));
+            } else {
+                s.filter = f;
+                s.margin = 0;
+                delete this.attrs.blur;
+            }
+            return this;
+        } else if (R.canvas) {
+            return this;
+        }
+    };
+
+    /*\
+     * Raphael.getSubpath
+     [ method ]
+     **
+     * Return subpath of a given path from given length to given length.
+     **
+     > Parameters
+     **
+     - path (string) SVG path string
+     - from (number) position of the start of the segment
+     - to (number) position of the end of the segment
+     **
+     = (string) pathstring for the segment
+    \*/
+    elproto.getSubpath = function (from, to) {
+        if (this.type != "path") {
+            return;
+        }
+        return R.getSubpath(this.attrs.path, from, to);
+    };
+
+    /*
+     * Set.push
+     [ method ]
+     **
+     * Adds each argument to the current set.
+     = (object) original element
+    */
+    setproto.push = function () {
+        var item, len;
+        for (var i = 0, ii = arguments.length; i < ii; i++) {
+            item = arguments[i];
+            if (item && (item.constructor == elproto.constructor || item.constructor == Set)) {
+                len = this.items.length;
+                this[len] = this.items[len] = item;
+                this.length++;
+            }
+        }
+        return this;
+    };
+
+    /*
+     * Set.pop
+     [ method ]
+     **
+     * Removes last element and returns it.
+     = (object) element
+    */
+    setproto.pop = function () {
+        this.length && delete this[this.length--];
+        return this.items.pop();
+    };
+
+    /*
+     * Set.forEach
+     [ method ]
+     **
+     * Executes given function for each element in the set.
+     *
+     * If function returns `false` it will stop loop running.
+     **
+     > Parameters
+     **
+     - callback (function) function to run
+     - thisArg (object) context object for the callback
+     = (object) Set object
+    */
+    setproto.forEach = function (callback, thisArg) {
+        for (var i = 0, ii = this.items.length; i < ii; i++) {
+            if (callback.call(thisArg, this.items[i], i) === false) {
+                return this;
+            }
+        }
+        return this;
+    };
+    for (var method in elproto) {
+        if (elproto[has](method)) {
+            setproto[method] = function (methodname) {
+                return function () {
+                    var arg = arguments;
+                    return this.forEach(function (el) {
+                        el[methodname][apply](el, arg);
+                    });
+                };
+            }(method);
+        }
+    }
+    setproto.attr = function (name, value) {
+        if (name && R.is(name, array) && R.is(name[0], object)) {
+            for (var j = 0, jj = name.length; j < jj; j++) {
+                this.items[j].attr(name[j]);
+            }
+        } else {
+            for (var i = 0, ii = this.items.length; i < ii; i++) {
+                this.items[i].attr(name, value);
+            }
+        }
+        return this;
+    };
+
+    /*
+     * Set.clear
+     [ method ]
+     **
+     * Removeds all elements from the set
+    */
+    setproto.clear = function () {
+        while (this.length) {
+            this.pop();
+        }
+    };
+
+    /*
+     * Set.splice
+     [ method ]
+     **
+     * Removes given element from the set
+     **
+     > Parameters
+     **
+     - index (number) position of the deletion
+     - count (number) number of element to remove
+     - insertion… (object) #optional elements to insert
+     = (object) set elements that were deleted
+    */
+    setproto.splice = function (index, count, insertion) {
+        index = index < 0 ? mmax(this.length + index, 0) : index;
+        count = mmax(0, mmin(this.length - index, isNaN(count) && this.length || count));
+        var tail = [],
+            todel = [],
+            args = [],
+            arglen,
+            i;
+        for (i = 2; i < arguments.length; i++) {
+            args.push(arguments[i]);
+        }
+        for (i = 0; i < count; i++) {
+            todel.push(this[index + i]);
+        }
+        for (; i < this.length - index; i++) {
+            tail.push(this[index + i]);
+        }
+        arglen = args.length;
+        for (i = 0; i < arglen + tail.length; i++) {
+            this.items[index + i] = this[index + i] = i < arglen ? args[i] : tail[i - arglen];
+        }
+        i = this.items.length = this.length -= count - arglen;
+        while (this[i]) {
+            delete this[i++];
+        }
+        return new Set(todel);
+    };
+
+    /*
+     * Set.exclude
+     [ method ]
+     **
+     * Removes given element from the set
+     **
+     > Parameters
+     **
+     - element (object) element to remove
+     = (boolean) `true` if object was found & removed from the set
+    */
+    setproto.exclude = function (el) {
+        for (var i = 0, ii = this.length; i < ii; i++) {
+            if (this[i] == el) {
+                this.splice(i, 1);
+                return true;
+            }
+        }
+    };
+    setproto.animate = function (params, ms, easing, callback) {
+        (R.is(easing, 'function') || !easing) && (callback = easing || null);
+        var len = this.items.length,
+            i = len,
+            item,
+            anim,
+            set = this,
+            collector;
+        if (!len) {
+            return this;
+        }
+        callback && (collector = function collector() {
+            ! --len && callback.call(set);
+        });
+        easing = R.is(easing, string) ? easing : collector;
+        anim = R.animation(params, ms, easing, collector);
+        item = this.items[--i].animate(anim);
+        while (i--) {
+            this.items[i] && !this.items[i].removed && this.items[i].animateWith(item, anim, anim);
+        }
+        return this;
+    };
+    setproto.insertAfter = function (el) {
+        var i = this.items.length;
+        while (i--) {
+            this.items[i].insertAfter(el);
+        }
+        return this;
+    };
+    setproto.getBBox = function () {
+        var x = [],
+            y = [],
+            x2 = [],
+            y2 = [];
+        for (var i = this.items.length; i--;) {
+            if (!this.items[i].removed) {
+                var box = this.items[i].getBBox();
+                x.push(box.x);
+                y.push(box.y);
+                x2.push(box.x + box.width);
+                y2.push(box.y + box.height);
+            }
+        }
+        x = mmin[apply](0, x);
+        y = mmin[apply](0, y);
+        x2 = mmax[apply](0, x2);
+        y2 = mmax[apply](0, y2);
+        return {
+            x: x,
+            y: y,
+            x2: x2,
+            y2: y2,
+            width: x2 - x,
+            height: y2 - y
+        };
+    };
+    setproto.clone = function (s) {
+        s = new Set();
+        for (var i = 0, ii = this.items.length; i < ii; i++) {
+            s.push(this.items[i].clone());
+        }
+        return s;
+    };
+    setproto.toString = function () {
+        return 'Rapha\xEBl\u2018s set';
+    };
+
+    setproto.glow = function (glowConfig) {
+        var ret = this.paper.set();
+        this.forEach(function (shape, index) {
+            var g = shape.glow(glowConfig);
+            if (g != null) {
+                g.forEach(function (shape2, index2) {
+                    ret.push(shape2);
+                });
+            }
+        });
+        return ret;
+    };
+
+    function inter(bez1, bez2) {
+        return interHelper(bez1, bez2);
+    }
+
+    function interCount(bez1, bez2) {
+        return interHelper(bez1, bez2, 1);
+    }
+
+    function interHelper(bez1, bez2, justCount) {
+        var bbox1 = R.bezierBBox(bez1),
+            bbox2 = R.bezierBBox(bez2);
+
+        if (!R.isBBoxIntersect(bbox1, bbox2)) {
+            return justCount ? 0 : [];
+        }
+        var l1 = bezlen.apply(0, bez1),
+            l2 = bezlen.apply(0, bez2),
+            n1 = mmax(~~(l1 / 5), 1),
+            n2 = mmax(~~(l2 / 5), 1),
+            dots1 = [],
+            dots2 = [],
+            xy = {},
+            res = justCount ? 0 : [];
+
+        for (var i = 0; i < n1 + 1; i++) {
+            var p = R.findDotsAtSegment.apply(R, bez1.concat(i / n1));
+            dots1.push({
+                x: p.x,
+                y: p.y,
+                t: i / n1
+            });
+        }
+        for (i = 0; i < n2 + 1; i++) {
+            p = R.findDotsAtSegment.apply(R, bez2.concat(i / n2));
+            dots2.push({
+                x: p.x,
+                y: p.y,
+                t: i / n2
+            });
+        }
+        for (i = 0; i < n1; i++) {
+            for (var j = 0; j < n2; j++) {
+                var di = dots1[i],
+                    di1 = dots1[i + 1],
+                    dj = dots2[j],
+                    dj1 = dots2[j + 1],
+                    ci = abs(di1.x - di.x) < .001 ? "y" : "x",
+                    cj = abs(dj1.x - dj.x) < .001 ? "y" : "x",
+                    is = intersect(di.x, di.y, di1.x, di1.y, dj.x, dj.y, dj1.x, dj1.y);
+                if (is) {
+                    if (xy[is.x.toFixed(4)] === is.y.toFixed(4)) {
+                        continue;
+                    }
+                    xy[is.x.toFixed(4)] = is.y.toFixed(4);
+                    var t1 = di.t + abs((is[ci] - di[ci]) / (di1[ci] - di[ci])) * (di1.t - di.t),
+                        t2 = dj.t + abs((is[cj] - dj[cj]) / (dj1[cj] - dj[cj])) * (dj1.t - dj.t);
+                    if (t1 >= 0 && t1 <= 1.001 && t2 >= 0 && t2 <= 1.001) {
+                        if (justCount) {
+                            res++;
+                        } else {
+                            res.push({
+                                x: is.x,
+                                y: is.y,
+                                t1: mmin(t1, 1),
+                                t2: mmin(t2, 1)
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        return res;
+    }
+
+    /*\
+     * Raphael.pathIntersection
+     [ method ]
+     **
+     * Utility method
+     **
+     * Finds intersections of two paths
+     > Parameters
+     - path1 (string) path string
+     - path2 (string) path string
+     = (array) dots of intersection
+     o [
+     o     {
+     o         x: (number) x coordinate of the point
+     o         y: (number) y coordinate of the point
+     o         t1: (number) t value for segment of path1
+     o         t2: (number) t value for segment of path2
+     o         segment1: (number) order number for segment of path1
+     o         segment2: (number) order number for segment of path2
+     o         bez1: (array) eight coordinates representing beziér curve for the segment of path1
+     o         bez2: (array) eight coordinates representing beziér curve for the segment of path2
+     o     }
+     o ]
+    \*/
+    R.pathIntersection = function (path1, path2) {
+        return interPathHelper(path1, path2);
+    };
+    R.pathIntersectionNumber = function (path1, path2) {
+        return interPathHelper(path1, path2, 1);
+    };
+    function interPathHelper(path1, path2, justCount) {
+        path1 = R._path2curve(path1);
+        path2 = R._path2curve(path2);
+        var x1,
+            y1,
+            x2,
+            y2,
+            x1m,
+            y1m,
+            x2m,
+            y2m,
+            bez1,
+            bez2,
+            res = justCount ? 0 : [];
+        for (var i = 0, ii = path1.length; i < ii; i++) {
+            var pi = path1[i];
+            if (pi[0] === strM) {
+                x1 = x1m = pi[1];
+                y1 = y1m = pi[2];
+            } else {
+                if (pi[0] === "C") {
+                    bez1 = [x1, y1].concat(pi.slice(1));
+                    x1 = bez1[6];
+                    y1 = bez1[7];
+                } else {
+                    bez1 = [x1, y1, x1, y1, x1m, y1m, x1m, y1m];
+                    x1 = x1m;
+                    y1 = y1m;
+                }
+                for (var j = 0, jj = path2.length; j < jj; j++) {
+                    var pj = path2[j];
+                    if (pj[0] === strM) {
+                        x2 = x2m = pj[1];
+                        y2 = y2m = pj[2];
+                    } else {
+                        if (pj[0] === "C") {
+                            bez2 = [x2, y2].concat(pj.slice(1));
+                            x2 = bez2[6];
+                            y2 = bez2[7];
+                        } else {
+                            bez2 = [x2, y2, x2, y2, x2m, y2m, x2m, y2m];
+                            x2 = x2m;
+                            y2 = y2m;
+                        }
+                        var intr = interHelper(bez1, bez2, justCount);
+                        if (justCount) {
+                            res += intr;
+                        } else {
+                            for (var k = 0, kk = intr.length; k < kk; k++) {
+                                intr[k].segment1 = i;
+                                intr[k].segment2 = j;
+                                intr[k].bez1 = bez1;
+                                intr[k].bez2 = bez2;
+                            }
+                            res = res.concat(intr);
+                        }
+                    }
+                }
+            }
+        }
+        return res;
+    }
+};
+
+var _raphael = __webpack_require__(7);
+
+module.exports = exports['default'];
+
+/**
+ * All non fusincharts related functionalities of redRaphael is listed here
+ */
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(29)))
+
+/***/ }),
+/* 44 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {
+
+exports.__esModule = true;
+
+var _iterator = __webpack_require__(9);
 
 var _iterator2 = _interopRequireDefault(_iterator);
 
@@ -1182,11 +6024,11 @@ var _typeof = typeof _symbol2['default'] === "function" && typeof _iterator2['de
                                                                                                                                                                                                                                                                                                                                          * Licensed under the MIT license.
                                                                                                                                                                                                                                                                                                                                          */
 
-var _eve2 = __webpack_require__(71);
+var _eve2 = __webpack_require__(41);
 
 var _eve3 = _interopRequireDefault(_eve2);
 
-var _raphael = __webpack_require__(9);
+var _raphael = __webpack_require__(7);
 
 var _raphael2 = _interopRequireDefault(_raphael);
 
@@ -1283,6 +6125,7 @@ R.eve = _eve3['default'];
 // RedRaphael = R;
 
 var loaded,
+    UNDEF,
     undef,
     E = '',
     S = ' ',
@@ -3861,8 +8704,8 @@ var preventDefault = function preventDefault() {
     }
 }(),
     dragMove = function dragMove(e) {
-    var x = e.clientX || e.changedTouches && e.changedTouches[0].clientX,
-        y = e.clientY || e.changedTouches && e.changedTouches[0].clientY,
+    var x = e.clientX !== UNDEF ? e.clientX : e.changedTouches && e.changedTouches[0].clientX,
+        y = e.clientY !== UNDEF ? e.clientY : e.changedTouches && e.changedTouches[0].clientY,
         scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
         scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
         dragi,
@@ -4398,8 +9241,8 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
             args = [dragMove, undef, g.doc];
 
         // In hybrid devices, sometimes the e.clientX and e.clientY is not defined
-        this._drag.x = _dragX = (e.clientX || e.changedTouches && e.changedTouches[0].clientX) + scrollX;
-        this._drag.y = _dragY = (e.clientY || e.changedTouches && e.changedTouches[0].clientY) + scrollY;
+        this._drag.x = _dragX = (e.clientX !== UNDEF ? e.clientX : e.changedTouches && e.changedTouches[0].clientX) + scrollX;
+        this._drag.y = _dragY = (e.clientY !== UNDEF ? e.clientY : e.changedTouches && e.changedTouches[0].clientY) + scrollY;
         this._drag.id = e.identifier;
 
         // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
@@ -7667,2983 +12510,18 @@ _eve3['default'].on("raphael.DOMload", function () {
 
 exports['default'] = R;
 module.exports = exports['default'];
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(15)))
-
-/***/ }),
-/* 43 */
-/***/ (function(module, exports, __webpack_require__) {
-
-__webpack_require__(44);
-__webpack_require__(57);
-module.exports = __webpack_require__(27).f('iterator');
-
-
-/***/ }),
-/* 44 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var $at = __webpack_require__(45)(true);
-
-// 21.1.3.27 String.prototype[@@iterator]()
-__webpack_require__(30)(String, 'String', function (iterated) {
-  this._t = String(iterated); // target
-  this._i = 0;                // next index
-// 21.1.5.2.1 %StringIteratorPrototype%.next()
-}, function () {
-  var O = this._t;
-  var index = this._i;
-  var point;
-  if (index >= O.length) return { value: undefined, done: true };
-  point = $at(O, index);
-  this._i += point.length;
-  return { value: point, done: false };
-});
-
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(29)))
 
 /***/ }),
 /* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var toInteger = __webpack_require__(16);
-var defined = __webpack_require__(17);
-// true  -> String#at
-// false -> String#codePointAt
-module.exports = function (TO_STRING) {
-  return function (that, pos) {
-    var s = String(defined(that));
-    var i = toInteger(pos);
-    var l = s.length;
-    var a, b;
-    if (i < 0 || i >= l) return TO_STRING ? '' : undefined;
-    a = s.charCodeAt(i);
-    return a < 0xd800 || a > 0xdbff || i + 1 === l || (b = s.charCodeAt(i + 1)) < 0xdc00 || b > 0xdfff
-      ? TO_STRING ? s.charAt(i) : a
-      : TO_STRING ? s.slice(i, i + 2) : (a - 0xd800 << 10) + (b - 0xdc00) + 0x10000;
-  };
-};
-
-
-/***/ }),
-/* 46 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// optional / simple context binding
-var aFunction = __webpack_require__(47);
-module.exports = function (fn, that, length) {
-  aFunction(fn);
-  if (that === undefined) return fn;
-  switch (length) {
-    case 1: return function (a) {
-      return fn.call(that, a);
-    };
-    case 2: return function (a, b) {
-      return fn.call(that, a, b);
-    };
-    case 3: return function (a, b, c) {
-      return fn.call(that, a, b, c);
-    };
-  }
-  return function (/* ...args */) {
-    return fn.apply(that, arguments);
-  };
-};
-
-
-/***/ }),
-/* 47 */
-/***/ (function(module, exports) {
-
-module.exports = function (it) {
-  if (typeof it != 'function') throw TypeError(it + ' is not a function!');
-  return it;
-};
-
-
-/***/ }),
-/* 48 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var create = __webpack_require__(35);
-var descriptor = __webpack_require__(13);
-var setToStringTag = __webpack_require__(26);
-var IteratorPrototype = {};
-
-// 25.1.2.1.1 %IteratorPrototype%[@@iterator]()
-__webpack_require__(2)(IteratorPrototype, __webpack_require__(6)('iterator'), function () { return this; });
-
-module.exports = function (Constructor, NAME, next) {
-  Constructor.prototype = create(IteratorPrototype, { next: descriptor(1, next) });
-  setToStringTag(Constructor, NAME + ' Iterator');
-};
-
-
-/***/ }),
-/* 49 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var dP = __webpack_require__(3);
-var anObject = __webpack_require__(10);
-var getKeys = __webpack_require__(22);
-
-module.exports = __webpack_require__(4) ? Object.defineProperties : function defineProperties(O, Properties) {
-  anObject(O);
-  var keys = getKeys(Properties);
-  var length = keys.length;
-  var i = 0;
-  var P;
-  while (length > i) dP.f(O, P = keys[i++], Properties[P]);
-  return O;
-};
-
-
-/***/ }),
-/* 50 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// fallback for non-array-like ES3 and non-enumerable old V8 strings
-var cof = __webpack_require__(37);
-// eslint-disable-next-line no-prototype-builtins
-module.exports = Object('z').propertyIsEnumerable(0) ? Object : function (it) {
-  return cof(it) == 'String' ? it.split('') : Object(it);
-};
-
-
-/***/ }),
-/* 51 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// false -> Array#indexOf
-// true  -> Array#includes
-var toIObject = __webpack_require__(5);
-var toLength = __webpack_require__(52);
-var toAbsoluteIndex = __webpack_require__(53);
-module.exports = function (IS_INCLUDES) {
-  return function ($this, el, fromIndex) {
-    var O = toIObject($this);
-    var length = toLength(O.length);
-    var index = toAbsoluteIndex(fromIndex, length);
-    var value;
-    // Array#includes uses SameValueZero equality algorithm
-    // eslint-disable-next-line no-self-compare
-    if (IS_INCLUDES && el != el) while (length > index) {
-      value = O[index++];
-      // eslint-disable-next-line no-self-compare
-      if (value != value) return true;
-    // Array#indexOf ignores holes, Array#includes - not
-    } else for (;length > index; index++) if (IS_INCLUDES || index in O) {
-      if (O[index] === el) return IS_INCLUDES || index || 0;
-    } return !IS_INCLUDES && -1;
-  };
-};
-
-
-/***/ }),
-/* 52 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// 7.1.15 ToLength
-var toInteger = __webpack_require__(16);
-var min = Math.min;
-module.exports = function (it) {
-  return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
-};
-
-
-/***/ }),
-/* 53 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var toInteger = __webpack_require__(16);
-var max = Math.max;
-var min = Math.min;
-module.exports = function (index, length) {
-  index = toInteger(index);
-  return index < 0 ? max(index + length, 0) : min(index, length);
-};
-
-
-/***/ }),
-/* 54 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var document = __webpack_require__(0).document;
-module.exports = document && document.documentElement;
-
-
-/***/ }),
-/* 55 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
-var has = __webpack_require__(1);
-var toObject = __webpack_require__(56);
-var IE_PROTO = __webpack_require__(23)('IE_PROTO');
-var ObjectProto = Object.prototype;
-
-module.exports = Object.getPrototypeOf || function (O) {
-  O = toObject(O);
-  if (has(O, IE_PROTO)) return O[IE_PROTO];
-  if (typeof O.constructor == 'function' && O instanceof O.constructor) {
-    return O.constructor.prototype;
-  } return O instanceof Object ? ObjectProto : null;
-};
-
-
-/***/ }),
-/* 56 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// 7.1.13 ToObject(argument)
-var defined = __webpack_require__(17);
-module.exports = function (it) {
-  return Object(defined(it));
-};
-
-
-/***/ }),
-/* 57 */
-/***/ (function(module, exports, __webpack_require__) {
-
-__webpack_require__(58);
-var global = __webpack_require__(0);
-var hide = __webpack_require__(2);
-var Iterators = __webpack_require__(21);
-var TO_STRING_TAG = __webpack_require__(6)('toStringTag');
-
-var DOMIterables = ('CSSRuleList,CSSStyleDeclaration,CSSValueList,ClientRectList,DOMRectList,DOMStringList,' +
-  'DOMTokenList,DataTransferItemList,FileList,HTMLAllCollection,HTMLCollection,HTMLFormElement,HTMLSelectElement,' +
-  'MediaList,MimeTypeArray,NamedNodeMap,NodeList,PaintRequestList,Plugin,PluginArray,SVGLengthList,SVGNumberList,' +
-  'SVGPathSegList,SVGPointList,SVGStringList,SVGTransformList,SourceBufferList,StyleSheetList,TextTrackCueList,' +
-  'TextTrackList,TouchList').split(',');
-
-for (var i = 0; i < DOMIterables.length; i++) {
-  var NAME = DOMIterables[i];
-  var Collection = global[NAME];
-  var proto = Collection && Collection.prototype;
-  if (proto && !proto[TO_STRING_TAG]) hide(proto, TO_STRING_TAG, NAME);
-  Iterators[NAME] = Iterators.Array;
-}
-
-
-/***/ }),
-/* 58 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var addToUnscopables = __webpack_require__(59);
-var step = __webpack_require__(60);
-var Iterators = __webpack_require__(21);
-var toIObject = __webpack_require__(5);
-
-// 22.1.3.4 Array.prototype.entries()
-// 22.1.3.13 Array.prototype.keys()
-// 22.1.3.29 Array.prototype.values()
-// 22.1.3.30 Array.prototype[@@iterator]()
-module.exports = __webpack_require__(30)(Array, 'Array', function (iterated, kind) {
-  this._t = toIObject(iterated); // target
-  this._i = 0;                   // next index
-  this._k = kind;                // kind
-// 22.1.5.2.1 %ArrayIteratorPrototype%.next()
-}, function () {
-  var O = this._t;
-  var kind = this._k;
-  var index = this._i++;
-  if (!O || index >= O.length) {
-    this._t = undefined;
-    return step(1);
-  }
-  if (kind == 'keys') return step(0, index);
-  if (kind == 'values') return step(0, O[index]);
-  return step(0, [index, O[index]]);
-}, 'values');
-
-// argumentsList[@@iterator] is %ArrayProto_values% (9.4.4.6, 9.4.4.7)
-Iterators.Arguments = Iterators.Array;
-
-addToUnscopables('keys');
-addToUnscopables('values');
-addToUnscopables('entries');
-
-
-/***/ }),
-/* 59 */
-/***/ (function(module, exports) {
-
-module.exports = function () { /* empty */ };
-
-
-/***/ }),
-/* 60 */
-/***/ (function(module, exports) {
-
-module.exports = function (done, value) {
-  return { value: value, done: !!done };
-};
-
-
-/***/ }),
-/* 61 */
-/***/ (function(module, exports, __webpack_require__) {
-
-__webpack_require__(62);
-__webpack_require__(68);
-__webpack_require__(69);
-__webpack_require__(70);
-module.exports = __webpack_require__(19).Symbol;
-
-
-/***/ }),
-/* 62 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-// ECMAScript 6 symbols shim
-var global = __webpack_require__(0);
-var has = __webpack_require__(1);
-var DESCRIPTORS = __webpack_require__(4);
-var $export = __webpack_require__(31);
-var redefine = __webpack_require__(34);
-var META = __webpack_require__(63).KEY;
-var $fails = __webpack_require__(12);
-var shared = __webpack_require__(24);
-var setToStringTag = __webpack_require__(26);
-var uid = __webpack_require__(14);
-var wks = __webpack_require__(6);
-var wksExt = __webpack_require__(27);
-var wksDefine = __webpack_require__(28);
-var enumKeys = __webpack_require__(64);
-var isArray = __webpack_require__(65);
-var anObject = __webpack_require__(10);
-var toIObject = __webpack_require__(5);
-var toPrimitive = __webpack_require__(20);
-var createDesc = __webpack_require__(13);
-var _create = __webpack_require__(35);
-var gOPNExt = __webpack_require__(66);
-var $GOPD = __webpack_require__(67);
-var $DP = __webpack_require__(3);
-var $keys = __webpack_require__(22);
-var gOPD = $GOPD.f;
-var dP = $DP.f;
-var gOPN = gOPNExt.f;
-var $Symbol = global.Symbol;
-var $JSON = global.JSON;
-var _stringify = $JSON && $JSON.stringify;
-var PROTOTYPE = 'prototype';
-var HIDDEN = wks('_hidden');
-var TO_PRIMITIVE = wks('toPrimitive');
-var isEnum = {}.propertyIsEnumerable;
-var SymbolRegistry = shared('symbol-registry');
-var AllSymbols = shared('symbols');
-var OPSymbols = shared('op-symbols');
-var ObjectProto = Object[PROTOTYPE];
-var USE_NATIVE = typeof $Symbol == 'function';
-var QObject = global.QObject;
-// Don't use setters in Qt Script, https://github.com/zloirock/core-js/issues/173
-var setter = !QObject || !QObject[PROTOTYPE] || !QObject[PROTOTYPE].findChild;
-
-// fallback for old Android, https://code.google.com/p/v8/issues/detail?id=687
-var setSymbolDesc = DESCRIPTORS && $fails(function () {
-  return _create(dP({}, 'a', {
-    get: function () { return dP(this, 'a', { value: 7 }).a; }
-  })).a != 7;
-}) ? function (it, key, D) {
-  var protoDesc = gOPD(ObjectProto, key);
-  if (protoDesc) delete ObjectProto[key];
-  dP(it, key, D);
-  if (protoDesc && it !== ObjectProto) dP(ObjectProto, key, protoDesc);
-} : dP;
-
-var wrap = function (tag) {
-  var sym = AllSymbols[tag] = _create($Symbol[PROTOTYPE]);
-  sym._k = tag;
-  return sym;
-};
-
-var isSymbol = USE_NATIVE && typeof $Symbol.iterator == 'symbol' ? function (it) {
-  return typeof it == 'symbol';
-} : function (it) {
-  return it instanceof $Symbol;
-};
-
-var $defineProperty = function defineProperty(it, key, D) {
-  if (it === ObjectProto) $defineProperty(OPSymbols, key, D);
-  anObject(it);
-  key = toPrimitive(key, true);
-  anObject(D);
-  if (has(AllSymbols, key)) {
-    if (!D.enumerable) {
-      if (!has(it, HIDDEN)) dP(it, HIDDEN, createDesc(1, {}));
-      it[HIDDEN][key] = true;
-    } else {
-      if (has(it, HIDDEN) && it[HIDDEN][key]) it[HIDDEN][key] = false;
-      D = _create(D, { enumerable: createDesc(0, false) });
-    } return setSymbolDesc(it, key, D);
-  } return dP(it, key, D);
-};
-var $defineProperties = function defineProperties(it, P) {
-  anObject(it);
-  var keys = enumKeys(P = toIObject(P));
-  var i = 0;
-  var l = keys.length;
-  var key;
-  while (l > i) $defineProperty(it, key = keys[i++], P[key]);
-  return it;
-};
-var $create = function create(it, P) {
-  return P === undefined ? _create(it) : $defineProperties(_create(it), P);
-};
-var $propertyIsEnumerable = function propertyIsEnumerable(key) {
-  var E = isEnum.call(this, key = toPrimitive(key, true));
-  if (this === ObjectProto && has(AllSymbols, key) && !has(OPSymbols, key)) return false;
-  return E || !has(this, key) || !has(AllSymbols, key) || has(this, HIDDEN) && this[HIDDEN][key] ? E : true;
-};
-var $getOwnPropertyDescriptor = function getOwnPropertyDescriptor(it, key) {
-  it = toIObject(it);
-  key = toPrimitive(key, true);
-  if (it === ObjectProto && has(AllSymbols, key) && !has(OPSymbols, key)) return;
-  var D = gOPD(it, key);
-  if (D && has(AllSymbols, key) && !(has(it, HIDDEN) && it[HIDDEN][key])) D.enumerable = true;
-  return D;
-};
-var $getOwnPropertyNames = function getOwnPropertyNames(it) {
-  var names = gOPN(toIObject(it));
-  var result = [];
-  var i = 0;
-  var key;
-  while (names.length > i) {
-    if (!has(AllSymbols, key = names[i++]) && key != HIDDEN && key != META) result.push(key);
-  } return result;
-};
-var $getOwnPropertySymbols = function getOwnPropertySymbols(it) {
-  var IS_OP = it === ObjectProto;
-  var names = gOPN(IS_OP ? OPSymbols : toIObject(it));
-  var result = [];
-  var i = 0;
-  var key;
-  while (names.length > i) {
-    if (has(AllSymbols, key = names[i++]) && (IS_OP ? has(ObjectProto, key) : true)) result.push(AllSymbols[key]);
-  } return result;
-};
-
-// 19.4.1.1 Symbol([description])
-if (!USE_NATIVE) {
-  $Symbol = function Symbol() {
-    if (this instanceof $Symbol) throw TypeError('Symbol is not a constructor!');
-    var tag = uid(arguments.length > 0 ? arguments[0] : undefined);
-    var $set = function (value) {
-      if (this === ObjectProto) $set.call(OPSymbols, value);
-      if (has(this, HIDDEN) && has(this[HIDDEN], tag)) this[HIDDEN][tag] = false;
-      setSymbolDesc(this, tag, createDesc(1, value));
-    };
-    if (DESCRIPTORS && setter) setSymbolDesc(ObjectProto, tag, { configurable: true, set: $set });
-    return wrap(tag);
-  };
-  redefine($Symbol[PROTOTYPE], 'toString', function toString() {
-    return this._k;
-  });
-
-  $GOPD.f = $getOwnPropertyDescriptor;
-  $DP.f = $defineProperty;
-  __webpack_require__(39).f = gOPNExt.f = $getOwnPropertyNames;
-  __webpack_require__(29).f = $propertyIsEnumerable;
-  __webpack_require__(38).f = $getOwnPropertySymbols;
-
-  if (DESCRIPTORS && !__webpack_require__(18)) {
-    redefine(ObjectProto, 'propertyIsEnumerable', $propertyIsEnumerable, true);
-  }
-
-  wksExt.f = function (name) {
-    return wrap(wks(name));
-  };
-}
-
-$export($export.G + $export.W + $export.F * !USE_NATIVE, { Symbol: $Symbol });
-
-for (var es6Symbols = (
-  // 19.4.2.2, 19.4.2.3, 19.4.2.4, 19.4.2.6, 19.4.2.8, 19.4.2.9, 19.4.2.10, 19.4.2.11, 19.4.2.12, 19.4.2.13, 19.4.2.14
-  'hasInstance,isConcatSpreadable,iterator,match,replace,search,species,split,toPrimitive,toStringTag,unscopables'
-).split(','), j = 0; es6Symbols.length > j;)wks(es6Symbols[j++]);
-
-for (var wellKnownSymbols = $keys(wks.store), k = 0; wellKnownSymbols.length > k;) wksDefine(wellKnownSymbols[k++]);
-
-$export($export.S + $export.F * !USE_NATIVE, 'Symbol', {
-  // 19.4.2.1 Symbol.for(key)
-  'for': function (key) {
-    return has(SymbolRegistry, key += '')
-      ? SymbolRegistry[key]
-      : SymbolRegistry[key] = $Symbol(key);
-  },
-  // 19.4.2.5 Symbol.keyFor(sym)
-  keyFor: function keyFor(sym) {
-    if (!isSymbol(sym)) throw TypeError(sym + ' is not a symbol!');
-    for (var key in SymbolRegistry) if (SymbolRegistry[key] === sym) return key;
-  },
-  useSetter: function () { setter = true; },
-  useSimple: function () { setter = false; }
-});
-
-$export($export.S + $export.F * !USE_NATIVE, 'Object', {
-  // 19.1.2.2 Object.create(O [, Properties])
-  create: $create,
-  // 19.1.2.4 Object.defineProperty(O, P, Attributes)
-  defineProperty: $defineProperty,
-  // 19.1.2.3 Object.defineProperties(O, Properties)
-  defineProperties: $defineProperties,
-  // 19.1.2.6 Object.getOwnPropertyDescriptor(O, P)
-  getOwnPropertyDescriptor: $getOwnPropertyDescriptor,
-  // 19.1.2.7 Object.getOwnPropertyNames(O)
-  getOwnPropertyNames: $getOwnPropertyNames,
-  // 19.1.2.8 Object.getOwnPropertySymbols(O)
-  getOwnPropertySymbols: $getOwnPropertySymbols
-});
-
-// 24.3.2 JSON.stringify(value [, replacer [, space]])
-$JSON && $export($export.S + $export.F * (!USE_NATIVE || $fails(function () {
-  var S = $Symbol();
-  // MS Edge converts symbol values to JSON as {}
-  // WebKit converts symbol values to JSON as null
-  // V8 throws on boxed symbols
-  return _stringify([S]) != '[null]' || _stringify({ a: S }) != '{}' || _stringify(Object(S)) != '{}';
-})), 'JSON', {
-  stringify: function stringify(it) {
-    if (it === undefined || isSymbol(it)) return; // IE8 returns string on undefined
-    var args = [it];
-    var i = 1;
-    var replacer, $replacer;
-    while (arguments.length > i) args.push(arguments[i++]);
-    replacer = args[1];
-    if (typeof replacer == 'function') $replacer = replacer;
-    if ($replacer || !isArray(replacer)) replacer = function (key, value) {
-      if ($replacer) value = $replacer.call(this, key, value);
-      if (!isSymbol(value)) return value;
-    };
-    args[1] = replacer;
-    return _stringify.apply($JSON, args);
-  }
-});
-
-// 19.4.3.4 Symbol.prototype[@@toPrimitive](hint)
-$Symbol[PROTOTYPE][TO_PRIMITIVE] || __webpack_require__(2)($Symbol[PROTOTYPE], TO_PRIMITIVE, $Symbol[PROTOTYPE].valueOf);
-// 19.4.3.5 Symbol.prototype[@@toStringTag]
-setToStringTag($Symbol, 'Symbol');
-// 20.2.1.9 Math[@@toStringTag]
-setToStringTag(Math, 'Math', true);
-// 24.3.3 JSON[@@toStringTag]
-setToStringTag(global.JSON, 'JSON', true);
-
-
-/***/ }),
-/* 63 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var META = __webpack_require__(14)('meta');
-var isObject = __webpack_require__(11);
-var has = __webpack_require__(1);
-var setDesc = __webpack_require__(3).f;
-var id = 0;
-var isExtensible = Object.isExtensible || function () {
-  return true;
-};
-var FREEZE = !__webpack_require__(12)(function () {
-  return isExtensible(Object.preventExtensions({}));
-});
-var setMeta = function (it) {
-  setDesc(it, META, { value: {
-    i: 'O' + ++id, // object ID
-    w: {}          // weak collections IDs
-  } });
-};
-var fastKey = function (it, create) {
-  // return primitive with prefix
-  if (!isObject(it)) return typeof it == 'symbol' ? it : (typeof it == 'string' ? 'S' : 'P') + it;
-  if (!has(it, META)) {
-    // can't set metadata to uncaught frozen object
-    if (!isExtensible(it)) return 'F';
-    // not necessary to add metadata
-    if (!create) return 'E';
-    // add missing metadata
-    setMeta(it);
-  // return object ID
-  } return it[META].i;
-};
-var getWeak = function (it, create) {
-  if (!has(it, META)) {
-    // can't set metadata to uncaught frozen object
-    if (!isExtensible(it)) return true;
-    // not necessary to add metadata
-    if (!create) return false;
-    // add missing metadata
-    setMeta(it);
-  // return hash weak collections IDs
-  } return it[META].w;
-};
-// add metadata on freeze-family methods calling
-var onFreeze = function (it) {
-  if (FREEZE && meta.NEED && isExtensible(it) && !has(it, META)) setMeta(it);
-  return it;
-};
-var meta = module.exports = {
-  KEY: META,
-  NEED: false,
-  fastKey: fastKey,
-  getWeak: getWeak,
-  onFreeze: onFreeze
-};
-
-
-/***/ }),
-/* 64 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// all enumerable object keys, includes symbols
-var getKeys = __webpack_require__(22);
-var gOPS = __webpack_require__(38);
-var pIE = __webpack_require__(29);
-module.exports = function (it) {
-  var result = getKeys(it);
-  var getSymbols = gOPS.f;
-  if (getSymbols) {
-    var symbols = getSymbols(it);
-    var isEnum = pIE.f;
-    var i = 0;
-    var key;
-    while (symbols.length > i) if (isEnum.call(it, key = symbols[i++])) result.push(key);
-  } return result;
-};
-
-
-/***/ }),
-/* 65 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// 7.2.2 IsArray(argument)
-var cof = __webpack_require__(37);
-module.exports = Array.isArray || function isArray(arg) {
-  return cof(arg) == 'Array';
-};
-
-
-/***/ }),
-/* 66 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// fallback for IE11 buggy Object.getOwnPropertyNames with iframe and window
-var toIObject = __webpack_require__(5);
-var gOPN = __webpack_require__(39).f;
-var toString = {}.toString;
-
-var windowNames = typeof window == 'object' && window && Object.getOwnPropertyNames
-  ? Object.getOwnPropertyNames(window) : [];
-
-var getWindowNames = function (it) {
-  try {
-    return gOPN(it);
-  } catch (e) {
-    return windowNames.slice();
-  }
-};
-
-module.exports.f = function getOwnPropertyNames(it) {
-  return windowNames && toString.call(it) == '[object Window]' ? getWindowNames(it) : gOPN(toIObject(it));
-};
-
-
-/***/ }),
-/* 67 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var pIE = __webpack_require__(29);
-var createDesc = __webpack_require__(13);
-var toIObject = __webpack_require__(5);
-var toPrimitive = __webpack_require__(20);
-var has = __webpack_require__(1);
-var IE8_DOM_DEFINE = __webpack_require__(32);
-var gOPD = Object.getOwnPropertyDescriptor;
-
-exports.f = __webpack_require__(4) ? gOPD : function getOwnPropertyDescriptor(O, P) {
-  O = toIObject(O);
-  P = toPrimitive(P, true);
-  if (IE8_DOM_DEFINE) try {
-    return gOPD(O, P);
-  } catch (e) { /* empty */ }
-  if (has(O, P)) return createDesc(!pIE.f.call(O, P), O[P]);
-};
-
-
-/***/ }),
-/* 68 */
-/***/ (function(module, exports) {
-
-
-
-/***/ }),
-/* 69 */
-/***/ (function(module, exports, __webpack_require__) {
-
-__webpack_require__(28)('asyncIterator');
-
-
-/***/ }),
-/* 70 */
-/***/ (function(module, exports, __webpack_require__) {
-
-__webpack_require__(28)('observable');
-
-
-/***/ }),
-/* 71 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global) {
-
-exports.__esModule = true;
-
-var _raphael = __webpack_require__(9);
-
-// Copyright (c) 2017 Adobe Systems Incorporated. All rights reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-// ┌────────────────────────────────────────────────────────────┐ \\
-// │ Eve 0.5.3 - JavaScript Events Library                      │ \\
-// ├────────────────────────────────────────────────────────────┤ \\
-// │ Author Dmitry Baranovskiy (http://dmitry.baranovskiy.com/) │ \\
-// └────────────────────────────────────────────────────────────┘ \\
-
-exports["default"] = function (glob) {
-    var version = "0.5.3",
-        has = "hasOwnProperty",
-        separator = /[\.\/]/,
-        comaseparator = /\s*,\s*/,
-        wildcard = "*",
-        fun = function fun() {},
-        numsort = function numsort(a, b) {
-        return a - b;
-    },
-        current_event,
-        stop,
-        events = { n: {} },
-        firstDefined = function firstDefined() {
-        for (var i = 0, ii = this.length; i < ii; i++) {
-            if (typeof this[i] != "undefined") {
-                return this[i];
-            }
-        }
-    },
-        lastDefined = function lastDefined() {
-        var i = this.length;
-        while (--i) {
-            if (typeof this[i] != "undefined") {
-                return this[i];
-            }
-        }
-    },
-        objtos = Object.prototype.toString,
-        Str = String,
-        isArray = Array.isArray || function (ar) {
-        return ar instanceof Array || objtos.call(ar) == "[object Array]";
-    },
-
-    /*\
-     * eve
-     [ method ]
-      * Fires event with given `name`, given scope and other parameters.
-      - name (string) name of the *event*, dot (`.`) or slash (`/`) separated
-     - scope (object) context for the event handlers
-     - varargs (...) the rest of arguments will be sent to event handlers
-      = (object) array of returned values from the listeners. Array has two methods `.firstDefined()` and `.lastDefined()` to get first or last not `undefined` value.
-    \*/
-    eve = function eve(name, scope) {
-        var e = events,
-            oldstop = stop,
-            arg = (0, _raphael.getArrayCopy)(arguments),
-            args = Array.prototype.slice.call(arg, 2),
-            listeners = eve.listeners(name),
-            z = 0,
-            f = false,
-            l,
-            indexed = [],
-            queue = {},
-            out = [],
-            ce = current_event,
-            errors = [];
-        out.firstDefined = firstDefined;
-        out.lastDefined = lastDefined;
-        current_event = name;
-        stop = 0;
-        for (var i = 0, ii = listeners.length; i < ii; i++) {
-            if ("zIndex" in listeners[i]) {
-                indexed.push(listeners[i].zIndex);
-                if (listeners[i].zIndex < 0) {
-                    queue[listeners[i].zIndex] = listeners[i];
-                }
-            }
-        }indexed.sort(numsort);
-        while (indexed[z] < 0) {
-            l = queue[indexed[z++]];
-            out.push(l.apply(scope, args));
-            if (stop) {
-                stop = oldstop;
-                return out;
-            }
-        }
-        for (i = 0; i < ii; i++) {
-            l = listeners[i];
-            if ("zIndex" in l) {
-                if (l.zIndex == indexed[z]) {
-                    out.push(l.apply(scope, args));
-                    if (stop) {
-                        break;
-                    }
-                    do {
-                        z++;
-                        l = queue[indexed[z]];
-                        l && out.push(l.apply(scope, args));
-                        if (stop) {
-                            break;
-                        }
-                    } while (l);
-                } else {
-                    queue[l.zIndex] = l;
-                }
-            } else {
-                out.push(l.apply(scope, args));
-                if (stop) {
-                    break;
-                }
-            }
-        }
-        stop = oldstop;
-        current_event = ce;
-        return out;
-    };
-    // Undocumented. Debug only.
-    eve._events = events;
-    /*\
-     * eve.listeners
-     [ method ]
-      * Internal method which gives you array of all event handlers that will be triggered by the given `name`.
-      - name (string) name of the event, dot (`.`) or slash (`/`) separated
-      = (array) array of event handlers
-    \*/
-    eve.listeners = function (name) {
-        var names = isArray(name) ? name : name.split(separator),
-            e = events,
-            item,
-            items,
-            k,
-            i,
-            ii,
-            j,
-            jj,
-            nes,
-            es = [e],
-            out = [];
-        for (i = 0, ii = names.length; i < ii; i++) {
-            nes = [];
-            for (j = 0, jj = es.length; j < jj; j++) {
-                e = es[j].n;
-                items = [e[names[i]], e[wildcard]];
-                k = 2;
-                while (k--) {
-                    item = items[k];
-                    if (item) {
-                        nes.push(item);
-                        out = out.concat(item.f || []);
-                    }
-                }
-            }
-            es = nes;
-        }
-        return out;
-    };
-    /*\
-     * eve.separator
-     [ method ]
-      * If for some reasons you don’t like default separators (`.` or `/`) you can specify yours
-     * here. Be aware that if you pass a string longer than one character it will be treated as
-     * a list of characters.
-      - separator (string) new separator. Empty string resets to default: `.` or `/`.
-    \*/
-    eve.separator = function (sep) {
-        if (sep) {
-            sep = Str(sep).replace(/(?=[\.\^\]\[\-])/g, "\\");
-            sep = "[" + sep + "]";
-            separator = new RegExp(sep);
-        } else {
-            separator = /[\.\/]/;
-        }
-    };
-    /*\
-     * eve.on
-     [ method ]
-     **
-     * Binds given event handler with a given name. You can use wildcards “`*`” for the names:
-     | eve.on("*.under.*", f);
-     | eve("mouse.under.floor"); // triggers f
-     * Use @eve to trigger the listener.
-     **
-     - name (string) name of the event, dot (`.`) or slash (`/`) separated, with optional wildcards
-     - f (function) event handler function
-     **
-     - name (array) if you don’t want to use separators, you can use array of strings
-     - f (function) event handler function
-     **
-     = (function) returned function accepts a single numeric parameter that represents z-index of the handler. It is an optional feature and only used when you need to ensure that some subset of handlers will be invoked in a given order, despite of the order of assignment.
-     > Example:
-     | eve.on("mouse", eatIt)(2);
-     | eve.on("mouse", scream);
-     | eve.on("mouse", catchIt)(1);
-     * This will ensure that `catchIt` function will be called before `eatIt`.
-     *
-     * If you want to put your handler before non-indexed handlers, specify a negative value.
-     * Note: I assume most of the time you don’t need to worry about z-index, but it’s nice to have this feature “just in case”.
-    \*/
-    eve.on = function (name, f) {
-        if (typeof f != "function") {
-            return function () {};
-        }
-        var names = isArray(name) ? isArray(name[0]) ? name : [name] : Str(name).split(comaseparator);
-        for (var i = 0, ii = names.length; i < ii; i++) {
-            (function (name) {
-                var names = isArray(name) ? name : Str(name).split(separator),
-                    e = events,
-                    exist;
-                for (var i = 0, ii = names.length; i < ii; i++) {
-                    e = e.n;
-                    e = e.hasOwnProperty(names[i]) && e[names[i]] || (e[names[i]] = { n: {} });
-                }
-                e.f = e.f || [];
-                for (i = 0, ii = e.f.length; i < ii; i++) {
-                    if (e.f[i] == f) {
-                        exist = true;
-                        break;
-                    }
-                }!exist && e.f.push(f);
-            })(names[i]);
-        }
-        return function (zIndex) {
-            if (+zIndex == +zIndex) {
-                f.zIndex = +zIndex;
-            }
-        };
-    };
-    /*\
-     * eve.f
-     [ method ]
-     **
-     * Returns function that will fire given event with optional arguments.
-     * Arguments that will be passed to the result function will be also
-     * concated to the list of final arguments.
-     | el.onclick = eve.f("click", 1, 2);
-     | eve.on("click", function (a, b, c) {
-     |     console.log(a, b, c); // 1, 2, [event object]
-     | });
-     - event (string) event name
-     - varargs (…) and any other arguments
-     = (function) possible event handler function
-    \*/
-    eve.f = function (event) {
-        var args = (0, _raphael.getArrayCopy)(arguments),
-            attrs = [].slice.call(args, 1);
-        return function () {
-            eve.apply(null, [event, null].concat(attrs).concat([].slice.call(args, 0)));
-        };
-    };
-    /*\
-     * eve.stop
-     [ method ]
-     **
-     * Is used inside an event handler to stop the event, preventing any subsequent listeners from firing.
-    \*/
-    eve.stop = function () {
-        stop = 1;
-    };
-    /*\
-     * eve.nt
-     [ method ]
-     **
-     * Could be used inside event handler to figure out actual name of the event.
-     **
-     - subname (string) #optional subname of the event
-     **
-     = (string) name of the event, if `subname` is not specified
-     * or
-     = (boolean) `true`, if current event’s name contains `subname`
-    \*/
-    eve.nt = function (subname) {
-        var cur = isArray(current_event) ? current_event.join(".") : current_event;
-        if (subname) {
-            return new RegExp("(?:\\.|\\/|^)" + subname + "(?:\\.|\\/|$)").test(cur);
-        }
-        return cur;
-    };
-    /*\
-     * eve.nts
-     [ method ]
-     **
-     * Could be used inside event handler to figure out actual name of the event.
-     **
-     **
-     = (array) names of the event
-    \*/
-    eve.nts = function () {
-        return isArray(current_event) ? current_event : current_event.split(separator);
-    };
-    /*\
-     * eve.off
-     [ method ]
-     **
-     * Removes given function from the list of event listeners assigned to given name.
-     * If no arguments specified all the events will be cleared.
-     **
-     - name (string) name of the event, dot (`.`) or slash (`/`) separated, with optional wildcards
-     - f (function) event handler function
-    \*/
-    /*\
-     * eve.unbind
-     [ method ]
-     **
-     * See @eve.off
-    \*/
-    eve.off = eve.unbind = function (name, f) {
-        if (!name) {
-            eve._events = events = { n: {} };
-            return;
-        }
-        var names = isArray(name) ? isArray(name[0]) ? name : [name] : Str(name).split(comaseparator);
-        if (names.length > 1) {
-            for (var i = 0, ii = names.length; i < ii; i++) {
-                eve.off(names[i], f);
-            }
-            return;
-        }
-        names = isArray(name) ? name : Str(name).split(separator);
-        var e,
-            key,
-            splice,
-            i,
-            ii,
-            j,
-            jj,
-            cur = [events],
-            inodes = [];
-        for (i = 0, ii = names.length; i < ii; i++) {
-            for (j = 0; j < cur.length; j += splice.length - 2) {
-                splice = [j, 1];
-                e = cur[j].n;
-                if (names[i] != wildcard) {
-                    if (e[names[i]]) {
-                        splice.push(e[names[i]]);
-                        inodes.unshift({
-                            n: e,
-                            name: names[i]
-                        });
-                    }
-                } else {
-                    for (key in e) {
-                        if (e[has](key)) {
-                            splice.push(e[key]);
-                            inodes.unshift({
-                                n: e,
-                                name: key
-                            });
-                        }
-                    }
-                }
-                cur.splice.apply(cur, splice);
-            }
-        }
-        for (i = 0, ii = cur.length; i < ii; i++) {
-            e = cur[i];
-            while (e.n) {
-                if (f) {
-                    if (e.f) {
-                        for (j = 0, jj = e.f.length; j < jj; j++) {
-                            if (e.f[j] == f) {
-                                e.f.splice(j, 1);
-                                break;
-                            }
-                        }!e.f.length && delete e.f;
-                    }
-                    for (key in e.n) {
-                        if (e.n[has](key) && e.n[key].f) {
-                            var funcs = e.n[key].f;
-                            for (j = 0, jj = funcs.length; j < jj; j++) {
-                                if (funcs[j] == f) {
-                                    funcs.splice(j, 1);
-                                    break;
-                                }
-                            }!funcs.length && delete e.n[key].f;
-                        }
-                    }
-                } else {
-                    delete e.f;
-                    for (key in e.n) {
-                        if (e.n[has](key) && e.n[key].f) {
-                            delete e.n[key].f;
-                        }
-                    }
-                }
-                e = e.n;
-            }
-        }
-        // prune inner nodes in path
-        prune: for (i = 0, ii = inodes.length; i < ii; i++) {
-            e = inodes[i];
-            for (key in e.n[e.name].f) {
-                // not empty (has listeners)
-                continue prune;
-            }
-            for (key in e.n[e.name].n) {
-                // not empty (has children)
-                continue prune;
-            }
-            // is empty
-            delete e.n[e.name];
-        }
-    };
-    /*\
-     * eve.once
-     [ method ]
-     **
-     * Binds given event handler with a given name to only run once then unbind itself.
-     | eve.once("login", f);
-     | eve("login"); // triggers f
-     | eve("login"); // no listeners
-     * Use @eve to trigger the listener.
-     **
-     - name (string) name of the event, dot (`.`) or slash (`/`) separated, with optional wildcards
-     - f (function) event handler function
-     **
-     = (function) same return function as @eve.on
-    \*/
-    eve.once = function (name, f) {
-        var f2 = function f2() {
-            eve.off(name, f2);
-            return f.apply(this, arguments);
-        };
-        return eve.on(name, f2);
-    };
-    /*\
-     * eve.version
-     [ property (string) ]
-     **
-     * Current version of the library.
-    \*/
-    eve.version = version;
-    eve.toString = function () {
-        return "You are running Eve " + version;
-    };
-    glob.eve = eve;
-    // typeof module != "undefined" && module.exports ? module.exports = eve : typeof define === "function" && define.amd ? define("eve", [], function() { return eve; }) : glob.eve = eve;
-    return eve;
-}(typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : null);
-
-module.exports = exports["default"];
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(15)))
-
-/***/ }),
-/* 72 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global) {
-
-exports.__esModule = true;
-
-exports['default'] = function (R) {
-    var _win = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : null,
-        g = {
-        doc: _win.document,
-        win: _win
-    },
-        elproto = R.el,
-        has = 'hasOwnProperty',
-        apply = 'apply',
-        object = 'object',
-        array = 'array',
-        string = 'string',
-        split = 'split',
-        finite = 'finite',
-        separator = /[, ]+/,
-        oldRaphael = {
-        was: Object.prototype[has].call(g.win, 'Raphael'),
-        is: g.win.Raphael
-    },
-        E = '',
-        mmax = Math.max,
-        mmin = Math.min,
-        paperproto = R.fn,
-        getPath = R._getPath,
-        Str = String,
-
-    // Set
-    Set = function Set(items) {
-        this.items = [];
-        this.length = 0;
-        this.type = 'set';
-        if (items) {
-            for (var i = 0, ii = items.length; i < ii; i++) {
-                if (items[i] && (items[i].constructor == elproto.constructor || items[i].constructor == Set)) {
-                    this[this.items.length] = this.items[this.items.length] = items[i];
-                    this.length++;
-                }
-            }
-        }
-    },
-        setproto = Set.prototype,
-        getOffset = function getOffset(elem) {
-        var box = elem.getBoundingClientRect(),
-            doc = elem.ownerDocument,
-            body = doc.body,
-            docElem = doc.documentElement,
-            clientTop = docElem.clientTop || body.clientTop || 0,
-            clientLeft = docElem.clientLeft || body.clientLeft || 0,
-            top = box.top + (g.win.pageYOffset || docElem.scrollTop || body.scrollTop) - clientTop,
-            left = box.left + (g.win.pageXOffset || docElem.scrollLeft || body.scrollLeft) - clientLeft;
-        return {
-            y: top,
-            x: left
-        };
-    },
-
-
-    /*\
-        * Raphael.transformPath
-        [ method ]
-        **
-        * Utility method
-        **
-        * Returns path transformed by a given transformation
-        > Parameters
-        - path (string) path string
-        - transform (string|array) transformation string
-        = (string) path
-    \*/
-    transformPath = R.transformPath = function (path, transform) {
-        return mapPath(path, toMatrix(path, transform));
-    },
-
-
-    /*\
-        * Raphael.toMatrix
-        [ method ]
-        **
-        * Utility method
-        **
-        * Returns matrix of transformations applied to a given path
-        > Parameters
-        - path (string) path string
-        - transform (string|array) transformation string
-        = (object) @Matrix
-    \*/
-    toMatrix = R.toMatrix = function (path, transform) {
-        var bb = pathDimensions(path),
-            el = {
-            _: {
-                transform: E
-            },
-            getBBox: function getBBox() {
-                return bb;
-            }
-        };
-        extractTransform(el, transform);
-        return el.matrix;
-    },
-        pathToRelative = R._pathToRelative = function (pathArray) {
-        var pth = paths(pathArray);
-        if (pth.rel) {
-            return pathClone(pth.rel);
-        }
-        if (!R.is(pathArray, ARRAY) || !R.is(pathArray && pathArray[0], ARRAY)) {
-            // rough assumption
-            pathArray = R.parsePathString(pathArray);
-        }
-        var res = [],
-            x = 0,
-            y = 0,
-            mx = 0,
-            my = 0,
-            start = 0;
-        if (pathArray[0][0] === strM) {
-            x = pathArray[0][1];
-            y = pathArray[0][2];
-            mx = x;
-            my = y;
-            start++;
-            res.push([strM, x, y]);
-        }
-        for (var i = start, ii = pathArray.length; i < ii; i++) {
-            var r = res[i] = [],
-                pa = pathArray[i];
-            if (pa[0] != lowerCase.call(pa[0])) {
-                r[0] = lowerCase.call(pa[0]);
-                switch (r[0]) {
-                    case "a":
-                        r[1] = pa[1];
-                        r[2] = pa[2];
-                        r[3] = pa[3];
-                        r[4] = pa[4];
-                        r[5] = pa[5];
-                        r[6] = +(pa[6] - x).toFixed(3);
-                        r[7] = +(pa[7] - y).toFixed(3);
-                        break;
-                    case "v":
-                        r[1] = +(pa[1] - y).toFixed(3);
-                        break;
-                    case 'm':
-                        mx = pa[1];
-                        my = pa[2];
-                    default:
-                        for (var j = 1, jj = pa.length; j < jj; j++) {
-                            r[j] = +(pa[j] - (j % 2 ? x : y)).toFixed(3);
-                        }
-                }
-            } else {
-                r = res[i] = [];
-                if (pa[0] === mStr) {
-                    mx = pa[1] + x;
-                    my = pa[2] + y;
-                }
-                for (var k = 0, kk = pa.length; k < kk; k++) {
-                    res[i][k] = pa[k];
-                }
-            }
-            var len = res[i].length;
-            switch (res[i][0]) {
-                case "z":
-                    x = mx;
-                    y = my;
-                    break;
-                case "h":
-                    x += +res[i][len - 1];
-                    break;
-                case "v":
-                    y += +res[i][len - 1];
-                    break;
-                default:
-                    x += +res[i][len - 2];
-                    y += +res[i][len - 1];
-            }
-        }
-        res.toString = R._path2string;
-        pth.rel = pathClone(res);
-        return res;
-    },
-        preload = R._preload = function (src, f) {
-        var img = doc.createElement("img");
-        img.style.cssText = "position:absolute;left:-9999em;top:-9999em";
-        img.onload = function () {
-            f.call(this);
-            this.onload = null;
-            doc.body.removeChild(this);
-        };
-        img.onerror = function () {
-            doc.body.removeChild(this);
-        };
-        doc.body.appendChild(img);
-        img.src = src;
-    };
-
-    /*
-     * Raphael.st
-     [ property (object) ]
-     **
-     * You can add your own method to elements and sets. It is wise to add a set method for each element method
-     * you added, so you will be able to call the same method on sets too.
-     **
-     * See also @Raphael.el.
-     > Usage
-     | Raphael.el.red = function () {
-     |     this.attr({fill: '#f00'});
-     | };
-     | Raphael.st.red = function () {
-     |     this.forEach(function (el) {
-     |         el.red();
-     |     });
-     | };
-     | // then use it
-     | paper.set(paper.circle(100, 100, 20), paper.circle(110, 100, 20)).red();
-    */
-    R.st = setproto;
-
-    /*
-     * Raphael.snapTo
-     [ method ]
-     **
-     * Snaps given value to given grid.
-     > Parameters
-     - values (array|number) given array of values or step of the grid
-     - value (number) value to adjust
-     - tolerance (number) #optional tolerance for snapping. Default is `10`.
-     = (number) adjusted value.
-    */
-    R.snapTo = function (values, value, tolerance) {
-        var rem, i;
-
-        if (!R.is(tolerance, finite)) {
-            tolerance = 10;
-        }
-
-        if (R.is(values, array)) {
-            i = values.length;
-            while (i--) {
-                if (Math.abs(values[i] - value) <= tolerance) {
-                    return values[i];
-                }
-            }
-        } else {
-            values = +values;
-            rem = value % values;
-
-            if (rem < tolerance) {
-                return value - rem;
-            }
-            if (rem > values - tolerance) {
-                return value - rem + values;
-            }
-        }
-        return value;
-    };
-
-    /*
-     * Raphael.registerFont
-     [ method ]
-     **
-     * Adds given font to the registered set of fonts for Raphaël. Should be used as an internal call from within Cufón’s font file.
-     * Returns original parameter, so it could be used with chaining.
-     # <a href='http://wiki.github.com/sorccu/cufon/about'>More about Cufón and how to convert your font form TTF, OTF, etc to JavaScript file.</a>
-     **
-     > Parameters
-     **
-     - font (object) the font to register
-     = (object) the font you passed in
-     > Usage
-     | Cufon.registerFont(Raphael.registerFont({…}));
-    */
-    R.registerFont = function (font) {
-        if (!font.face) {
-            return font;
-        }
-        this.fonts = this.fonts || {};
-        var fontcopy = {
-            w: font.w,
-            face: {},
-            glyphs: {}
-        },
-            family = font.face['font-family'];
-        for (var prop in font.face) {
-            if (font.face[has](prop)) {
-                fontcopy.face[prop] = font.face[prop];
-            }
-        }if (this.fonts[family]) {
-            this.fonts[family].push(fontcopy);
-        } else {
-            this.fonts[family] = [fontcopy];
-        }
-        if (!font.svg) {
-            fontcopy.face['units-per-em'] = g.win.parseInt(font.face['units-per-em'], 10);
-            for (var glyph in font.glyphs) {
-                if (font.glyphs[has](glyph)) {
-                    var path = font.glyphs[glyph];
-                    fontcopy.glyphs[glyph] = {
-                        w: path.w,
-                        k: {},
-                        d: path.d && 'M' + path.d.replace(/[mlcxtrv]/g, function (command) {
-                            return {
-                                l: 'L',
-                                c: 'C',
-                                x: 'z',
-                                t: 'm',
-                                r: 'l',
-                                v: 'c'
-                            }[command] || 'M';
-                        }) + 'z'
-                    };
-                    if (path.k) {
-                        for (var k in path.k) {
-                            if (path[has](k)) {
-                                fontcopy.glyphs[glyph].k[k] = path.k[k];
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return font;
-    };
-
-    /*
-     * Raphael.fullfill
-     [ method ]
-     **
-     * A little bit more advanced format function than @Raphael.format. Replaces construction of type “`{<name>}`” to the corresponding argument.
-     **
-     > Parameters
-     **
-     - token (string) string to format
-     - json (object) object which properties will be used as a replacement
-     = (string) formated string
-     > Usage
-     | // this will draw a rectangular shape equivalent to 'M10,20h40v50h-40z'
-     | paper.path(Raphael.fullfill('M{x},{y}h{dim.width}v{dim.height}h{dim['negative width']}z', {
-     |     x: 10,
-     |     y: 20,
-     |     dim: {
-     |         width: 40,
-     |         height: 50,
-     |         'negative width': -40
-     |     }
-     | }));
-    */
-    R.fullfill = function () {
-        var tokenRegex = /\{([^\}]+)\}/g,
-            objNotationRegex = /(?:(?:^|\.)(.+?)(?=\[|\.|$|\()|\[('|')(.+?)\2\])(\(\))?/g,
-            // matches .xxxxx or ['xxxxx'] to run over object properties
-        replacer = function replacer(all, key, obj) {
-            var res = obj;
-            key.replace(objNotationRegex, function (all, name, quote, quotedName, isFunc) {
-                name = name || quotedName;
-                if (res) {
-                    if (name in res) {
-                        res = res[name];
-                    }
-                    typeof res == 'function' && isFunc && (res = res());
-                }
-            });
-            res = (res == null || res == obj ? all : res) + '';
-            return res;
-        };
-        return function (str, obj) {
-            return String(str).replace(tokenRegex, function (all, key) {
-                return replacer(all, key, obj);
-            });
-        };
-    }();
-
-    /*
-     * Raphael.ninja
-     [ method ]
-     **
-     * If you want to leave no trace of Raphaël (Well, Raphaël creates only one global variable `Raphael`, but anyway.) You can use `ninja` method.
-     * Beware, that in this case plugins could stop working, because they are depending on global variable existance.
-     **
-     = (object) Raphael object
-     > Usage
-     | (function (local_raphael) {
-     |     var paper = local_raphael(10, 10, 320, 200);
-     |     …
-     | })(Raphael.ninja());
-    */
-    R.ninja = function () {
-        oldRaphael.was ? g.win.Raphael = oldRaphael.is : delete g.win.Raphael;
-        return R;
-    };
-
-    /*\
-     * Raphael.isPointInsidePath
-     [ method ]
-     **
-     * Utility method
-     **
-     * Returns `true` if given point is inside a given closed path.
-     > Parameters
-     - path (string) path string
-     - x (number) x of the point
-     - y (number) y of the point
-     = (boolean) true, if point is inside the path
-    \*/
-    R.isPointInsidePath = function (path, x, y) {
-        var bbox = R.pathBBox(path);
-        return R.isPointInsideBBox(bbox, x, y) && (interPathHelper(path, [[strM, x, y], ["H", bbox.x2 + 10]], 1) % 2 === 1 || interPathHelper(path, [[strM, x, y], ["V", bbox.y2 + 10]], 1) % 2 === 1);
-    };
-
-    /*\
-     * Raphael.isBBoxIntersect
-     [ method ]
-     **
-     * Utility method
-     **
-     * Returns `true` if two bounding boxes intersect
-     > Parameters
-     - bbox1 (string) first bounding box
-     - bbox2 (string) second bounding box
-     = (boolean) `true` if they intersect
-    \*/
-    R.isBBoxIntersect = function (bbox1, bbox2) {
-        var i = R.isPointInsideBBox;
-        return i(bbox2, bbox1.x, bbox1.y) || i(bbox2, bbox1.x2, bbox1.y) || i(bbox2, bbox1.x, bbox1.y2) || i(bbox2, bbox1.x2, bbox1.y2) || i(bbox1, bbox2.x, bbox2.y) || i(bbox1, bbox2.x2, bbox2.y) || i(bbox1, bbox2.x, bbox2.y2) || i(bbox1, bbox2.x2, bbox2.y2) || (bbox1.x < bbox2.x2 && bbox1.x > bbox2.x || bbox2.x < bbox1.x2 && bbox2.x > bbox1.x) && (bbox1.y < bbox2.y2 && bbox1.y > bbox2.y || bbox2.y < bbox1.y2 && bbox2.y > bbox1.y);
-    };
-
-    /*\
-     * Raphael.isPointInsideBBox
-     [ method ]
-     **
-     * Utility method
-     **
-     * Returns `true` if given point is inside bounding boxes.
-     > Parameters
-     - bbox (string) bounding box
-     - x (string) x coordinate of the point
-     - y (string) y coordinate of the point
-     = (boolean) `true` if point inside
-    \*/
-    R.isPointInsideBBox = function (bbox, x, y) {
-        return x >= bbox.x && x <= bbox.x2 && y >= bbox.y && y <= bbox.y2;
-    };
-
-    /*\
-     * Raphael.bezierBBox
-     [ method ]
-     **
-     * Utility method
-     **
-     * Return bounding box of a given cubic bezier curve
-     > Parameters
-     - p1x (number) x of the first point of the curve
-     - p1y (number) y of the first point of the curve
-     - c1x (number) x of the first anchor of the curve
-     - c1y (number) y of the first anchor of the curve
-     - c2x (number) x of the second anchor of the curve
-     - c2y (number) y of the second anchor of the curve
-     - p2x (number) x of the second point of the curve
-     - p2y (number) y of the second point of the curve
-     * or
-     - bez (array) array of six points for bezier curve
-     = (object) point information in format:
-     o {
-     o     min: {
-     o         x: (number) x coordinate of the left point
-     o         y: (number) y coordinate of the top point
-     o     }
-     o     max: {
-     o         x: (number) x coordinate of the right point
-     o         y: (number) y coordinate of the bottom point
-     o     }
-     o }
-    \*/
-    R.bezierBBox = function (p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y) {
-        if (!R.is(p1x, ARRAY)) {
-            p1x = [p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y];
-        }
-        var bbox = curveDim.apply(null, p1x);
-        return {
-            x: bbox.min.x,
-            y: bbox.min.y,
-            x2: bbox.max.x,
-            y2: bbox.max.y,
-            width: bbox.max.x - bbox.min.x,
-            height: bbox.max.y - bbox.min.y
-        };
-    };
-
-    R.addArrow = function (o, value, isEnd) {
-        if (R.vml) {
-            var values = Str(value).toLowerCase().split("-"),
-                se = isEnd ? "end" : "start",
-                i = values.length,
-                type = "classic",
-                w = "medium",
-                h = "medium";
-            while (i--) {
-                switch (values[i]) {
-                    case "block":
-                    case "classic":
-                    case "oval":
-                    case "diamond":
-                    case "open":
-                    case "none":
-                        type = values[i];
-                        break;
-                    case "wide":
-                    case "narrow":
-                        h = values[i];
-                        break;
-                    case "long":
-                    case "short":
-                        w = values[i];
-                        break;
-                }
-            }
-            var stroke = o.node.getElementsByTagName("stroke")[0];
-            stroke[se + "arrow"] = type;
-            stroke[se + "arrowlength"] = w;
-            stroke[se + "arrowwidth"] = h;
-        } else if (R.svg) {
-            if (o.type === 'path') {
-                var values = Str(value).toLowerCase().split('-'),
-                    p = o.paper,
-                    se = isEnd ? 'end' : 'start',
-                    node = o.node,
-                    attrs = o.attrs,
-                    stroke = attrs['stroke-width'],
-                    i = values.length,
-                    type = 'classic',
-                    from,
-                    to,
-                    dx,
-                    refX,
-                    attr,
-                    w = 3,
-                    h = 3,
-                    t = 5;
-                while (i--) {
-                    switch (values[i]) {
-                        case 'block':
-                        case 'classic':
-                        case 'oval':
-                        case 'diamond':
-                        case 'open':
-                        case 'none':
-                            type = values[i];
-                            break;
-                        case 'wide':
-                            h = 5;
-                            break;
-                        case 'narrow':
-                            h = 2;
-                            break;
-                        case 'long':
-                            w = 5;
-                            break;
-                        case 'short':
-                            w = 2;
-                            break;
-                    }
-                }
-                if (type === 'open') {
-                    w += 2;
-                    h += 2;
-                    t += 2;
-                    dx = 1;
-                    refX = isEnd ? 4 : 1;
-                    attr = {
-                        fill: noneStr,
-                        stroke: attrs.stroke
-                    };
-                } else {
-                    refX = dx = w / 2;
-                    attr = {
-                        fill: attrs.stroke,
-                        stroke: noneStr
-                    };
-                }
-                if (o._.arrows) {
-                    if (isEnd) {
-                        o._.arrows.endPath && markerCounter[o._.arrows.endPath]--;
-                        o._.arrows.endMarker && markerCounter[o._.arrows.endMarker]--;
-                    } else {
-                        o._.arrows.startPath && markerCounter[o._.arrows.startPath]--;
-                        o._.arrows.startMarker && markerCounter[o._.arrows.startMarker]--;
-                    }
-                } else {
-                    o._.arrows = {};
-                }
-                if (type !== noneStr) {
-                    var pathId = 'raphael-marker-' + type,
-                        markerId = 'raphael-marker-' + se + type + w + h + '-obj' + o.id;
-                    if (!R._g.doc.getElementById(pathId)) {
-                        p.defs.appendChild($($('path'), {
-                            'stroke-linecap': 'round',
-                            d: markers[type],
-                            id: pathId
-                        }));
-                        markerCounter[pathId] = 1;
-                    } else {
-                        markerCounter[pathId]++;
-                    }
-                    var marker = R._g.doc.getElementById(markerId),
-                        use;
-                    if (!marker) {
-                        marker = $($('marker'), {
-                            id: markerId,
-                            markerHeight: h,
-                            markerWidth: w,
-                            orient: 'auto',
-                            refX: refX,
-                            refY: h / 2
-                        });
-                        use = $($('use'), {
-                            'xlink:href': '#' + pathId,
-                            transform: (isEnd ? 'rotate(180 ' + w / 2 + S + h / 2 + ') ' : E) + 'scale(' + w / t + ',' + h / t + ')',
-                            'stroke-width': (1 / ((w / t + h / t) / 2)).toFixed(4)
-                        });
-                        marker.appendChild(use);
-                        p.defs.appendChild(marker);
-                        markerCounter[markerId] = 1;
-                    } else {
-                        markerCounter[markerId]++;
-                        use = marker.getElementsByTagName('use')[0];
-                    }
-                    $(use, attr);
-                    var delta = dx * (type !== 'diamond' && type !== 'oval');
-                    if (isEnd) {
-                        from = o._.arrows.startdx * stroke || 0;
-                        to = R.getTotalLength(attrs.path) - delta * stroke;
-                    } else {
-                        from = delta * stroke;
-                        to = R.getTotalLength(attrs.path) - (o._.arrows.enddx * stroke || 0);
-                    }
-                    attr = {};
-                    attr['marker-' + se] = "url('" + R._url + '#' + markerId + "')";
-                    if (to || from) {
-                        attr.d = R.getSubpath(attrs.path, from, to);
-                    }
-                    $(node, attr);
-                    o._.arrows[se + 'Path'] = pathId;
-                    o._.arrows[se + 'Marker'] = markerId;
-                    o._.arrows[se + 'dx'] = delta;
-                    o._.arrows[se + 'Type'] = type;
-                    o._.arrows[se + typeStringSTR] = value;
-                } else {
-                    if (isEnd) {
-                        from = o._.arrows.startdx * stroke || 0;
-                        to = R.getTotalLength(attrs.path) - from;
-                    } else {
-                        from = 0;
-                        to = R.getTotalLength(attrs.path) - (o._.arrows.enddx * stroke || 0);
-                    }
-                    o._.arrows[se + 'Path'] && $(node, {
-                        d: R.getSubpath(attrs.path, from, to)
-                    });
-                    delete o._.arrows[se + 'Path'];
-                    delete o._.arrows[se + 'Marker'];
-                    delete o._.arrows[se + 'dx'];
-                    delete o._.arrows[se + 'Type'];
-                    delete o._.arrows[se + typeStringSTR];
-                }
-                for (attr in markerCounter) {
-                    if (markerCounter[has](attr) && !markerCounter[attr]) {
-                        var item = R._g.doc.getElementById(attr);
-                        item && item.parentNode.removeChild(item);
-                    }
-                }
-            }
-        }
-    };
-
-    /*\
-     * Raphael.setWindow
-     [ method ]
-     **
-     * Used when you need to draw in `&lt;iframe>`. Switched window to the iframe one.
-     > Parameters
-     - newwin (window) new window object
-    \*/
-    R.setWindow = function (newwin) {
-        eve("raphael.setWindow", R, g.win, newwin);
-        win = g.win = newwin;
-        doc = g.doc = g.win.document;
-        if (R._engine.initWin) {
-            R._engine.initWin(g.win);
-        }
-    };
-
-    /*\
-     * Raphael.getColor
-     [ method ]
-     **
-     * On each call returns next colour in the spectrum. To reset it back to red call @Raphael.getColor.reset
-     > Parameters
-     - value (number) #optional brightness, default is `0.75`
-     = (string) hex representation of the colour.
-    \*/
-    R.getColor = function (value) {
-        var start = this.getColor.start = this.getColor.start || {
-            h: 0,
-            s: 1,
-            b: value || .75
-        },
-            rgb = this.hsb2rgb(start.h, start.s, start.b);
-        start.h += .075;
-        if (start.h > 1) {
-            start.h = 0;
-            start.s -= .2;
-            start.s <= 0 && (this.getColor.start = {
-                h: 0,
-                s: 1,
-                b: start.b
-            });
-        }
-        return rgb.hex;
-    };
-
-    /*\
-     * Raphael.getColor.reset
-     [ method ]
-     **
-     * Resets spectrum position for @Raphael.getColor back to red.
-    \*/
-    R.getColor.reset = function () {
-        delete this.start;
-    };
-
-    /*\
-     * Raphael.hsb
-     [ method ]
-     **
-     * Converts HSB values to hex representation of the colour.
-     > Parameters
-     - h (number) hue
-     - s (number) saturation
-     - b (number) value or brightness
-     = (string) hex representation of the colour.
-    \*/
-    R.hsb = (0, _raphael.cacher)(function (h, s, b) {
-        return R.hsb2rgb(h, s, b).hex;
-    });
-
-    /*\
-     * Raphael.hsl
-     [ method ]
-     **
-     * Converts HSL values to hex representation of the colour.
-     > Parameters
-     - h (number) hue
-     - s (number) saturation
-     - l (number) luminosity
-     = (string) hex representation of the colour.
-    \*/
-    R.hsl = (0, _raphael.cacher)(function (h, s, l) {
-        return R.hsl2rgb(h, s, l).hex;
-    });
-
-    /*\
-     * Raphael.angle
-     [ method ]
-     **
-     * Returns angle between two or three points
-     > Parameters
-     - x1 (number) x coord of first point
-     - y1 (number) y coord of first point
-     - x2 (number) x coord of second point
-     - y2 (number) y coord of second point
-     - x3 (number) #optional x coord of third point
-     - y3 (number) #optional y coord of third point
-     = (number) angle in degrees.
-    \*/
-    R.angle = function (x1, y1, x2, y2, x3, y3) {
-        if (x3 == null) {
-            var x = x1 - x2,
-                y = y1 - y2;
-            if (!x && !y) {
-                return 0;
-            }
-            return (180 + math.atan2(-y, -x) * rad2deg + 360) % 360;
-        } else {
-            return R.angle(x1, y1, x3, y3) - R.angle(x2, y2, x3, y3);
-        }
-    };
-
-    R.getSubpath = function (path, from, to) {
-        if (this.getTotalLength(path) - to < 1e-6) {
-            return getSubpathsAtLength(path, from).end;
-        }
-        var a = getSubpathsAtLength(path, to, 1);
-        return from ? getSubpathsAtLength(a, from).end : a;
-    };
-
-    R.pathToRelative = pathToRelative;
-
-    /*
-     * Paper.getFont
-     [ method ]
-     **
-     * Finds font object in the registered fonts by given parameters. You could specify only one word from the font name, like “Myriad” for “Myriad Pro”.
-     **
-     > Parameters
-     **
-     - family (string) font family name or any word from it
-     - weight (string) #optional font weight
-     - style (string) #optional font style
-     - stretch (string) #optional font stretch
-     = (object) the font object
-     > Usage
-     | paper.print(100, 100, 'Test string', paper.getFont('Times', 800), 30);
-    */
-    paperproto.getFont = function (family, weight, style, stretch) {
-        stretch = stretch || 'normal';
-        style = style || 'normal';
-        weight = +weight || {
-            normal: 400,
-            bold: 700,
-            lighter: 300,
-            bolder: 800
-        }[weight] || 400;
-        if (!R.fonts) {
-            return;
-        }
-        var font = R.fonts[family];
-        if (!font) {
-            var name = new RegExp('(^|\\s)' + family.replace(/[^\w\d\s+!~.:_-]/g, E) + '(\\s|$)', 'i');
-            for (var fontName in R.fonts) {
-                if (R.fonts[has](fontName)) {
-                    if (name.test(fontName)) {
-                        font = R.fonts[fontName];
-                        break;
-                    }
-                }
-            }
-        }
-        var thefont;
-        if (font) {
-            for (var i = 0, ii = font.length; i < ii; i++) {
-                thefont = font[i];
-                if (thefont.face['font-weight'] == weight && (thefont.face['font-style'] == style || !thefont.face['font-style']) && thefont.face['font-stretch'] == stretch) {
-                    break;
-                }
-            }
-        }
-        return thefont;
-    };
-
-    /*
-     * Paper.print
-     [ method ]
-     **
-     * Creates path that represent given text written using given font at given position with given size.
-     * Result of the method is path element that contains whole text as a separate path.
-     **
-     > Parameters
-     **
-     - x (number) x position of the text
-     - y (number) y position of the text
-     - string (string) text to print
-     - font (object) font object, see @Paper.getFont
-     - size (number) #optional size of the font, default is `16`
-     - origin (string) #optional could be `'baseline'` or `'middle'`, default is `'middle'`
-     - letter_spacing (number) #optional number in range `-1..1`, default is `0`
-     = (object) resulting path element, which consist of all letters
-     > Usage
-     | var txt = r.print(10, 50, 'print', r.getFont('Museo'), 30).attr({fill: '#fff'});
-    */
-    paperproto.print = function (x, y, string, font, size, origin, letterSpacing) {
-        origin = origin || 'middle'; // baseline|middle
-        letterSpacing = mmax(mmin(letterSpacing || 0, 1), -1);
-        var letters = Str(string)[split](E),
-            shift = 0,
-            notfirst = 0,
-            path = E,
-            scale;
-        R.is(font, string) && (font = this.getFont(font));
-        if (font) {
-            scale = (size || 16) / font.face['units-per-em'];
-            var bb = font.face.bbox[split](separator),
-                top = +bb[0],
-                lineHeight = bb[3] - bb[1],
-                shifty = 0,
-                height = +bb[1] + (origin == 'baseline' ? lineHeight + +font.face.descent : lineHeight / 2);
-            for (var i = 0, ii = letters.length; i < ii; i++) {
-                if (letters[i] == '\n') {
-                    shift = 0;
-                    curr = 0;
-                    notfirst = 0;
-                    shifty += lineHeight;
-                } else {
-                    var prev = notfirst && font.glyphs[letters[i - 1]] || {},
-                        curr = font.glyphs[letters[i]];
-                    shift += notfirst ? (prev.w || font.w) + (prev.k && prev.k[letters[i]] || 0) + font.w * letterSpacing : 0;
-                    notfirst = 1;
-                }
-                if (curr && curr.d) {
-                    path += R.transformPath(curr.d, ['t', shift * scale, shifty * scale, 's', scale, scale, top, height, 't', (x - top) / scale, (y - height) / scale]);
-                }
-            }
-        }
-        return this.path(path).attr({
-            fill: '#000',
-            stroke: 'none'
-        });
-    };
-
-    /*
-     * Paper.add
-     [ method ]
-     **
-     * Imports elements in JSON array in format `{type: type, <attributes>}`
-     **
-     > Parameters
-     **
-     - json (array)
-     = (object) resulting set of imported elements
-     > Usage
-     | paper.add([
-     |     {
-     |         type: 'circle',
-     |         cx: 10,
-     |         cy: 10,
-     |         r: 5
-     |     },
-     |     {
-     |         type: 'rect',
-     |         x: 10,
-     |         y: 10,
-     |         width: 10,
-     |         height: 10,
-     |         fill: '#fc0'
-     |     }
-     | ]);
-    */
-    paperproto.add = function (json) {
-        if (R.is(json, 'array')) {
-            var res = this.set(),
-                i = 0,
-                ii = json.length,
-                j;
-            for (; i < ii; i++) {
-                j = json[i] || {};
-                elements[has](j.type) && res.push(this[j.type]().attr(j));
-            }
-        }
-        return res;
-    };
-    /*
-     * Paper.getElementByPoint
-     [ method ]
-     **
-     * Returns you topmost element under given point.
-     **
-     = (object) Raphaël element object
-     > Parameters
-     **
-     - x (number) x coordinate from the top left corner of the window
-     - y (number) y coordinate from the top left corner of the window
-     > Usage
-     | paper.getElementByPoint(mouseX, mouseY).attr({stroke: '#f00'});
-    */
-    paperproto.getElementByPoint = function (x, y) {
-        var paper = this,
-            svg = paper.canvas,
-            target = g.doc.elementFromPoint(x, y);
-        if (g.win.opera && target.tagName == 'svg') {
-            var so = getOffset(svg),
-                sr = svg.createSVGRect();
-            sr.x = x - so.x;
-            sr.y = y - so.y;
-            sr.width = sr.height = 1;
-            var hits = svg.getIntersectionList(sr, null);
-            if (hits.length) {
-                target = hits[hits.length - 1];
-            }
-        }
-        if (!target) {
-            return null;
-        }
-        while (target.parentNode && target != svg.parentNode && !target.raphael) {
-            target = target.parentNode;
-        }
-        target == paper.canvas.parentNode && (target = svg);
-        target = target && target.raphael ? paper.getById(target.raphaelid) : null;
-        return target;
-    };
-
-    /*
-     * Paper.getElementsByBBox
-     [ method ]
-     **
-     * Returns set of elements that have an intersecting bounding box
-     **
-     > Parameters
-     **
-     - bbox (object) bbox to check with
-     = (object) @Set
-     */
-    paperproto.getElementsByBBox = function (bbox) {
-        var set = this.set();
-        this.forEach(function (el) {
-            if (R.isBBoxIntersect(el.getBBox(), bbox)) {
-                set.push(el);
-            }
-        });
-        return set;
-    };
-
-    /*
-     * Paper.forEach
-     [ method ]
-     **
-     * Executes given function for each element on the paper
-     *
-     * If callback function returns `false` it will stop loop running.
-     **
-     > Parameters
-     **
-     - callback (function) function to run
-     - thisArg (object) context object for the callback
-     = (object) Paper object
-     > Usage
-     | paper.forEach(function (el) {
-     |     el.attr({ stroke: 'blue' });
-     | });
-    */
-    paperproto.forEach = function (callback, thisArg) {
-        var bot = this.bottom;
-        while (bot) {
-            if (callback.call(thisArg, bot) === false) {
-                return this;
-            }
-            bot = bot.next;
-        }
-        return this;
-    };
-
-    /*
-     * Paper.getElementsByPoint
-     [ method ]
-     **
-     * Returns set of elements that have common point inside
-     **
-     > Parameters
-     **
-     - x (number) x coordinate of the point
-     - y (number) y coordinate of the point
-     = (object) @Set
-    */
-    paperproto.getElementsByPoint = function (x, y) {
-        var set = this.set();
-        this.forEach(function (el) {
-            if (el.isPointInside(x, y)) {
-                set.push(el);
-            }
-        });
-        return set;
-    };
-
-    /*
-     * Paper.set
-     [ method ]
-     **
-     * Creates array-like object to keep and operate several elements at once.
-     * Warning: it doesn’t create any elements for itself in the page, it just groups existing elements.
-     * Sets act as pseudo elements — all methods available to an element can be used on a set.
-     = (object) array-like object that represents set of elements
-     **
-     > Usage
-     | var st = paper.set();
-     | st.push(
-     |     paper.circle(10, 10, 5),
-     |     paper.circle(30, 10, 5)
-     | );
-     | st.attr({fill: 'red'}); // changes the fill of both circles
-    */
-    paperproto.set = function (itemsArray) {
-        var args = (0, _raphael.getArrayCopy)(arguments);
-        !R.is(itemsArray, 'array') && (itemsArray = Array.prototype.splice.call(args, 0, args.length));
-        var out = new Set(itemsArray);
-        this.__set__ && this.__set__.push(out);
-        return out;
-    };
-
-    /*
-     * Paper.setStart
-     [ method ]
-     **
-     * Creates @Paper.set. All elements that will be created after calling this method and before calling
-     * @Paper.setFinish will be added to the set.
-     **
-     > Usage
-     | paper.setStart();
-     | paper.circle(10, 10, 5),
-     | paper.circle(30, 10, 5)
-     | var st = paper.setFinish();
-     | st.attr({fill: 'red'}); // changes the fill of both circles
-    */
-    paperproto.setStart = function (set) {
-        this.__set__ = set || this.set();
-    };
-
-    /*
-     * Paper.setFinish
-     [ method ]
-     **
-     * See @Paper.setStart. This method finishes catching and returns resulting set.
-     **
-     = (object) set
-    */
-    paperproto.setFinish = function (set) {
-        var out = this.__set__;
-        delete this.__set__;
-        return out;
-    };
-
-    /*\
-     * Paper.removeDefs
-     [ method ]
-     **
-     * Remove a particular definition of given id from paper
-     **
-     > Parameters
-     **
-     - id (string) id of the element to remove
-     **
-     > Usage
-     | paper.removeDefs(id);
-    \*/
-    paperproto.removeDefs = function (id) {
-        if (!R.svg) {
-            return;
-        }
-        var element = R._g.doc.getElementById(id);
-        element && element.remove();
-    };
-
-    /*\
-     * Paper.updateDefs
-     [ method ]
-     **
-     * Update definitions in paper
-     **
-     > Parameters
-     **
-     - id (string or object) id of the element or the element node itself
-     - attrObj (object) attribute of the element object with it's children attributes nested
-     - hardUpdateChildren (boolean) determines whether to create new children if child elements are less than
-       the children in attrObj or remove children in same manner
-     **
-     > Usage
-     | paper.updateDefs(id, {
-     |      width: '100%',
-     |      height: '100%',
-     |      children: [{
-     |          dx: '2'
-     |      }]
-     |   }, true);
-     | // Updates element of given id
-     | // Updates the child element if present and create new child if found less than the children in attrObj
-     | // and delete a child in same manner according to value of 'hardUpdateChildren'
-    \*/
-    paperproto.updateDefs = function (id, attrObj, hardUpdateChildren) {
-        if (!R.svg) {
-            return;
-        }
-        var paper = this,
-            element = !(id instanceof Node) ? R._g.doc.getElementById(id) : id,
-            attrKey,
-            i,
-            diff,
-            len,
-            children = attrObj.children || [],
-            elemChildren,
-            childId,
-            attr = {};
-
-        hardUpdateChildren === undefined && (hardUpdateChildren = true);
-
-        if (element) {
-            for (attrKey in attrObj) {
-                if (attrKey !== 'tagName' && attrKey !== 'children') {
-                    element.setAttribute(attrKey, attrObj[attrKey]);
-                }
-            }
-            elemChildren = element.children;
-            for (i = 0, len = children.length; i < len; i++) {
-                childId = children[i].id;
-                elemChildren[i] ? paper.updateDefs(childId || elemChildren[i], children[i]) : hardUpdateChildren && paper._createDOMNodes(element, children[i]);
-            }
-            if (hardUpdateChildren) {
-                diff = elemChildren.length - i;
-                while (diff > 0) {
-                    elemChildren[elemChildren.length - 1].remove();
-                    diff--;
-                }
-            }
-        }
-    };
-
-    /*
-     * Element.isPointInside
-     [ method ]
-     **
-     * Determine if given point is inside this element’s shape
-     **
-     > Parameters
-     **
-     - x (number) x coordinate of the point
-     - y (number) y coordinate of the point
-     = (boolean) `true` if point inside the shape
-    */
-    elproto.isPointInside = function (x, y) {
-        var rp = this.realPath = this.realPath || getPath[this.type](this),
-            tr;
-        return R.isPointInsidePath((tr = this.attr('transform')) && tr.length && R.transformPath(rp, tr) || rp, x, y);
-    };
-
-    /*
-     * Element.glow
-     [ method ]
-     **
-     * Return set of elements that create glow-like effect around given element. See @Paper.set.
-     *
-     * Note: Glow is not connected to the element. If you change element attributes it won’t adjust itself.
-     **
-     > Parameters
-     **
-     - glow (object) #optional parameters object with all properties optional:
-     o {
-     o     width (number) size of the glow, default is `10`
-     o     fill (boolean) will it be filled, default is `false`
-     o     opacity (number) opacity, default is `0.5`
-     o     offsetx (number) horizontal offset, default is `0`
-     o     offsety (number) vertical offset, default is `0`
-     o     color (string) glow colour, default is `black`
-     o }
-     = (object) @Paper.set of elements that represents glow
-    */
-    elproto.glow = function (glow) {
-        if (this.type == 'text') {
-            return null;
-        }
-        glow = glow || {};
-        var s = {
-            width: (glow.width || 10) + (+this.attr('stroke-width') || 1),
-            fill: glow.fill || false,
-            opacity: glow.opacity || 0.5,
-            offsetx: glow.offsetx || 0,
-            offsety: glow.offsety || 0,
-            color: glow.color || '#000'
-        },
-            c = s.width / 2,
-            r = this.paper,
-            out = r.set(),
-            path = this.realPath || getPath[this.type](this);
-        path = this.matrix ? R.mapPath(path, this.matrix) : path;
-        for (var i = 1; i < c + 1; i++) {
-            out.push(r.path(path).attr({
-                stroke: s.color,
-                fill: s.fill ? s.color : 'none',
-                'stroke-linejoin': 'round',
-                'stroke-linecap': 'round',
-                'stroke-width': +(s.width / c * i).toFixed(3),
-                opacity: +(s.opacity / c).toFixed(3)
-            }));
-        }
-        return out.insertBefore(this).translate(s.offsetx, s.offsety);
-    };
-
-    /*
-     * Element.setTime
-     [ method ]
-     **
-     * Sets the status of animation of the element in milliseconds. Similar to @Element.status method.
-     **
-     > Parameters
-     **
-     - anim (object) animation object
-     - value (number) number of milliseconds from the beginning of the animation
-     **
-     = (object) original element if `value` is specified
-     * Note, that during animation following events are triggered:
-     *
-     * On each animation frame event `anim.frame.<id>`, on start `anim.start.<id>` and on end `anim.finish.<id>`.
-    */
-    elproto.setTime = function (anim, value) {
-        if (anim && value != null) {
-            this.status(anim, mmin(value, anim.ms) / anim.ms);
-        }
-        return this;
-    };
-
-    elproto.blur = function (size) {
-        if (R.svg) {
-            // Experimental. No Safari support. Use it on your own risk.
-            var t = this;
-            if (+size !== 0) {
-                var fltr = $('filter'),
-                    blur = $('feGaussianBlur');
-                t.attrs.blur = size;
-                fltr.id = R.getElementID(R.createUUID());
-                $(blur, {
-                    stdDeviation: +size || 1.5
-                });
-                fltr.appendChild(blur);
-                t.paper.defs.appendChild(fltr);
-                t._blur = fltr;
-                $(t.node, {
-                    filter: "url('" + R._url + '#' + fltr.id + "')"
-                });
-            } else {
-                if (t._blur) {
-                    t._blur.parentNode.removeChild(t._blur);
-                    delete t._blur;
-                    delete t.attrs.blur;
-                }
-                t.node.removeAttribute('filter');
-            }
-        } else if (R.vml) {
-            var s = this.node.runtimeStyle,
-                f = s.filter;
-            f = f.replace(blurregexp, E);
-            if (+size !== 0) {
-                this.attrs.blur = size;
-                s.filter = f + S + ms + ".Blur(pixelradius=" + (+size || 1.5) + ")";
-                s.margin = R.format("-{0}px 0 0 -{0}px", round(+size || 1.5));
-            } else {
-                s.filter = f;
-                s.margin = 0;
-                delete this.attrs.blur;
-            }
-            return this;
-        } else if (R.canvas) {
-            return this;
-        }
-    };
-
-    /*\
-     * Raphael.getSubpath
-     [ method ]
-     **
-     * Return subpath of a given path from given length to given length.
-     **
-     > Parameters
-     **
-     - path (string) SVG path string
-     - from (number) position of the start of the segment
-     - to (number) position of the end of the segment
-     **
-     = (string) pathstring for the segment
-    \*/
-    elproto.getSubpath = function (from, to) {
-        if (this.type != "path") {
-            return;
-        }
-        return R.getSubpath(this.attrs.path, from, to);
-    };
-
-    /*
-     * Set.push
-     [ method ]
-     **
-     * Adds each argument to the current set.
-     = (object) original element
-    */
-    setproto.push = function () {
-        var item, len;
-        for (var i = 0, ii = arguments.length; i < ii; i++) {
-            item = arguments[i];
-            if (item && (item.constructor == elproto.constructor || item.constructor == Set)) {
-                len = this.items.length;
-                this[len] = this.items[len] = item;
-                this.length++;
-            }
-        }
-        return this;
-    };
-
-    /*
-     * Set.pop
-     [ method ]
-     **
-     * Removes last element and returns it.
-     = (object) element
-    */
-    setproto.pop = function () {
-        this.length && delete this[this.length--];
-        return this.items.pop();
-    };
-
-    /*
-     * Set.forEach
-     [ method ]
-     **
-     * Executes given function for each element in the set.
-     *
-     * If function returns `false` it will stop loop running.
-     **
-     > Parameters
-     **
-     - callback (function) function to run
-     - thisArg (object) context object for the callback
-     = (object) Set object
-    */
-    setproto.forEach = function (callback, thisArg) {
-        for (var i = 0, ii = this.items.length; i < ii; i++) {
-            if (callback.call(thisArg, this.items[i], i) === false) {
-                return this;
-            }
-        }
-        return this;
-    };
-    for (var method in elproto) {
-        if (elproto[has](method)) {
-            setproto[method] = function (methodname) {
-                return function () {
-                    var arg = arguments;
-                    return this.forEach(function (el) {
-                        el[methodname][apply](el, arg);
-                    });
-                };
-            }(method);
-        }
-    }
-    setproto.attr = function (name, value) {
-        if (name && R.is(name, array) && R.is(name[0], object)) {
-            for (var j = 0, jj = name.length; j < jj; j++) {
-                this.items[j].attr(name[j]);
-            }
-        } else {
-            for (var i = 0, ii = this.items.length; i < ii; i++) {
-                this.items[i].attr(name, value);
-            }
-        }
-        return this;
-    };
-
-    /*
-     * Set.clear
-     [ method ]
-     **
-     * Removeds all elements from the set
-    */
-    setproto.clear = function () {
-        while (this.length) {
-            this.pop();
-        }
-    };
-
-    /*
-     * Set.splice
-     [ method ]
-     **
-     * Removes given element from the set
-     **
-     > Parameters
-     **
-     - index (number) position of the deletion
-     - count (number) number of element to remove
-     - insertion… (object) #optional elements to insert
-     = (object) set elements that were deleted
-    */
-    setproto.splice = function (index, count, insertion) {
-        index = index < 0 ? mmax(this.length + index, 0) : index;
-        count = mmax(0, mmin(this.length - index, isNaN(count) && this.length || count));
-        var tail = [],
-            todel = [],
-            args = [],
-            arglen,
-            i;
-        for (i = 2; i < arguments.length; i++) {
-            args.push(arguments[i]);
-        }
-        for (i = 0; i < count; i++) {
-            todel.push(this[index + i]);
-        }
-        for (; i < this.length - index; i++) {
-            tail.push(this[index + i]);
-        }
-        arglen = args.length;
-        for (i = 0; i < arglen + tail.length; i++) {
-            this.items[index + i] = this[index + i] = i < arglen ? args[i] : tail[i - arglen];
-        }
-        i = this.items.length = this.length -= count - arglen;
-        while (this[i]) {
-            delete this[i++];
-        }
-        return new Set(todel);
-    };
-
-    /*
-     * Set.exclude
-     [ method ]
-     **
-     * Removes given element from the set
-     **
-     > Parameters
-     **
-     - element (object) element to remove
-     = (boolean) `true` if object was found & removed from the set
-    */
-    setproto.exclude = function (el) {
-        for (var i = 0, ii = this.length; i < ii; i++) {
-            if (this[i] == el) {
-                this.splice(i, 1);
-                return true;
-            }
-        }
-    };
-    setproto.animate = function (params, ms, easing, callback) {
-        (R.is(easing, 'function') || !easing) && (callback = easing || null);
-        var len = this.items.length,
-            i = len,
-            item,
-            anim,
-            set = this,
-            collector;
-        if (!len) {
-            return this;
-        }
-        callback && (collector = function collector() {
-            ! --len && callback.call(set);
-        });
-        easing = R.is(easing, string) ? easing : collector;
-        anim = R.animation(params, ms, easing, collector);
-        item = this.items[--i].animate(anim);
-        while (i--) {
-            this.items[i] && !this.items[i].removed && this.items[i].animateWith(item, anim, anim);
-        }
-        return this;
-    };
-    setproto.insertAfter = function (el) {
-        var i = this.items.length;
-        while (i--) {
-            this.items[i].insertAfter(el);
-        }
-        return this;
-    };
-    setproto.getBBox = function () {
-        var x = [],
-            y = [],
-            x2 = [],
-            y2 = [];
-        for (var i = this.items.length; i--;) {
-            if (!this.items[i].removed) {
-                var box = this.items[i].getBBox();
-                x.push(box.x);
-                y.push(box.y);
-                x2.push(box.x + box.width);
-                y2.push(box.y + box.height);
-            }
-        }
-        x = mmin[apply](0, x);
-        y = mmin[apply](0, y);
-        x2 = mmax[apply](0, x2);
-        y2 = mmax[apply](0, y2);
-        return {
-            x: x,
-            y: y,
-            x2: x2,
-            y2: y2,
-            width: x2 - x,
-            height: y2 - y
-        };
-    };
-    setproto.clone = function (s) {
-        s = new Set();
-        for (var i = 0, ii = this.items.length; i < ii; i++) {
-            s.push(this.items[i].clone());
-        }
-        return s;
-    };
-    setproto.toString = function () {
-        return 'Rapha\xEBl\u2018s set';
-    };
-
-    setproto.glow = function (glowConfig) {
-        var ret = this.paper.set();
-        this.forEach(function (shape, index) {
-            var g = shape.glow(glowConfig);
-            if (g != null) {
-                g.forEach(function (shape2, index2) {
-                    ret.push(shape2);
-                });
-            }
-        });
-        return ret;
-    };
-
-    function inter(bez1, bez2) {
-        return interHelper(bez1, bez2);
-    }
-
-    function interCount(bez1, bez2) {
-        return interHelper(bez1, bez2, 1);
-    }
-
-    function interHelper(bez1, bez2, justCount) {
-        var bbox1 = R.bezierBBox(bez1),
-            bbox2 = R.bezierBBox(bez2);
-
-        if (!R.isBBoxIntersect(bbox1, bbox2)) {
-            return justCount ? 0 : [];
-        }
-        var l1 = bezlen.apply(0, bez1),
-            l2 = bezlen.apply(0, bez2),
-            n1 = mmax(~~(l1 / 5), 1),
-            n2 = mmax(~~(l2 / 5), 1),
-            dots1 = [],
-            dots2 = [],
-            xy = {},
-            res = justCount ? 0 : [];
-
-        for (var i = 0; i < n1 + 1; i++) {
-            var p = R.findDotsAtSegment.apply(R, bez1.concat(i / n1));
-            dots1.push({
-                x: p.x,
-                y: p.y,
-                t: i / n1
-            });
-        }
-        for (i = 0; i < n2 + 1; i++) {
-            p = R.findDotsAtSegment.apply(R, bez2.concat(i / n2));
-            dots2.push({
-                x: p.x,
-                y: p.y,
-                t: i / n2
-            });
-        }
-        for (i = 0; i < n1; i++) {
-            for (var j = 0; j < n2; j++) {
-                var di = dots1[i],
-                    di1 = dots1[i + 1],
-                    dj = dots2[j],
-                    dj1 = dots2[j + 1],
-                    ci = abs(di1.x - di.x) < .001 ? "y" : "x",
-                    cj = abs(dj1.x - dj.x) < .001 ? "y" : "x",
-                    is = intersect(di.x, di.y, di1.x, di1.y, dj.x, dj.y, dj1.x, dj1.y);
-                if (is) {
-                    if (xy[is.x.toFixed(4)] === is.y.toFixed(4)) {
-                        continue;
-                    }
-                    xy[is.x.toFixed(4)] = is.y.toFixed(4);
-                    var t1 = di.t + abs((is[ci] - di[ci]) / (di1[ci] - di[ci])) * (di1.t - di.t),
-                        t2 = dj.t + abs((is[cj] - dj[cj]) / (dj1[cj] - dj[cj])) * (dj1.t - dj.t);
-                    if (t1 >= 0 && t1 <= 1.001 && t2 >= 0 && t2 <= 1.001) {
-                        if (justCount) {
-                            res++;
-                        } else {
-                            res.push({
-                                x: is.x,
-                                y: is.y,
-                                t1: mmin(t1, 1),
-                                t2: mmin(t2, 1)
-                            });
-                        }
-                    }
-                }
-            }
-        }
-        return res;
-    }
-
-    /*\
-     * Raphael.pathIntersection
-     [ method ]
-     **
-     * Utility method
-     **
-     * Finds intersections of two paths
-     > Parameters
-     - path1 (string) path string
-     - path2 (string) path string
-     = (array) dots of intersection
-     o [
-     o     {
-     o         x: (number) x coordinate of the point
-     o         y: (number) y coordinate of the point
-     o         t1: (number) t value for segment of path1
-     o         t2: (number) t value for segment of path2
-     o         segment1: (number) order number for segment of path1
-     o         segment2: (number) order number for segment of path2
-     o         bez1: (array) eight coordinates representing beziér curve for the segment of path1
-     o         bez2: (array) eight coordinates representing beziér curve for the segment of path2
-     o     }
-     o ]
-    \*/
-    R.pathIntersection = function (path1, path2) {
-        return interPathHelper(path1, path2);
-    };
-    R.pathIntersectionNumber = function (path1, path2) {
-        return interPathHelper(path1, path2, 1);
-    };
-    function interPathHelper(path1, path2, justCount) {
-        path1 = R._path2curve(path1);
-        path2 = R._path2curve(path2);
-        var x1,
-            y1,
-            x2,
-            y2,
-            x1m,
-            y1m,
-            x2m,
-            y2m,
-            bez1,
-            bez2,
-            res = justCount ? 0 : [];
-        for (var i = 0, ii = path1.length; i < ii; i++) {
-            var pi = path1[i];
-            if (pi[0] === strM) {
-                x1 = x1m = pi[1];
-                y1 = y1m = pi[2];
-            } else {
-                if (pi[0] === "C") {
-                    bez1 = [x1, y1].concat(pi.slice(1));
-                    x1 = bez1[6];
-                    y1 = bez1[7];
-                } else {
-                    bez1 = [x1, y1, x1, y1, x1m, y1m, x1m, y1m];
-                    x1 = x1m;
-                    y1 = y1m;
-                }
-                for (var j = 0, jj = path2.length; j < jj; j++) {
-                    var pj = path2[j];
-                    if (pj[0] === strM) {
-                        x2 = x2m = pj[1];
-                        y2 = y2m = pj[2];
-                    } else {
-                        if (pj[0] === "C") {
-                            bez2 = [x2, y2].concat(pj.slice(1));
-                            x2 = bez2[6];
-                            y2 = bez2[7];
-                        } else {
-                            bez2 = [x2, y2, x2, y2, x2m, y2m, x2m, y2m];
-                            x2 = x2m;
-                            y2 = y2m;
-                        }
-                        var intr = interHelper(bez1, bez2, justCount);
-                        if (justCount) {
-                            res += intr;
-                        } else {
-                            for (var k = 0, kk = intr.length; k < kk; k++) {
-                                intr[k].segment1 = i;
-                                intr[k].segment2 = j;
-                                intr[k].bez1 = bez1;
-                                intr[k].bez2 = bez2;
-                            }
-                            res = res.concat(intr);
-                        }
-                    }
-                }
-            }
-        }
-        return res;
-    }
-};
-
-var _raphael = __webpack_require__(9);
-
-module.exports = exports['default'];
-
-/**
- * All non fusincharts related functionalities of redRaphael is listed here
- */
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(15)))
-
-/***/ }),
-/* 73 */
-/***/ (function(module, exports, __webpack_require__) {
-
 "use strict";
 
 
 exports.__esModule = true;
 
-var _iterator = __webpack_require__(7);
+var _iterator = __webpack_require__(9);
 
 var _iterator2 = _interopRequireDefault(_iterator);
 
@@ -10720,6 +12598,7 @@ exports['default'] = function (R) {
             S = ' ',
             xlink = 'http://www.w3.org/1999/xlink',
             svgNSStr = 'http://www.w3.org/2000/svg',
+            isIpad = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform),
             typeStringSTR = 'string',
             markers = {
             block: 'M5,0 0,2.5 5,5z',
@@ -12034,9 +13913,10 @@ exports['default'] = function (R) {
                         newFn: fn,
                         newEvt: eventType
                     });
-                    // also attach the original event, mainly because of the
+                    // also attach the original event except Ipad(as ipad fires both touchstart touchend
+                    // and mousedown mouseup casuing same callback called twice), mainly because of the
                     // discrepancy in behaviour for hybrid devices.
-                    elem.on(oldEventType, handler, true);
+                    !isIpad && elem.on(oldEventType, handler, true);
                 }
             }
             if (this._ && this._.RefImg) {
@@ -12392,14 +14272,14 @@ exports['default'] = function (R) {
     }
 };
 
-var _raphael = __webpack_require__(9);
+var _raphael = __webpack_require__(7);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 module.exports = exports['default'];
 
 /***/ }),
-/* 74 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12407,7 +14287,7 @@ module.exports = exports['default'];
 
 exports.__esModule = true;
 
-var _iterator = __webpack_require__(7);
+var _iterator = __webpack_require__(9);
 
 var _iterator2 = _interopRequireDefault(_iterator);
 
@@ -12435,13 +14315,14 @@ exports["default"] = function (R) {
         var LoadRefImage = function LoadRefImage(element, attrs) {
             var src = attrs.src,
                 parent = element._.group,
-                node = element.node,
-                RefImg = element._.RefImg;
-
+                node = element.node;
+            if (!element._.RefImg) {
+                element._.RefImg = new Image();
+            }
             if (attrs.src === undefined) {
                 return;
             }
-            RefImg.src = src;
+            element._.RefImg.src = src;
         };
 
         var has = "hasOwnProperty",
@@ -12860,7 +14741,7 @@ exports["default"] = function (R) {
             }
             if (res.type == "text") {
                 res.paper.canvas.style.display = E;
-                var span = window.span1 = res.paper.span,
+                var span = res.paper.span,
                     m = 100,
                     _style = getComputedFontStyle(res),
                     fontSize = _style.font && _style.font.match(/\d+(?:\.\d*)?(?=px)/),
@@ -13553,6 +15434,8 @@ exports["default"] = function (R) {
         };
         ;
         R._engine.image = function (vml, attrs, group) {
+            attrs.w || (attrs.w = attrs.width);
+            attrs.h || (attrs.h = attrs.height);
             var path = R._rectPath(attrs.x, attrs.y, attrs.w, attrs.h);
 
             attrs.path = path;
@@ -13562,7 +15445,7 @@ exports["default"] = function (R) {
                 a = res.attrs,
                 node = res.node,
                 fill = node.getElementsByTagName(fillString)[0];
-            res._.RefImg = new Image();
+            !res._.RefImg && (res._.RefImg = new Image());
             a.src = attrs.src;
             res.X = a.x = attrs.x;
             res.Y = a.y = attrs.y;
@@ -13769,2613 +15652,745 @@ exports["default"] = function (R) {
     }
 };
 
-var _raphael = __webpack_require__(9);
+var _raphael = __webpack_require__(7);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 module.exports = exports["default"];
 
 /***/ }),
-/* 75 */
+/* 47 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(71);
+__webpack_require__(69);
+__webpack_require__(72);
+__webpack_require__(73);
+module.exports = __webpack_require__(12).Symbol;
+
+
+/***/ }),
+/* 48 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(70);
+__webpack_require__(74);
+module.exports = __webpack_require__(28).f('iterator');
+
+
+/***/ }),
+/* 49 */
+/***/ (function(module, exports) {
+
+module.exports = function (it) {
+  if (typeof it != 'function') throw TypeError(it + ' is not a function!');
+  return it;
+};
+
+
+/***/ }),
+/* 50 */
+/***/ (function(module, exports) {
+
+module.exports = function () { /* empty */ };
+
+
+/***/ }),
+/* 51 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// false -> Array#indexOf
+// true  -> Array#includes
+var toIObject = __webpack_require__(5);
+var toLength = __webpack_require__(66);
+var toAbsoluteIndex = __webpack_require__(65);
+module.exports = function (IS_INCLUDES) {
+  return function ($this, el, fromIndex) {
+    var O = toIObject($this);
+    var length = toLength(O.length);
+    var index = toAbsoluteIndex(fromIndex, length);
+    var value;
+    // Array#includes uses SameValueZero equality algorithm
+    // eslint-disable-next-line no-self-compare
+    if (IS_INCLUDES && el != el) while (length > index) {
+      value = O[index++];
+      // eslint-disable-next-line no-self-compare
+      if (value != value) return true;
+    // Array#indexOf ignores holes, Array#includes - not
+    } else for (;length > index; index++) if (IS_INCLUDES || index in O) {
+      if (O[index] === el) return IS_INCLUDES || index || 0;
+    } return !IS_INCLUDES && -1;
+  };
+};
+
+
+/***/ }),
+/* 52 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// optional / simple context binding
+var aFunction = __webpack_require__(49);
+module.exports = function (fn, that, length) {
+  aFunction(fn);
+  if (that === undefined) return fn;
+  switch (length) {
+    case 1: return function (a) {
+      return fn.call(that, a);
+    };
+    case 2: return function (a, b) {
+      return fn.call(that, a, b);
+    };
+    case 3: return function (a, b, c) {
+      return fn.call(that, a, b, c);
+    };
+  }
+  return function (/* ...args */) {
+    return fn.apply(that, arguments);
+  };
+};
+
+
+/***/ }),
+/* 53 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// all enumerable object keys, includes symbols
+var getKeys = __webpack_require__(20);
+var gOPS = __webpack_require__(37);
+var pIE = __webpack_require__(21);
+module.exports = function (it) {
+  var result = getKeys(it);
+  var getSymbols = gOPS.f;
+  if (getSymbols) {
+    var symbols = getSymbols(it);
+    var isEnum = pIE.f;
+    var i = 0;
+    var key;
+    while (symbols.length > i) if (isEnum.call(it, key = symbols[i++])) result.push(key);
+  } return result;
+};
+
+
+/***/ }),
+/* 54 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var document = __webpack_require__(0).document;
+module.exports = document && document.documentElement;
+
+
+/***/ }),
+/* 55 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// fallback for non-array-like ES3 and non-enumerable old V8 strings
+var cof = __webpack_require__(30);
+// eslint-disable-next-line no-prototype-builtins
+module.exports = Object('z').propertyIsEnumerable(0) ? Object : function (it) {
+  return cof(it) == 'String' ? it.split('') : Object(it);
+};
+
+
+/***/ }),
+/* 56 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// 7.2.2 IsArray(argument)
+var cof = __webpack_require__(30);
+module.exports = Array.isArray || function isArray(arg) {
+  return cof(arg) == 'Array';
+};
+
+
+/***/ }),
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-
-exports.__esModule = true;
-
-var _iterator = __webpack_require__(7);
-
-var _iterator2 = _interopRequireDefault(_iterator);
-
-var _symbol = __webpack_require__(8);
-
-var _symbol2 = _interopRequireDefault(_symbol);
-
-var _typeof = typeof _symbol2['default'] === "function" && typeof _iterator2['default'] === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof _symbol2['default'] === "function" && obj.constructor === _symbol2['default'] && obj !== _symbol2['default'].prototype ? "symbol" : typeof obj; }; /*jslint forin: true, regexp: true, todo: true, white: false, browser: true,
-                                                                                                                                                                                                                                                                                                                                         sloppy: true, white: true, eqeq: false, newcap: true, nomen: true */
-
-/*global FusionCharts */
-
-/**
- * Raphael Canvas Extension
- */
-
-exports['default'] = function (R) {
-    if (R.canvas) {
-        var win = R._g.win,
-            doc = R._g.doc,
-            g = R._g,
-            STRING = 'string',
-            PX = 'px',
-            separator = /[, ]+/,
-            Str = win.String,
-            toInt = win.parseInt,
-            toFloat = win.parseFloat,
-            math = win.Math,
-            mmax = math.max,
-            mmin = math.min,
-            pi = math.PI,
-            mathFloor = math.floor,
-            eve = R.eve,
-            paperproto = R.fn,
-            elproto = R.el,
-            setproto = R.st,
-            clone = R.clone,
-            deg2rad = pi / 180,
-            rad2deg = 180 / pi,
-            DEFAULT_FILL = "#fff",
-            DEFAULT_STROKE = "#000",
-            has = "hasOwnProperty",
-            S = " ",
-
-        /** @todo: detect touch */
-        supportsTouch = 'ontouchstart' in win || navigator.msMaxTouchPoints > 0,
-            events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchstart touchmove touchend touchcancel".split(S),
-            noHandle = false,
-            $,
-            FauxNode,
-            Element,
-            draggable = [],
-            drag = [],
-            dragMove = function dragMove(e) {
-            var x = e.clientX,
-                y = e.clientY,
-                scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
-                scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
-                dragi,
-                j = drag.length;
-            while (j--) {
-                dragi = drag[j];
-                if (supportsTouch) {
-                    var i = e.touches.length,
-                        touch;
-                    while (i--) {
-                        touch = e.touches[i];
-                        if (touch.identifier == dragi.el._drag.id) {
-                            x = touch.clientX;
-                            y = touch.clientY;
-                            (e.originalEvent ? e.originalEvent : e).preventDefault();
-                            break;
-                        }
-                    }
-                } else {
-                    e.preventDefault();
-                }
-
-                //var node = dragi.el.node;
-                //o,
-                //next = node.nextSibling,
-                //parent = node.parentNode,
-                //display = node.style.display;
-
-                /** @todo: implement raphael.drag.over */
-
-                //g.win.opera && parent.removeChild(node);
-                //node.style.display = "none";
-                //o = dragi.el.paper.getElementByPoint(x, y);
-                //node.style.display = display;
-                //g.win.opera && (next ? parent.insertBefore(node, next) : parent.appendChild(node));
-                //o && eve("raphael.drag.over." + dragi.el.id, dragi.el, o);
-                x += scrollX;
-                y += scrollY;
-                eve("raphael.drag.move." + dragi.el.id, dragi.move_scope || dragi.el, x - dragi.el._drag.x, y - dragi.el._drag.y, x, y, e);
-            }
-        },
-            dragUp = function dragUp(e) {
-            R.unmousemove(dragMove).unmouseup(dragUp);
-            var i = drag.length,
-                dragi;
-            while (i--) {
-                dragi = drag[i];
-                dragi.el._drag = {};
-                dragi.onendHandler && eve("raphael.drag.end." + dragi.el.id, dragi.end_scope || dragi.start_scope || dragi.move_scope || dragi.el, e);
-            }
-            drag = [];
-        };
-
-        $ = R._createNode = function (el, attr) {
-            if (attr) {
-                if ((typeof el === 'undefined' ? 'undefined' : _typeof(el)) === STRING) {
-                    el = $(el);
-                }
-                for (var key in attr) {
-                    if (attr.hasOwnProperty(key)) {
-                        el.setAttribute(key, Str(attr[key]));
-                    }
-                }
-            } else {
-                el = doc.createElement(el);
-            }
-            return el;
-        };
-
-        R._getConnectedNodes = function (node) {
-            return {
-                above: [],
-                below: []
-            };
-        };
-
-        R._getTargetNode = function (coords) {
-            var x = coords[0],
-                y = coords[1];
-        };
-
-        R._containerEventHandler = function (event) {
-            event = event || win.event;
-
-            if (noHandle) {
-                return;
-            }
-
-            /** @todo: do not use offsetX and offsetY */
-            var x = event.offsetX,
-                //mathFloor(event.pageX || (event.clientX + doc.body.scrollLeft + doc.documentElement.scrollLeft) || 0),
-            y = event.offsetY,
-                //mathFloor(event.pageY || (event.clientY + doc.body.scrollTop + doc.documentElement.scrollTop) || 0),
-            type = event.type,
-                node = R._getTargetNode([x, y]);
-
-            //console.log(type + ":: x: " + x + " y: " + y);
-
-            /*
-            if (typeof node.listeners[type] === 'function') {
-                node.listeners[type].call(node, e);
-            }*/
-        };
-
-        FauxNode = function FauxNode(parent) {
-            this.type = "basic";
-
-            this.owner = parent;
-
-            // Element reference needed to get attrs so that there is no need to
-            // maintain a redundant copy.
-            this._rElement = null;
-
-            // False if this element does not need mouse interactivity.
-            this.mouseInteractions = false;
-            this.matrix = null;
-
-            // An outline path that will be the outline of the shape or in case of
-            // text the rect that bounds the text.
-            this.outlinePath = null;
-
-            this.conf = {};
-        };
-
-        FauxNode.prototype = {
-
-            constructor: FauxNode,
-
-            /**
-             * This method does the complete rendering of the element, including
-             * (re)setting the bbox and image map.
-             *
-             * @returns {_L10.FauxNode.prototype}
-             */
-            render: function render() {
-
-                var o = this;
-
-                o.draw();
-                o.setBBox();
-
-                return o;
-            },
-
-            /**
-             * Applies the transforms and clipping to the context and draws the
-             * element.
-             *
-             * @returns {undefined}
-             */
-            draw: function draw() {
-                var o = this,
-                    ctx = o.context,
-                    el = o._rElement,
-                    m = el.matrix,
-                    isClipped = o.isClipped,
-                    attrs = o.validateAttrs(),
-                    cr,
-                    end;
-
-                // After the validation the attributes need to be set to the element
-                // as validateAttrs works on a copy of the attrs object.
-                el.attrs = attrs;
-
-                ctx.save();
-
-                ctx.fillStyle = attrs.fill;
-                ctx.strokeStyle = attrs.stroke;
-                ctx.lineWidth = attrs['stroke-width'];
-
-                // Applying the clip before the context is transformed as is the case
-                // in case of SVG.
-                if (cr = attrs['clip-rect']) {
-                    cr = cr.split(" ");
-                    ctx.rect(cr[0], cr[1], cr[2], cr[3]);
-                    ctx.clip();
-                    isClipped = o.isClipped = true;
-                }
-
-                o.applyTransform(m);
-
-                o.paint();
-
-                ctx.restore();
-            },
-
-            /**
-             * Parse the attributes provided to paint the element shape using the
-             * canvas context.
-             *
-             * Overridden by individual derived FauxNodes
-             */
-            paint: function paint() {},
-
-            /**
-             * The redraw of the FauxNodes is to be handled by the CanvasObjectModel
-             * instance as it involves redrawing all the elements corresponsing to
-             * that canvas in the proper order.
-             */
-            redraw: function redraw() {
-                this.COMInstance.redraw(this);
-            },
-
-            /**
-             * Clears the rectangle corresponding to the bounding box of the node.
-             */
-            clear: function clear() {
-                var o = this,
-                    ctx = o.context,
-                    bbox = o._bbox;
-
-                /** @todo: while clearing the stroke-width also needs to be accounted for. */
-                if (bbox) {
-                    ctx.clearRect(bbox.x, bbox.y, bbox.width, bbox.height);
-                }
-            },
-
-            /**
-             * Creates the area node in the image map so that mouse interactivity
-             * can be emulated using it.
-             */
-            addMouseInteractivity: function addMouseInteractivity() {
-                var o = this,
-                    attrs = o._rElement.attrs,
-                    bbox = o._bbox,
-                    map = o.owner.wrapper._map,
-                    shape = o.type === 'circle' ? 'circle' : 'rect',
-                    coords = shape === 'circle' ? [attrs.cx, attrs.cy, attrs.r].join(",") : [bbox.x, bbox.y, bbox.x2, bbox.y2].join(","),
-                    area,
-                    end;
-
-                area = $('area', { shape: shape, coords: coords });
-                if (map.firstChild) {
-                    map.insertBefore(area, map.firstChild);
-                } else {
-                    map.appendChild(area);
-                }
-
-                /** @todo: should be put this check here */
-                o._mouseArea = area;
-
-                // Needed for paths.
-                o.eventListeners = {};
-            },
-
-            /**
-             * Update the coords of the area node (image map) corresponding to the FauxNode
-             * after it has been modified by changing attributes.
-             */
-            updateMapAreaCoords: function updateMapAreaCoords() {
-                var o = this,
-                    oArea = o._mouseArea,
-                    bbox = o._bbox;
-
-                if (oArea) {
-                    //o.context.strokeRect(bbox.x, bbox.y, bbox.width, bbox.height);
-                    if (o instanceof CircleFauxNode) {
-                        var r = bbox.width / 2;
-                        oArea.setAttribute('coords', [bbox.x + r, bbox.y + r, r].join(","));
-                    } else {
-                        oArea.setAttribute('coords', [bbox.x, bbox.y, bbox.x2, bbox.y2].join(","));
-                    }
-                }
-            },
-
-            /**
-             * Applies the transform given the transformation matrix to the context.
-             *
-             * @param {type} matrix
-             * @param {type} bbox
-             * @param {type} dontsetbbox
-             *
-             * @returns {_L10.FauxNode.prototype.transformBBox.tbox}
-             */
-            applyTransform: function applyTransform(m) {
-                var o = this,
-                    ctx = o.context,
-                    split;
-
-                if (m) {
-                    split = m.split();
-                    ctx.translate(split.dx, split.dy);
-                    !split.noRotation && ctx.rotate(deg2rad * split.rotate);
-                    ctx.scale(split.scalex, split.scaley);
-                }
-            },
-
-            /**
-             *
-             */
-            setBBox: function setBBox() {
-                var o = this,
-                    el = o._rElement,
-                    m = el.matrix,
-                    parent = o.owner,
-                    pm = parent.getTransformMatrix && parent.getTransformMatrix();
-
-                if (pm) {
-                    pm = pm.clone();
-                    pm.add(m);
-                    m = pm;
-                }
-
-                if (o.outlinePath) {
-                    o._bbox = R.pathBBox(R.transformPath(o.outlinePath, m.toTransformString()).toString());
-                } else {
-                    o.setShapeBBox(m);
-                }
-
-                o._mouseArea && o.updateMapAreaCoords();
-            },
-
-            getBBox: function getBBox() {
-                return this._bbox;
-            },
-
-            drawPath: function drawPath(path) {
-                var o = this,
-                    ctx = o.context,
-                    len = path && path.length || 0,
-                    pp = PathParser,
-                    i = 0,
-                    command,
-                    x,
-                    y,
-                    end;
-
-                // The PathParser object has been borrowed from canvg. All 3rd party attributions implied.
-                pp.reset();
-                pp.setTokens(path);
-
-                //var bb = new BoundingBox();
-                if (ctx != null) {
-                    ctx.beginPath();
-                }
-
-                while (!pp.isEnd()) {
-                    pp.nextCommand();
-                    switch (pp.command) {
-                        case 'M':
-                        case 'm':
-                            var p = pp.getAsCurrentPoint();
-                            pp.addMarker(p);
-                            //bb.addPoint(p.x, p.y);
-                            if (ctx != null) {
-                                ctx.moveTo(p.x, p.y);
-                            }
-                            pp.start = pp.current;
-                            while (!pp.isCommandOrEnd()) {
-                                var p = pp.getAsCurrentPoint();
-                                pp.addMarker(p, pp.start);
-                                //bb.addPoint(p.x, p.y);
-                                if (ctx != null) {
-                                    ctx.lineTo(p.x, p.y);
-                                }
-                            }
-                            break;
-                        case 'L':
-                        case 'l':
-                            while (!pp.isCommandOrEnd()) {
-                                var c = pp.current;
-                                var p = pp.getAsCurrentPoint();
-                                pp.addMarker(p, c);
-                                //bb.addPoint(p.x, p.y);
-                                if (ctx != null) {
-                                    ctx.lineTo(p.x, p.y);
-                                }
-                            }
-                            break;
-                        case 'H':
-                        case 'h':
-                            while (!pp.isCommandOrEnd()) {
-                                var newP = new Point((pp.isRelativeCommand() ? pp.current.x : 0) + pp.getScalar(), pp.current.y);
-                                pp.addMarker(newP, pp.current);
-                                pp.current = newP;
-                                //bb.addPoint(pp.current.x, pp.current.y);
-                                if (ctx != null) {
-                                    ctx.lineTo(pp.current.x, pp.current.y);
-                                }
-                            }
-                            break;
-                        case 'V':
-                        case 'v':
-                            while (!pp.isCommandOrEnd()) {
-                                var newP = new Point(pp.current.x, (pp.isRelativeCommand() ? pp.current.y : 0) + pp.getScalar());
-                                pp.addMarker(newP, pp.current);
-                                pp.current = newP;
-                                //bb.addPoint(pp.current.x, pp.current.y);
-                                if (ctx != null) {
-                                    ctx.lineTo(pp.current.x, pp.current.y);
-                                }
-                            }
-                            break;
-                        case 'C':
-                        case 'c':
-                            while (!pp.isCommandOrEnd()) {
-                                var curr = pp.current;
-                                var p1 = pp.getPoint();
-                                var cntrl = pp.getAsControlPoint();
-                                var cp = pp.getAsCurrentPoint();
-                                pp.addMarker(cp, cntrl, p1);
-                                //bb.addBezierCurve(curr.x, curr.y, p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
-                                if (ctx != null) {
-                                    ctx.bezierCurveTo(p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
-                                }
-                            }
-                            break;
-                        case 'S':
-                        case 's':
-                            while (!pp.isCommandOrEnd()) {
-                                var curr = pp.current;
-                                var p1 = pp.getReflectedControlPoint();
-                                var cntrl = pp.getAsControlPoint();
-                                var cp = pp.getAsCurrentPoint();
-                                pp.addMarker(cp, cntrl, p1);
-                                //bb.addBezierCurve(curr.x, curr.y, p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
-                                if (ctx != null) {
-                                    ctx.bezierCurveTo(p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
-                                }
-                            }
-                            break;
-                        case 'Q':
-                        case 'q':
-                            while (!pp.isCommandOrEnd()) {
-                                var curr = pp.current;
-                                var cntrl = pp.getAsControlPoint();
-                                var cp = pp.getAsCurrentPoint();
-                                pp.addMarker(cp, cntrl, cntrl);
-                                //bb.addQuadraticCurve(curr.x, curr.y, cntrl.x, cntrl.y, cp.x, cp.y);
-                                if (ctx != null) ctx.quadraticCurveTo(cntrl.x, cntrl.y, cp.x, cp.y);
-                            }
-                            break;
-                        case 'T':
-                        case 't':
-                            while (!pp.isCommandOrEnd()) {
-                                var curr = pp.current;
-                                var cntrl = pp.getReflectedControlPoint();
-                                pp.control = cntrl;
-                                var cp = pp.getAsCurrentPoint();
-                                pp.addMarker(cp, cntrl, cntrl);
-                                //bb.addQuadraticCurve(curr.x, curr.y, cntrl.x, cntrl.y, cp.x, cp.y);
-                                if (ctx != null) ctx.quadraticCurveTo(cntrl.x, cntrl.y, cp.x, cp.y);
-                            }
-                            break;
-                        case 'A':
-                        case 'a':
-                            while (!pp.isCommandOrEnd()) {
-                                var curr = pp.current;
-                                var rx = pp.getScalar();
-                                var ry = pp.getScalar();
-                                var xAxisRotation = pp.getScalar() * (Math.PI / 180.0);
-                                var largeArcFlag = pp.getScalar();
-                                var sweepFlag = pp.getScalar();
-                                var cp = pp.getAsCurrentPoint();
-
-                                // Conversion from endpoint to center parameterization
-                                // http://www.w3.org/TR/SVG11/implnote.html#ArcImplementationNotes
-                                // x1', y1'
-                                var currp = new Point(Math.cos(xAxisRotation) * (curr.x - cp.x) / 2.0 + Math.sin(xAxisRotation) * (curr.y - cp.y) / 2.0, -Math.sin(xAxisRotation) * (curr.x - cp.x) / 2.0 + Math.cos(xAxisRotation) * (curr.y - cp.y) / 2.0);
-                                // adjust radii
-                                var l = Math.pow(currp.x, 2) / Math.pow(rx, 2) + Math.pow(currp.y, 2) / Math.pow(ry, 2);
-                                if (l > 1) {
-                                    rx *= Math.sqrt(l);
-                                    ry *= Math.sqrt(l);
-                                }
-                                // cx', cy'
-                                var s = (largeArcFlag == sweepFlag ? -1 : 1) * Math.sqrt((Math.pow(rx, 2) * Math.pow(ry, 2) - Math.pow(rx, 2) * Math.pow(currp.y, 2) - Math.pow(ry, 2) * Math.pow(currp.x, 2)) / (Math.pow(rx, 2) * Math.pow(currp.y, 2) + Math.pow(ry, 2) * Math.pow(currp.x, 2)));
-                                if (isNaN(s)) s = 0;
-                                var cpp = new Point(s * rx * currp.y / ry, s * -ry * currp.x / rx);
-                                // cx, cy
-                                var centp = new Point((curr.x + cp.x) / 2.0 + Math.cos(xAxisRotation) * cpp.x - Math.sin(xAxisRotation) * cpp.y, (curr.y + cp.y) / 2.0 + Math.sin(xAxisRotation) * cpp.x + Math.cos(xAxisRotation) * cpp.y);
-                                // vector magnitude
-                                var m = function m(v) {
-                                    return Math.sqrt(Math.pow(v[0], 2) + Math.pow(v[1], 2));
-                                };
-                                // ratio between two vectors
-                                var r = function r(u, v) {
-                                    return (u[0] * v[0] + u[1] * v[1]) / (m(u) * m(v));
-                                };
-                                // angle between two vectors
-                                var a = function a(u, v) {
-                                    return (u[0] * v[1] < u[1] * v[0] ? -1 : 1) * Math.acos(r(u, v));
-                                };
-                                // initial angle
-                                var a1 = a([1, 0], [(currp.x - cpp.x) / rx, (currp.y - cpp.y) / ry]);
-                                // angle delta
-                                var u = [(currp.x - cpp.x) / rx, (currp.y - cpp.y) / ry];
-                                var v = [(-currp.x - cpp.x) / rx, (-currp.y - cpp.y) / ry];
-                                var ad = a(u, v);
-                                if (r(u, v) <= -1) ad = Math.PI;
-                                if (r(u, v) >= 1) ad = 0;
-
-                                // for markers
-                                var dir = 1 - sweepFlag ? 1.0 : -1.0;
-                                var ah = a1 + dir * (ad / 2.0);
-                                var halfWay = new Point(centp.x + rx * Math.cos(ah), centp.y + ry * Math.sin(ah));
-                                pp.addMarkerAngle(halfWay, ah - dir * Math.PI / 2);
-                                pp.addMarkerAngle(cp, ah - dir * Math.PI);
-
-                                //bb.addPoint(cp.x, cp.y); // TODO: this is too naive, make it better
-                                if (ctx != null) {
-                                    var r = rx > ry ? rx : ry;
-                                    var sx = rx > ry ? 1 : rx / ry;
-                                    var sy = rx > ry ? ry / rx : 1;
-
-                                    ctx.translate(centp.x, centp.y);
-                                    ctx.rotate(xAxisRotation);
-                                    ctx.scale(sx, sy);
-                                    ctx.arc(0, 0, r, a1, a1 + ad, 1 - sweepFlag);
-                                    ctx.scale(1 / sx, 1 / sy);
-                                    ctx.rotate(-xAxisRotation);
-                                    ctx.translate(-centp.x, -centp.y);
-                                }
-                            }
-                            break;
-                        case 'Z':
-                        case 'z':
-                            if (ctx != null) ctx.closePath();
-                            pp.current = pp.start;
-                    }
-                }
-
-                o.outlinePath = path;
-
-                return o;
-            },
-
-            /**
-             * Methods to add and remove event listeners emulating the DOM of
-             * standard browsers (and also the non-standard one).
-             */
-            addEventListener: function addEventListener() {
-                var o = this,
-                    args = arguments,
-                    eventName = args && args[0],
-                    handler = args && args[1],
-                    area,
-                    checkPathHandler,
-                    end;
-
-                if (!o._mouseArea) {
-                    o.addMouseInteractivity();
-                }
-
-                area = o._mouseArea;
-
-                if (typeof eventName === 'string' && typeof handler === 'function') {
-                    /*
-                    * If the shape has an associated path then we need to check if
-                    * the mouse is within the co-ordinates of the path.
-                    */
-                    if (o._path) {
-
-                        /*
-                        * If the event being listened to is mouseover, mouseout or
-                        * mousemove then the mouse position has to be constantly
-                        * monitored and the event handler called explicitly when
-                        * appropriate.
-                        */
-                        if (eventName === 'mouseover' || eventName === 'mouseout' || eventName === 'mousemove') {
-
-                            if (!o._mousemoveAdded) {
-                                var startListening = function (node) {
-
-                                    var isInside = false,
-                                        isOutside = true,
-                                        transition = false;
-
-                                    return function (event) {
-                                        /** @todo: replace layerX and layerY with
-                                         * standard ways of determining mouse position.
-                                         */
-                                        var x = event.layerX,
-                                            y = event.layerY;
-
-                                        transition = false;
-                                        /*
-                                        * Check if the current position of the mouse
-                                        * pointer lies within the path or not.
-                                        */
-                                        if (R.isPointInsidePath(node._transformPath, x, y)) {
-                                            /*
-                                            * @todo: fix isPointInsidePath to return the
-                                            * proper result when the mouse pointer is on
-                                            * the same horizontal/vertical lines as one
-                                            * of the vertices of the path.
-                                            */
-                                            isInside = true;
-                                            if (isOutside) {
-                                                isOutside = false;
-                                                transition = true;
-                                            }
-                                        } else {
-                                            isOutside = true;
-                                            if (isInside) {
-                                                isInside = false;
-                                                transition = true;
-                                            }
-                                        }
-
-                                        // Based on the state of the flags, fire the
-                                        // appropriate event handlers.
-                                        if (isOutside && transition && node.eventListeners['mouseout']) {
-                                            node.eventListeners['mouseout'].apply(this, arguments);
-                                        }
-                                        if (isInside) {
-                                            if (transition && node.eventListeners['mouseover']) {
-                                                node.eventListeners['mouseover'].apply(this, arguments);
-                                            }
-                                            if (node.eventListeners['mousemove']) {
-                                                node.eventListeners['mousemove'].apply(this, arguments);
-                                            }
-                                        }
-                                    };
-                                }(o);
-
-                                area.addEventListener('mousemove', startListening, false);
-                                o._mousemoveAdded = true;
-                            }
-
-                            o.eventListeners[eventName] = handler;
-                        } else {
-                            var checkPathHandler = function (node, handler) {
-                                return function (event) {
-                                    if (R.isPointInsidePath(node._path, event.layerX, event.layerY)) {
-                                        handler.apply(this, arguments);
-                                    }
-                                };
-                            }(o, handler);
-
-                            area.addEventListener(eventName, checkPathHandler, false);
-                        }
-                    } else {
-                        area.addEventListener(eventName, handler, false);
-                    }
-                }
-            },
-
-            removeEventListener: function removeEventListener() {
-                var o = this,
-                    args = arguments,
-                    eventName = args && args[0],
-                    handler = args && args[1],
-                    area,
-                    end;
-
-                if (!o._mouseArea) {
-                    return;
-                }
-                area = o._mouseArea;
-
-                if (typeof eventName === 'string' && typeof handler === 'function') {
-                    area.removeEventListener(eventName, handler);
-                }
-            },
-
-            attachEvent: function attachEvent() {},
-
-            detachEvent: function detachEvent() {},
-
-            validateAttrs: function validateAttrs(attrs) {
-
-                var o = this,
-                    elAttrs = clone(o._rElement.attrs),
-                    attr,
-                    val;
-
-                if (attrs === null) {
-                    if (o._isValid) {
-                        return elAttrs;
-                    } else {
-                        o._isValid = true;
-                    }
-                }
-
-                attrs = attrs || elAttrs;
-
-                for (attr in attrs) {
-                    val = attrs[attr];
-
-                    switch (attr) {
-
-                        default:
-                            continue;
-                    }
-                }
-
-                return attrs;
-            },
-
-            attrs: function attrs() {}
-        };
-
-        var NodeListItem = function NodeListItem(node) {
-            this.node = node;
-            this.next = null;
-            this.prev = null;
-        },
-            NodeList = function NodeList() {
-            this.top = null;
-            this.bottom = null;
-        };
-
-        NodeList.prototype = {
-
-            constructor: NodeList,
-
-            add: function add(node) {
-
-                node = new NodeListItem(node);
-
-                if (!this.bottom) {
-                    this.bottom = node;
-                }
-                if (this.top) {
-                    this.top.next = node;
-                }
-                node.next = null;
-                node.prev = this.top;
-
-                this.top = node;
-            },
-
-            addList: function addList(list) {
-                if (!this.bottom) {
-                    this.bottom = list.bottom;
-                }
-
-                if (this.top) {
-                    this.top.next = list.bottom;
-                    list.bottom.prev = this.top;
-                }
-
-                this.top = list.top;
-            },
-
-            toFront: function toFront(node) {
-                if (this.top === node) {
-                    return false;
-                }
-
-                if (this.bottom === node) {
-                    this.bottom = node.next;
-                }
-
-                //var map = node.node.canvas._map,
-                //    area = node.node._mouseArea;
-
-                node.prev && (node.prev.next = node.next);
-                node.next && (node.next.prev = node.prev);
-
-                this.top.next = node;
-                node.prev = this.top;
-                node.next = null;
-
-                this.top = node;
-
-                /*if (map.firstChild) {
-                    map.insertBefore(area, map.firstChild);
-                }
-                else {
-                    map.appendChild(area);
-                }
-                 node.redraw();*/
-            },
-
-            toBack: function toBack(node) {
-                if (this.bottom === node) {
-                    return false;
-                }
-
-                if (this.top === node) {
-                    this.top = node.prev;
-                }
-
-                //var map = node.canvas._map,
-                //    area = node._mouseArea;
-
-                node.prev && (node.prev.next = node.next);
-                node.next && (node.next.prev = node.prev);
-
-                this.bottom.prev = node;
-                node.prev = null;
-                node.next = this.bottom;
-
-                this.bottom = node;
-
-                /*map.appendChild(area);
-                 node.redraw();*/
-            },
-
-            insertBefore: function insertBefore() {},
-
-            insertAfter: function insertAfter() {},
-
-            each: function each(fn, args) {
-                var item = this.bottom;
-
-                while (item) {
-                    fn.apply(item.node, args);
-                    item = item.next;
-                }
-            },
-
-            iterate: function iterate(fn, args) {
-                var item = this.bottom,
-                    retVal = true;
-
-                while (item) {
-                    retVal = fn.apply(item.node, args);
-
-                    if (retVal === false) {
-                        break;
-                    }
-
-                    item = item.next;
-                }
-            },
-
-            dispose: function dispose() {
-
-                this.each(function () {
-                    this.node.dispose && this.node.dispose();
-                });
-
-                this.top = null;
-                this.bottom = null;
-            }
-        };
-
-        /**
-         *
-            ncowner, a NodeCollection that corresponds to the collection of which
-            the layer neing created  is a part
-             above, a NodeCollection iterator, that indicated the collection the layer has to be rendered. If
-            not provided then this is the first layer of ncowner.
-        */
-        var CanvasLayer = function CanvasLayer(ncowner, canvas) {
-            this.items = new NodeList();
-
-            this.owner = ncowner;
-            //this.above = above;
-            this.element = null;
-
-            if (canvas) {
-                this.element = canvas;
-            } else {
-                this.init();
-            }
-        };
-
-        CanvasLayer.prototype = {
-            constructor: CanvasLayer,
-
-            appendChild: function appendChild() {
-                var o = this,
-                    ownerWrapper = o.owner.wrapper,
-                    ele = this.element;
-
-                if (ownerWrapper._image) {
-                    ownerWrapper.insertBefore(ele, ownerWrapper._image);
-                } else {
-                    ownerWrapper.appendChild(ele);
-                }
-            },
-
-            insertBefore: function insertBefore() {},
-
-            insertAfter: function insertAfter() {},
-
-            init: function init() {
-                this.element = $("canvas");
-                // CHECKPOINT: width and height in %?
-                $(this.element, {
-                    width: this.owner.wrapper.offsetWidth,
-                    height: this.owner.wrapper.offsetHeight
-                });
-
-                this.element.style.cssText = "position:absolute;left:0;top:0;";
-
-                this.appendChild();
-            },
-
-            getCanvas: function getCanvas() {
-                return this.element;
-            },
-
-            getContext: function getContext() {
-                return this.element.getContext('2d');
-            },
-
-            addToLayer: function addToLayer(node) {
-                this.items.add(node);
-            },
-
-            mergeWithLayerOnTop: function mergeWithLayerOnTop(layerObj) {
-                this.items.addList(layerObj.items);
-                layerObj.dispose(true);
-            },
-
-            mergeWithLayerOnBottom: function mergeWithLayerOnBottom(layerObj) {
-                layerObj.items.addList(this.items);
-                this.items = layerObj.items;
-                layerObj.dispose(true);
-            },
-
-            dispose: function dispose(softDispose) {
-
-                if (!softDispose) {
-                    this.items.each(function () {
-                        this.dispose();
-                    });
-                }
-
-                this.items = null;
-                this.owner = null;
-
-                this.element.parentNode.removeChild(this.element);
-                this.element = null;
-            }
-        };
-
-        var NodeCollection = function NodeCollection(parent, wrapper, canvas) {
-
-            this.nodeItems = new NodeList();
-            this.collectionItems = new NodeList();
-            this.layerItems = new NodeList();
-
-            this.owner = this.parent = parent;
-            this.layerOnTop = null;
-
-            this.currentLayer = null;
-            this.baseLayer = null;
-
-            if (wrapper) {
-                this.wrapper = wrapper;
-                this.currentLayer = this.baseLayer = new CanvasLayer(this, canvas);
-            } else {
-                this.init();
-            }
-        };
-
-        NodeCollection.prototype = {
-            constructor: NodeCollection,
-
-            init: function init() {
-
-                var o = this,
-                    parent = o.parent,
-                    imageMap = parent.wrapper._image,
-                    wrapper = $("div");
-
-                // Hacky but need a refernce to the image map to addEventListeners.
-                wrapper.style.cssText = "width:100%;height:100%;position:absolute;left:0;top:0;";
-
-                wrapper._map = parent.wrapper._map;
-
-                if (imageMap) {
-                    parent.wrapper.insertBefore(wrapper, imageMap);
-                } else {
-                    parent.wrapper.appendChild(wrapper);
-                }
-
-                o.wrapper = wrapper;
-                o.currentLayer = o.baseLayer = new CanvasLayer(o);
-            },
-
-            getCurrentContext: function getCurrentContext() {
-                return this.currentLayer.getContext();
-            },
-
-            setLayerOnTop: function setLayerOnTop(layerObj) {
-                this.layerOnTop = layerObj;
-            },
-
-            getCurrentCanvas: function getCurrentCanvas() {
-                return this.currentLayer.getCanvas();
-            },
-
-            addNode: function addNode(node) {
-                this.nodeItems.add(node);
-
-                if (node.type === "group") {
-                    this.addCollection(node);
-                } else {
-                    this.currentLayer.addToLayer(node);
-                }
-            },
-
-            addCollection: function addCollection(collectionNode) {
-
-                collectionNode = collectionNode || new NodeCollection(this);
-
-                this.collectionItems.add(collectionNode);
-                this.currentLayer = new CanvasLayer(this);
-                this.layerItems.add(this.currentLayer);
-                collectionNode.setLayerOnTop(this.currentLayer);
-            },
-
-            dispose: function dispose() {
-                this.nodeItems.dispose();
-                this.collectionItems.dispose();
-                this.layerItems.dispose();
-                this.owner = this.parent = null;
-
-                this.ownerLayer = null;
-                this.currentLayer = null;
-                this.baseLayer = null;
-            }
-        };
-
-        /**
-         * The CanvasObjectModel will be a layer of abstraction above the individual
-         * FauxNodes created to emulate the DOM in case of canvas rendering.
-         * The engine will be the point of contact for Raphael._engine that will be
-         * the direct consumer of the FauxNodes.
-         */
-        var CanvasObjectModel = function CanvasObjectModel(cnvs, wrpr, width, height) {
-
-            var com = this,
-                root = new NodeCollection(null, wrpr, cnvs);
-
-            //root.set
-
-            com.width = width;
-            com.height = height;
-
-            com.createNode = function (type, parent) {
-
-                parent = parent || root;
-
-                var node,
-                    nodeItems = parent.nodeItems,
-                    layer = parent.currentLayer,
-                    canvasEle = layer.getCanvas();
-
-                switch (type) {
-                    case 'rect':
-                        node = new RectFauxNode(parent);
-                        break;
-
-                    case 'circle':
-                        node = new CircleFauxNode(parent);
-                        break;
-
-                    case 'path':
-                        node = new PathFauxNode(parent);
-                        break;
-
-                    case 'text':
-                        node = new TextFauxNode(parent);
-                        break;
-
-                    case 'group':
-                        node = new GroupFauxNode(parent);
-                        parent.addCollection(node);
-                        break;
-
-                    default:
-                        node = new FauxNode(canvasEle);
-                }
-
-                node.COMInstance = this;
-                nodeItems.add(node);
-                layer.addToLayer(node);
-
-                return node;
-            };
-
-            /**
-             * This method is needed to redraw a node. Redraw is to be handled at the
-             * COM level as redrawing one node needs all the (connected) nodes to be
-             * redrawn in the right order.
-             *
-             * @param {type} node The node that needs to be redrawn.
-             *
-             * @returns {undefined}
-             */
-            com.redraw = function (node) {
-
-                // Check if node is a group or a shape.
-                var nodeList, childNode, layer;
-
-                if (node.type === "group") {
-                    nodeList = node.nodeItems;
-                    node.render();
-                } else {
-
-                    layer = node.layer;
-                    nodeList = layer.items;
-                    childNode = nodeList.bottom;
-
-                    // Clear the canvas.
-                    layer.element.width = layer.element.width;
-
-                    while (childNode) {
-                        fNode = childNode.node;
-                        fNode.type !== "group" && fNode.render();
-                        childNode = childNode.next;
-                    }
-                }
-            };
-
-            com.insertBefore = function (node) {};
-
-            com.insertAfter = function (node) {};
-
-            com.removeNode = function (node) {};
-
-            com.refreshNode = function (node) {};
-
-            com.refreshAll = function () {};
-        };
-
-        Point = function Point(x, y) {
-            this.x = x;
-            this.y = y;
-        };
-
-        Point.prototype.angleTo = function (p) {
-            return Math.atan2(p.y - this.y, p.x - this.x);
-        };
-
-        Point.prototype.applyTransform = function (v) {
-            var xp = this.x * v[0] + this.y * v[2] + v[4];
-            var yp = this.x * v[1] + this.y * v[3] + v[5];
-            this.x = xp;
-            this.y = yp;
-        };
-
-        PathParser = new function () {
-
-            this.tokens = null;
-
-            this.setTokens = function (d) {
-                if (typeof d === 'string') {
-                    this.tokens = d.split(' ');
-                } else {
-                    this.tokens = d;
-                }
-            };
-
-            this.reset = function () {
-                this.i = -1;
-                this.command = '';
-                this.previousCommand = '';
-                this.start = new Point(0, 0);
-                this.control = new Point(0, 0);
-                this.current = new Point(0, 0);
-                this.points = [];
-                this.angles = [];
-            };
-
-            this.isEnd = function () {
-                return this.i >= this.tokens.length - 1;
-            };
-
-            this.isCommandOrEnd = function () {
-                if (this.isEnd()) {
-                    return true;
-                }
-
-                return this.tokens[this.i + 1].toString().match(/^[A-Za-z]$/) != null;
-            };
-
-            this.isRelativeCommand = function () {
-                switch (this.command) {
-                    case 'm':
-                    case 'l':
-                    case 'h':
-                    case 'v':
-                    case 'c':
-                    case 's':
-                    case 'q':
-                    case 't':
-                    case 'a':
-                    case 'z':
-                        return true;
-                        break;
-                }
-                return false;
-            };
-
-            this.getToken = function () {
-                this.i++;
-                return this.tokens[this.i];
-            };
-
-            this.getScalar = function () {
-                return parseFloat(this.getToken());
-            };
-
-            this.nextCommand = function () {
-                this.previousCommand = this.command;
-                this.command = this.getToken();
-            };
-
-            this.getPoint = function () {
-                var p = new Point(this.getScalar(), this.getScalar());
-                return this.makeAbsolute(p);
-            };
-
-            this.getAsControlPoint = function () {
-                var p = this.getPoint();
-                this.control = p;
-                return p;
-            };
-
-            this.getAsCurrentPoint = function () {
-                var p = this.getPoint();
-                this.current = p;
-                return p;
-            };
-
-            this.getReflectedControlPoint = function () {
-                if (this.previousCommand.toLowerCase() != 'c' && this.previousCommand.toLowerCase() != 's' && this.previousCommand.toLowerCase() != 'q' && this.previousCommand.toLowerCase() != 't') {
-                    return this.current;
-                }
-
-                // reflect point
-                var p = new Point(2 * this.current.x - this.control.x, 2 * this.current.y - this.control.y);
-                return p;
-            };
-
-            this.makeAbsolute = function (p) {
-                if (this.isRelativeCommand()) {
-                    p.x += this.current.x;
-                    p.y += this.current.y;
-                }
-                return p;
-            };
-
-            this.addMarker = function (p, from, priorTo) {
-                // if the last angle isn't filled in because we didn't have this point yet ...
-                if (priorTo != null && this.angles.length > 0 && this.angles[this.angles.length - 1] == null) {
-                    this.angles[this.angles.length - 1] = this.points[this.points.length - 1].angleTo(priorTo);
-                }
-                this.addMarkerAngle(p, from == null ? null : from.angleTo(p));
-            };
-
-            this.addMarkerAngle = function (p, a) {
-                this.points.push(p);
-                this.angles.push(a);
-            };
-
-            this.getMarkerPoints = function () {
-                return this.points;
-            };
-
-            this.getMarkerAngles = function () {
-                for (var i = 0; i < this.angles.length; i++) {
-                    if (this.angles[i] == null) {
-                        for (var j = i + 1; j < this.angles.length; j++) {
-                            if (this.angles[j] != null) {
-                                this.angles[i] = this.angles[j];
-                                break;
-                            }
-                        }
-                    }
-                }
-                return this.angles;
-            };
-        }();
-
-        /**
-         * The FauxNode is the adapter written to give DOM node like handling to the
-         * shapes that are create using canvas object model.
-         */
-
-        RectFauxNode = function RectFauxNode(parentObj) {
-            this.type = "rect";
-            this._isValid = false;
-
-            this.parent = this.owner = parentObj;
-            this.context = parentObj.getCurrentContext();
-            this.layer = parentObj.currentLayer;
-        };
-
-        RectFauxNode.prototype = R.extend(new FauxNode(), {
-
-            constructor: RectFauxNode,
-
-            paint: function paint() {
-
-                var o = this,
-                    ctx = o.context,
-
-                // CHECKPOINT 3. Rename validateAttrs to getValidAttrs?
-                attrs = o.validateAttrs(),
-                    x = attrs.x,
-                    y = attrs.y,
-                    w = attrs.width,
-                    h = attrs.height,
-                    r = attrs.r,
-
-                /** @todo: provide support for rx, ry */
-                rx = r || attrs.rx,
-                    ry = r || attrs.ry;
-
-                if (attrs.r) {
-                    path = ["M", x + rx, y, "L", x + w - rx, y].concat(["A", rx, ry, 0, 0, 1, x + w, y + ry]).concat(["L", x + w, y + h - ry]).concat(["A", rx, ry, 0, 0, 1, x + w - rx, y + h]).concat(["L", x + rx, y + h]).concat(["A", rx, ry, 0, 0, 1, x, y + h - ry]).concat(["L", x, y + ry]).concat(["A", rx, ry, 0, 0, 1, x + rx, y, "Z"]);
-                } else {
-                    path = ["M", x, y, "H", x + w, "V", y + h, "H", x, "V", y, "Z"];
-                }
-
-                o.drawPath(path);
-
-                if (attrs['stroke-width']) {
-                    var strokeAlpha = attrs['stroke-opacity'] === undefined ? attrs['opacity'] : attrs['stroke-opacity'];
-                    if (strokeAlpha !== undefined) {
-                        ctx.globalAlpha = strokeAlpha;
-                    }
-                    ctx.stroke();
-                }
-                var fillAlpha = attrs['fill-opacity'] === undefined ? attrs['opacity'] : attrs['fill-opacity'];
-                if (fillAlpha !== undefined) {
-                    ctx.globalAlpha = fillAlpha;
-                }
-                ctx.fill();
-
-                return;
-            },
-
-            validateAttrs: function validateAttrs(attrs) {
-                var o = this,
-                    elAttrs = clone(o._rElement.attrs),
-                    attr,
-                    val;
-
-                if (attrs === null) {
-                    if (o._isValid) {
-                        return elAttrs;
-                    } else {
-                        o._isValid = true;
-                    }
-                }
-
-                attrs = attrs || elAttrs;
-
-                for (attr in attrs) {
-                    val = attrs[attr];
-
-                    switch (attr) {
-                        case "r":
-                            var w = elAttrs.width,
-                                h = elAttrs.height,
-                                maxR = mmin(w, h) / 2;
-
-                            if (val > maxR) {
-                                attrs.r = maxR;
-                            }
-
-                            if (val < 0) {
-                                attrs.r = 0;
-                            }
-                            break;
-
-                        case "width":
-                        case "height":
-                            if (val < 0) {
-                                attrs[attr] = 0;
-                            };
-                            break;
-
-                        default:
-                            continue;
-                    }
-                }
-
-                return attrs;
-            },
-
-            setShapeBBox: function setShapeBBox(m) {
-                var o = this,
-                    el = o._rElement,
-                    attrs = el.attrs,
-                    sX = m.get(0),
-                    sY = m.get(3),
-                    tX = m.get(4),
-                    tY = m.get(5),
-                    strokeW = attrs['stroke-width'];
-
-                o._bbox = {
-                    x: attrs.x * sX + tX - strokeW,
-                    y: attrs.y * sY + tY - strokeW,
-                    width: attrs.width * sX + 2 * strokeW,
-                    height: attrs.height * sY + 2 * strokeW
-                };
-
-                o._bbox.x2 = o._bbox.x + o._bbox.width;
-                o._bbox.y2 = o._bbox.y + o._bbox.height;
-
-                o.X = o._bbox.x;
-                o.Y = o._bbox.y;
-                o.W = o._bbox.width;
-                o.H = o._bbox.height;
-            }
-        });
-
-        var CircleFauxNode = function CircleFauxNode(parentObj) {
-            this.type = "circle";
-            this._isValid = false;
-
-            this.parent = this.owner = parentObj;
-            this.context = parentObj.getCurrentContext();
-            this.layer = parentObj.currentLayer;
-        },
-            PathFauxNode = function PathFauxNode(parentObj) {
-            this.type = "path";
-            this._isValid = false;
-
-            this.parent = this.owner = parentObj;
-            this.context = parentObj.getCurrentContext();
-            this.layer = parentObj.currentLayer;
-        },
-            TextFauxNode = function TextFauxNode(parentObj) {
-            this.type = "text";
-            this._isValid = false;
-
-            this.parent = this.owner = parentObj;
-            this.context = parentObj.getCurrentContext();
-            this.layer = parentObj.currentLayer;
-        },
-            GroupFauxNode = function GroupFauxNode(parent, width, height) {
-
-            this.type = "group";
-
-            this.nodeItems = new NodeList();
-            this.collectionItems = new NodeList();
-            this.layerItems = new NodeList();
-
-            this.owner = this.parent = parent;
-            this.layerOnTop = parent.currentLayer;
-
-            this.currentLayer = null;
-            this.baseLayer = null;
-
-            this.init();
-        };
-
-        CircleFauxNode.prototype = R.extend(new FauxNode(), {
-
-            constructor: CircleFauxNode,
-
-            paint: function paint() {
-                var o = this,
-                    ctx = o.context,
-                    attrs = o.validateAttrs(),
-                    x = attrs.cx,
-                    y = attrs.cy,
-                    r = attrs.r,
-
-                /** @todo: provide support for rx, ry */
-                rx = r || attrs.rx,
-                    ry = r || attrs.ry;
-
-                if (attrs.r) {
-
-                    o.drawPath(["M", x + r, y, "A", rx, ry, 0, 1, 0, x - r, y, "A", rx, ry, 0, 1, 0, x + r, y, "Z"]);
-
-                    if (attrs['stroke-width']) {
-                        var strokeAlpha = attrs['stroke-opacity'] === undefined ? attrs['opacity'] : attrs['stroke-opacity'];
-                        if (strokeAlpha !== undefined) {
-                            ctx.globalAlpha = strokeAlpha;
-                        }
-                        ctx.stroke();
-                    }
-                    var fillAlpha = attrs['fill-opacity'] === undefined ? attrs['opacity'] : attrs['fill-opacity'];
-                    if (fillAlpha !== undefined) {
-                        ctx.globalAlpha = fillAlpha;
-                    }
-                    ctx.fill();
-                }
-
-                return;
-            },
-
-            setShapeBBox: function setShapeBBox(m) {
-                var o = this,
-                    el = o._rElement,
-                    attrs = el.attrs,
-                    sX = m.get(0),
-                    sY = m.get(3),
-                    tX = m.get(4),
-                    tY = m.get(5),
-                    strokeW = attrs['stroke-width'];
-
-                o._bbox = {
-                    x: tX + (attrs.cx - attrs.r) * sX - strokeW,
-                    y: tY + (attrs.cy - attrs.r) * sY - strokeW,
-                    width: 2 * (strokeW + attrs.r * sX),
-                    height: 2 * (attrs.r * sY + strokeW)
-                };
-
-                o._bbox.x2 = o._bbox.x + o._bbox.width;
-                o._bbox.y2 = o._bbox.y + o._bbox.height;
-
-                o.X = o._bbox.x;
-                o.Y = o._bbox.y;
-                o.W = o._bbox.width;
-                o.H = o._bbox.height;
-            }
-        });
-
-        PathFauxNode.prototype = R.extend(new FauxNode(), {
-
-            constructor: PathFauxNode,
-
-            paint: function paint() {
-                var o = this,
-                    el = o._rElement,
-                    attrs = el.attrs,
-                    path = el.attr('path'),
-                    m = el.matrix,
-                    ctx = o.context;
-
-                // 1. Get the path from the path attribute
-                // 2. Accept paths in different array formats.
-                // 3. Optimize as this can potentially be a huge pain-point.
-                // 4. Draw path mapping M,L,H,V etc to canvas APIs
-                o.drawPath(path);
-                o._transformPath = R.transformPath(path, m.toTransformString());
-
-                var strokeAlpha = attrs['stroke-opacity'] === undefined ? attrs['opacity'] : attrs['stroke-opacity'];
-                if (strokeAlpha !== undefined) {
-                    ctx.globalAlpha = strokeAlpha;
-                }
-                ctx.stroke();
-                var fillAlpha = attrs['fill-opacity'] === undefined ? attrs['opacity'] : attrs['fill-opacity'];
-                if (fillAlpha !== undefined) {
-                    ctx.globalAlpha = fillAlpha;
-                }
-                ctx.fill();
-
-                return;
-            }
-        });
-
-        TextFauxNode.prototype = R.extend(new FauxNode(), {
-
-            constructor: TextFauxNode,
-
-            paint: function paint() {
-                var o = this,
-                    el = o._rElement,
-                    attrs = el.attr(),
-                    text = attrs['text'],
-                    stroke = attrs['stroke'],
-                    valign = attrs['vertical-align'],
-                    halign = attrs['text-anchor'],
-                    x = attrs['x'],
-                    y = attrs['y'],
-                    m = el.matrix,
-                    ctx = o.context,
-                    path;
-
-                // apply the font styles, if any
-
-                // find the dimensions of the text using the given styles.
-                // All the dimensions should be present in the attrs user provided OR default.
-                var fontSize = attrs['font-size'] || 10,
-                    lineHeight = attrs['line-height'] || toInt(fontSize, 10) * 1.2,
-                    fontArr = ["normal", fontSize, attrs['font']];
-
-                // draw the text.
-                ctx.fillStyle = stroke;
-                ctx.font = fontArr.join(" ");
-
-                if (text) {
-                    var texts = Str(text).split(/\n|<br\s*?\/?>/ig),
-                        totalHeight = texts.length * lineHeight,
-                        totalWidth = -Infinity,
-                        startX = Infinity,
-                        startY,
-                        width,
-                        textX,
-                        textY;
-
-                    if (valign === "top") {
-                        startY = y + lineHeight;
-                    } else if (valign === "middle") {
-                        startY = y - totalHeight / 2 + lineHeight / 2;
-                    } else {
-                        // valign is bottom.
-                        startY = y - totalHeight + lineHeight;
-                    }
-
-                    for (var i = 0, ii = texts.length; i < ii; i += 1) {
-
-                        text = texts[i];
-                        textY = startY + lineHeight * i;
-                        width = ctx.measureText(text).width;
-
-                        if (halign === "start") {
-                            textX = x;
-                        } else if (halign === "middle") {
-                            textX = x - width / 2;
-                        } else {
-                            textX = x - width;
-                        }
-
-                        totalWidth = mmax(totalWidth, width);
-                        startX = mmin(startX, textX);
-
-                        ctx.fillText(text, textX, textY);
-                    }
-
-                    el._textdirty = false;
-                }
-
-                o.outlinePath = ["M", startX, startY - lineHeight / 1.4, "H", startX + totalWidth, "V", startY - lineHeight + totalHeight, "H", startX, "V", startY - lineHeight / 1.4];
-
-                return;
-            }
-        });
-
-        GroupFauxNode.prototype = R.extend(R.extend(new FauxNode(), NodeCollection.prototype), {
-
-            constructor: GroupFauxNode,
-
-            draw: function draw() {
-
-                // Clear the group canvas first.
-                this.layerItems.each(function () {
-                    this.element.width = this.element.width;
-                });
-
-                FauxNode.prototype.draw.apply(this, arguments);
-            },
-
-            /**
-             * This method does the complete rendering of the element, including
-             * (re)setting the bbox and image map.
-             *
-             * @returns {_L10.FauxNode.prototype}
-             */
-            render: function render() {
-
-                var o = this;
-
-                o.draw();
-                o.setBBox();
-
-                return o;
-            },
-
-            paint: function paint() {
-                var o = this,
-                    list = o.nodeList,
-                    el = o._rElement,
-                    canvas = o.canvas,
-                    attrs = el.attrs,
-                    childNode = list.bottom;
-
-                /** @todo: Clean this up */
-                if (attrs.opacity !== undefined) {
-                    this.layerItems.each(function () {
-                        this.getContext().globalAlpha = attrs.opacity;
-                    });
-                }
-
-                while (childNode) {
-                    childNode.render();
-                    childNode = childNode.next;
-                }
-            },
-
-            setBBox: function setBBox() {},
-
-            addMouseInteractivity: function addMouseInteractivity() {},
-
-            applyTransform: function applyTransform(m) {
-                var o = this,
-                    parent = o.parent,
-                    parentMatrix = parent.getTransformMatrix && parent.getTransformMatrix();
-
-                // Parent is a group element with a transformation applied to it.
-                if (parentMatrix) {
-                    o.matrixApplied = parentMatrix.clone();
-                    o.matrixApplied.add(m.a, m.b, m.c, m.d, m.e, m.f);
-                } else {
-                    o.matrixApplied = m;
-                }
-
-                this.layerItems.each(function () {
-                    FauxNode.prototype.applyTransform.apply(this, [o.matrixApplied]);
-                });
-            },
-
-            getTransformMatrix: function getTransformMatrix() {
-                return this.matrixApplied;
-            }
-        });
-
-        Element = function Element(node, paper, group) {
-            var o = this,
-                parent = group || paper;
-
-            o.node = o[0] = node;
-            node.raphael = true;
-            node.raphaelid = o.id = R._oid++;
-            node._rElement = o;
-
-            o.X = 0;
-            o.Y = 0;
-
-            o.attrs = o.attrs || {};
-            o.styles = o.styles || {};
-            o.followers = o.followers || [];
-
-            o.paper = paper;
-            o.com = parent.com;
-
-            o.ca = o.customAttributes = o.customAttributes || new paper._CustomAttributes();
-
-            o.matrix = R.matrix();
-            o._ = {
-                transform: [],
-                sx: 1,
-                sy: 1,
-                dx: 0,
-                dy: 0,
-                deg: 0
-            };
-
-            o.parent = parent;
-            !parent.bottom && (parent.bottom = o);
-
-            o.prev = parent.top || null;
-            parent.top && (parent.top.next = o);
-            parent.top = o;
-            o.next = null;
-        };
-
-        Element.prototype = elproto;
-        elproto.constructor = Element;
-
-        var repaint = function repaint(el, finalAttrs, positionChanged, dimensionChanged) {
-
-            var node = getNode(el),
-                preC = R._getConnectedNodes(node),
-                attrs = el.attrs,
-                elAbove = preC.above,
-                elBelow = preC.below,
-                len,
-                attr,
-                i;
-
-            for (attr in finalAttrs) {
-                attrs[attr] = finalAttrs[attr];
-            }
-
-            node.redraw();
-        },
-            setFillAndStroke = function setFillAndStroke(el, params) {
-
-            var attrs = el.attrs,
-                node = el.node,
-                finalAttrs = {},
-                att,
-                val,
-                needsRepaint = false,
-                positionChanged = false,
-                dimensionChanged = false,
-                i;
-
-            for (att in params) {
-                if (params[has](att)) {
-                    if (!R._availableAttrs[has](att)) {
-                        continue;
-                    }
-                    val = params[att];
-
-                    switch (att) {
-
-                        case 'fill-opacity':
-                        case 'opacity':
-                        case 'stroke-opcaity':
-                        case 'stroke':
-                        case 'fill':
-                            finalAttrs[att] = val;
-                            needsRepaint = true;
-                            break;
-
-                        case 'stroke-width':
-                        case "cx":
-                        case "cy":
-                        case "x":
-                        case "y":
-                            finalAttrs[att] = val;
-                            positionChanged = true;
-                            break;
-
-                        case "width":
-                        case "height":
-                            finalAttrs[att] = val;
-                            dimensionChanged = true;
-                            break;
-
-                        case "clip-rect":
-                            finalAttrs[att] = val;
-                            needsRepaint = true;
-                            break;
-
-                        case "font-size":
-                        case "font":
-                        case "vertical-align":
-                        case "text-anchor":
-                            finalAttrs[att] = val;
-                            needsRepaint = true;
-
-                        default:
-                            continue;
-                    }
-                }
-            }
-
-            tuneText(el, params, finalAttrs);
-
-            finalAttrs = node.validateAttrs(finalAttrs);
-
-            if (needsRepaint || positionChanged || dimensionChanged) {
-                repaint(el, finalAttrs, positionChanged, dimensionChanged);
-            }
-        },
-            leading = 1.2,
-            tuneText = function tuneText(el, params, finalAttrs) {
-            if (el.type != "text" || !(params[has]("text") || params[has]("font") || params[has]("font-size") || params[has]("x") || params[has]("y") || params[has]("line-height") || params[has]("vertical-align"))) {
-                return;
-            }
-
-            var a = el.attr(),
-                fontSize = params['font-size'] || a['font-size'] || 10,
-                lineHeight = toFloat(params['line-height'] || a['line-height']) || toInt(fontSize, 10) * leading,
-                valign = params["vertical-align"] || a["vertical-align"] || "middle";
-
-            if (isNaN(lineHeight)) {
-                lineHeight = fontSize * leading;
-            }
-
-            finalAttrs['font-size'] = toInt(fontSize, 10) + "px";
-            finalAttrs['font'] = params['font'] || a['font'] || 'Verdana';
-            finalAttrs['vertical-align'] = valign;
-            finalAttrs['x'] = params['x'] || a['x'] || 0;
-            finalAttrs['y'] = params['y'] || a['y'] || 0;
-            finalAttrs['line-height'] = toInt(lineHeight, 10);
-            finalAttrs['text-anchor'] = params['text-anchor'] || a['text-anchor'] || 'middle';
-        };
-
-        R._engine.initWin = function (win) {
-            win = win;
-            doc = win.document;
-        };
-
-        R._engine.setSize = function (w, h) {
-            var paper = this,
-                cs = paper.canvas.style;
-
-            cs.width = (paper.width = +w || paper.width) + PX;
-            cs.height = (paper.height = +h || paper.height) + PX;
-            /** @todo call setViewBox from setSize() */
-            return paper;
-        };
-        /** @todo implement setViewBox() */
-        R._engine.create = function () {
-            var con = R._getContainer.apply(0, arguments) || {},
-                container = con.container,
-                x = con.x,
-                y = con.y,
-                width = con.width,
-                height = con.height,
-
-            //handler = R._containerEventHandler,
-            wrapper,
-                cssText,
-                image,
-                mmap,
-                i,
-                paper,
-                canvas;
-
-            if (!container) {
-                throw new Error("Canvas container not found.");
-            }
-
-            paper = new R._Paper();
-            paper.canvas = wrapper = $("div");
-
-            x = x || 0;
-            y = y || 0;
-            paper.width = width = width || 512;
-            paper.height = height = height || 342;
-            paper.left = paper.top = 0;
-
-            if (container == 1) {
-                wrapper.style.cssText = cssText + R.format(";width:100%;height:100%;position:absolute;left:{0}px;top:{1}px;", [x, y]);
-                doc.body.appendChild(wrapper);
-            } else {
-                wrapper.style.cssText = cssText + ";width:100%;height:100%;position:absolute";
-                if (container.firstChild) {
-                    container.insertBefore(wrapper, container.firstChild);
-                } else {
-                    container.appendChild(wrapper);
-                }
-            }
-
-            cssText = "overflow:hidden;-webkit-tap-highlight-color:rgba(0,0,0,0);" + "-webkit-user-select:none;-moz-user-select:-moz-none;" + "-khtml-user-select:none;-ms-user-select:none;user-select:none;" + "-o-user-select:none;cursor:default;" + R.format("width:{0}px;height:{1}px;", [width, height]);
-
-            // Create the canvas element and set it to occupy full space. Retain a
-            // reference to its context.
-            canvas = $("canvas");
-            canvas.style.cssText = "position:absolute;left:0;top:0";
-            canvas.setAttribute('width', paper.width);
-            canvas.setAttribute('height', paper.height);
-
-            paper.com = new CanvasObjectModel(canvas, wrapper, paper.width, paper.height);
-
-            wrapper.appendChild(canvas);
-
-            image = $("img");
-
-            // Easter egg idea! :)
-            image.src = "image1.png";
-
-            image.style.cssText = "opacity: 0;z-index: 100;background: transparent;position: absolute;left: 0;top: 0;width: " + width + "px;height: " + height + "px";
-            wrapper.appendChild(image);
-
-            mmap = $("map");
-
-            mmap.setAttribute("name", "mousemap");
-            mmap.setAttribute("id", "mousemap"); // Needed for FF.
-
-            wrapper.appendChild(mmap);
-
-            image.setAttribute("usemap", "#mousemap");
-            wrapper._image = image;
-            wrapper._map = mmap;
-
-            return paper;
-        };
-
-        var getNode = R._engine.getNode = function (el) {
-            return el.node || el[0].node;
-        };
-
-        R._engine.getLastNode = function (el) {
-            return el.node || el[el.length - 1].node;
-        };
-
-        R._engine.rect = function (paper, x, y, w, h, r, group) {
-
-            var node = paper.com.createNode('rect', group && group.node),
-                el = new Element(node, paper, group),
-                attrs = el.attrs;
-
-            attrs.x = x;
-            attrs.y = y;
-            attrs.width = w;
-            attrs.height = h;
-            attrs.fill = "#fff";
-            attrs.stroke = "#000";
-            attrs['stroke-width'] = 1;
-            attrs.r = r || 0;
-            attrs.rx = r || 0;
-            attrs.ry = r || 0;
-
-            el.type = "rect";
-
-            node.render();
-            return el;
-        };
-
-        R._engine.circle = function (paper, x, y, r, group) {
-            var node = paper.com.createNode('circle', group && group.node),
-                el = new Element(node, paper, group),
-                attrs = el.attrs;
-
-            attrs.cx = x;
-            attrs.cy = y;
-            attrs.r = r;
-            attrs.fill = 'none';
-            attrs.stroke = '#000';
-            attrs['stroke-width'] = 1;
-
-            el.type = "circle";
-
-            node.render();
-            return el;
-        };
-
-        R._engine.ellipse = function (paper, x, y, rx, ry, group) {
-            var node = new FauxNode(),
-                el = new Element(node, paper, group);
-
-            el.type = "ellipse";
-            return el;
-        };
-
-        R._engine.image = function (paper, src, x, y, w, h, group) {
-            var node = new FauxNode(),
-                el = new Element(node, paper, group);
-
-            el.type = "image";
-            return el;
-        };
-
-        R._engine.text = function (paper, x, y, text, group) {
-            var node = paper.com.createNode('text', group && group.node),
-                el = new Element(node, paper, group),
-                attrs = el.attrs;
-
-            attrs.x = x;
-            attrs.y = y;
-            attrs.text = text;
-            attrs.fill = 'none';
-            attrs.stroke = '#000';
-            attrs.font = 'Verdana';
-            attrs['font-size'] = '12px';
-            attrs['vertical-align'] = 'middle';
-            attrs['text-anchor'] = 'middle';
-
-            el.type = "text";
-            node.render();
-            return el;
-        };
-
-        R._engine.path = function (pathString, paper, group) {
-            var node = paper.com.createNode('path', group && group.node),
-                el = new Element(node, paper, group),
-                attrs = el.attrs;
-
-            attrs.path = pathString;
-            attrs.fill = "#fff";
-            attrs.stroke = "#000";
-            attrs['stroke-width'] = 1;
-
-            el.type = "path";
-
-            node.render();
-
-            return el;
-        };
-
-        R._engine.group = function (paper, id, group) {
-
-            var node = paper.com.createNode('group', group && group.node),
-                el = new Element(node, paper, group),
-                wrapper = node.wrapper;
-
-            id && wrapper.setAttribute('class', ['red', id].join('-'));
-
-            el.canvas = wrapper;
-
-            //(group && group.canvas.appendChild(wrapper)) || paper.canvas.appendChild(wrapper);
-
-            el.type = "group";
-            return el;
-        };
-
-        elproto._getBBox = function () {
-            if (this.removed) {
-                return {};
-            }
-
-            return {
-                x: this.X + (this.bbx || 0) - this.W / 2,
-                y: this.Y + (this.bby || 0) - this.H / 2,
-                width: this.W,
-                height: this.H
-            };
-        };
-
-        /***** ELEMENT REORDERING / RESTRUCTING *****/
-
-        elproto.toFront = function () {
-            if (this.removed) {
-                return this;
-            }
-
-            var o = this,
-                thisNode = o.node,
-                parent = o.parent,
-                parentNode = thisNode.owner,
-                followers = o.followers,
-                follower,
-                i,
-                ii;
-
-            if (R._tofront(o, parent)) {
-                if (elproto.type === "group") {
-                    parent.canvas.appendChild(thisNode);
-                } else {
-                    parentNode.nodeList.tofront(thisNode);
-                }
-            }
-
-            for (i = 0, ii = followers.length; i < ii; i++) {
-                (follower = followers[i]).stalk && follower.el[follower.stalk](o);
-            }
-
-            return o;
-        };
-
-        elproto.toBack = function () {
-            if (this.removed) {
-                return this;
-            }
-
-            var o = this,
-                thisNode = o.node,
-                parent = o.parent,
-                parentNode = thisNode.owner,
-                followers = o.followers,
-                follower,
-                i,
-                ii;
-
-            if (R._toback(o, parent)) {
-                if (elproto.type === "group") {
-                    parent.canvas.appendChild(thisNode);
-                } else {
-                    parentNode.nodeList.toback(thisNode);
-                }
-            }
-
-            for (i = 0, ii = followers.length; i < ii; i++) {
-                (follower = followers[i]).stalk && follower.el[follower.stalk](o);
-            }
-
-            return o;
-        };
-
-        elproto.insertAfter = function (element) {
-            if (this.removed) {
-                return this;
-            }
-
-            var o = this,
-                thisNode = o.node,
-                thatNode = element.node,
-                parentNode = thatNode.owner,
-                followers = o.followers,
-                follower,
-                i,
-                ii;
-
-            if (thatNode.next) {
-                parentNode.nodeList.insertBefore(thisNode, thatNode.next);
-            } else {
-                parentNode.appendChild(thisNode);
-            }
-
-            R._insertafter(o, element, o.parent, element.parent);
-
-            for (i = 0, ii = followers.length; i < ii; i++) {
-                (follower = followers[i]).stalk && follower.el[follower.stalk](element);
-            }
-
-            return o;
-        };
-
-        elproto.insertBefore = function (element) {
-            if (this.removed) {
-                return this;
-            }
-
-            var o = this,
-                thisNode = o.node,
-                thatNode = element.node,
-                parentNode = thatNode.owner,
-                followers = o.followers,
-                follower,
-                i,
-                ii;
-
-            if (thatNode) {
-                parentNode.nodeList.insertBefore(thisNode, thatNode);
-            } else {
-                parentNode.appendChild(thisNode);
-            }
-
-            R._insertafter(o, element, o.parent, element.parent);
-
-            for (i = 0, ii = followers.length; i < ii; i++) {
-                (follower = followers[i]).stalk && follower.el[follower.stalk](element);
-            }
-
-            return o;
-        };
-
-        elproto.appendChild = function (element) {
-            return this;
-        };
-
-        elproto.removeChild = function (element) {
-            return this;
-        };
-
-        /***** ELEMENT REORDERING / RESTRUCTING *****/
-
-        elproto.attr = function (name, value) {
-            if (this.removed) {
-                return this;
-            }
-
-            var o = this,
-                attrs = o.attrs,
-                ca = o.ca,
-                names,
-                params,
-                par,
-                res,
-                key,
-                out,
-                subkey,
-                delkeys,
-                follower,
-                ii,
-                i;
-
-            // fetch a copy of all attributes
-            if (name == null) {
-                res = {};
-                for (key in attrs) {
-                    if (attrs.hasOwnProperty(key)) {
-                        res[key] = attrs[key];
-                    }
-                }res.gradient && res.fill == "none" && (res.fill = res.gradient) && delete res.gradient;
-                res.transform = o._.transform;
-                /** @todo res.visibility = o.node.style.display === "none" ? "hidden" : "visible"; */
-                return res;
-            }
-
-            // fetch a single value
-            if (value == null && R.is(name, "string")) {
-                if (name == "fill" && attrs.fill == "none" && attrs.gradient) {
-                    return attrs.gradient;
-                }
-                if (name == "transform") {
-                    return o._.transform;
-                }
-                /** @todo if (name == "visibility") {
-                    return this.node.style.display === "none" ? "hidden" : "visible";
-                }*/
-
-                names = name.split(separator), out = {};
-
-                for (i = 0, ii = names.length; i < ii; i++) {
-                    name = names[i];
-                    if (name in attrs) {
-                        out[name] = attrs[name];
-                    } else if (R.is(ca[name], "function")) {
-                        out[name] = ca[name].def;
-                    } else {
-                        out[name] = R._availableAttrs[name];
-                    }
-                }
-                return ii - 1 ? out : out[names[0]];
-            }
-
-            // fetch specific attributes
-            if (value == null && R.is(name, "array")) {
-                out = {};
-                for (i = 0, ii = name.length; i < ii; i++) {
-                    out[name[i]] = o.attr(name[i]);
-                }
-                return out;
-            }
-
-            // prepare setter params
-            if (value != null) {
-                params = {};
-                params[name] = value;
-            } else if (name != null && R.is(name, "object")) {
-                params = name;
-            }
-
-            if (R.stopEvent !== false) {
-                for (key in params) {
-                    eve("raphael.attr." + key + "." + o.id, o, params[key], key);
-                }
-            }
-
-            delkeys = {};
-            for (key in ca) {
-
-                if (ca[key] && params.hasOwnProperty(key) && R.is(ca[key], "function") && !ca['_invoked' + key]) {
-
-                    ca['_invoked' + key] = true; // prevent recursion
-                    par = ca[key].apply(o, [].concat(params[key]));
-                    delete ca['_invoked' + key];
-
-                    for (subkey in par) {
-                        if (par.hasOwnProperty(subkey)) {
-                            params[subkey] = par[subkey];
-                        }
-                    }
-                    attrs[key] = params[key];
-                    if (par === false) {
-                        delkeys[key] = params[key];
-                        delete params[key];
-                    }
-                }
-            }
-
-            setFillAndStroke(this, params);
-
-            for (i = 0, ii = o.followers.length; i < ii; i++) {
-                follower = o.followers[i];
-                follower.cb && !follower.cb.call(follower.el, params, o) || follower.el.attr(params);
-            }
-
-            for (subkey in delkeys) {
-                params[subkey] = delkeys[subkey];
-            }
-            return this;
-        };
-
-        /**************** Drag *********************/
-        elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_scope) {
-
-            function start(e) {
-                (e.originalEvent || e).preventDefault();
-                var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
-                    scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft;
-                this._drag.x = e.clientX + scrollX;
-                this._drag.y = e.clientY + scrollY;
-                this._drag.id = e.identifier;
-                !drag.length && R.mousemove(dragMove).mouseup(dragUp);
-                drag.push({
-                    el: this,
-                    move_scope: move_scope,
-                    start_scope: start_scope,
-                    end_scope: end_scope,
-                    onmoveHandler: onmove,
-                    onstartHandler: onstart,
-                    onendHandler: onend
-                });
-                onstart && eve.on("raphael.drag.start." + this.id, onstart);
-                onmove && eve.on("raphael.drag.move." + this.id, onmove);
-                onend && eve.on("raphael.drag.end." + this.id, onend);
-                onstart && eve("raphael.drag.start." + this.id, start_scope || move_scope || this, e.clientX + scrollX, e.clientY + scrollY, e);
-            }
-            this._drag = {};
-            draggable.push({
-                el: this,
-                start: start
-            });
-            this.mousedown(start);
-            return this;
-        };
-
-        elproto.undrag = function () {
-            var i = draggable.length;
-            while (i--) {
-                if (draggable[i].el == this) {
-                    this.unmousedown(draggable[i].start);
-                    draggable.splice(i, 1);
-                    eve.unbind("raphael.drag.*." + this.id);
-                }
-            }!draggable.length && R.unmousemove(dragMove).unmouseup(dragUp);
-        };
-
-        /***************** Drag *****************/
-        /************ TRANSFORMATIONS *************/
-
-        elproto.rotate = function (deg, cx, cy) {
-
-            var o = this,
-                bbox;
-            if (o.removed) {
-                return o;
-            }
-            deg = Str(deg).split(separator);
-            if (deg.length - 1) {
-                cx = toFloat(deg[1]);
-                cy = toFloat(deg[2]);
-            }
-            deg = toFloat(deg[0]);
-            cy == null && (cx = cy);
-            if (cx == null || cy == null) {
-                bbox = o.getBBox(1);
-                cx = bbox.x + bbox.width / 2;
-                cy = bbox.y + bbox.height / 2;
-            }
-            o.transform(o._.transform.concat([["r", deg, cx, cy]]));
-            return o;
-        };
-
-        elproto.scale = function (sx, sy, cx, cy) {
-            var o = this,
-                bbox;
-            if (o.removed) {
-                return o;
-            }
-            sx = Str(sx).split(separator);
-            if (sx.length - 1) {
-                sy = toFloat(sx[1]);
-                cx = toFloat(sx[2]);
-                cy = toFloat(sx[3]);
-            }
-            sx = toFloat(sx[0]);
-            sy == null && (sy = sx);
-            cy == null && (cx = cy);
-            if (cx == null || cy == null) {
-                bbox = o.getBBox(1);
-            }
-            cx = cx == null ? bbox.x + bbox.width / 2 : cx;
-            cy = cy == null ? bbox.y + bbox.height / 2 : cy;
-            o.transform(o._.transform.concat([["s", sx, sy, cx, cy]]));
-
-            return o;
-        };
-
-        elproto.translate = function (dx, dy) {
-            var o = this;
-            if (o.removed) {
-                return o;
-            }
-            dx = Str(dx).split(separator);
-            if (dx.length - 1) {
-                dy = toFloat(dx[1]);
-            }
-            dx = toFloat(dx[0]) || 0;
-            dy = +dy || 0;
-            o.transform(o._.transform.concat([["t", dx, dy]]));
-
-            return o;
-        };
-
-        elproto.transform = function (tstr) {
-
-            var o = this,
-                _ = o._,
-                sw;
-
-            if (tstr === null) {
-                return _.transform;
-            }
-
-            R._extractTransform(o, tstr);
-
-            /** @todo: what changes to be made here in the context of canvas */
-            /*o.clip && !_.clipispath && $(o.clip, {
-                transform: o.matrix.invert()
-            });
-            o.pattern && updatePosition(o); */
-            if (_.sx != 1 || _.sy != 1) {
-                sw = o.attrs[has]("stroke-width") ? o.attrs["stroke-width"] : 1;
-                o.attr({
-                    "stroke-width": sw
-                });
-            }
-
-            o.node && o.node.redraw();
-
-            return o;
-        };
-
-        /************ TRANSFORMATIONS *************/
-
-        elproto.hide = function () {
-            return this;
-        };
-
-        elproto.show = function () {
-            return this;
-        };
-
-        elproto.on = function (eventType, handler) {
-            var el = this,
-                listeners = el.listeners;
-
-            if (!listeners) {
-                listeners = el.listeners = {};
-            }
-
-            if (!listeners[eventType]) {
-                listeners[eventType] = [];
-            }
-
-            listeners[eventType].push(handler);
-        };
-
-        elproto.remove = function () {
-            return this;
-        };
-
-        paperproto.clear = function () {
-            eve("raphael.clear", this);
-            return this;
-        };
-
-        paperproto.remove = function () {
-            if (this.removed) {
-                return;
-            }
-
-            var paper = this,
-                canvas = paper.canvas,
-                pn = canvas.parentNode,
-                i;
-
-            eve("raphael.remove", paper);
-            pn.removeChild(canvas);
-
-            for (i in paper) {
-                paper[i] = typeof paper[i] == "function" ? R._removedFactory(i) : null;
-            }
-
-            this.removed = true;
-        };
-
-        R.toString = function () {
-            return "Your browser supports canvas.\nYou are running RedRaphael " + R.version;
-        };
-
-        for (var method in elproto) {
-            if (elproto.hasOwnProperty(method) && !setproto.hasOwnProperty(method)) {
-                setproto[method] = function (methodname) {
-                    return function () {
-                        var arg = arguments;
-                        return this.forEach(function (el) {
-                            el[methodname].apply(el, arg);
-                        });
-                    };
-                }(method);
-            }
-        };
-    }
+var create = __webpack_require__(35);
+var descriptor = __webpack_require__(15);
+var setToStringTag = __webpack_require__(22);
+var IteratorPrototype = {};
+
+// 25.1.2.1.1 %IteratorPrototype%[@@iterator]()
+__webpack_require__(3)(IteratorPrototype, __webpack_require__(6)('iterator'), function () { return this; });
+
+module.exports = function (Constructor, NAME, next) {
+  Constructor.prototype = create(IteratorPrototype, { next: descriptor(1, next) });
+  setToStringTag(Constructor, NAME + ' Iterator');
 };
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-module.exports = exports['default'];
+/***/ }),
+/* 58 */
+/***/ (function(module, exports) {
+
+module.exports = function (done, value) {
+  return { value: value, done: !!done };
+};
+
+
+/***/ }),
+/* 59 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var META = __webpack_require__(16)('meta');
+var isObject = __webpack_require__(10);
+var has = __webpack_require__(1);
+var setDesc = __webpack_require__(4).f;
+var id = 0;
+var isExtensible = Object.isExtensible || function () {
+  return true;
+};
+var FREEZE = !__webpack_require__(13)(function () {
+  return isExtensible(Object.preventExtensions({}));
+});
+var setMeta = function (it) {
+  setDesc(it, META, { value: {
+    i: 'O' + ++id, // object ID
+    w: {}          // weak collections IDs
+  } });
+};
+var fastKey = function (it, create) {
+  // return primitive with prefix
+  if (!isObject(it)) return typeof it == 'symbol' ? it : (typeof it == 'string' ? 'S' : 'P') + it;
+  if (!has(it, META)) {
+    // can't set metadata to uncaught frozen object
+    if (!isExtensible(it)) return 'F';
+    // not necessary to add metadata
+    if (!create) return 'E';
+    // add missing metadata
+    setMeta(it);
+  // return object ID
+  } return it[META].i;
+};
+var getWeak = function (it, create) {
+  if (!has(it, META)) {
+    // can't set metadata to uncaught frozen object
+    if (!isExtensible(it)) return true;
+    // not necessary to add metadata
+    if (!create) return false;
+    // add missing metadata
+    setMeta(it);
+  // return hash weak collections IDs
+  } return it[META].w;
+};
+// add metadata on freeze-family methods calling
+var onFreeze = function (it) {
+  if (FREEZE && meta.NEED && isExtensible(it) && !has(it, META)) setMeta(it);
+  return it;
+};
+var meta = module.exports = {
+  KEY: META,
+  NEED: false,
+  fastKey: fastKey,
+  getWeak: getWeak,
+  onFreeze: onFreeze
+};
+
+
+/***/ }),
+/* 60 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var dP = __webpack_require__(4);
+var anObject = __webpack_require__(11);
+var getKeys = __webpack_require__(20);
+
+module.exports = __webpack_require__(2) ? Object.defineProperties : function defineProperties(O, Properties) {
+  anObject(O);
+  var keys = getKeys(Properties);
+  var length = keys.length;
+  var i = 0;
+  var P;
+  while (length > i) dP.f(O, P = keys[i++], Properties[P]);
+  return O;
+};
+
+
+/***/ }),
+/* 61 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var pIE = __webpack_require__(21);
+var createDesc = __webpack_require__(15);
+var toIObject = __webpack_require__(5);
+var toPrimitive = __webpack_require__(26);
+var has = __webpack_require__(1);
+var IE8_DOM_DEFINE = __webpack_require__(33);
+var gOPD = Object.getOwnPropertyDescriptor;
+
+exports.f = __webpack_require__(2) ? gOPD : function getOwnPropertyDescriptor(O, P) {
+  O = toIObject(O);
+  P = toPrimitive(P, true);
+  if (IE8_DOM_DEFINE) try {
+    return gOPD(O, P);
+  } catch (e) { /* empty */ }
+  if (has(O, P)) return createDesc(!pIE.f.call(O, P), O[P]);
+};
+
+
+/***/ }),
+/* 62 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// fallback for IE11 buggy Object.getOwnPropertyNames with iframe and window
+var toIObject = __webpack_require__(5);
+var gOPN = __webpack_require__(36).f;
+var toString = {}.toString;
+
+var windowNames = typeof window == 'object' && window && Object.getOwnPropertyNames
+  ? Object.getOwnPropertyNames(window) : [];
+
+var getWindowNames = function (it) {
+  try {
+    return gOPN(it);
+  } catch (e) {
+    return windowNames.slice();
+  }
+};
+
+module.exports.f = function getOwnPropertyNames(it) {
+  return windowNames && toString.call(it) == '[object Window]' ? getWindowNames(it) : gOPN(toIObject(it));
+};
+
+
+/***/ }),
+/* 63 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
+var has = __webpack_require__(1);
+var toObject = __webpack_require__(67);
+var IE_PROTO = __webpack_require__(23)('IE_PROTO');
+var ObjectProto = Object.prototype;
+
+module.exports = Object.getPrototypeOf || function (O) {
+  O = toObject(O);
+  if (has(O, IE_PROTO)) return O[IE_PROTO];
+  if (typeof O.constructor == 'function' && O instanceof O.constructor) {
+    return O.constructor.prototype;
+  } return O instanceof Object ? ObjectProto : null;
+};
+
+
+/***/ }),
+/* 64 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var toInteger = __webpack_require__(25);
+var defined = __webpack_require__(17);
+// true  -> String#at
+// false -> String#codePointAt
+module.exports = function (TO_STRING) {
+  return function (that, pos) {
+    var s = String(defined(that));
+    var i = toInteger(pos);
+    var l = s.length;
+    var a, b;
+    if (i < 0 || i >= l) return TO_STRING ? '' : undefined;
+    a = s.charCodeAt(i);
+    return a < 0xd800 || a > 0xdbff || i + 1 === l || (b = s.charCodeAt(i + 1)) < 0xdc00 || b > 0xdfff
+      ? TO_STRING ? s.charAt(i) : a
+      : TO_STRING ? s.slice(i, i + 2) : (a - 0xd800 << 10) + (b - 0xdc00) + 0x10000;
+  };
+};
+
+
+/***/ }),
+/* 65 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var toInteger = __webpack_require__(25);
+var max = Math.max;
+var min = Math.min;
+module.exports = function (index, length) {
+  index = toInteger(index);
+  return index < 0 ? max(index + length, 0) : min(index, length);
+};
+
+
+/***/ }),
+/* 66 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// 7.1.15 ToLength
+var toInteger = __webpack_require__(25);
+var min = Math.min;
+module.exports = function (it) {
+  return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
+};
+
+
+/***/ }),
+/* 67 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// 7.1.13 ToObject(argument)
+var defined = __webpack_require__(17);
+module.exports = function (it) {
+  return Object(defined(it));
+};
+
+
+/***/ }),
+/* 68 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var addToUnscopables = __webpack_require__(50);
+var step = __webpack_require__(58);
+var Iterators = __webpack_require__(19);
+var toIObject = __webpack_require__(5);
+
+// 22.1.3.4 Array.prototype.entries()
+// 22.1.3.13 Array.prototype.keys()
+// 22.1.3.29 Array.prototype.values()
+// 22.1.3.30 Array.prototype[@@iterator]()
+module.exports = __webpack_require__(34)(Array, 'Array', function (iterated, kind) {
+  this._t = toIObject(iterated); // target
+  this._i = 0;                   // next index
+  this._k = kind;                // kind
+// 22.1.5.2.1 %ArrayIteratorPrototype%.next()
+}, function () {
+  var O = this._t;
+  var kind = this._k;
+  var index = this._i++;
+  if (!O || index >= O.length) {
+    this._t = undefined;
+    return step(1);
+  }
+  if (kind == 'keys') return step(0, index);
+  if (kind == 'values') return step(0, O[index]);
+  return step(0, [index, O[index]]);
+}, 'values');
+
+// argumentsList[@@iterator] is %ArrayProto_values% (9.4.4.6, 9.4.4.7)
+Iterators.Arguments = Iterators.Array;
+
+addToUnscopables('keys');
+addToUnscopables('values');
+addToUnscopables('entries');
+
+
+/***/ }),
+/* 69 */
+/***/ (function(module, exports) {
+
+
+
+/***/ }),
+/* 70 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var $at = __webpack_require__(64)(true);
+
+// 21.1.3.27 String.prototype[@@iterator]()
+__webpack_require__(34)(String, 'String', function (iterated) {
+  this._t = String(iterated); // target
+  this._i = 0;                // next index
+// 21.1.5.2.1 %StringIteratorPrototype%.next()
+}, function () {
+  var O = this._t;
+  var index = this._i;
+  var point;
+  if (index >= O.length) return { value: undefined, done: true };
+  point = $at(O, index);
+  this._i += point.length;
+  return { value: point, done: false };
+});
+
+
+/***/ }),
+/* 71 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+// ECMAScript 6 symbols shim
+var global = __webpack_require__(0);
+var has = __webpack_require__(1);
+var DESCRIPTORS = __webpack_require__(2);
+var $export = __webpack_require__(32);
+var redefine = __webpack_require__(39);
+var META = __webpack_require__(59).KEY;
+var $fails = __webpack_require__(13);
+var shared = __webpack_require__(24);
+var setToStringTag = __webpack_require__(22);
+var uid = __webpack_require__(16);
+var wks = __webpack_require__(6);
+var wksExt = __webpack_require__(28);
+var wksDefine = __webpack_require__(27);
+var enumKeys = __webpack_require__(53);
+var isArray = __webpack_require__(56);
+var anObject = __webpack_require__(11);
+var isObject = __webpack_require__(10);
+var toIObject = __webpack_require__(5);
+var toPrimitive = __webpack_require__(26);
+var createDesc = __webpack_require__(15);
+var _create = __webpack_require__(35);
+var gOPNExt = __webpack_require__(62);
+var $GOPD = __webpack_require__(61);
+var $DP = __webpack_require__(4);
+var $keys = __webpack_require__(20);
+var gOPD = $GOPD.f;
+var dP = $DP.f;
+var gOPN = gOPNExt.f;
+var $Symbol = global.Symbol;
+var $JSON = global.JSON;
+var _stringify = $JSON && $JSON.stringify;
+var PROTOTYPE = 'prototype';
+var HIDDEN = wks('_hidden');
+var TO_PRIMITIVE = wks('toPrimitive');
+var isEnum = {}.propertyIsEnumerable;
+var SymbolRegistry = shared('symbol-registry');
+var AllSymbols = shared('symbols');
+var OPSymbols = shared('op-symbols');
+var ObjectProto = Object[PROTOTYPE];
+var USE_NATIVE = typeof $Symbol == 'function';
+var QObject = global.QObject;
+// Don't use setters in Qt Script, https://github.com/zloirock/core-js/issues/173
+var setter = !QObject || !QObject[PROTOTYPE] || !QObject[PROTOTYPE].findChild;
+
+// fallback for old Android, https://code.google.com/p/v8/issues/detail?id=687
+var setSymbolDesc = DESCRIPTORS && $fails(function () {
+  return _create(dP({}, 'a', {
+    get: function () { return dP(this, 'a', { value: 7 }).a; }
+  })).a != 7;
+}) ? function (it, key, D) {
+  var protoDesc = gOPD(ObjectProto, key);
+  if (protoDesc) delete ObjectProto[key];
+  dP(it, key, D);
+  if (protoDesc && it !== ObjectProto) dP(ObjectProto, key, protoDesc);
+} : dP;
+
+var wrap = function (tag) {
+  var sym = AllSymbols[tag] = _create($Symbol[PROTOTYPE]);
+  sym._k = tag;
+  return sym;
+};
+
+var isSymbol = USE_NATIVE && typeof $Symbol.iterator == 'symbol' ? function (it) {
+  return typeof it == 'symbol';
+} : function (it) {
+  return it instanceof $Symbol;
+};
+
+var $defineProperty = function defineProperty(it, key, D) {
+  if (it === ObjectProto) $defineProperty(OPSymbols, key, D);
+  anObject(it);
+  key = toPrimitive(key, true);
+  anObject(D);
+  if (has(AllSymbols, key)) {
+    if (!D.enumerable) {
+      if (!has(it, HIDDEN)) dP(it, HIDDEN, createDesc(1, {}));
+      it[HIDDEN][key] = true;
+    } else {
+      if (has(it, HIDDEN) && it[HIDDEN][key]) it[HIDDEN][key] = false;
+      D = _create(D, { enumerable: createDesc(0, false) });
+    } return setSymbolDesc(it, key, D);
+  } return dP(it, key, D);
+};
+var $defineProperties = function defineProperties(it, P) {
+  anObject(it);
+  var keys = enumKeys(P = toIObject(P));
+  var i = 0;
+  var l = keys.length;
+  var key;
+  while (l > i) $defineProperty(it, key = keys[i++], P[key]);
+  return it;
+};
+var $create = function create(it, P) {
+  return P === undefined ? _create(it) : $defineProperties(_create(it), P);
+};
+var $propertyIsEnumerable = function propertyIsEnumerable(key) {
+  var E = isEnum.call(this, key = toPrimitive(key, true));
+  if (this === ObjectProto && has(AllSymbols, key) && !has(OPSymbols, key)) return false;
+  return E || !has(this, key) || !has(AllSymbols, key) || has(this, HIDDEN) && this[HIDDEN][key] ? E : true;
+};
+var $getOwnPropertyDescriptor = function getOwnPropertyDescriptor(it, key) {
+  it = toIObject(it);
+  key = toPrimitive(key, true);
+  if (it === ObjectProto && has(AllSymbols, key) && !has(OPSymbols, key)) return;
+  var D = gOPD(it, key);
+  if (D && has(AllSymbols, key) && !(has(it, HIDDEN) && it[HIDDEN][key])) D.enumerable = true;
+  return D;
+};
+var $getOwnPropertyNames = function getOwnPropertyNames(it) {
+  var names = gOPN(toIObject(it));
+  var result = [];
+  var i = 0;
+  var key;
+  while (names.length > i) {
+    if (!has(AllSymbols, key = names[i++]) && key != HIDDEN && key != META) result.push(key);
+  } return result;
+};
+var $getOwnPropertySymbols = function getOwnPropertySymbols(it) {
+  var IS_OP = it === ObjectProto;
+  var names = gOPN(IS_OP ? OPSymbols : toIObject(it));
+  var result = [];
+  var i = 0;
+  var key;
+  while (names.length > i) {
+    if (has(AllSymbols, key = names[i++]) && (IS_OP ? has(ObjectProto, key) : true)) result.push(AllSymbols[key]);
+  } return result;
+};
+
+// 19.4.1.1 Symbol([description])
+if (!USE_NATIVE) {
+  $Symbol = function Symbol() {
+    if (this instanceof $Symbol) throw TypeError('Symbol is not a constructor!');
+    var tag = uid(arguments.length > 0 ? arguments[0] : undefined);
+    var $set = function (value) {
+      if (this === ObjectProto) $set.call(OPSymbols, value);
+      if (has(this, HIDDEN) && has(this[HIDDEN], tag)) this[HIDDEN][tag] = false;
+      setSymbolDesc(this, tag, createDesc(1, value));
+    };
+    if (DESCRIPTORS && setter) setSymbolDesc(ObjectProto, tag, { configurable: true, set: $set });
+    return wrap(tag);
+  };
+  redefine($Symbol[PROTOTYPE], 'toString', function toString() {
+    return this._k;
+  });
+
+  $GOPD.f = $getOwnPropertyDescriptor;
+  $DP.f = $defineProperty;
+  __webpack_require__(36).f = gOPNExt.f = $getOwnPropertyNames;
+  __webpack_require__(21).f = $propertyIsEnumerable;
+  __webpack_require__(37).f = $getOwnPropertySymbols;
+
+  if (DESCRIPTORS && !__webpack_require__(14)) {
+    redefine(ObjectProto, 'propertyIsEnumerable', $propertyIsEnumerable, true);
+  }
+
+  wksExt.f = function (name) {
+    return wrap(wks(name));
+  };
+}
+
+$export($export.G + $export.W + $export.F * !USE_NATIVE, { Symbol: $Symbol });
+
+for (var es6Symbols = (
+  // 19.4.2.2, 19.4.2.3, 19.4.2.4, 19.4.2.6, 19.4.2.8, 19.4.2.9, 19.4.2.10, 19.4.2.11, 19.4.2.12, 19.4.2.13, 19.4.2.14
+  'hasInstance,isConcatSpreadable,iterator,match,replace,search,species,split,toPrimitive,toStringTag,unscopables'
+).split(','), j = 0; es6Symbols.length > j;)wks(es6Symbols[j++]);
+
+for (var wellKnownSymbols = $keys(wks.store), k = 0; wellKnownSymbols.length > k;) wksDefine(wellKnownSymbols[k++]);
+
+$export($export.S + $export.F * !USE_NATIVE, 'Symbol', {
+  // 19.4.2.1 Symbol.for(key)
+  'for': function (key) {
+    return has(SymbolRegistry, key += '')
+      ? SymbolRegistry[key]
+      : SymbolRegistry[key] = $Symbol(key);
+  },
+  // 19.4.2.5 Symbol.keyFor(sym)
+  keyFor: function keyFor(sym) {
+    if (!isSymbol(sym)) throw TypeError(sym + ' is not a symbol!');
+    for (var key in SymbolRegistry) if (SymbolRegistry[key] === sym) return key;
+  },
+  useSetter: function () { setter = true; },
+  useSimple: function () { setter = false; }
+});
+
+$export($export.S + $export.F * !USE_NATIVE, 'Object', {
+  // 19.1.2.2 Object.create(O [, Properties])
+  create: $create,
+  // 19.1.2.4 Object.defineProperty(O, P, Attributes)
+  defineProperty: $defineProperty,
+  // 19.1.2.3 Object.defineProperties(O, Properties)
+  defineProperties: $defineProperties,
+  // 19.1.2.6 Object.getOwnPropertyDescriptor(O, P)
+  getOwnPropertyDescriptor: $getOwnPropertyDescriptor,
+  // 19.1.2.7 Object.getOwnPropertyNames(O)
+  getOwnPropertyNames: $getOwnPropertyNames,
+  // 19.1.2.8 Object.getOwnPropertySymbols(O)
+  getOwnPropertySymbols: $getOwnPropertySymbols
+});
+
+// 24.3.2 JSON.stringify(value [, replacer [, space]])
+$JSON && $export($export.S + $export.F * (!USE_NATIVE || $fails(function () {
+  var S = $Symbol();
+  // MS Edge converts symbol values to JSON as {}
+  // WebKit converts symbol values to JSON as null
+  // V8 throws on boxed symbols
+  return _stringify([S]) != '[null]' || _stringify({ a: S }) != '{}' || _stringify(Object(S)) != '{}';
+})), 'JSON', {
+  stringify: function stringify(it) {
+    var args = [it];
+    var i = 1;
+    var replacer, $replacer;
+    while (arguments.length > i) args.push(arguments[i++]);
+    $replacer = replacer = args[1];
+    if (!isObject(replacer) && it === undefined || isSymbol(it)) return; // IE8 returns string on undefined
+    if (!isArray(replacer)) replacer = function (key, value) {
+      if (typeof $replacer == 'function') value = $replacer.call(this, key, value);
+      if (!isSymbol(value)) return value;
+    };
+    args[1] = replacer;
+    return _stringify.apply($JSON, args);
+  }
+});
+
+// 19.4.3.4 Symbol.prototype[@@toPrimitive](hint)
+$Symbol[PROTOTYPE][TO_PRIMITIVE] || __webpack_require__(3)($Symbol[PROTOTYPE], TO_PRIMITIVE, $Symbol[PROTOTYPE].valueOf);
+// 19.4.3.5 Symbol.prototype[@@toStringTag]
+setToStringTag($Symbol, 'Symbol');
+// 20.2.1.9 Math[@@toStringTag]
+setToStringTag(Math, 'Math', true);
+// 24.3.3 JSON[@@toStringTag]
+setToStringTag(global.JSON, 'JSON', true);
+
+
+/***/ }),
+/* 72 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(27)('asyncIterator');
+
+
+/***/ }),
+/* 73 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(27)('observable');
+
+
+/***/ }),
+/* 74 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(68);
+var global = __webpack_require__(0);
+var hide = __webpack_require__(3);
+var Iterators = __webpack_require__(19);
+var TO_STRING_TAG = __webpack_require__(6)('toStringTag');
+
+var DOMIterables = ('CSSRuleList,CSSStyleDeclaration,CSSValueList,ClientRectList,DOMRectList,DOMStringList,' +
+  'DOMTokenList,DataTransferItemList,FileList,HTMLAllCollection,HTMLCollection,HTMLFormElement,HTMLSelectElement,' +
+  'MediaList,MimeTypeArray,NamedNodeMap,NodeList,PaintRequestList,Plugin,PluginArray,SVGLengthList,SVGNumberList,' +
+  'SVGPathSegList,SVGPointList,SVGStringList,SVGTransformList,SourceBufferList,StyleSheetList,TextTrackCueList,' +
+  'TextTrackList,TouchList').split(',');
+
+for (var i = 0; i < DOMIterables.length; i++) {
+  var NAME = DOMIterables[i];
+  var Collection = global[NAME];
+  var proto = Collection && Collection.prototype;
+  if (proto && !proto[TO_STRING_TAG]) hide(proto, TO_STRING_TAG, NAME);
+  Iterators[NAME] = Iterators.Array;
+}
+
+
+/***/ }),
+/* 75 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(40);
+
 
 /***/ })
 /******/ ]);

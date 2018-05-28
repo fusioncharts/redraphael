@@ -450,7 +450,7 @@ export default function (R) {
             }
             if (res.type == "text") {
                 res.paper.canvas.style.display = E;
-                var span = window.span1 = res.paper.span,
+                var span = res.paper.span,
                 m = 100,
                 _style = getComputedFontStyle(res),
                 fontSize = _style.font && _style.font.match(/\d+(?:\.\d*)?(?=px)/),

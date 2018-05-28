@@ -10727,6 +10727,7 @@ exports['default'] = function (R) {
             S = ' ',
             xlink = 'http://www.w3.org/1999/xlink',
             svgNSStr = 'http://www.w3.org/2000/svg',
+            isIpad = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform),
             typeStringSTR = 'string',
             markers = {
             block: 'M5,0 0,2.5 5,5z',
@@ -12040,9 +12041,10 @@ exports['default'] = function (R) {
                         newFn: fn,
                         newEvt: eventType
                     });
-                    // also attach the original event, mainly because of the
+                    // also attach the original event except Ipad(as ipad fires both touchstart touchend
+                    // and mousedown mouseup casuing same callback called twice), mainly because of the
                     // discrepancy in behaviour for hybrid devices.
-                    elem.on(oldEventType, handler, true);
+                    !isIpad && elem.on(oldEventType, handler, true);
                 }
             }
             if (this._ && this._.RefImg) {
@@ -12441,13 +12443,14 @@ exports["default"] = function (R) {
         var LoadRefImage = function LoadRefImage(element, attrs) {
             var src = attrs.src,
                 parent = element._.group,
-                node = element.node,
-                RefImg = element._.RefImg;
-
+                node = element.node;
+            if (!element._.RefImg) {
+                element._.RefImg = new Image();
+            }
             if (attrs.src === undefined) {
                 return;
             }
-            RefImg.src = src;
+            element._.RefImg.src = src;
         };
 
         var has = "hasOwnProperty",
@@ -13537,6 +13540,8 @@ exports["default"] = function (R) {
         };
         ;
         R._engine.image = function (vml, attrs, group) {
+            attrs.w || (attrs.w = attrs.width);
+            attrs.h || (attrs.h = attrs.height);
             var path = R._rectPath(attrs.x, attrs.y, attrs.w, attrs.h);
 
             attrs.path = path;
@@ -13546,7 +13551,7 @@ exports["default"] = function (R) {
                 a = res.attrs,
                 node = res.node,
                 fill = node.getElementsByTagName(fillString)[0];
-            res._.RefImg = new Image();
+            !res._.RefImg && (res._.RefImg = new Image());
             a.src = attrs.src;
             res.X = a.x = attrs.x;
             res.Y = a.y = attrs.y;

@@ -1344,6 +1344,19 @@ var loaded,
      = (array) array of segments.
     \*/
     R.parsePathString = function(pathString) {
+        let paramCounts = {
+            a: 7,
+            c: 6,
+            h: 1,
+            l: 2,
+            m: 2,
+            r: 4,
+            q: 4,
+            s: 4,
+            t: 2,
+            v: 1,
+            z: 0
+        };
         if (!pathString) {
             return null;
         }
@@ -1353,19 +1366,36 @@ var loaded,
         }
         __data = undef;
         if (R.is(pathString, ARRAY)) {
+            pathString = Str(pathString)
+            .replace(/,?([A-Z]),?/g, ',$1,').replace(/^[,]?/, '').replace(/[,]?$/, '').split(',');
             if(R.is(pathString[0], ARRAY)) { // rough assumption
              __data = pathClone(pathString);
             } else {
-                var i, subPathArr, l = pathString.length, pathI;
+                var i, subPathArr = [], l = pathString.length, pathI, noOfDataPoints;
                 __data = [];
                 for (i = 0; i < l; i += 1) {
-                    pathI = pathString[i];
-                    if (charRegex.test(pathI)) {
-                        __data.push(subPathArr = [pathI]);
-                    } else {
-                        subPathArr.push(pathI);
+                    // if any path command is encountered
+                    if (charRegex.test(pathString[i])) {
+                        // if any previous path command was parsed with its allowed set of points then push
+                        // that parsed path sub-array to final path array.
+                        subPathArr.length && __data.push(subPathArr);
+                        // update the path command and path sub-array.
+                        pathI = pathString[i];
+                        subPathArr = [pathI];
+                        // no of points that will be parsed for the path copmmand.
+                        noOfDataPoints = paramCounts[pathI.toLowerCase()];
+                    } else if(noOfDataPoints){ // push all the allowed data points to the subarray
+                        subPathArr.push(pathString[i]);
+                        noOfDataPoints--;
+                    }else{
+                        // push the last parsed path sub-array to final path array.
+                        __data.push(subPathArr);
+                        // create a new sub array with the last known path command
+                        subPathArr = [pathI].concat(pathString[i]);
+                        noOfDataPoints = paramCounts[pathI.toLowerCase()] - 1;
                     }
                 }
+                __data.push(subPathArr);
             }
         }
         if (!__data || !__data.length) {
@@ -1375,7 +1405,7 @@ var loaded,
         __data.toString = R._path2string;
         pth.arr = __data;
         return pth.arr;
-    };
+    }
 
     /*\
      * Raphael.parseTransformString
@@ -1794,6 +1824,8 @@ var loaded,
         ];
     },
     a2c = function(x1, y1, rx, ry, angle, large_arc_flag, sweep_flag, x2, y2, recursive) {
+        sweep_flag = sweep_flag && +sweep_flag;
+        large_arc_flag = large_arc_flag && +large_arc_flag;
         // for more information of where this math came from visit:
         // http://www.w3.org/TR/SVG11/implnote.html#ArcImplementationNotes
         var _120 = PI * 120 / 180,

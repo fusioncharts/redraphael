@@ -1367,7 +1367,9 @@ var loaded,
         __data = undef;
         if (R.is(pathString, ARRAY)) {
             pathString = Str(pathString)
-            .replace(/,?([A-Z]),?/g, ',$1,').replace(/^[,]?/, '').replace(/[,]?$/, '').split(',');
+                          .replace(/,?([A-Z]),?/g, ',$1,')
+                          .replace(/(^,?)|(,?$)/g, '')
+                          .split(',');
             if(R.is(pathString[0], ARRAY)) { // rough assumption
              __data = pathClone(pathString);
             } else {

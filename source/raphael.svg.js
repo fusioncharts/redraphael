@@ -1344,7 +1344,6 @@ export default function (R) {
             var elem = this,
                 node,
                 fn,
-                _fn,
                 oldEventType;
             if (this.removed) {
                 return this;
@@ -1391,9 +1390,8 @@ export default function (R) {
             }
             if (this._ && this._.RefImg) {
                 node = this._.RefImg;
-                _fn = fn;
                 fn = function (e) {
-                    !elem.removed && _fn.call(elem, e);
+                    !elem.removed && handler.call(elem, e);
                 };
             } else {
                 node = this.node;

@@ -68,6 +68,7 @@ export default function (R) {
             S = ' ',
             xlink = 'http://www.w3.org/1999/xlink',
             svgNSStr = 'http://www.w3.org/2000/svg',
+            isIpad = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform),
             typeStringSTR = 'string',
             markers = {
                 block: 'M5,0 0,2.5 5,5z',
@@ -355,7 +356,6 @@ export default function (R) {
                 });
 
                 s.fill = E;
-                s.fillOpacity = 1;
                 return 1;
             },
             updatePosition = function (o) {
@@ -911,6 +911,13 @@ export default function (R) {
                             tspan = tspans[i * j];
                             if (tspan) { // If already there is a tspan then remove the text
                                 tspan.innerHTML = E;
+                                if (isIE) {
+                                    // For IE, setting the innerHTML of tspan to blank string doesnot remove
+                                    // the child nodes. Child nodes should be removed explicitly.
+                                    while (tspan.firstChild) {
+                                        tspan.removeChild(tspan.firstChild);
+                                    }    
+                                }
                                 if (updateTspan) { // If update required, update here
                                     $(tspan, i ? tspanAttr : oldAttr.tspan0Attr);
                                 }
@@ -1376,9 +1383,10 @@ export default function (R) {
                         newFn: fn,
                         newEvt: eventType
                     });
-                    // also attach the original event, mainly because of the
+                    // also attach the original event except Ipad(as ipad fires both touchstart touchend
+                    // and mousedown mouseup casuing same callback called twice), mainly because of the
                     // discrepancy in behaviour for hybrid devices.
-                    elem.on(oldEventType, handler, true);
+                    !isIpad && elem.on(oldEventType, handler, true);
                 }
             }
             if (this._ && this._.RefImg) {

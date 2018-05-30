@@ -10721,6 +10721,7 @@ exports['default'] = function (R) {
             S = ' ',
             xlink = 'http://www.w3.org/1999/xlink',
             svgNSStr = 'http://www.w3.org/2000/svg',
+            isIpad = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform),
             typeStringSTR = 'string',
             markers = {
             block: 'M5,0 0,2.5 5,5z',
@@ -11003,7 +11004,6 @@ exports['default'] = function (R) {
             });
 
             s.fill = E;
-            s.fillOpacity = 1;
             return 1;
         },
             updatePosition = function updatePosition(o) {
@@ -11567,6 +11567,13 @@ exports['default'] = function (R) {
                         if (tspan) {
                             // If already there is a tspan then remove the text
                             tspan.innerHTML = E;
+                            if (isIE) {
+                                // For IE, setting the innerHTML of tspan to blank string doesnot remove
+                                // the child nodes. Child nodes should be removed explicitly.
+                                while (tspan.firstChild) {
+                                    tspan.removeChild(tspan.firstChild);
+                                }
+                            }
                             if (updateTspan) {
                                 // If update required, update here
                                 $(tspan, i ? tspanAttr : oldAttr.tspan0Attr);
@@ -12035,9 +12042,10 @@ exports['default'] = function (R) {
                         newFn: fn,
                         newEvt: eventType
                     });
-                    // also attach the original event, mainly because of the
+                    // also attach the original event except Ipad(as ipad fires both touchstart touchend
+                    // and mousedown mouseup casuing same callback called twice), mainly because of the
                     // discrepancy in behaviour for hybrid devices.
-                    elem.on(oldEventType, handler, true);
+                    !isIpad && elem.on(oldEventType, handler, true);
                 }
             }
             if (this._ && this._.RefImg) {
@@ -12436,13 +12444,14 @@ exports["default"] = function (R) {
         var LoadRefImage = function LoadRefImage(element, attrs) {
             var src = attrs.src,
                 parent = element._.group,
-                node = element.node,
-                RefImg = element._.RefImg;
-
+                node = element.node;
+            if (!element._.RefImg) {
+                element._.RefImg = new Image();
+            }
             if (attrs.src === undefined) {
                 return;
             }
-            RefImg.src = src;
+            element._.RefImg.src = src;
         };
 
         var has = "hasOwnProperty",
@@ -12594,6 +12603,27 @@ exports["default"] = function (R) {
                 eve("raphael.attr." + key + "." + o.id, o, attrs[key], key);
                 o.ca[key] && o.attr(key, attrs[key]);
             }
+        },
+            styles = ['font', 'line-height', 'font-family', 'font-weight', 'font-style', 'font-size'],
+            getComputedFontStyle = function getComputedFontStyle(o) {
+            var style = {},
+                _break,
+                i,
+                len = styles.length,
+                attrs;
+            while (o.paper && o.paper.canvas) {
+                attrs = o.attrs;
+                _break = true;
+                for (i = 0; i < len; i++) {
+                    if (!style[styles[i]]) {
+                        style[styles[i]] = attrs[styles[i]];
+                        _break = false;
+                    }
+                }
+                if (_break) break;
+                o = o.parent;
+            }
+            return style;
         },
             setFillAndStroke = R._setFillAndStroke = function (o, params) {
             if (!o.paper.canvas) return;
@@ -12842,17 +12872,18 @@ exports["default"] = function (R) {
                 res.paper.canvas.style.display = E;
                 var span = res.paper.span,
                     m = 100,
-                    fontSize = a.font && a.font.match(/\d+(?:\.\d*)?(?=px)/),
-                    lineHeight = a['line-height'] && (a['line-height'] + E).match(/\d+(?:\.\d*)?(?=px)/);
+                    _style = getComputedFontStyle(res),
+                    fontSize = _style.font && _style.font.match(/\d+(?:\.\d*)?(?=px)/),
+                    lineHeight = _style['line-height'] && (_style['line-height'] + E).match(/\d+(?:\.\d*)?(?=px)/);
                 s = span.style;
-                a.font && (s.font = a.font);
-                a["font-family"] && (s.fontFamily = a["font-family"]);
-                a["font-weight"] && (s.fontWeight = a["font-weight"]);
-                a["font-style"] && (s.fontStyle = a["font-style"]);
-                fontSize = toFloat(a["font-size"] || fontSize && fontSize[0]) || 10;
+                _style.font && (s.font = _style.font);
+                _style["font-family"] && (s.fontFamily = _style["font-family"]);
+                _style["font-weight"] && (s.fontWeight = _style["font-weight"]);
+                _style["font-style"] && (s.fontStyle = _style["font-style"]);
+                fontSize = toFloat(_style["font-size"] || fontSize && fontSize[0]) || 10;
                 s.fontSize = fontSize * m + "px";
-                lineHeight = toFloat(a["line-height"] || lineHeight && lineHeight[0]) || 12;
-                a["line-height"] && (s.lineHeight = lineHeight * m + 'px');
+                lineHeight = toFloat(_style["line-height"] || lineHeight && lineHeight[0] || fontSize * 1.2) || 12;
+                s.lineHeight = lineHeight * m + 'px';
                 R.is(params.text, 'array') && (params.text = res.textpath.string = params.text.join('\n').replace(/<br\s*?\/?>/ig, '\n'));
                 res.textpath.string && (span.innerHTML = Str(res.textpath.string).replace(/</g, "&#60;").replace(/&/g, "&#38;").replace(/\n/g, "<br>"));
                 var brect = span.getBoundingClientRect();
@@ -13532,6 +13563,8 @@ exports["default"] = function (R) {
         };
         ;
         R._engine.image = function (vml, attrs, group) {
+            attrs.w || (attrs.w = attrs.width);
+            attrs.h || (attrs.h = attrs.height);
             var path = R._rectPath(attrs.x, attrs.y, attrs.w, attrs.h);
 
             attrs.path = path;
@@ -13541,7 +13574,7 @@ exports["default"] = function (R) {
                 a = res.attrs,
                 node = res.node,
                 fill = node.getElementsByTagName(fillString)[0];
-            res._.RefImg = new Image();
+            !res._.RefImg && (res._.RefImg = new Image());
             a.src = attrs.src;
             res.X = a.x = attrs.x;
             res.Y = a.y = attrs.y;

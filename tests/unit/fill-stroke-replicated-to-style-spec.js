@@ -52,7 +52,6 @@ describe('elproto.attr', function () {
         expect(shape1.node.style.fill).toBe('');
 
         expect(shape1.node.getAttribute('fill-opacity')).toBe('1');
-        expect(shape1.node.style.fillOpacity).toBe('1');
     });
 
     it('must reset fill when set to none from solid', function () {

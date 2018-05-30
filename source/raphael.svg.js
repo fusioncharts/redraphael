@@ -356,7 +356,6 @@ export default function (R) {
                 });
 
                 s.fill = E;
-                s.fillOpacity = 1;
                 return 1;
             },
             updatePosition = function (o) {
@@ -912,6 +911,13 @@ export default function (R) {
                             tspan = tspans[i * j];
                             if (tspan) { // If already there is a tspan then remove the text
                                 tspan.innerHTML = E;
+                                if (isIE) {
+                                    // For IE, setting the innerHTML of tspan to blank string doesnot remove
+                                    // the child nodes. Child nodes should be removed explicitly.
+                                    while (tspan.firstChild) {
+                                        tspan.removeChild(tspan.firstChild);
+                                    }    
+                                }
                                 if (updateTspan) { // If update required, update here
                                     $(tspan, i ? tspanAttr : oldAttr.tspan0Attr);
                                 }

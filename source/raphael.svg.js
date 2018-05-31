@@ -1390,6 +1390,9 @@ export default function (R) {
             }
             if (this._ && this._.RefImg) {
                 node = this._.RefImg;
+                fn = function (e) {
+                    !elem.removed && handler.call(elem, e);
+                };
             } else {
                 node = this.node;
             }

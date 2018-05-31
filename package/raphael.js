@@ -12050,6 +12050,9 @@ exports['default'] = function (R) {
             }
             if (this._ && this._.RefImg) {
                 node = this._.RefImg;
+                fn = function fn(e) {
+                    !elem.removed && handler.call(elem, e);
+                };
             } else {
                 node = this.node;
             }
@@ -13375,6 +13378,8 @@ exports["default"] = function (R) {
         * @param handler - Function to be called on the firing of the event
         \*/
         elproto.on = function (eventType, handler) {
+            var el = this,
+                _fn;
             if (this.removed) {
                 return this;
             }
@@ -13391,6 +13396,10 @@ exports["default"] = function (R) {
             }
             if (this._ && this._.RefImg) {
                 node = this._.RefImg;
+                _fn = handler;
+                handler = function handler(e) {
+                    !el.removed && _fn.call(el, e);
+                };
             } else {
                 node = this.node;
             }

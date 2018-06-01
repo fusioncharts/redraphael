@@ -957,6 +957,8 @@ export default function (R) {
         * @param handler - Function to be called on the firing of the event
         \*/
         elproto.on = function(eventType, handler) {
+            var el = this,
+                _fn;
             if (this.removed) {
                 return this;
             }
@@ -973,7 +975,10 @@ export default function (R) {
             }
             if (this._ && this._.RefImg) {
                 node = this._.RefImg;
-
+                _fn = handler;
+                handler = function (e) {
+                    !el.removed && _fn.call(el, e);
+                };
             } else {
                 node = this.node;
             }

@@ -1364,7 +1364,7 @@ export default function (R) {
             oldEventType = eventType;
             if (R.supportsTouch && !doNotModifyEvent) {
                 eventType = R._touchMap[eventType] ||
-                    (eventType === 'click' && 'touchstart') || eventType;
+                    (eventType === 'click' && 'touchend') || eventType;
                 if (eventType !== oldEventType) {
                     // store the new listeners for removeEventListener
                     if (!elem._tempTouchListeners) {

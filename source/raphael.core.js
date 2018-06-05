@@ -1374,6 +1374,7 @@ var loaded,
             pathString = Str(pathString)
                           .replace(/,?([A-Z]),?/g, ',$1,')
                           .replace(/(^,?)|(,?$)/g, '')
+                          .replace(/,,?/g,',')
                           .split(',');
             if(R.is(pathString[0], ARRAY)) { // rough assumption
              __data = pathClone(pathString);
@@ -1392,13 +1393,13 @@ var loaded,
                         // no of points that will be parsed for the path copmmand.
                         noOfDataPoints = paramCounts[pathI.toLowerCase()];
                     } else if(noOfDataPoints){ // push all the allowed data points to the subarray
-                        subPathArr.push(pathString[i]);
+                        subPathArr.push(+pathString[i]);
                         noOfDataPoints--;
                     }else{
                         // push the last parsed path sub-array to final path array.
                         __data.push(subPathArr);
                         // create a new sub array with the last known path command
-                        subPathArr = [pathI].concat(pathString[i]);
+                        subPathArr = [pathI].concat(+pathString[i]);
                         noOfDataPoints = paramCounts[pathI.toLowerCase()] - 1;
                     }
                 }

@@ -155,7 +155,39 @@ export default function (R) {
         R.toString = function() {
             return  "Your browser doesn\u2019t support SVG. Falling down to VML.\nYou are running Rapha\xebl " + this.version;
         };
-        var applyCustomAttributes = function (o, attrs) {
+        var addArrow = function(o, value, isEnd) {
+            var values = Str(value).toLowerCase().split("-"),
+            se = isEnd ? "end" : "start",
+            i = values.length,
+            type = "classic",
+            w = "medium",
+            h = "medium";
+            while (i--) {
+                switch (values[i]) {
+                    case "block":
+                    case "classic":
+                    case "oval":
+                    case "diamond":
+                    case "open":
+                    case "none":
+                        type = values[i];
+                        break;
+                    case "wide":
+                    case "narrow":
+                        h = values[i];
+                        break;
+                    case "long":
+                    case "short":
+                        w = values[i];
+                        break;
+                }
+            }
+            var stroke = o.node.getElementsByTagName("stroke")[0];
+            stroke[se + "arrow"] = type;
+            stroke[se + "arrowlength"] = w;
+            stroke[se + "arrowwidth"] = h;
+        },
+        applyCustomAttributes = function (o, attrs) {
             for (var key in attrs) {
                 eve("raphael.attr." + key + "." + o.id, o, attrs[key], key);
                 o.ca[key] && o.attr(key, attrs[key]);

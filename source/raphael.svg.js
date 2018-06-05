@@ -1388,6 +1388,8 @@ export default function (R) {
                     !isIpad && elem.on(oldEventType, handler, true);
                 }
             }
+            // IE-11 cannot emit load and error event,
+            // that's why we are attaching the load and error events on the Reference Image
             if (this._ && this._.RefImg && (eventType === 'load' || eventType === 'error')) {
                 node = this._.RefImg;
                 fn = function (e) {

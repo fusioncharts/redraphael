@@ -1388,7 +1388,7 @@ export default function (R) {
                     !isIpad && elem.on(oldEventType, handler, true);
                 }
             }
-            if (this._ && this._.RefImg) {
+            if (this._ && this._.RefImg && (eventType === 'load' || eventType === 'error')) {
                 node = this._.RefImg;
                 fn = function (e) {
                     !elem.removed && handler.call(elem, e);

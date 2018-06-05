@@ -1005,12 +1005,15 @@ export default function (R) {
                 this.drag(null, null, handler);
                 return this;
             }
-            if (this._ && this._.RefImg) {
+            // There is discrepancy in IE-8 load and error event emmition,
+            // that's why we are attaching the load and error events on the Reference Image
+            if (this._ && this._.RefImg && (eventType === 'load' || eventType === 'error')) {
                 node = this._.RefImg;
-                _fn = handler;
-                handler = function (e) {
-                    !el.removed && _fn.call(el, e);
-                };
+                handler = (function (el, _fn) {
+                    return function (e) {
+                        !el.removed && _fn.call(el, e);
+                    };
+                })(el, handler);
             } else {
                 node = this.node;
             }

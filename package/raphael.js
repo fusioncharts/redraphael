@@ -1303,6 +1303,19 @@ var loaded,
     COMMA = ',',
     TOKEN1 = '$1',
     rCheckRegex = /R/i,
+    paramCounts = {
+    a: 7,
+    c: 6,
+    h: 1,
+    l: 2,
+    m: 2,
+    r: 4,
+    q: 4,
+    s: 4,
+    t: 2,
+    v: 1,
+    z: 0
+},
     arraySplice = Array.prototype.splice,
     hasPrototypeBug = function () {
     var a = function a() {/* no body */};
@@ -1323,28 +1336,33 @@ var loaded,
     __params = [],
     charRegex = /[a-z]/i,
     pathStringBreakFn = function pathStringBreakFn(a, b, c) {
-    // var name = b.toLowerCase();
+    var name = b.toLowerCase(),
+        subArr = [],
+        i = 0;
     __params.length = 0;
     c.replace(pathValues, function (a, b) {
         b && __params.push(+b);
     });
-    __data.push([b].concat(__params));
-    // ** Special error correction not required for Fusioncharts
-    // if (name === mStr && __params.length > 2) {
-    //     __data.push([b][CONCAT](__params.splice(0, 2)));
-    //     name = lStr;
-    //     b = b === mStr ? lStr : strL;
-    // }
-    // if (name === 'r') {
-    //     __data.push([b][CONCAT](__params));
-    // } else {
-    //     while (__params.length >= paramCounts[name]) {
-    //         __data.push([b][CONCAT](__params.splice(0, paramCounts[name])));
-    //         if (!paramCounts[name]) {
-    //             break;
-    //         }
-    //     }
-    // }
+    if (name === 'r') {
+        __data.push([b][CONCAT](__params));
+    } else if (name === 'z') {
+        __data.push([b]);
+    } else if (__params.length >= paramCounts[name]) {
+        while (i < __params.length) {
+            if (i % paramCounts[name]) {
+                // push the rest of the co-ordinates into the path sub array. 
+                subArr.push(__params[i]);
+            } else {
+                // if any path is previously parsed then push it 
+                subArr.length && __data.push(subArr) && (subArr = []);
+                // new path array for the last known path command
+                subArr.push(b, __params[i]);
+            }
+            i++;
+        }
+        // push the last parsed path sub array
+        __data.push(subArr);
+    }
 },
 
 // The devices which both touch and pointer.
@@ -2464,19 +2482,6 @@ R.sanitizePath = function (pathArg) {
  = (array) array of segments.
 \*/
 R.parsePathString = function (pathString) {
-    var paramCounts = {
-        a: 7,
-        c: 6,
-        h: 1,
-        l: 2,
-        m: 2,
-        r: 4,
-        q: 4,
-        s: 4,
-        t: 2,
-        v: 1,
-        z: 0
-    };
     if (!pathString) {
         return null;
     }

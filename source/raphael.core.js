@@ -2862,21 +2862,21 @@ var loaded,
     dragUp = function(e) {
         var el = this,
             dragInfo = el.dragInfo,
-            i = dragInfo.onend.length,
-            dragi;
-        while (i--) {
-            if (!el.dragInfo._dragmove) {
-                continue;
-            } else {
-                el.dragInfo._dragmove = undefined;
+            i = dragInfo.onend.length;
+
+        // Dragend handler is called only when dragmove is fired
+        if (el.dragInfo._dragmove) {
+            while (i--) {
+                el._drag = {};
+                eve("raphael.drag.end." + el.id, dragInfo.end_scope[i] || dragInfo.start_scope[i] ||
+                    dragInfo.move_scope[i] || el, e);
             }
-            el._drag = {};
-            eve("raphael.drag.end." + el.id, dragInfo.end_scope[i] || dragInfo.start_scope[i] ||
-                dragInfo.move_scope[i] || el, e);
         }
+        el.dragInfo._dragmove = undefined;
 
         // After execution of the callbacks the eventListeners are removed
-        R.undragmove.call(el, dragMove).undragend.call(el, dragUp);
+        R.undragmove.call(el, dragMove);
+        R.undragend.call(el, dragUp);
         R.unmousemove.call(el, dragMove).unmouseup.call(el, dragUp);
     },
 
@@ -3441,7 +3441,8 @@ var loaded,
         }
 
         R.unmousemove.call(elem, dragMove).unmouseup.call(elem, dragUp);
-        R.undragmove.call(elem, dragMove).undragend.call(elem, dragUp);
+        R.undragmove.call(elem, dragMove);
+        R.undragend.call(elem, dragUp);
         delete elem._drag;
     };
 

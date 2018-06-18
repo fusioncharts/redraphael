@@ -1044,13 +1044,13 @@ export default function (R) {
             }
 
             if (eventType === 'dragstart') {
-                this.undragstart();
+                this.undragstart(handler);
                 return this;
             } else if (eventType === 'dragmove') {
-                this.undragmove();
+                this.undragmove(handler);
                 return this;
             } else if (eventType === 'dragend') {
-                this.undragend();
+                this.undragend(handler);
                 return this;
             }
             if (this.node.attachEvent) {

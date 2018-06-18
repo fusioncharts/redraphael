@@ -3333,6 +3333,7 @@ var loaded,
                 ii,
                 jj,
                 kk,
+                dummydragMoveFn,
                 _dragX,
                 _dragY,
                 dragInfo = this.dragInfo,
@@ -3369,11 +3370,15 @@ var loaded,
                 eve.on("raphael.drag.end." + this.id, dragInfo.onend[k]);
             }
 
-            // Where there is no dragStart but there is dragEnd or dragMove handler
-            if (!ii && (jj || kk) ) {
-                eve.on("raphael.drag.end." + this.id, function() {
+            // Where there is no dragMove but there is dragStart handler
+            // The logic is implemented as dragstart is fired only when there is mousedown followed by mousemove
+            if (ii && !jj) {
+                dummydragMoveFn = function() {
                     this.undragmove();
-                });
+                    dragInfo.onmove = [];
+                };
+                dragInfo.onmove.push(dummydragMoveFn);
+                eve.on("raphael.drag.end." + this.id, dummydragMoveFn);jj
             }
 
             // Queuing up the dragStartFn. It is fired if dragmove is fired after dragStart
@@ -3422,80 +3427,118 @@ var loaded,
      * Removes all drag event handlers from given element.
     \*/
     elproto.undrag = function() {
-        var i = draggable.length;
+        var elem = this,
+            i = draggable.length;
         while (i--) {
-            if (draggable[i].el === this) {
-                this.unmousedown(draggable[i].start);
+            if (draggable[i].el === elem) {
+                elem.unmousedown(elem.dragFn);
                 draggable.splice(i, 1);
-                eve.unbind("raphael.drag.*." + this.id);
-                this.dragInfo = undefined;
-                this.dragFn = undefined;
-                this.startHandlerAttached = undefined;
+                eve.unbind("raphael.drag.*." + elem.id);
+                elem.dragInfo = undefined;
+                elem.dragFn = undefined;
+                elem.startHandlerAttached = undefined;
             }
         }
 
-        !draggable.length && R.unmousemove.call(this, dragMove).unmouseup.call(this, dragUp);
-        delete this._drag;
+        R.unmousemove.call(elem, dragMove).unmouseup.call(elem, dragUp);
+        R.undragmove.call(elem, dragMove).undragend.call(elem, dragUp);
+        delete elem._drag;
     };
 
-    /*\
-     * Element.undragmove
-     [ method ]
-     **
-     * Removes all dragmove event handlers from given element.
-    \*/
-    elproto.undragmove = function() {
-        var i = draggable.length;
-        while (i--) {
-            if (draggable[i].el === this && draggable[i].onmove) {
-                draggable.splice(i, 1);
-                eve.unbind("raphael.drag.move." + this.id);
-                this.dragInfo.onmove = undefined;
+    /**
+     * Function to remove the individual dragStart handler from the element. If no handler is provided, all the dragMove
+     * handlers are removed.
+     */
+    elproto.undragstart = function (handler) {
+        var elem = this,
+            dragInfo = elem.dragInfo,
+            onstart = dragInfo && dragInfo.onstart,
+            i,
+            ii,
+            start_scope = dragInfo && dragInfo.start_scope;
+
+        if (handler) {
+            for (i = 0, ii = onstart && onstart.length; i < ii; i++) {
+                if (onstart[i] === handler) {
+                    onstart.splice(i, 1);
+                    start_scope.splice(i, 1);
+                    eve.unbind("raphael.drag.start." + this.id, handler);
+                    break;
+                }
             }
         }
 
-        !draggable.length && R.unmousemove.call(this, dragMove).unmouseup.call(this, dragUp);
-    };
+        if (!(onstart && onstart.length) || !handler) {
+            R.undragstart.call(elem, elem.dragFn);
+            R.unmousedown.call(elem, elem.dragFn);
+            eve.unbind("raphael.drag.start." + this.id);
+            // Setting the flag for drag start as false
+            elem.startHandlerAttached = false;
+            dragInfo && (dragInfo.onstart = [], dragInfo.start_scope = []);
+        }
+    }
 
-    /*\
-     * Element.undragend
-     [ method ]
-     **
-     * Removes all dragend event handlers from given element.
-    \*/
-    elproto.undragend = function() {
-        var i = draggable.length;
-        while (i--) {
-            if (draggable[i].el === this && draggable[i].onend) {
-                draggable.splice(i, 1);
-                eve.unbind("raphael.drag.end." + this.id);
+    /**
+     * Function to remove the individual dragMove handler from the element. If no handler is provided, all the dragMove
+     * handlers are removed.
+     */
+    elproto.undragmove = function (handler) {
+        var elem = this,
+            dragInfo = elem.dragInfo,
+            onmove = dragInfo && dragInfo.onmove,
+            i,
+            ii,
+            move_scope = dragInfo && dragInfo.move_scope;
+                    
+        if (handler) {
+            for (i = 0, ii = onmove && onmove.length; i < ii; i++) {
+                if (onmove[i] === handler) {
+                    onmove.splice(i, 1);
+                    move_scope.splice(i, 1);
+                    eve.unbind("raphael.drag.move." + this.id, handler);
+                    break;
+                }
             }
         }
 
-        !draggable.length && R.unmousemove(dragMove).unmouseup(dragUp);
-    };
+        if (!(onmove && onmove.length) || !handler) {
+            R.undragmove.call(elem, dragMove);
+            R.unmousemove.call(elem, dragMove);
+            dragInfo && (dragInfo.onmove = [], dragInfo.move_scope = []);
+            eve.unbind("raphael.drag.move." + this.id);
+        }
+    }
 
-    /*\
-     * Element.undragstart
-     [ method ]
-     **
-     * Removes all dragstart event handlers from given element.
-    \*/
-    elproto.undragstart = function() {
-        var i = draggable.length;
-        while (i--) {
-            if (draggable[i].el === this && draggable[i].onstart) {
-                this.unmousedown(draggable[i].start);
-                draggable.splice(i, 1);
-                eve.unbind("raphael.drag.start." + this.id);
-                this._dragstart = false;
-                this.dragInfo.onstart = undefined;
-                this.dragFn = undefined;
+    /**
+     * Function to remove the individual dragStart handler from the element. If no handler is provided, all the dragEnd
+     * handlers are removed.
+     */
+    elproto.undragend = function (handler) {
+        var elem = this,
+            dragInfo = elem.dragInfo,
+            onend = dragInfo && dragInfo.onend,
+            i,
+            ii,
+            end_scope = dragInfo && dragInfo.end_scope;
+
+        if (handler) {
+            for (i = 0, ii = onend && onend.length; i < ii; i++) {
+                if (onend[i] === handler) {
+                    onend.splice(i, 1);
+                    end_scope.splice(i, 1);
+                    eve.unbind("raphael.drag.end." + this.id, handler);
+                    break;
+                }
             }
         }
 
-        !draggable.length && R.unmousemove(dragMove).unmouseup(dragUp);
-    };
+        if (!(onend && onend.length) || !handler) {
+            R.undragend.call(elem, dragUp);
+            R.unmouseup.call(elem, dragUp);
+            dragInfo && (dragInfo.onend = [], dragInfo.end_scope = []);
+            eve.unbind("raphael.drag.end." + this.id);
+        }
+    }
 
     elproto.follow = function(el, callback, stalk) {
         if (el.removed || el.constructor !== R.el.constructor) {

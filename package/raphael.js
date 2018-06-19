@@ -2517,7 +2517,7 @@ R.parsePathString = function (pathString) {
                     // push all the allowed data points to the subarray
                     subPathArr.push(+pathString[i]);
                     noOfDataPoints--;
-                } else {
+                } else if (pathString[i].length) {
                     // push the last parsed path sub-array to final path array.
                     __data.push(subPathArr);
                     // create a new sub array with the last known path command

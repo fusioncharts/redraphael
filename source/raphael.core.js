@@ -1362,7 +1362,7 @@ var loaded,
      = (array) array of segments.
     \*/
     R.parsePathString = function(pathString) {
-        if (!pathString) {
+        if (!pathString  || !pathString.length) {
             return null;
         }
         var pth = paths(pathString);

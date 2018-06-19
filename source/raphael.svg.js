@@ -1575,14 +1575,15 @@ export default function (R) {
                 return this;
             }
 
+            // Unbinding the drag events
             if (eventType === 'dragstart') {
-                this.undragstart();
+                elem.undragstart(handler);
                 return this;
             } else if (eventType === 'dragmove') {
-                this.undragmove();
+                this.undragmove(handler);
                 return this;
             } else if (eventType === 'dragend') {
-                this.undragend();
+                this.undragend(handler);
                 return this;
             }
 

@@ -127,6 +127,7 @@ var loaded,
     COMMA = ',',
     TOKEN1 = '$1',
     rCheckRegex = /R/i,
+    isIE = /trident/i.test(_win.navigator.userAgent),
     paramCounts = {
         a: 7,
         c: 6,
@@ -2745,9 +2746,19 @@ var loaded,
             return function(obj, type, fn, element) {
                 var realName = supportsOnlyTouch && touchMap[type] || type,
                     f,
-                    args = {capture: false};
-                // Passive event is set false only when it is a touch device and a dragEvent
-                supportsTouch && element._drag && (args.passive = false)
+                    args;
+                // capture mode false is included in the eventListener function only when it is a non-IE device.
+                // For all IE device rendering svg we have have a specific bug in the browser. If we use {}, {capture: false}
+                // or {capture: true}, irrespective of the boolean value it always sets {capture: true} for events attached
+                // on body and div which results in bug when stopPropagation is called.
+                if (!isIE) {
+                    args = {
+                        capture: false
+                    };
+                    // Passive event is set false only when it is a touch device and a dragEvent as passive events
+                    // are set to true by default for chrome touch
+                    supportsTouch && element._drag && (args.passive = false)
+                }
 
                 touchMap[dragEventMap[type]] && (realName = touchMap[dragEventMap[type]]);
 

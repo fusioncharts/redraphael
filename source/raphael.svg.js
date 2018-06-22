@@ -1563,8 +1563,9 @@ export default function (R) {
         * Remove handler function bind to an event of element
         * @param eventType - Type of event
         * @param handler - Function to be removed from event
+        * @param doNotCheckModifiedEvents - flag that states if previously attached modified events for the current event has to be checked
         \ */
-        elproto.off = function (eventType, handler) {
+        elproto.off = function (eventType, handler, doNotCheckModifiedEvents) {
             var elem = this,
                 fn,
                 i,
@@ -1590,7 +1591,7 @@ export default function (R) {
             fn = handler;
             oldEventType = eventType;
 
-            if (R.supportsTouch && elem._tempTouchListeners && elem._tempTouchListeners[oldEventType]) {
+            if (!doNotCheckModifiedEvents && R.supportsTouch && elem._tempTouchListeners && elem._tempTouchListeners[oldEventType]) {
                 l = elem._tempTouchListeners[oldEventType].length;
                 for (i = 0; i < l && oldEventType === eventType; i += 1) {
                     if (elem._tempTouchListeners[oldEventType][i] &&
@@ -1600,6 +1601,8 @@ export default function (R) {
                         elem._tempTouchListeners[oldEventType].splice(i, 1);
                     }
                 }
+                // Removing the original event
+                !isIpad && elem.off(oldEventType, handler, true);
             }
             if (this._ && this._.RefImg) {
                 node = this._.RefImg;

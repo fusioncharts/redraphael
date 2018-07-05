@@ -179,7 +179,8 @@ export default function (R) {
         },
 
         preload = R._preload = function(src, f) {
-            var img = doc.createElement("img");
+            var doc = g.doc;
+                img = doc.createElement("img");
             img.style.cssText = "position:absolute;left:-9999em;top:-9999em";
             img.onload = function() {
                 f.call(this);

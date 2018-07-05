@@ -9142,7 +9142,8 @@ exports['default'] = function (R) {
         return res;
     },
         preload = R._preload = function (src, f) {
-        var img = doc.createElement("img");
+        var doc = g.doc;
+        img = doc.createElement("img");
         img.style.cssText = "position:absolute;left:-9999em;top:-9999em";
         img.onload = function () {
             f.call(this);
@@ -11329,6 +11330,7 @@ exports['default'] = function (R) {
                 finalS = {},
                 value,
                 pathClip,
+                urlArr,
                 rect;
 
             // s.visibility = hiddenStr;
@@ -11528,6 +11530,7 @@ exports['default'] = function (R) {
                             case 'fill':
                                 var isURL = R._ISURL.test(value);
                                 if (isURL) {
+                                    urlArr = value.split(R._ISURL);
                                     el = $('pattern');
                                     var ig = $(imageStr);
                                     el.id = R.getElementID(R.createUUID());
@@ -11541,12 +11544,12 @@ exports['default'] = function (R) {
                                     $(ig, {
                                         x: 0,
                                         y: 0,
-                                        'xlink:href': isURL[1]
+                                        'xlink:href': urlArr[1]
                                     });
                                     el.appendChild(ig);
-                                    preLoad(el, ig, isURL, paper);
+                                    preLoad(el, ig, urlArr, paper);
                                     paper.defs.appendChild(el);
-                                    finalAttr.fill = "url('" + R._url + '#' + el.id + "')";
+                                    finalAttr.fill = "url('" + R._url + urlArr[1] + "')";
 
                                     o.pattern = el;
                                     o.pattern && updatePosition(o);

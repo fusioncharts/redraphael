@@ -1,4 +1,4 @@
-var Raphael = require('../../lib/raphael');
+import Raphael from '../../source/raphael';
 
 describe('Raphael.remove', function () {
     var $this = {};

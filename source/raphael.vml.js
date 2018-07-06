@@ -384,17 +384,18 @@ export default function (R) {
                 }
 
                 if (fill.on && params.fill) {
-                    var isURL = Str(params.fill).match(R._ISURL);
+                    var isURL = Str(params.fill).match(R._ISURL),
+                        urlArr = params.fill.split(R._ISURL);
                     if (isURL) {
                         fill.parentNode == node && node.removeChild(fill);
                         fill.rotate = true;
-                        fill.src = isURL[1];
+                        fill.src = urlArr[1];
                         fill.type = "tile";
                         var bbox = o.getBBox(1);
                         fill.position = bbox.x + S + bbox.y;
                         o._.fillpos = [bbox.x, bbox.y];
 
-                        R._preload(isURL[1], function() {
+                        R._preload(urlArr[1], function() {
                             o._.fillsize = [this.offsetWidth, this.offsetHeight];
                         });
                     } else {

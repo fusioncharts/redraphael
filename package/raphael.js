@@ -4748,7 +4748,7 @@ paperproto.circle = function () {
     var paper = this,
         args = (0, _raphael.getArrayCopy)(arguments),
         group = lastArgIfGroup(args, true),
-        attrs = serializeArgs(args, "cx", 0, "cy", 0, "r", 0, "fill", NONE, "stroke", BLACK),
+        attrs = paper._addDefAttribs() ? serializeArgs(args, "cx", 0, "cy", 0, "r", 0, "fill", NONE, "stroke", BLACK) : serializeArgs(args),
         out = R._engine.circle(paper, attrs, group);
 
     return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
@@ -4779,7 +4779,7 @@ paperproto.rect = function () {
     var paper = this,
         args = (0, _raphael.getArrayCopy)(arguments),
         group = lastArgIfGroup(args, true),
-        attrs = serializeArgs(args, "x", 0, "y", 0, "width", 0, "height", 0, "r", 0, "fill", NONE, "stroke", BLACK),
+        attrs = paper._addDefAttribs() ? serializeArgs(args, "x", 0, "y", 0, "width", 0, "height", 0, "r", 0, "fill", NONE, "stroke", BLACK) : serializeArgs(args),
         out = R._engine.rect(paper, attrs, group);
 
     return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
@@ -4806,7 +4806,7 @@ paperproto.ellipse = function () {
     var paper = this,
         args = (0, _raphael.getArrayCopy)(arguments),
         group = lastArgIfGroup(args, true),
-        attrs = serializeArgs(args, "x", 0, "y", 0, "rx", 0, "ry", 0, "fill", NONE, "stroke", BLACK),
+        attrs = paper._addDefAttribs() ? serializeArgs(args, "x", 0, "y", 0, "rx", 0, "ry", 0, "fill", NONE, "stroke", BLACK) : serializeArgs(args),
         out = R._engine.ellipse(this, attrs, group);
 
     return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
@@ -4850,7 +4850,7 @@ paperproto.path = function () {
         group = lastArgIfGroup(args, true),
         paperConfig = paper.config,
         capStyle = paperConfig && paperConfig["stroke-linecap"] || "butt",
-        attrs = serializeArgs(args, "path", E, "fill", NONE, "stroke", BLACK, "stroke-linecap", capStyle),
+        attrs = paper._addDefAttribs() ? serializeArgs(args, "path", E, "fill", NONE, "stroke", BLACK, "stroke-linecap", capStyle) : serializeArgs(args),
         out = R._engine.path(paper, attrs, group);
     return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
 };
@@ -4877,9 +4877,9 @@ paperproto.image = function () {
     var paper = this,
         args = (0, _raphael.getArrayCopy)(arguments),
         group = lastArgIfGroup(args, true),
-        attrs = serializeArgs(args,
+        attrs = paper._addDefAttribs() ? serializeArgs(args,
     // "src", E,
-    "x", 0, "y", 0, "width", 0, "height", 0),
+    "x", 0, "y", 0, "width", 0, "height", 0) : serializeArgs(args),
         out = R._engine.image(paper, attrs, group);
     return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
 };
@@ -4904,9 +4904,20 @@ paperproto.text = function () {
     var paper = this,
         args = (0, _raphael.getArrayCopy)(arguments),
         group = lastArgIfGroup(args, true),
-        attrs = serializeArgs(args, "x", 0, "y", 0, "text", E, "stroke", NONE, "fill", BLACK, "text-anchor", "middle", "vertical-align", "middle"),
+        attrs = paper._addDefAttribs() ? serializeArgs(args, "x", 0, "y", 0, "text", E, "stroke", NONE, "fill", BLACK, "text-anchor", "middle", "vertical-align", "middle") : serializeArgs(args),
         out = R._engine.text(paper, attrs, group, args[1]);
     return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
+};
+
+/*\
+ * Paper._addDefAttribs
+ [ method ]
+ **
+ * Whether we need to set default attributes or not
+\*/
+paperproto._addDefAttribs = function () {
+    // For SVG browsers and if paper has flag set for not to use default attributes
+    return !(R.svg && this.config && this.config.noDefaultAttribs);
 };
 
 /*\
@@ -4924,7 +4935,6 @@ paperproto.setConfig = function (key, value) {
     var paper = this;
 
     if (key !== undefined && value !== undefined) {
-
         paper.config = paper.config || {};
         paper.config[key] = value;
     }
@@ -11885,7 +11895,7 @@ exports['default'] = function (R) {
             }
 
             // Update the node's attribute
-            if (updateNode) {
+            if (updateNode && (oldAttr.y || oldAttr.y === 0) && (oldAttr.shift || oldAttr.shift === 0)) {
                 $(node, { y: Math.round(oldAttr.y + oldAttr.shift) });
             }
         },

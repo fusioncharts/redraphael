@@ -7753,6 +7753,21 @@ R.define = function (name, init, ca, fn, e, data) {
 _eve3['default'].on("raphael.DOMload", function () {
     loaded = true;
 });
+R._preload = function (src, f) {
+    var doc = g.doc,
+        img = doc.createElement("img");
+    img.style.cssText = "position:absolute;left:-9999em;top:-9999em";
+    img.onload = function () {
+        f.call(this);
+        this.onload = null;
+        doc.body.removeChild(this);
+    };
+    img.onerror = function () {
+        doc.body.removeChild(this);
+    };
+    doc.body.appendChild(img);
+    img.src = src;
+};
 
 // EXPOSE
 // SVG and VML are appended just before the EXPOSE line
@@ -9140,20 +9155,6 @@ exports['default'] = function (R) {
         res.toString = R._path2string;
         pth.rel = pathClone(res);
         return res;
-    },
-        preload = R._preload = function (src, f) {
-        var img = doc.createElement("img");
-        img.style.cssText = "position:absolute;left:-9999em;top:-9999em";
-        img.onload = function () {
-            f.call(this);
-            this.onload = null;
-            doc.body.removeChild(this);
-        };
-        img.onerror = function () {
-            doc.body.removeChild(this);
-        };
-        doc.body.appendChild(img);
-        img.src = src;
     };
 
     /*
@@ -11329,6 +11330,7 @@ exports['default'] = function (R) {
                 finalS = {},
                 value,
                 pathClip,
+                urlArr,
                 rect;
 
             // s.visibility = hiddenStr;
@@ -11528,6 +11530,7 @@ exports['default'] = function (R) {
                             case 'fill':
                                 var isURL = R._ISURL.test(value);
                                 if (isURL) {
+                                    urlArr = value.split(R._ISURL);
                                     el = $('pattern');
                                     var ig = $(imageStr);
                                     el.id = R.getElementID(R.createUUID());
@@ -11541,12 +11544,12 @@ exports['default'] = function (R) {
                                     $(ig, {
                                         x: 0,
                                         y: 0,
-                                        'xlink:href': isURL[1]
+                                        'xlink:href': urlArr[1]
                                     });
                                     el.appendChild(ig);
-                                    preLoad(el, ig, isURL, paper);
+                                    preLoad(el, ig, urlArr, paper);
                                     paper.defs.appendChild(el);
-                                    finalAttr.fill = "url('" + R._url + '#' + el.id + "')";
+                                    finalAttr.fill = "url('" + R._url + urlArr[1] + "')";
 
                                     o.pattern = el;
                                     o.pattern && updatePosition(o);
@@ -13065,17 +13068,18 @@ exports["default"] = function (R) {
                 }
 
                 if (fill.on && params.fill) {
-                    var isURL = Str(params.fill).match(R._ISURL);
+                    var isURL = Str(params.fill).match(R._ISURL),
+                        urlArr = params.fill.split(R._ISURL);
                     if (isURL) {
                         fill.parentNode == node && node.removeChild(fill);
                         fill.rotate = true;
-                        fill.src = isURL[1];
+                        fill.src = urlArr[1];
                         fill.type = "tile";
                         var bbox = o.getBBox(1);
                         fill.position = bbox.x + S + bbox.y;
                         o._.fillpos = [bbox.x, bbox.y];
 
-                        R._preload(isURL[1], function () {
+                        R._preload(urlArr[1], function () {
                             o._.fillsize = [this.offsetWidth, this.offsetHeight];
                         });
                     } else {

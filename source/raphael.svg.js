@@ -587,6 +587,7 @@ export default function (R) {
                     finalS = {},
                     value,
                     pathClip,
+                    urlArr,
                     rect;
 
                 // s.visibility = hiddenStr;
@@ -784,6 +785,7 @@ export default function (R) {
                             case 'fill':
                                 var isURL = R._ISURL.test(value);
                                 if (isURL) {
+                                    urlArr = value.split(R._ISURL);
                                     el = $('pattern');
                                     var ig = $(imageStr);
                                     el.id = R.getElementID(R.createUUID());
@@ -797,12 +799,12 @@ export default function (R) {
                                     $(ig, {
                                         x: 0,
                                         y: 0,
-                                        'xlink:href': isURL[1]
+                                        'xlink:href': urlArr[1]
                                     });
                                     el.appendChild(ig);
-                                    preLoad(el, ig, isURL, paper);
+                                    preLoad(el, ig, urlArr, paper);
                                     paper.defs.appendChild(el);
-                                    finalAttr.fill = "url('" + R._url + '#' + el.id + "')";
+                                    finalAttr.fill = "url('" + R._url + urlArr[1] + "')";
 
                                     o.pattern = el;
                                     o.pattern && updatePosition(o);

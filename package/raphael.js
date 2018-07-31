@@ -13069,8 +13069,9 @@ exports["default"] = function (R) {
 
                 if (fill.on && params.fill) {
                     var isURL = Str(params.fill).match(R._ISURL),
-                        urlArr = params.fill.split(R._ISURL);
+                        urlArr;
                     if (isURL) {
+                        urlArr = params.fill.split(R._ISURL);
                         fill.parentNode == node && node.removeChild(fill);
                         fill.rotate = true;
                         fill.src = urlArr[1];

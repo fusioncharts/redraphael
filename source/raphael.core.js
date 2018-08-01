@@ -5895,7 +5895,7 @@ var loaded,
                                     }
                                     if(to[attr].toLowerCase() !== NONE){
                                         toColour = R.getRGB(to[attr]);
-                                        if(!toColour.opacity){
+                                        if(toColour.opacity === undefined){
                                             toColour.opacity = 1;
                                         }
                                     } else {

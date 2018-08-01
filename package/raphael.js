@@ -6964,7 +6964,7 @@ function runAnimation(anim, element, percent, status, totalOrigin, times, parent
                                 }
                                 if (to[attr].toLowerCase() !== NONE) {
                                     toColour = R.getRGB(to[attr]);
-                                    if (!toColour.opacity) {
+                                    if (toColour.opacity === undefined) {
                                         toColour.opacity = 1;
                                     }
                                 } else {

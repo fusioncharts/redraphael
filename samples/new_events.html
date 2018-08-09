@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Sample testing</title>
+	<script type="text/javascript" src="./raphael.js"></script>
+</head>
+<body>
+	<div id = "container" style="width: 500px; height: 300px;"></div>
+	<div id = "tooltip" style="width: 500px; height: 500px; white-space: pre;"></div>
+</body>
+<script type="text/javascript">
+	var paper = new RedRaphael(document.getElementById('container'), 500, 500),
+		group = paper.group('parent'),
+		tooltip = document.getElementById('tooltip'),
+		i,
+		acc = '',
+		rect;
+
+	for (i = 0; i < 5; i++) {
+		rect = paper.rect({
+			x: 100 + i * 50,
+			y: 100,
+			width: 20,
+			height: 100,
+			fill: '#00ff00',
+			stroke: '#ff0000'
+		}, group);
+		debugger;
+		rect.on('mouseover', (function (index) {
+			return function () {
+				acc += `Hovered OVER rect ${index} \n`;
+				tooltip.innerHTML = acc;
+			}
+		})(i), true);
+
+		rect.on('mouseout', (function (index) {
+			return function () {
+				acc += `Hovered OUT rect ${index} \n`;
+				tooltip.innerHTML = acc;
+			}
+		})(i), true);
+
+		rect.on('click', (function (index) {
+			return function () {
+				acc += `CLICKED rect ${index} \n`;
+				tooltip.innerHTML = acc;
+			}
+		})(i), true);
+	}
+
+</script>
+</html>

@@ -10860,9 +10860,40 @@ exports['default'] = function (R) {
                     obj1[key] = obj2[key];
                 }
             }
+        },
+            lastHoveredInfo = {
+            elementInfo: []
+        },
+            doc = R._g.doc,
+            win = R._g.win,
+            hasTouch = 'ontouchstart' in doc || win.navigator.maxTouchPoints || win.navigator.msMaxTouchPoints,
+            supportsPointer = "onpointerover" in doc,
+            safeEventMapping = {
+            mouseover: "pointerover",
+            mousedown: "pointerdown",
+            mousemove: "pointermove",
+            mouseup: "pointerup",
+            mouseout: "pointerout"
         };
 
-        R.cachedFontHeight = {};
+        if (supportsPointer && hasTouch) {
+            doc.addEventListener('pointerover', function (e) {
+                if (lastHoveredInfo.srcElement && lastHoveredInfo.srcElement !== e.srcElement) {
+                    var elementInfo = lastHoveredInfo.elementInfo,
+                        ii = elementInfo.length,
+                        elementInfo,
+                        elems,
+                        i;
+                    for (i = 0; i < ii; i++) {
+                        elems = elementInfo[i];
+                        elems.callback.call(elems.el, elems.originalEvent);
+                    }
+                    lastHoveredInfo = {
+                        elementInfo: []
+                    };
+                }
+            }, true);
+        }
 
         R.toString = function () {
             return 'Your browser supports SVG.\nYou are running Rapha\xebl ' + this.version;
@@ -12246,12 +12277,11 @@ exports['default'] = function (R) {
         * Bind handler function for a particular event to Element
         * @param eventType - Type of event
         * @param handler - Function to be called on the firing of the event
-        * @param doNotModifyEvent - Boolean value that determines if the event has to be modified for touch devices
         \ */
-        elproto.on = function (eventType, handler, doNotModifyEvent) {
+        elproto.on = function (eventType, handler, isSafe) {
             var elem = this,
                 node,
-                fn,
+                fn = handler,
                 oldEventType;
             if (this.removed) {
                 return this;
@@ -12267,34 +12297,21 @@ exports['default'] = function (R) {
                 this.drag(null, null, handler);
                 return this;
             }
-
-            fn = handler;
-            oldEventType = eventType;
-            if (R.supportsTouch && !doNotModifyEvent) {
-                eventType = R._touchMap[eventType] || eventType === 'click' && 'touchend' || eventType;
-                if (eventType !== oldEventType) {
-                    // store the new listeners for removeEventListener
-                    if (!elem._tempTouchListeners) {
-                        elem._tempTouchListeners = {};
-                    }
-                    if (!elem._tempTouchListeners[oldEventType]) {
-                        elem._tempTouchListeners[oldEventType] = [];
-                    }
+            if (supportsPointer && hasTouch) {
+                eventType = safeEventMapping[eventType] || eventType;
+                if (eventType === 'pointerout') {
+                    eventType = 'pointerover';
                     fn = function fn(e) {
-                        e.preventDefault();
-                        handler(e);
+                        lastHoveredInfo.elementInfo.push({
+                            el: this,
+                            callback: handler,
+                            originalEvent: e
+                        });
+                        lastHoveredInfo.srcElement = e.srcElement;
                     };
-                    elem._tempTouchListeners[oldEventType].push({
-                        oldFn: handler,
-                        newFn: fn,
-                        newEvt: eventType
-                    });
-                    // also attach the original event except Ipad(as ipad fires both touchstart touchend
-                    // and mousedown mouseup casuing same callback called twice), mainly because of the
-                    // discrepancy in behaviour for hybrid devices.
-                    !isIpad && elem.on(oldEventType, handler, true);
                 }
             }
+
             // IE-11 cannot emit load and error event,
             // that's why we are attaching the load and error events on the Reference Image
             if (this._ && this._.RefImg && (eventType === 'load' || eventType === 'error')) {

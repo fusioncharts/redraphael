@@ -630,7 +630,7 @@ var loaded,
                 return false;
             }
         };
-
+    
     R._g = g;
     R.merge = merge;
     R.extend = extend;

@@ -8,7 +8,7 @@
 	<button onclick="detachMouseEvent()">Detach mouseOver event</button>
 	<button onclick="clearEventList()">Clear Event List</button>
 	<div id = "container" style="width: 500px; height: 300px;"></div>
-	<div id = "tooltip" style="width: 500px; height: 500px; white-space: pre;"></div>
+	<div id = "tooltip" style="width: 500px; height: 1000px; white-space: pre;"></div>
 </body>
 <script type="text/javascript">
 	var paper = new RedRaphael(document.getElementById('container'), 500, 500),
@@ -23,7 +23,7 @@
 		rect;
 	detachMouseEvent = function () {
 		for (i = 0; i < 5; i++) {
-			rects[i].off('mouseover', refObj.detachFn[i]);
+			rects[i].off('mouseover', refObj.detachFn[i], true);
 		}
 	};
 	clearEventList = function () {

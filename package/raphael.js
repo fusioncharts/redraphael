@@ -10868,16 +10868,23 @@ exports['default'] = function (R) {
             win = R._g.win,
             hasTouch = 'ontouchstart' in doc || win.navigator.maxTouchPoints || win.navigator.msMaxTouchPoints,
             supportsPointer = "onpointerover" in doc,
-            safeEventMapping = {
+            safePointerEventMapping = {
             mouseover: "pointerover",
             mousedown: "pointerdown",
             mousemove: "pointermove",
             mouseup: "pointerup",
-            mouseout: "pointerout"
+            mouseout: "pointerover" // to handle mouseout event
+        },
+            safeMouseEventMapping = {
+            mouseover: "touchstart",
+            mousedown: "touchstart",
+            mouseup: "touchend",
+            mousemove: "touchmove",
+            mouseout: "touchstart" // to handle mouseout event
         };
 
-        if (supportsPointer && hasTouch) {
-            doc.addEventListener('pointerover', function (e) {
+        if (hasTouch) {
+            doc.addEventListener(supportsPointer ? 'pointerover' : 'touchstart', function (e) {
                 if (lastHoveredInfo.srcElement && lastHoveredInfo.srcElement !== e.srcElement) {
                     var elementInfo = lastHoveredInfo.elementInfo,
                         ii = elementInfo.length,
@@ -12281,6 +12288,7 @@ exports['default'] = function (R) {
         elproto.on = function (eventType, handler, isSafe) {
             var elem = this,
                 node,
+                actualEventType,
                 fn = handler,
                 oldEventType;
             if (this.removed) {
@@ -12297,10 +12305,17 @@ exports['default'] = function (R) {
                 this.drag(null, null, handler);
                 return this;
             }
-            if (supportsPointer && hasTouch) {
-                eventType = safeEventMapping[eventType] || eventType;
-                if (eventType === 'pointerout') {
-                    eventType = 'pointerover';
+
+            /** 
+             * Here we are implementing safe mouse events. All browsers for which pointer events are supported, we are using
+             * pointer events for touch. For rest (non-hybrid ios device) we are using touch events.
+             */
+            if (isSafe && hasTouch) {
+                actualEventType = eventType;
+                eventType = (supportsPointer ? safePointerEventMapping[eventType] : safeMouseEventMapping[eventType]) || eventType;
+
+                // Mouse out event's handler is fired when the next element on the page is hovered.
+                if (actualEventType === 'mouseout') {
                     fn = handler.fn = function (e) {
                         lastHoveredInfo.elementInfo.push({
                             el: this,
@@ -12338,9 +12353,10 @@ exports['default'] = function (R) {
         * @param eventType - Type of event
         * @param handler - Function to be removed from event
         \ */
-        elproto.off = function (eventType, handler) {
+        elproto.off = function (eventType, handler, isSafe) {
             var elem = this,
                 fn = handler,
+                actualEventType,
                 node;
             if (this.removed) {
                 return this;
@@ -12361,9 +12377,18 @@ exports['default'] = function (R) {
             fn = handler;
 
             if (supportsPointer && hasTouch) {
-                eventType = safeEventMapping[eventType] || eventType;
+                eventType = safePointerEventMapping[eventType] || eventType;
                 if (eventType === 'pointerout') {
                     eventType = 'pointerover';
+                    fn = handler.fn;
+                }
+            }
+
+            if (isSafe && hasTouch) {
+                actualEventType = eventType;
+                eventType = (supportsPointer ? safePointerEventMapping[eventType] : safeMouseEventMapping[eventType]) || eventType;
+
+                if (actualEventType === 'mouseout') {
                     fn = handler.fn;
                 }
             }

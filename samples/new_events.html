@@ -5,6 +5,8 @@
 	<script type="text/javascript" src="./raphael.js"></script>
 </head>
 <body>
+	<button onclick="detachMouseEvent()">Detach mouseOver event</button>
+	<button onclick="clearEventList()">Clear Event List</button>
 	<div id = "container" style="width: 500px; height: 300px;"></div>
 	<div id = "tooltip" style="width: 500px; height: 500px; white-space: pre;"></div>
 </body>
@@ -14,8 +16,20 @@
 		tooltip = document.getElementById('tooltip'),
 		i,
 		acc = '',
+		rects = [],
+		refObj = {
+			detachFn: []
+		},
 		rect;
-
+	detachMouseEvent = function () {
+		for (i = 0; i < 5; i++) {
+			rects[i].off('mouseover', refObj.detachFn[i]);
+		}
+	};
+	clearEventList = function () {
+		tooltip.innerHTML = '';
+		acc= '';
+	};
 	for (i = 0; i < 5; i++) {
 		rect = paper.rect({
 			x: 100 + i * 50,
@@ -25,27 +39,28 @@
 			fill: '#00ff00',
 			stroke: '#ff0000'
 		}, group);
-		debugger;
 		rect.on('mouseover', (function (index) {
-			return function () {
-				acc += `Hovered OVER rect ${index} \n`;
+			return refObj.detachFn[i] = function () {
+				acc += 'Hovered OVER rect' + index + '\n';
 				tooltip.innerHTML = acc;
 			}
 		})(i), true);
 
 		rect.on('mouseout', (function (index) {
 			return function () {
-				acc += `Hovered OUT rect ${index} \n`;
+				acc += 'Hovered OUT rect' + index + '\n';
 				tooltip.innerHTML = acc;
 			}
 		})(i), true);
 
 		rect.on('click', (function (index) {
 			return function () {
-				acc += `CLICKED rect ${index} \n`;
+				acc += 'CLICKED rect' + index + '\n';
 				tooltip.innerHTML = acc;
 			}
 		})(i), true);
+
+		rects.push(rect);
 	}
 
 </script>

@@ -141,10 +141,10 @@ export default function (R) {
                         elems = elementInfo[i];
                         elems.callback.call(elems.el, elems.originalEvent);
                     }
-                    lastHoveredInfo = {
-                        elementInfo: []
-                    };
                 }
+                lastHoveredInfo = {
+                    elementInfo: []
+                };
             }, true);
         }
 
@@ -1545,13 +1545,13 @@ export default function (R) {
                 eventType =  safeEventMapping[eventType] || eventType;
                 if (eventType === 'pointerout') {
                     eventType = 'pointerover';
-                    fn = function (e) {
+                    fn = handler.fn = function (e) {
                         lastHoveredInfo.elementInfo.push({
                             el: this,
                             callback: handler,
                             originalEvent: e
                         });
-                        lastHoveredInfo.srcElement = e.srcElement
+                        lastHoveredInfo.srcElement = e.srcElement;
                     }
                 }
             }
@@ -1581,15 +1581,11 @@ export default function (R) {
         * Remove handler function bind to an event of element
         * @param eventType - Type of event
         * @param handler - Function to be removed from event
-        * @param doNotCheckModifiedEvents - flag that states if previously attached modified events for the current event has to be checked
         \ */
-        elproto.off = function (eventType, handler, doNotCheckModifiedEvents) {
+        elproto.off = function (eventType, handler) {
             var elem = this,
-                fn,
-                i,
-                l,
-                node,
-                oldEventType;
+                fn = handler,
+                node;
             if (this.removed) {
                 return this;
             }
@@ -1607,21 +1603,15 @@ export default function (R) {
             }
 
             fn = handler;
-            oldEventType = eventType;
 
-            if (!doNotCheckModifiedEvents && R.supportsTouch && elem._tempTouchListeners && elem._tempTouchListeners[oldEventType]) {
-                l = elem._tempTouchListeners[oldEventType].length;
-                for (i = 0; i < l && oldEventType === eventType; i += 1) {
-                    if (elem._tempTouchListeners[oldEventType][i] &&
-                        elem._tempTouchListeners[oldEventType][i].oldFn === fn) {
-                        eventType = elem._tempTouchListeners[oldEventType][i].newEvt;
-                        fn = elem._tempTouchListeners[oldEventType][i].newFn;
-                        elem._tempTouchListeners[oldEventType].splice(i, 1);
-                    }
+            if (supportsPointer && hasTouch) {
+                eventType =  safeEventMapping[eventType] || eventType;
+                if (eventType === 'pointerout') {
+                    eventType = 'pointerover';
+                    fn = handler.fn;
                 }
-                // Removing the original event
-                !isIpad && elem.off(oldEventType, handler, true);
             }
+            
             if (this._ && this._.RefImg) {
                 node = this._.RefImg;
             } else {

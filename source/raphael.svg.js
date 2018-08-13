@@ -49,7 +49,12 @@ export default function (R) {
                 bottom: -1,
                 middle: -0.5
             },
+            win = R._g.win,
+            navigator = win.navigator,
             isIE = /* @cc_on!@ */false || !!document.documentMode,
+            isEdge = /Edge/.test(navigator.userAgent),
+            isIE11 = /trident/i.test(navigator.userAgent) &&
+                /rv:11/i.test(navigator.userAgent) && !opera,
             math = Math,
             mmax = math.max,
             abs = math.abs,
@@ -60,9 +65,9 @@ export default function (R) {
             textBreakRegx = /\n|<br\s*?\/?>/i,
             ltgtbrRegex = /&lt|&gt|<br/i,
             arrayShift = Array.prototype.shift,
-            zeroStrokeFix = !!(/AppleWebKit/.test(R._g.win.navigator.userAgent) &&
-                    (!/Chrome/.test(R._g.win.navigator.userAgent) ||
-                    R._g.win.navigator.appVersion.match(/Chrome\/(\d+)\./)[1] < 29)),
+            zeroStrokeFix = !!(/AppleWebKit/.test(navigator.userAgent) &&
+                    (!/Chrome/.test(navigator.userAgent) ||
+                    navigator.appVersion.match(/Chrome\/(\d+)\./)[1] < 29)),
             eve = R.eve,
             E = '',
             S = ' ',
@@ -82,7 +87,7 @@ export default function (R) {
                 crisp: 'crispEdges',
                 precision: 'geometricPrecision'
             },
-            nav = R._g.win.navigator.userAgent.toLowerCase(),
+            nav = navigator.userAgent.toLowerCase(),
             isIE9 = (function () {
               var verIE = (nav.indexOf('msie') != -1) ? parseInt(nav.split('msie')[1]) : false;
               if (verIE && (verIE === 9)) {
@@ -136,6 +141,7 @@ export default function (R) {
                 mouseout: "touchstart" // to handle mouseout event
             };
         
+        // External function to fire mouseOut for various elements
         if (hasTouch) {
             doc.addEventListener(supportsPointer ? 'pointerover' : 'touchstart', function (e) {
                 if (lastHoveredInfo.srcElement && lastHoveredInfo.srcElement !== e.srcElement) {
@@ -1745,6 +1751,10 @@ export default function (R) {
                 paper;
             if (!container) {
                 throw new Error('SVG container not found.');
+            }
+            // Setting no page scroll css for IE touch
+            if (isEdge || isIE11) {
+                container.style['-ms-touch-action'] = 'none';
             }
             var cnvs = $('svg'),
                 css = 'overflow:hidden;-webkit-tap-highlight-color:rgba(0,0,0,0);' +

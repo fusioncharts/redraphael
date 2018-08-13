@@ -8,7 +8,7 @@
 	<button onclick="detachMouseEvent()">Detach mouseOver event</button>
 	<button onclick="clearEventList()">Clear Event List</button>
 	<div id = "container" style="width: 500px; height: 300px;"></div>
-	<div id = "tooltip" style="width: 500px; height: 1000px; white-space: pre;"></div>
+	<div id = "tooltip" style="width: 500px; height: 1500px; white-space: pre;"></div>
 </body>
 <script type="text/javascript">
 	var paper = new RedRaphael(document.getElementById('container'), 500, 500),
@@ -60,8 +60,31 @@
 			}
 		})(i), true);
 
+		rect.on('dragstart', (function (index) {
+			return function () {
+				acc += 'DRAG_START at rect' + index + '\n';
+				tooltip.innerHTML = acc;
+			}
+		})(i), true);
+
+		rect.on('dragmove', (function (index) {
+			return function () {
+				acc += 'DRAG_MOVE at rect' + index + '\n';
+				tooltip.innerHTML = acc;
+			}
+		})(i), true);
+
+
+		rect.on('dragend', (function (index) {
+			return function () {
+				acc += 'DRAG_END a rect' + index + '\n';
+				tooltip.innerHTML = acc;
+			}
+		})(i), true);
+
 		rects.push(rect);
 	}
+	
 
 </script>
 </html>

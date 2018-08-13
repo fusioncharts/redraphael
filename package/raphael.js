@@ -1328,7 +1328,7 @@ var loaded,
 },
     doc = g.doc,
     win = g.win,
-    supportsTouch = R.supportsTouch = "createTouch" in doc,
+    supportsTouch = R.supportsTouch = 'ontouchstart' in doc,
     mStr = 'm',
     lStr = 'l',
     strM = 'M',
@@ -4416,7 +4416,8 @@ var draggable = [];
  = (object) @Element
 \*/
 elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_scope) {
-    var dragInfo = this.dragInfo || (this.dragInfo = {
+    var element = this,
+        dragInfo = element.dragInfo || (element.dragInfo = {
         // Store all the callbacks for various eventListeners on the same element
         onmove: [],
         onstart: [],
@@ -4430,7 +4431,7 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
     onstart && dragInfo.onstart.push(onstart) && dragInfo.start_scope.push(start_scope);
     onend && dragInfo.onend.push(onend) && dragInfo.end_scope.push(end_scope);
 
-    this.dragFn = this.dragFn || function (e) {
+    element.dragFn = element.dragFn || function (e) {
         var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
             scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
             key,
@@ -4445,19 +4446,19 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
             dummydragMoveFn,
             _dragX,
             _dragY,
-            dragInfo = this.dragInfo,
+            dragInfo = element.dragInfo,
             args = [dragMove, undef, g.doc];
 
         // In hybrid devices, sometimes the e.clientX and e.clientY is not defined
-        this._drag.x = _dragX = (e.clientX !== UNDEF ? e.clientX : e.changedTouches && e.changedTouches[0].clientX) + scrollX;
-        this._drag.y = _dragY = (e.clientY !== UNDEF ? e.clientY : e.changedTouches && e.changedTouches[0].clientY) + scrollY;
-        this._drag.id = e.identifier;
+        element._drag.x = _dragX = (e.clientX !== UNDEF ? e.clientX : e.changedTouches && e.changedTouches[0].clientX) + scrollX;
+        element._drag.y = _dragY = (e.clientY !== UNDEF ? e.clientY : e.changedTouches && e.changedTouches[0].clientY) + scrollY;
+        element._drag.id = e.identifier;
 
         // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
         if (supportsTouch && !supportsOnlyTouch) {
-            R.dragmove.apply(this, args).dragend.call(this, dragUp, undef, g.doc);
+            R.dragmove.apply(element, args).dragend.call(element, dragUp, undef, g.doc);
         }
-        R.mousemove.apply(this, args).mouseup.call(this, dragUp, undef, undef, g.doc);
+        R.mousemove.apply(element, args).mouseup.call(element, dragUp, undef, undef, g.doc);
 
         //Function to copy some properties of the actual event into the dummy event
         makeSelectiveCopy(dummyEve, e);
@@ -4466,52 +4467,56 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
 
         // Attaching handlers for various events
         for (i = 0, ii = dragInfo.onstart.length; i < ii; i++) {
-            _eve3['default'].on("raphael.drag.start." + this.id, dragInfo.onstart[i]);
+            _eve3['default'].on("raphael.drag.start." + element.id, dragInfo.onstart[i]);
         }
 
         for (j = 0, jj = dragInfo.onmove.length; j < jj; j++) {
-            _eve3['default'].on("raphael.drag.move." + this.id, dragInfo.onmove[j]);
+            _eve3['default'].on("raphael.drag.move." + element.id, dragInfo.onmove[j]);
         }
 
         for (k = 0, kk = dragInfo.onend.length; k < kk; k++) {
-            _eve3['default'].on("raphael.drag.end." + this.id, dragInfo.onend[k]);
+            _eve3['default'].on("raphael.drag.end." + element.id, dragInfo.onend[k]);
         }
 
         // Where there is no dragMove but there is dragStart handler
         // The logic is implemented as dragstart is fired only when there is mousedown followed by mousemove
         if (ii && !jj) {
             dummydragMoveFn = function dummydragMoveFn() {
-                this.undragmove();
+                element.undragmove();
                 dragInfo.onmove = [];
             };
             dragInfo.onmove.push(dummydragMoveFn);
-            _eve3['default'].on("raphael.drag.end." + this.id, dummydragMoveFn);jj;
+            _eve3['default'].on("raphael.drag.end." + element.id, dummydragMoveFn);
         }
 
         // Queuing up the dragStartFn. It is fired if dragmove is fired after dragStart
-        this.dragStartFn = function (i) {
-            (0, _eve3['default'])("raphael.drag.start." + this.id, this.dragInfo.start_scope[i] || this.dragInfo.move_scope[i] || this, dummyEve, data);
+        element.dragStartFn = function (i) {
+            // very important. if stopPropagation called outside this function then click event will
+            // never be triggered for touch devices.
+            // e.preventDefault();
+            // e.stopPropagation();
+            (0, _eve3['default'])("raphael.drag.start." + element.id, element.dragInfo.start_scope[i] || element.dragInfo.move_scope[i] || element, dummyEve, data);
         };
     };
-    this._drag = {};
+    element._drag = {};
     draggable.push({
-        el: this,
-        start: this.dragFn,
+        el: element,
+        start: element.dragFn,
         onstart: onstart,
         onmove: onmove,
         onend: onend
     });
 
-    if (onstart && !this.startHandlerAttached) {
+    if (onstart && !element.startHandlerAttached) {
         // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
         if (supportsTouch && !supportsOnlyTouch) {
-            this.dragstart(this.dragFn);
+            element.dragstart(element.dragFn);
         }
-        this.mousedown(this.dragFn);
-        this.startHandlerAttached = true;
+        element.mousedown(element.dragFn);
+        element.startHandlerAttached = true;
     }
 
-    return this;
+    return element;
 };
 
 /*\
@@ -10798,7 +10803,11 @@ exports['default'] = function (R) {
             bottom: -1,
             middle: -0.5
         },
+            win = R._g.win,
+            navigator = win.navigator,
             isIE = /* @cc_on!@ */false || !!document.documentMode,
+            isEdge = /Edge/.test(navigator.userAgent),
+            isIE11 = /trident/i.test(navigator.userAgent) && /rv:11/i.test(navigator.userAgent) && !opera,
             math = Math,
             mmax = math.max,
             abs = math.abs,
@@ -10809,7 +10818,7 @@ exports['default'] = function (R) {
             textBreakRegx = /\n|<br\s*?\/?>/i,
             ltgtbrRegex = /&lt|&gt|<br/i,
             arrayShift = Array.prototype.shift,
-            zeroStrokeFix = !!(/AppleWebKit/.test(R._g.win.navigator.userAgent) && (!/Chrome/.test(R._g.win.navigator.userAgent) || R._g.win.navigator.appVersion.match(/Chrome\/(\d+)\./)[1] < 29)),
+            zeroStrokeFix = !!(/AppleWebKit/.test(navigator.userAgent) && (!/Chrome/.test(navigator.userAgent) || navigator.appVersion.match(/Chrome\/(\d+)\./)[1] < 29)),
             eve = R.eve,
             E = '',
             S = ' ',
@@ -10829,7 +10838,7 @@ exports['default'] = function (R) {
             crisp: 'crispEdges',
             precision: 'geometricPrecision'
         },
-            nav = R._g.win.navigator.userAgent.toLowerCase(),
+            nav = navigator.userAgent.toLowerCase(),
             isIE9 = function () {
             var verIE = nav.indexOf('msie') != -1 ? parseInt(nav.split('msie')[1]) : false;
             if (verIE && verIE === 9) {
@@ -10883,6 +10892,7 @@ exports['default'] = function (R) {
             mouseout: "touchstart" // to handle mouseout event
         };
 
+        // External function to fire mouseOut for various elements
         if (hasTouch) {
             doc.addEventListener(supportsPointer ? 'pointerover' : 'touchstart', function (e) {
                 if (lastHoveredInfo.srcElement && lastHoveredInfo.srcElement !== e.srcElement) {
@@ -12498,6 +12508,10 @@ exports['default'] = function (R) {
                 paper;
             if (!container) {
                 throw new Error('SVG container not found.');
+            }
+            // Setting no page scroll css for IE touch
+            if (isEdge || isIE11) {
+                container.style['-ms-touch-action'] = 'none';
             }
             var cnvs = $('svg'),
                 css = 'overflow:hidden;-webkit-tap-highlight-color:rgba(0,0,0,0);' + '-webkit-user-select:none;-moz-user-select:-moz-none;-khtml-user-select:none;' + '-ms-user-select:none;user-select:none;-o-user-select:none;cursor:default;' + 'vertical-align:middle;',

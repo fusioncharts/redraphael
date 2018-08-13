@@ -153,7 +153,7 @@ var loaded,
     doc = g.doc,
     win = g.win,
 
-    supportsTouch = R.supportsTouch = "createTouch" in doc,
+    supportsTouch = R.supportsTouch = 'ontouchstart' in doc,
 
     mStr = 'm',
     lStr = 'l',
@@ -3317,7 +3317,8 @@ var loaded,
      = (object) @Element
     \*/
     elproto.drag = function(onmove, onstart, onend, move_scope, start_scope, end_scope) {
-        var dragInfo = this.dragInfo || (this.dragInfo = {
+        var element = this,
+            dragInfo = element.dragInfo || (element.dragInfo = {
             // Store all the callbacks for various eventListeners on the same element
             onmove: [],
             onstart: [],
@@ -3332,7 +3333,7 @@ var loaded,
         onend && dragInfo.onend.push(onend) && dragInfo.end_scope.push(end_scope);
 
 
-        this.dragFn = this.dragFn || function (e) {
+        element.dragFn = element.dragFn || function (e) {
             var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
                 scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
                 key,
@@ -3347,21 +3348,21 @@ var loaded,
                 dummydragMoveFn,
                 _dragX,
                 _dragY,
-                dragInfo = this.dragInfo,
+                dragInfo = element.dragInfo,
                 args = [dragMove, undef, g.doc];
 
             // In hybrid devices, sometimes the e.clientX and e.clientY is not defined
-            this._drag.x = _dragX = (e.clientX !== UNDEF ? e.clientX : (e.changedTouches &&
+            element._drag.x = _dragX = (e.clientX !== UNDEF ? e.clientX : (e.changedTouches &&
                 e.changedTouches[0].clientX)) + scrollX;
-            this._drag.y = _dragY = (e.clientY !== UNDEF ? e.clientY : (e.changedTouches &&
+            element._drag.y = _dragY = (e.clientY !== UNDEF ? e.clientY : (e.changedTouches &&
                 e.changedTouches[0].clientY)) + scrollY;
-            this._drag.id = e.identifier;
+            element._drag.id = e.identifier;
 
             // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
             if (supportsTouch && !supportsOnlyTouch) {
-                R.dragmove.apply(this, args).dragend.call(this, dragUp, undef, g.doc);
+                R.dragmove.apply(element, args).dragend.call(element, dragUp, undef, g.doc);
             }
-            R.mousemove.apply(this, args).mouseup.call(this, dragUp, undef, undef, g.doc);
+            R.mousemove.apply(element, args).mouseup.call(element, dragUp, undef, undef, g.doc);
 
             //Function to copy some properties of the actual event into the dummy event
             makeSelectiveCopy(dummyEve, e);
@@ -3370,53 +3371,53 @@ var loaded,
 
             // Attaching handlers for various events
             for (i = 0, ii = dragInfo.onstart.length; i < ii; i ++) {
-                eve.on("raphael.drag.start." + this.id, dragInfo.onstart[i]);
+                eve.on("raphael.drag.start." + element.id, dragInfo.onstart[i]);
             }
 
             for (j = 0, jj = dragInfo.onmove.length; j < jj; j ++) {
-                eve.on("raphael.drag.move." + this.id, dragInfo.onmove[j]);
+                eve.on("raphael.drag.move." + element.id, dragInfo.onmove[j]);
             }
 
             for (k = 0, kk = dragInfo.onend.length; k < kk; k ++) {
-                eve.on("raphael.drag.end." + this.id, dragInfo.onend[k]);
+                eve.on("raphael.drag.end." + element.id, dragInfo.onend[k]);
             }
 
             // Where there is no dragMove but there is dragStart handler
             // The logic is implemented as dragstart is fired only when there is mousedown followed by mousemove
             if (ii && !jj) {
                 dummydragMoveFn = function() {
-                    this.undragmove();
+                    element.undragmove();
                     dragInfo.onmove = [];
                 };
                 dragInfo.onmove.push(dummydragMoveFn);
-                eve.on("raphael.drag.end." + this.id, dummydragMoveFn);jj
+                eve.on("raphael.drag.end." + element.id, dummydragMoveFn);
             }
-
+            
             // Queuing up the dragStartFn. It is fired if dragmove is fired after dragStart
-            this.dragStartFn = function (i) {
-                eve("raphael.drag.start." + this.id, this.dragInfo.start_scope[i] || this.dragInfo.move_scope[i] ||
-                    this, dummyEve, data);
+            element.dragStartFn = function (i) {
+                eve("raphael.drag.start." + element.id, element.dragInfo.start_scope[i] || element.dragInfo.move_scope[i] ||
+                    element, dummyEve, data);
             }
         }
-        this._drag = {};
+        element._drag = {};
         draggable.push({
-            el: this,
-            start: this.dragFn,
+            el: element,
+            start: element.dragFn,
             onstart: onstart,
             onmove: onmove,
             onend: onend
         });
 
-        if (onstart && !this.startHandlerAttached) {
+        if (onstart && !element.startHandlerAttached) {
             // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
             if (supportsTouch && !supportsOnlyTouch) {
-                this.dragstart(this.dragFn);
+                element.dragstart(element.dragFn);
             }
-            this.mousedown(this.dragFn);
-            this.startHandlerAttached = true;
+            element.mousedown(element.dragFn);
+            element.startHandlerAttached = true;
         }
 
-        return this;
+        return element;
     };
 
     /*\

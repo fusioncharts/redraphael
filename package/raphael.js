@@ -1339,7 +1339,13 @@ var loaded,
     supportsTouch = R.supportsTouch = 'ontouchstart' in doc || navigator.maxTouchPoints || navigator.msMaxTouchPoints,
     supportsPointer = R.supportsPointer = "onpointerover" in doc,
     isEdge = R.isEdge = /Edge/.test(navigator.userAgent),
-    isIE11 = R.isIE11 = /trident/i.test(navigator.userAgent) && /rv:11/i.test(navigator.userAgent) && !opera,
+    isIE11 = R.isIE11 = /trident/i.test(navigator.userAgent) && /rv:11/i.test(navigator.userAgent) && !win.opera,
+
+// Flag to block click immediately after drag
+blockClick = R.blockClick = {
+    set: false,
+    src: UNDEF
+},
     mStr = 'm',
     lStr = 'l',
     strM = 'M',
@@ -3846,7 +3852,9 @@ var preventDefault = function preventDefault() {
     }
     target.originalEvent = source;
 },
-    addEvent = R.addEvent = function () {
+
+// This function is used to add drag related events
+addEvent = R.addEvent = function () {
     if (g.doc.addEventListener) {
         return function (obj, type, fn, element) {
             // If pointer is supported then use pointer events else use default events
@@ -3932,7 +3940,7 @@ var preventDefault = function preventDefault() {
         key,
         el = this,
         j = el.dragInfo.onmove.length;
-
+    blockClick.set = true;
     while (j--) {
         if (supportsTouch && e.type === 'touchmove') {
             var i = e.touches.length,
@@ -4456,6 +4464,10 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
             _dragY,
             dragInfo = element.dragInfo,
             args = [dragMove, undef, g.doc];
+        // Setting info to block click immediately after drag
+        blockClick.src = e.srcElement || e.target;
+        blockClick.set = false;
+
         // Blocking page scroll when drag is triggered
         supportsTouch && (element.paper.canvas.style['touch-action'] = 'none');
         // In hybrid devices, sometimes the e.clientX and e.clientY is not defined
@@ -12300,8 +12312,7 @@ exports['default'] = function (R) {
             var elem = this,
                 node,
                 actualEventType,
-                fn = handler,
-                oldEventType;
+                fn = handler;
             if (this.removed) {
                 return this;
             }
@@ -12321,19 +12332,29 @@ exports['default'] = function (R) {
              * Here we are implementing safe mouse events. All browsers for which pointer events are supported, we are using
              * pointer events for touch. For rest (non-hybrid ios device) we are using touch events.
              */
-            if (isSafe && R.supportsTouch) {
-                actualEventType = eventType;
-                eventType = (R.supportsPointer ? R.safePointerEventMapping[eventType] : safeMouseEventMapping[eventType]) || eventType;
+            if (isSafe) {
+                if (R.supportsTouch) {
+                    actualEventType = eventType;
+                    eventType = (R.supportsPointer ? R.safePointerEventMapping[eventType] : safeMouseEventMapping[eventType]) || eventType;
 
-                // Mouse out event's handler is fired when the next element on the page is hovered.
-                if (actualEventType === 'mouseout') {
+                    // Mouse out event's handler is fired when the next element on the page is hovered.
+                    if (actualEventType === 'mouseout') {
+                        fn = handler.fn = function (e) {
+                            lastHoveredInfo.elementInfo.push({
+                                el: this,
+                                callback: handler,
+                                originalEvent: e
+                            });
+                            lastHoveredInfo.srcElement = e.srcElement || e.target;
+                        };
+                    }
+                }
+
+                if (eventType === 'click') {
                     fn = handler.fn = function (e) {
-                        lastHoveredInfo.elementInfo.push({
-                            el: this,
-                            callback: handler,
-                            originalEvent: e
-                        });
-                        lastHoveredInfo.srcElement = e.srcElement || e.target;
+                        if (!R.blockClick.set && R.src !== (e.srcElement || e.target)) {
+                            handler.call(this);
+                        }
                     };
                 }
             }

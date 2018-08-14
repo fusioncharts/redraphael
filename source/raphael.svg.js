@@ -1528,8 +1528,7 @@ export default function (R) {
             var elem = this,
                 node,
                 actualEventType,
-                fn = handler,
-                oldEventType;
+                fn = handler;
             if (this.removed) {
                 return this;
             }
@@ -1549,20 +1548,30 @@ export default function (R) {
              * Here we are implementing safe mouse events. All browsers for which pointer events are supported, we are using
              * pointer events for touch. For rest (non-hybrid ios device) we are using touch events.
              */
-            if (isSafe && R.supportsTouch) {
-                actualEventType = eventType;
-                eventType = (R.supportsPointer ? R.safePointerEventMapping[eventType] : safeMouseEventMapping[eventType])
-                    || eventType;
+            if (isSafe) {
+                if (R.supportsTouch) {
+                    actualEventType = eventType;
+                    eventType = (R.supportsPointer ? R.safePointerEventMapping[eventType] : safeMouseEventMapping[eventType])
+                        || eventType;
+                    
+                    // Mouse out event's handler is fired when the next element on the page is hovered.
+                    if (actualEventType === 'mouseout') {
+                        fn = handler.fn = function (e) {
+                            lastHoveredInfo.elementInfo.push({
+                                el: this,
+                                callback: handler,
+                                originalEvent: e
+                            });
+                            lastHoveredInfo.srcElement = e.srcElement || e.target;
+                        }
+                    }
+                }
                 
-                // Mouse out event's handler is fired when the next element on the page is hovered.
-                if (actualEventType === 'mouseout') {
+                if (eventType === 'click') {
                     fn = handler.fn = function (e) {
-                        lastHoveredInfo.elementInfo.push({
-                            el: this,
-                            callback: handler,
-                            originalEvent: e
-                        });
-                        lastHoveredInfo.srcElement = e.srcElement || e.target;
+                        if (!R.blockClick.set && R.src !== (e.srcElement || e.target)) {
+                            handler.call(this);
+                        }
                     }
                 }
             }

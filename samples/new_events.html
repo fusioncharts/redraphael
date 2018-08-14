@@ -61,6 +61,13 @@
 			}
 		})(i), true);
 
+		/* rect.on('mousemove', (function (index) {
+			return function (e) {
+				acc += 'MOUSEMOVE rect' + index + e.clientX + '\t' + e.clientY + '\t';
+				tooltip.innerHTML = acc;
+			}
+		})(i), true); */
+
 		rect.on('dragstart', (function (index) {
 			return function () {
 				acc += 'DRAG_START at rect' + index + '\t';

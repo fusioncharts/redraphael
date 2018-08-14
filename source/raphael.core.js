@@ -165,7 +165,12 @@ var loaded,
     supportsPointer = R.supportsPointer = "onpointerover" in doc,
     isEdge = R.isEdge = /Edge/.test(navigator.userAgent),
     isIE11 = R.isIE11 = /trident/i.test(navigator.userAgent) &&
-        /rv:11/i.test(navigator.userAgent) && !opera,
+        /rv:11/i.test(navigator.userAgent) && !win.opera,
+    // Flag to block click immediately after drag
+    blockClick = R.blockClick = {
+        set : false,
+        src: UNDEF
+    },
     mStr = 'm',
     lStr = 'l',
     strM = 'M',
@@ -2743,6 +2748,7 @@ var loaded,
         }
         target.originalEvent = source;
     },
+    // This function is used to add drag related events
     addEvent = R.addEvent = (function() {
         if (g.doc.addEventListener) {
             return function(obj, type, fn, element) {
@@ -2830,7 +2836,7 @@ var loaded,
             key,
             el = this,
             j = el.dragInfo.onmove.length;
-
+        blockClick.set = true;
         while (j--) {
             if (supportsTouch && e.type === 'touchmove') {
                 var i = e.touches.length,
@@ -3357,6 +3363,10 @@ var loaded,
                 _dragY,
                 dragInfo = element.dragInfo,
                 args = [dragMove, undef, g.doc];
+            // Setting info to block click immediately after drag
+            blockClick.src = e.srcElement || e.target;
+            blockClick.set = false;
+
             // Blocking page scroll when drag is triggered
             supportsTouch && (element.paper.canvas.style['touch-action'] = 'none');
             // In hybrid devices, sometimes the e.clientX and e.clientY is not defined

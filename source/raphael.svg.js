@@ -52,9 +52,6 @@ export default function (R) {
             win = R._g.win,
             navigator = win.navigator,
             isIE = /* @cc_on!@ */false || !!document.documentMode,
-            isEdge = /Edge/.test(navigator.userAgent),
-            isIE11 = /trident/i.test(navigator.userAgent) &&
-                /rv:11/i.test(navigator.userAgent) && !opera,
             math = Math,
             mmax = math.max,
             abs = math.abs,
@@ -124,15 +121,6 @@ export default function (R) {
             },
             doc = R._g.doc,
             win = R._g.win,
-            hasTouch = 'ontouchstart' in doc || win.navigator.maxTouchPoints || win.navigator.msMaxTouchPoints,
-            supportsPointer = "onpointerover" in doc,
-            safePointerEventMapping = {
-                mouseover: "pointerover",
-                mousedown: "pointerdown",
-                mousemove: "pointermove",
-                mouseup: "pointerup",
-                mouseout: "pointerover" // to handle mouseout event
-            },
             safeMouseEventMapping = {
                 mouseover: "touchstart",
                 mousedown: "touchstart",
@@ -142,9 +130,10 @@ export default function (R) {
             };
         
         // External function to fire mouseOut for various elements
-        if (hasTouch) {
-            doc.addEventListener(supportsPointer ? 'pointerover' : 'touchstart', function (e) {
-                if (lastHoveredInfo.srcElement && lastHoveredInfo.srcElement !== e.srcElement) {
+        if (R.supportsTouch) {
+            doc.addEventListener(R.supportsPointer ? 'pointerover' : 'touchstart', function (e) {
+                if (lastHoveredInfo.srcElement && lastHoveredInfo.srcElement !== (e.srcElement
+                    || e.target)) {
                     var elementInfo = lastHoveredInfo.elementInfo,
                         ii = elementInfo.length,
                         elementInfo,
@@ -1560,9 +1549,9 @@ export default function (R) {
              * Here we are implementing safe mouse events. All browsers for which pointer events are supported, we are using
              * pointer events for touch. For rest (non-hybrid ios device) we are using touch events.
              */
-            if (isSafe && hasTouch) {
+            if (isSafe && R.supportsTouch) {
                 actualEventType = eventType;
-                eventType = (supportsPointer ? safePointerEventMapping[eventType] : safeMouseEventMapping[eventType])
+                eventType = (R.supportsPointer ? R.safePointerEventMapping[eventType] : safeMouseEventMapping[eventType])
                     || eventType;
                 
                 // Mouse out event's handler is fired when the next element on the page is hovered.
@@ -1573,7 +1562,7 @@ export default function (R) {
                             callback: handler,
                             originalEvent: e
                         });
-                        lastHoveredInfo.srcElement = e.srcElement;
+                        lastHoveredInfo.srcElement = e.srcElement || e.target;
                     }
                 }
             }
@@ -1627,17 +1616,17 @@ export default function (R) {
 
             fn = handler;
 
-            if (supportsPointer && hasTouch) {
-                eventType =  safePointerEventMapping[eventType] || eventType;
+            if (R.supportsPointer && R.supportsTouch) {
+                eventType =  R.safePointerEventMapping[eventType] || eventType;
                 if (eventType === 'pointerout') {
                     eventType = 'pointerover';
                     fn = handler.fn;
                 }
             }
 
-            if (isSafe && hasTouch) {
+            if (isSafe && R.supportsTouch) {
                 actualEventType = eventType;
-                eventType = (supportsPointer ? safePointerEventMapping[eventType] : safeMouseEventMapping[eventType])
+                eventType = (R.supportsPointer ? R.safePointerEventMapping[eventType] : safeMouseEventMapping[eventType])
                     || eventType;
                 
                 if (actualEventType === 'mouseout') {
@@ -1751,10 +1740,6 @@ export default function (R) {
                 paper;
             if (!container) {
                 throw new Error('SVG container not found.');
-            }
-            // Setting no page scroll css for IE touch
-            if (isEdge || isIE11) {
-                container.style['-ms-touch-action'] = 'none';
             }
             var cnvs = $('svg'),
                 css = 'overflow:hidden;-webkit-tap-highlight-color:rgba(0,0,0,0);' +

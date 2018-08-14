@@ -1328,7 +1328,18 @@ var loaded,
 },
     doc = g.doc,
     win = g.win,
-    supportsTouch = R.supportsTouch = 'ontouchstart' in doc,
+    safePointerEventMapping = R.safePointerEventMapping = {
+    mouseover: "pointerover",
+    mousedown: "pointerdown",
+    mousemove: "pointermove",
+    mouseup: "pointerup",
+    mouseout: "pointerover" // to handle mouseout event
+},
+    navigator = win.navigator,
+    supportsTouch = R.supportsTouch = 'ontouchstart' in doc || navigator.maxTouchPoints || navigator.msMaxTouchPoints,
+    supportsPointer = R.supportsPointer = "onpointerover" in doc,
+    isEdge = R.isEdge = /Edge/.test(navigator.userAgent),
+    isIE11 = R.isIE11 = /trident/i.test(navigator.userAgent) && /rv:11/i.test(navigator.userAgent) && !opera,
     mStr = 'm',
     lStr = 'l',
     strM = 'M',
@@ -1365,9 +1376,6 @@ var loaded,
         __data.push(subArr);
     }
 },
-
-// The devices which both touch and pointer.
-supportsOnlyTouch = R.supportsOnlyTouch = supportsTouch && !(win.navigator.maxTouchPoints || win.navigator.msMaxTouchPoints),
     CustomAttributes = function CustomAttributes() {
     /*\
      * Raphael.ca
@@ -1477,15 +1485,10 @@ paperproto = R.fn = Paper.prototype = R.prototype,
 
 // Add new dragstart, dragmove and dragend events in order to support touch drag in both touch and hybrid devices
 events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchstart touchmove touchend touchcancel dragstart dragmove dragend"[SPLIT](S),
-    touchMap = R._touchMap = {
-    mousedown: "touchstart",
-    mousemove: "touchmove",
-    mouseup: "touchend"
-},
-    dragEventMap = R._dragEventMap = {
-    dragstart: "mousedown",
-    dragmove: "mousemove",
-    dragend: "mouseup"
+    touchMap = {
+    dragstart: "touchstart",
+    dragmove: "touchmove",
+    dragend: "touchend"
 },
     Str = String,
     toFloat = win.parseFloat,
@@ -3846,7 +3849,8 @@ var preventDefault = function preventDefault() {
     addEvent = R.addEvent = function () {
     if (g.doc.addEventListener) {
         return function (obj, type, fn, element) {
-            var realName = supportsOnlyTouch && touchMap[type] || type,
+            // If pointer is supported then use pointer events else use default events
+            var realName = supportsPointer ? safePointerEventMapping[type] : supportsTouch ? touchMap[type] : type,
                 f,
                 args;
             // capture mode false is included in the eventListener function only when it is a non-IE device.
@@ -3857,18 +3861,25 @@ var preventDefault = function preventDefault() {
                 args = {
                     capture: false
                 };
-                // Passive event is set false only when it is a touch device and a dragEvent as passive events
-                // are set to true by default for chrome touch
-                supportsTouch && element._drag && (args.passive = false);
             }
 
-            touchMap[dragEventMap[type]] && (realName = touchMap[dragEventMap[type]]);
+            /**
+             * Special case for pointerup
+             * When dragged over an element then pointer up is not fired, so we have to associate
+             * respective events for various browsers
+             */
+            if (realName === 'pointerup') {
+                realName = 'mouseup';
+            } else if (realName === UNDEF) {
+                // for hybrid devices
+                realName = 'touchend';
+            }
 
             f = function f(e) {
                 var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
                     scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
                     target;
-                if (supportsTouch && touchMap[HAS](supportsOnlyTouch ? type : dragEventMap[type])) {
+                if (supportsTouch && touchMap[type]) {
                     for (var i = 0, ii = e.targetTouches && e.targetTouches.length; i < ii; i++) {
                         target = e.targetTouches[i].target;
                         if (target === obj || target.nodeName === 'tspan' && target.parentNode === obj) {
@@ -3931,12 +3942,9 @@ var preventDefault = function preventDefault() {
                 if (touch.identifier === el._drag.id) {
                     x = touch.clientX;
                     y = touch.clientY;
-                    (e.originalEvent ? e.originalEvent : e).preventDefault();
                     break;
                 }
             }
-        } else {
-            e.preventDefault();
         }
 
         if (el.removed) {
@@ -3984,7 +3992,7 @@ var preventDefault = function preventDefault() {
         }
     }
     el.dragInfo._dragmove = undefined;
-
+    supportsTouch && (el.paper.canvas.style['touch-action'] = 'auto');
     // After execution of the callbacks the eventListeners are removed
     R.undragmove.call(el, dragMove);
     R.undragend.call(el, dragUp);
@@ -4448,17 +4456,24 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
             _dragY,
             dragInfo = element.dragInfo,
             args = [dragMove, undef, g.doc];
-
+        // Blocking page scroll when drag is triggered
+        supportsTouch && (element.paper.canvas.style['touch-action'] = 'none');
         // In hybrid devices, sometimes the e.clientX and e.clientY is not defined
         element._drag.x = _dragX = (e.clientX !== UNDEF ? e.clientX : e.changedTouches && e.changedTouches[0].clientX) + scrollX;
         element._drag.y = _dragY = (e.clientY !== UNDEF ? e.clientY : e.changedTouches && e.changedTouches[0].clientY) + scrollY;
         element._drag.id = e.identifier;
 
-        // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
-        if (supportsTouch && !supportsOnlyTouch) {
-            R.dragmove.apply(element, args).dragend.call(element, dragUp, undef, g.doc);
+        // For IOS touch devices
+        if (supportsTouch && !supportsPointer) {
+            R.dragmove.apply(element, args);
+        } else {
+            R.mousemove.apply(element, args).mouseup.call(element, dragUp, undef, undef, g.doc);
         }
-        R.mousemove.apply(element, args).mouseup.call(element, dragUp, undef, undef, g.doc);
+
+        if (supportsTouch) {
+            // dragEnd is added for hybrid devices and other touch devices
+            R.dragend.call(element, dragUp, undef, g.doc);
+        }
 
         //Function to copy some properties of the actual event into the dummy event
         makeSelectiveCopy(dummyEve, e);
@@ -4491,10 +4506,6 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
 
         // Queuing up the dragStartFn. It is fired if dragmove is fired after dragStart
         element.dragStartFn = function (i) {
-            // very important. if stopPropagation called outside this function then click event will
-            // never be triggered for touch devices.
-            // e.preventDefault();
-            // e.stopPropagation();
             (0, _eve3['default'])("raphael.drag.start." + element.id, element.dragInfo.start_scope[i] || element.dragInfo.move_scope[i] || element, dummyEve, data);
         };
     };
@@ -4508,11 +4519,12 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
     });
 
     if (onstart && !element.startHandlerAttached) {
-        // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
-        if (supportsTouch && !supportsOnlyTouch) {
+        // For IOS touch devices
+        if (supportsTouch && !supportsPointer) {
             element.dragstart(element.dragFn);
+        } else {
+            element.mousedown(element.dragFn);
         }
-        element.mousedown(element.dragFn);
         element.startHandlerAttached = true;
     }
 
@@ -10806,8 +10818,6 @@ exports['default'] = function (R) {
             win = R._g.win,
             navigator = win.navigator,
             isIE = /* @cc_on!@ */false || !!document.documentMode,
-            isEdge = /Edge/.test(navigator.userAgent),
-            isIE11 = /trident/i.test(navigator.userAgent) && /rv:11/i.test(navigator.userAgent) && !opera,
             math = Math,
             mmax = math.max,
             abs = math.abs,
@@ -10875,15 +10885,6 @@ exports['default'] = function (R) {
         },
             doc = R._g.doc,
             win = R._g.win,
-            hasTouch = 'ontouchstart' in doc || win.navigator.maxTouchPoints || win.navigator.msMaxTouchPoints,
-            supportsPointer = "onpointerover" in doc,
-            safePointerEventMapping = {
-            mouseover: "pointerover",
-            mousedown: "pointerdown",
-            mousemove: "pointermove",
-            mouseup: "pointerup",
-            mouseout: "pointerover" // to handle mouseout event
-        },
             safeMouseEventMapping = {
             mouseover: "touchstart",
             mousedown: "touchstart",
@@ -10893,9 +10894,9 @@ exports['default'] = function (R) {
         };
 
         // External function to fire mouseOut for various elements
-        if (hasTouch) {
-            doc.addEventListener(supportsPointer ? 'pointerover' : 'touchstart', function (e) {
-                if (lastHoveredInfo.srcElement && lastHoveredInfo.srcElement !== e.srcElement) {
+        if (R.supportsTouch) {
+            doc.addEventListener(R.supportsPointer ? 'pointerover' : 'touchstart', function (e) {
+                if (lastHoveredInfo.srcElement && lastHoveredInfo.srcElement !== (e.srcElement || e.target)) {
                     var elementInfo = lastHoveredInfo.elementInfo,
                         ii = elementInfo.length,
                         elementInfo,
@@ -12320,9 +12321,9 @@ exports['default'] = function (R) {
              * Here we are implementing safe mouse events. All browsers for which pointer events are supported, we are using
              * pointer events for touch. For rest (non-hybrid ios device) we are using touch events.
              */
-            if (isSafe && hasTouch) {
+            if (isSafe && R.supportsTouch) {
                 actualEventType = eventType;
-                eventType = (supportsPointer ? safePointerEventMapping[eventType] : safeMouseEventMapping[eventType]) || eventType;
+                eventType = (R.supportsPointer ? R.safePointerEventMapping[eventType] : safeMouseEventMapping[eventType]) || eventType;
 
                 // Mouse out event's handler is fired when the next element on the page is hovered.
                 if (actualEventType === 'mouseout') {
@@ -12332,7 +12333,7 @@ exports['default'] = function (R) {
                             callback: handler,
                             originalEvent: e
                         });
-                        lastHoveredInfo.srcElement = e.srcElement;
+                        lastHoveredInfo.srcElement = e.srcElement || e.target;
                     };
                 }
             }
@@ -12386,17 +12387,17 @@ exports['default'] = function (R) {
 
             fn = handler;
 
-            if (supportsPointer && hasTouch) {
-                eventType = safePointerEventMapping[eventType] || eventType;
+            if (R.supportsPointer && R.supportsTouch) {
+                eventType = R.safePointerEventMapping[eventType] || eventType;
                 if (eventType === 'pointerout') {
                     eventType = 'pointerover';
                     fn = handler.fn;
                 }
             }
 
-            if (isSafe && hasTouch) {
+            if (isSafe && R.supportsTouch) {
                 actualEventType = eventType;
-                eventType = (supportsPointer ? safePointerEventMapping[eventType] : safeMouseEventMapping[eventType]) || eventType;
+                eventType = (R.supportsPointer ? R.safePointerEventMapping[eventType] : safeMouseEventMapping[eventType]) || eventType;
 
                 if (actualEventType === 'mouseout') {
                     fn = handler.fn;
@@ -12508,10 +12509,6 @@ exports['default'] = function (R) {
                 paper;
             if (!container) {
                 throw new Error('SVG container not found.');
-            }
-            // Setting no page scroll css for IE touch
-            if (isEdge || isIE11) {
-                container.style['-ms-touch-action'] = 'none';
             }
             var cnvs = $('svg'),
                 css = 'overflow:hidden;-webkit-tap-highlight-color:rgba(0,0,0,0);' + '-webkit-user-select:none;-moz-user-select:-moz-none;-khtml-user-select:none;' + '-ms-user-select:none;user-select:none;-o-user-select:none;cursor:default;' + 'vertical-align:middle;',

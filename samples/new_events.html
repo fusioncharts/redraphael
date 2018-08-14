@@ -8,10 +8,10 @@
 	<button onclick="detachMouseEvent()">Detach mouseOver event</button>
 	<button onclick="clearEventList()">Clear Event List</button>
 	<div id = "container" style="width: 500px; height: 300px;"></div>
-	<div id = "tooltip" style="width: 500px; height: 1500px; white-space: pre;"></div>
+	<div id = "tooltip" style="width: 350px; height: 1500px; overflow-wrap: break-word;"></div>
 </body>
 <script type="text/javascript">
-	var paper = new RedRaphael(document.getElementById('container'), 500, 500),
+	var paper = new RedRaphael(document.getElementById('container'), 500, 300),
 		group = paper.group('parent'),
 		tooltip = document.getElementById('tooltip'),
 		i,
@@ -32,55 +32,56 @@
 	};
 	for (i = 0; i < 5; i++) {
 		rect = paper.rect({
-			x: 100 + i * 50,
+			x: 100 + i * 80,
 			y: 100,
-			width: 20,
+			width: 50,
 			height: 100,
 			fill: '#00ff00',
 			stroke: '#ff0000'
 		}, group);
+		rect.node.style['touch-action'] = 'none';
 		rect.on('mouseover', (function (index) {
 			return refObj.detachFn[i] = function () {
-				acc += 'Hovered OVER rect' + index + '\n';
+				acc += 'Hovered OVER rect' + index + '\t';
 				tooltip.innerHTML = acc;
 			}
 		})(i), true);
 
 		rect.on('mouseout', (function (index) {
 			return function () {
-				acc += 'Hovered OUT rect' + index + '\n';
+				acc += 'Hovered OUT rect' + index + '\t';
 				tooltip.innerHTML = acc;
 			}
 		})(i), true);
 
 		rect.on('click', (function (index) {
 			return function () {
-				acc += 'CLICKED rect' + index + '\n';
+				acc += 'CLICKED rect' + index + '\t';
 				tooltip.innerHTML = acc;
 			}
 		})(i), true);
 
 		rect.on('dragstart', (function (index) {
 			return function () {
-				acc += 'DRAG_START at rect' + index + '\n';
+				acc += 'DRAG_START at rect' + index + '\t';
 				tooltip.innerHTML = acc;
 			}
-		})(i), true);
+		})(i));
 
 		rect.on('dragmove', (function (index) {
 			return function () {
-				acc += 'DRAG_MOVE at rect' + index + '\n';
+				acc += 'DRAG_MOVE at rect' + index + '\t';
 				tooltip.innerHTML = acc;
 			}
-		})(i), true);
+		})(i));
 
 
 		rect.on('dragend', (function (index) {
 			return function () {
-				acc += 'DRAG_END a rect' + index + '\n';
+				acc += 'DRAG_END a rect' + index + '\t';
 				tooltip.innerHTML = acc;
 			}
-		})(i), true);
+		})(i));
 
 		rects.push(rect);
 	}

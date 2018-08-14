@@ -152,9 +152,20 @@ var loaded,
     },
     doc = g.doc,
     win = g.win,
-
-    supportsTouch = R.supportsTouch = 'ontouchstart' in doc,
-
+    safePointerEventMapping = R.safePointerEventMapping = {
+        mouseover: "pointerover",
+        mousedown: "pointerdown",
+        mousemove: "pointermove",
+        mouseup: "pointerup",
+        mouseout: "pointerover" // to handle mouseout event
+    },
+    navigator = win.navigator,
+    supportsTouch = R.supportsTouch = 'ontouchstart' in doc ||
+        navigator.maxTouchPoints || navigator.msMaxTouchPoints,
+    supportsPointer = R.supportsPointer = "onpointerover" in doc,
+    isEdge = R.isEdge = /Edge/.test(navigator.userAgent),
+    isIE11 = R.isIE11 = /trident/i.test(navigator.userAgent) &&
+        /rv:11/i.test(navigator.userAgent) && !opera,
     mStr = 'm',
     lStr = 'l',
     strM = 'M',
@@ -191,10 +202,6 @@ var loaded,
                 __data.push(subArr);
         }
     },
-        // The devices which both touch and pointer.
-        supportsOnlyTouch = R.supportsOnlyTouch = (supportsTouch &&
-                        !(win.navigator.maxTouchPoints ||
-                        win.navigator.msMaxTouchPoints)),
 
         CustomAttributes = function () {
             /*\
@@ -304,15 +311,10 @@ var loaded,
 
         // Add new dragstart, dragmove and dragend events in order to support touch drag in both touch and hybrid devices
         events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchstart touchmove touchend touchcancel dragstart dragmove dragend"[SPLIT](S),
-        touchMap = R._touchMap = {
-            mousedown: "touchstart",
-            mousemove: "touchmove",
-            mouseup: "touchend"
-        },
-        dragEventMap = R._dragEventMap = {
-            dragstart: "mousedown",
-            dragmove: "mousemove",
-            dragend: "mouseup"
+        touchMap = {
+            dragstart: "touchstart",
+            dragmove: "touchmove",
+            dragend: "touchend"
         },
 
         Str = String,
@@ -2744,7 +2746,9 @@ var loaded,
     addEvent = R.addEvent = (function() {
         if (g.doc.addEventListener) {
             return function(obj, type, fn, element) {
-                var realName = supportsOnlyTouch && touchMap[type] || type,
+                // If pointer is supported then use pointer events else use default events
+                var realName = supportsPointer ? safePointerEventMapping[type] :
+                    supportsTouch ? touchMap[type] : type,
                     f,
                     args;
                 // capture mode false is included in the eventListener function only when it is a non-IE device.
@@ -2755,18 +2759,24 @@ var loaded,
                     args = {
                         capture: false
                     };
-                    // Passive event is set false only when it is a touch device and a dragEvent as passive events
-                    // are set to true by default for chrome touch
-                    supportsTouch && element._drag && (args.passive = false)
                 }
 
-                touchMap[dragEventMap[type]] && (realName = touchMap[dragEventMap[type]]);
+                /**
+                 * Special case for pointerup
+                 * When dragged over an element then pointer up is not fired, so we have to associate
+                 * respective events for various browsers
+                 */
+                if (realName === 'pointerup') {
+                    realName = 'mouseup';
+                } else if (realName === UNDEF) { // for hybrid devices
+                    realName = 'touchend'
+                }
 
                 f = function(e) {
                     var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
                         scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
                         target;
-                    if (supportsTouch && touchMap[HAS](supportsOnlyTouch ? type : dragEventMap[type])) {
+                    if (supportsTouch && touchMap[type]) {
                         for (var i = 0, ii = e.targetTouches && e.targetTouches.length; i < ii; i++) {
                             target = e.targetTouches[i].target;
                             if (target === obj || (target.nodeName === 'tspan' && target.parentNode === obj)) {
@@ -2830,12 +2840,9 @@ var loaded,
                     if (touch.identifier === el._drag.id) {
                         x = touch.clientX;
                         y = touch.clientY;
-                        (e.originalEvent ? e.originalEvent : e).preventDefault();
                         break;
                     }
                 }
-            } else {
-                e.preventDefault();
             }
 
             if (el.removed) {
@@ -2884,7 +2891,7 @@ var loaded,
             }
         }
         el.dragInfo._dragmove = undefined;
-
+        supportsTouch && (el.paper.canvas.style['touch-action'] = 'auto');
         // After execution of the callbacks the eventListeners are removed
         R.undragmove.call(el, dragMove);
         R.undragend.call(el, dragUp);
@@ -3350,7 +3357,8 @@ var loaded,
                 _dragY,
                 dragInfo = element.dragInfo,
                 args = [dragMove, undef, g.doc];
-
+            // Blocking page scroll when drag is triggered
+            supportsTouch && (element.paper.canvas.style['touch-action'] = 'none');
             // In hybrid devices, sometimes the e.clientX and e.clientY is not defined
             element._drag.x = _dragX = (e.clientX !== UNDEF ? e.clientX : (e.changedTouches &&
                 e.changedTouches[0].clientX)) + scrollX;
@@ -3358,11 +3366,18 @@ var loaded,
                 e.changedTouches[0].clientY)) + scrollY;
             element._drag.id = e.identifier;
 
-            // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
-            if (supportsTouch && !supportsOnlyTouch) {
-                R.dragmove.apply(element, args).dragend.call(element, dragUp, undef, g.doc);
+            // For IOS touch devices
+            if (supportsTouch && !supportsPointer) {
+                R.dragmove.apply(element, args);
+            } else  {
+                R.mousemove.apply(element, args).mouseup.call(element, dragUp, undef, undef, g.doc)
+                
             }
-            R.mousemove.apply(element, args).mouseup.call(element, dragUp, undef, undef, g.doc);
+            
+            if (supportsTouch) {
+                // dragEnd is added for hybrid devices and other touch devices
+                R.dragend.call(element, dragUp, undef, g.doc);
+            }
 
             //Function to copy some properties of the actual event into the dummy event
             makeSelectiveCopy(dummyEve, e);
@@ -3409,11 +3424,12 @@ var loaded,
         });
 
         if (onstart && !element.startHandlerAttached) {
-            // Add the drag events for the browsers that doesn't fire mouse event on touch and drag
-            if (supportsTouch && !supportsOnlyTouch) {
+            // For IOS touch devices
+            if (supportsTouch && !supportsPointer) {
                 element.dragstart(element.dragFn);
+            } else {
+                element.mousedown(element.dragFn);
             }
-            element.mousedown(element.dragFn);
             element.startHandlerAttached = true;
         }
 

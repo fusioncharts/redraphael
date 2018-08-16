@@ -3940,6 +3940,12 @@ addEvent = R.addEvent = function () {
         key,
         el = this,
         j = el.dragInfo.onmove.length;
+
+    // Setting the minimum threshold of 2 pixels to trigger dragmove
+    if (el.dragStartFn && !(Math.abs(x - el._drag.x) >= 2 || Math.abs(y - el._drag.y) >= 2)) {
+        return;
+    }
+    // Blocking the click handler if any
     blockClick.set = true;
     while (j--) {
         if (supportsTouch && e.type === 'touchmove') {

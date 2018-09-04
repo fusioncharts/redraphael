@@ -23,7 +23,7 @@
 		rect;
 	detachMouseEvent = function () {
 		for (i = 0; i < 5; i++) {
-			rects[i].off('mouseover', refObj.detachFn[i], true);
+			rects[i].off('fcmouseover', refObj.detachFn[i], true);
 		}
 	};
 	clearEventList = function () {
@@ -39,22 +39,22 @@
 			fill: '#00ff00',
 			stroke: '#ff0000'
 		}, group);
-		rect.node.style['touch-action'] = 'none';
-		rect.on('mouseover', (function (index) {
+		// rect.node.style['touch-action'] = 'none';
+		rect.on('fcmouseover', (function (index) {
 			return refObj.detachFn[i] = function () {
 				acc += 'Hovered OVER rect' + index + '\t';
 				tooltip.innerHTML = acc;
 			}
 		})(i), true);
 
-		rect.on('mouseout', (function (index) {
+		rect.on('fcmouseout', (function (index) {
 			return function () {
 				acc += 'Hovered OUT rect' + index + '\t';
 				tooltip.innerHTML = acc;
 			}
 		})(i), true);
 
-		rect.on('click', (function (index) {
+		rect.on('fcclick', (function (index) {
 			return function () {
 				acc += 'CLICKED rect' + index + '\t';
 				tooltip.innerHTML = acc;
@@ -68,14 +68,14 @@
 			}
 		})(i), true); */
 
-		rect.on('dragstart', (function (index) {
+		rect.on('fcdragstart', (function (index) {
 			return function () {
 				acc += 'DRAG_START at rect' + index + '\t';
 				tooltip.innerHTML = acc;
 			}
 		})(i));
 
-		rect.on('dragmove', (function (index) {
+		rect.on('fcdragmove', (function (index) {
 			return function () {
 				acc += 'DRAG_MOVE at rect' + index + '\t';
 				tooltip.innerHTML = acc;
@@ -83,7 +83,7 @@
 		})(i));
 
 
-		rect.on('dragend', (function (index) {
+		rect.on('fcdragend', (function (index) {
 			return function () {
 				acc += 'DRAG_END a rect' + index + '\t';
 				tooltip.innerHTML = acc;

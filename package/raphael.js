@@ -1340,12 +1340,6 @@ var loaded,
     supportsPointer = R.supportsPointer = "onpointerover" in doc,
     isEdge = R.isEdge = /Edge/.test(navigator.userAgent),
     isIE11 = R.isIE11 = /trident/i.test(navigator.userAgent) && /rv:11/i.test(navigator.userAgent) && !win.opera,
-
-// Flag to block click immediately after drag
-blockClick = R.blockClick = {
-    set: false,
-    src: UNDEF
-},
     mStr = 'm',
     lStr = 'l',
     strM = 'M',
@@ -3934,10 +3928,8 @@ addEvent = R.addEvent = function () {
         y = e.clientY !== UNDEF ? e.clientY : e.changedTouches && e.changedTouches[0].clientY,
         scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
         scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
-        dragi,
         data,
         dummyEve = {},
-        key,
         el = this,
         j = el.dragInfo.onmove.length;
 
@@ -3946,7 +3938,7 @@ addEvent = R.addEvent = function () {
         return;
     }
     // Blocking the click handler if any
-    blockClick.set = true;
+    el._blockClick = true;
     while (j--) {
         if (supportsTouch && e.type === 'touchmove') {
             var i = e.touches.length,
@@ -4456,7 +4448,6 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
     element.dragFn = element.dragFn || function (e) {
         var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
             scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
-            key,
             dummyEve = {},
             data,
             i,
@@ -4471,8 +4462,7 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
             dragInfo = element.dragInfo,
             args = [dragMove, undef, g.doc];
         // Setting info to block click immediately after drag
-        blockClick.src = e.srcElement || e.target;
-        blockClick.set = false;
+        element._blockClick = false;
 
         // Blocking page scroll when drag is triggered
         supportsTouch && (element.paper.canvas.style['touch-action'] = 'none');
@@ -12314,14 +12304,20 @@ exports['default'] = function (R) {
         * @param eventType - Type of event
         * @param handler - Function to be called on the firing of the event
         \ */
-        elproto.on = function (eventType, handler, isSafe) {
+        elproto.on = function (eventType, handler) {
             var elem = this,
                 node,
                 actualEventType,
+
+            // an event is termed as safe if it is preceeded by fc
+            isSafe = eventType.match(/fc/),
                 fn = handler;
             if (this.removed) {
                 return this;
             }
+
+            // Setting the original event on which operations has to be done
+            isSafe && (eventType = eventType.replace(/fc/, ''));
 
             if (eventType === 'dragstart') {
                 this.drag(null, handler);
@@ -12356,9 +12352,11 @@ exports['default'] = function (R) {
                     }
                 }
 
+                // Click is not triggered immediately.
+                // It is checked if its execution is blocked due to drag operartion
                 if (eventType === 'click') {
                     fn = handler.fn = function (e) {
-                        if (!R.blockClick.set && R.src !== (e.srcElement || e.target)) {
+                        if (!elem._blockClick) {
                             handler.call(this);
                         }
                     };
@@ -12391,15 +12389,20 @@ exports['default'] = function (R) {
         * @param eventType - Type of event
         * @param handler - Function to be removed from event
         \ */
-        elproto.off = function (eventType, handler, isSafe) {
+        elproto.off = function (eventType, handler) {
             var elem = this,
                 fn = handler,
                 actualEventType,
+
+            // an event is termed as safe if it is preceeded by fc
+            isSafe = eventType.match(/fc/),
                 node;
             if (this.removed) {
                 return this;
             }
 
+            // Setting the original event on which operations has to be done
+            isSafe && (eventType = eventType.replace(/fc/, ''));
             // Unbinding the drag events
             if (eventType === 'dragstart') {
                 elem.undragstart(handler);

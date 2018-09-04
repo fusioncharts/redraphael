@@ -166,11 +166,6 @@ var loaded,
     isEdge = R.isEdge = /Edge/.test(navigator.userAgent),
     isIE11 = R.isIE11 = /trident/i.test(navigator.userAgent) &&
         /rv:11/i.test(navigator.userAgent) && !win.opera,
-    // Flag to block click immediately after drag
-    blockClick = R.blockClick = {
-        set : false,
-        src: UNDEF
-    },
     mStr = 'm',
     lStr = 'l',
     strM = 'M',
@@ -2830,10 +2825,8 @@ var loaded,
             y = e.clientY !== UNDEF ? e.clientY : (e.changedTouches && e.changedTouches[0].clientY),
             scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
             scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
-            dragi,
             data,
             dummyEve = {},
-            key,
             el = this,
             j = el.dragInfo.onmove.length;
 
@@ -2842,7 +2835,7 @@ var loaded,
             return;
         }
         // Blocking the click handler if any
-        blockClick.set = true;
+        el._blockClick = true;
         while (j--) {
             if (supportsTouch && e.type === 'touchmove') {
                 var i = e.touches.length,
@@ -3355,7 +3348,6 @@ var loaded,
         element.dragFn = element.dragFn || function (e) {
             var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
                 scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
-                key,
                 dummyEve = {},
                 data,
                 i,
@@ -3370,8 +3362,7 @@ var loaded,
                 dragInfo = element.dragInfo,
                 args = [dragMove, undef, g.doc];
             // Setting info to block click immediately after drag
-            blockClick.src = e.srcElement || e.target;
-            blockClick.set = false;
+            element._blockClick = false;
 
             // Blocking page scroll when drag is triggered
             supportsTouch && (element.paper.canvas.style['touch-action'] = 'none');

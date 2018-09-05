@@ -126,7 +126,7 @@ export default function (R) {
                 mousedown: "touchstart",
                 mouseup: "touchend",
                 mousemove: "touchmove",
-                mouseout: "touchstart" // to handle mouseout event
+                mouseout: "touchend" // to handle mouseout event
             };
         
         // External function to fire mouseOut for various elements
@@ -1529,14 +1529,14 @@ export default function (R) {
                 node,
                 actualEventType,
                 // an event is termed as safe if it is preceeded by fc
-                isSafe = eventType.match(/fc/),
+                isSafe = eventType.match(/fc-/),
                 fn = handler;
             if (this.removed) {
                 return this;
             }
 
             // Setting the original event on which operations has to be done
-            isSafe && (eventType = eventType.replace(/fc/, ''));
+            isSafe && (eventType = eventType.replace(/fc-/, ''));
 
             if (eventType === 'dragstart') {
                 this.drag(null, handler);
@@ -1569,6 +1569,7 @@ export default function (R) {
                             });
                             lastHoveredInfo.srcElement = e.srcElement || e.target;
                         }
+                        eventType = R.supportsPointer ? 'pointerover' : 'touchstart';
                     }
                 }
                 
@@ -1614,14 +1615,14 @@ export default function (R) {
                 fn = handler,
                 actualEventType,
                 // an event is termed as safe if it is preceeded by fc
-                isSafe = eventType.match(/fc/),
+                isSafe = eventType.match(/fc-/),
                 node;
             if (this.removed) {
                 return this;
             }
 
             // Setting the original event on which operations has to be done
-            isSafe && (eventType = eventType.replace(/fc/, ''));
+            isSafe && (eventType = eventType.replace(/fc-/, ''));
             // Unbinding the drag events
             if (eventType === 'dragstart') {
                 elem.undragstart(handler);

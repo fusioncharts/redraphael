@@ -1333,7 +1333,7 @@ var loaded,
     mousedown: "pointerdown",
     mousemove: "pointermove",
     mouseup: "pointerup",
-    mouseout: "pointerover" // to handle mouseout event
+    mouseout: "pointerout"
 },
     navigator = win.navigator,
     supportsTouch = R.supportsTouch = 'ontouchstart' in doc || navigator.maxTouchPoints || navigator.msMaxTouchPoints,
@@ -3847,7 +3847,8 @@ var preventDefault = function preventDefault() {
     target.originalEvent = source;
 },
 
-// This function is used to add drag related events
+// This function is used to add drag related events and element.mouseover/element.mouseout event.
+// It is advised to use element.on instead
 addEvent = R.addEvent = function () {
     if (g.doc.addEventListener) {
         return function (obj, type, fn, element) {
@@ -10898,7 +10899,7 @@ exports['default'] = function (R) {
             mousedown: "touchstart",
             mouseup: "touchend",
             mousemove: "touchmove",
-            mouseout: "touchstart" // to handle mouseout event
+            mouseout: "touchend" // to handle mouseout event
         };
 
         // External function to fire mouseOut for various elements
@@ -12310,14 +12311,14 @@ exports['default'] = function (R) {
                 actualEventType,
 
             // an event is termed as safe if it is preceeded by fc
-            isSafe = eventType.match(/fc/),
+            isSafe = eventType.match(/fc-/),
                 fn = handler;
             if (this.removed) {
                 return this;
             }
 
             // Setting the original event on which operations has to be done
-            isSafe && (eventType = eventType.replace(/fc/, ''));
+            isSafe && (eventType = eventType.replace(/fc-/, ''));
 
             if (eventType === 'dragstart') {
                 this.drag(null, handler);
@@ -12349,6 +12350,7 @@ exports['default'] = function (R) {
                             });
                             lastHoveredInfo.srcElement = e.srcElement || e.target;
                         };
+                        eventType = R.supportsPointer ? 'pointerover' : 'touchstart';
                     }
                 }
 
@@ -12395,14 +12397,14 @@ exports['default'] = function (R) {
                 actualEventType,
 
             // an event is termed as safe if it is preceeded by fc
-            isSafe = eventType.match(/fc/),
+            isSafe = eventType.match(/fc-/),
                 node;
             if (this.removed) {
                 return this;
             }
 
             // Setting the original event on which operations has to be done
-            isSafe && (eventType = eventType.replace(/fc/, ''));
+            isSafe && (eventType = eventType.replace(/fc-/, ''));
             // Unbinding the drag events
             if (eventType === 'dragstart') {
                 elem.undragstart(handler);

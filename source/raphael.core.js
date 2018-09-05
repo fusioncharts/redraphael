@@ -157,7 +157,7 @@ var loaded,
         mousedown: "pointerdown",
         mousemove: "pointermove",
         mouseup: "pointerup",
-        mouseout: "pointerover" // to handle mouseout event
+        mouseout: "pointerout"
     },
     navigator = win.navigator,
     supportsTouch = R.supportsTouch = 'ontouchstart' in doc ||
@@ -2743,7 +2743,8 @@ var loaded,
         }
         target.originalEvent = source;
     },
-    // This function is used to add drag related events
+    // This function is used to add drag related events and element.mouseover/element.mouseout event.
+    // It is advised to use element.on instead
     addEvent = R.addEvent = (function() {
         if (g.doc.addEventListener) {
             return function(obj, type, fn, element) {

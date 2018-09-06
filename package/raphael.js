@@ -3925,17 +3925,17 @@ addEvent = R.addEvent = function () {
     }
 }(),
     dragMove = function dragMove(e) {
-    var x = e.clientX !== UNDEF ? e.clientX : e.changedTouches && e.changedTouches[0].clientX,
-        y = e.clientY !== UNDEF ? e.clientY : e.changedTouches && e.changedTouches[0].clientY,
-        scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
+    var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
         scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
+        x = (e.clientX !== UNDEF ? e.clientX : e.changedTouches && e.changedTouches[0].clientX) + scrollX,
+        y = (e.clientY !== UNDEF ? e.clientY : e.changedTouches && e.changedTouches[0].clientY) + scrollY,
         data,
         dummyEve = {},
         el = this,
         j = el.dragInfo.onmove.length;
 
     // Setting the minimum threshold of 2 pixels to trigger dragmove
-    if (el.dragStartFn && !(Math.abs(x - el._drag.x) >= 2 || Math.abs(y - el._drag.y) >= 2)) {
+    if (el.dragStartFn && !(Math.abs(x - el._drag.x) >= 2.5 || Math.abs(y - el._drag.y) >= 2.5)) {
         return;
     }
     // Blocking the click handler if any
@@ -3976,9 +3976,6 @@ addEvent = R.addEvent = function () {
             node.style.display = display;
             next ? parent.insertBefore(node, next) : parent.appendChild(node);
         }
-        x += scrollX;
-        y += scrollY;
-
         //Function to copy some properties of the actual event into the dummy event
         makeSelectiveCopy(dummyEve, e);
 

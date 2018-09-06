@@ -129,7 +129,11 @@ export default function (R) {
                 mouseout: "touchend" // to handle mouseout event
             };
         
-        // External function to fire mouseOut for various elements
+        /** External function to fire mouseOut for various elements for touch supported devices
+         * TouchStart/Pointer Over event is attached in the capturing phase on the document so that
+         * when ever any dom is tapped, this callback gets executed 1st and mouseout of the last event is
+         * fired.
+        */
         if (R.supportsTouch) {
             doc.addEventListener(R.supportsPointer ? 'pointerover' : 'touchstart', function (e) {
                 if (lastHoveredInfo.srcElement && lastHoveredInfo.srcElement !== (e.srcElement
@@ -141,7 +145,7 @@ export default function (R) {
                         i;
                     for (i = 0; i < ii; i++) {
                         elems = elementInfo[i];
-                        elems.callback.call(elems.el, elems.originalEvent);
+                        elems.callback.call(elems.el, e);
                     }
                 }
                 lastHoveredInfo = {
@@ -1564,8 +1568,7 @@ export default function (R) {
                         fn = handler.fn = function (e) {
                             lastHoveredInfo.elementInfo.push({
                                 el: this,
-                                callback: handler,
-                                originalEvent: e
+                                callback: handler
                             });
                             lastHoveredInfo.srcElement = e.srcElement || e.target;
                         }

@@ -8590,8 +8590,7 @@ exports["default"] = function (glob) {
         Str = String,
         isArray = Array.isArray || function (ar) {
         return ar instanceof Array || objtos.call(ar) == "[object Array]";
-    },
-
+    };
     /*\
      * eve
      [ method ]
@@ -8601,7 +8600,7 @@ exports["default"] = function (glob) {
      - varargs (...) the rest of arguments will be sent to event handlers
       = (object) array of returned values from the listeners. Array has two methods `.firstDefined()` and `.lastDefined()` to get first or last not `undefined` value.
     \*/
-    eve = function eve(name, scope) {
+    function eve(name, scope) {
         var e = events,
             oldstop = stop,
             arg = (0, _raphael.getArrayCopy)(arguments),

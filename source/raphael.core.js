@@ -3367,7 +3367,7 @@ var loaded,
                 if (!supportsPointer) {
                     e.preventDefault();
                 } else {
-                    selement.paper.canvas.style['touch-action'] = 'none';
+                    element.paper.canvas.style['touch-action'] = 'none';
                 }
             }
             // In hybrid devices, sometimes the e.clientX and e.clientY is not defined

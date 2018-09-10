@@ -4467,7 +4467,7 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
             if (!supportsPointer) {
                 e.preventDefault();
             } else {
-                selement.paper.canvas.style['touch-action'] = 'none';
+                element.paper.canvas.style['touch-action'] = 'none';
             }
         }
         // In hybrid devices, sometimes the e.clientX and e.clientY is not defined

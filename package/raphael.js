@@ -4463,7 +4463,13 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
         element._blockClick = false;
 
         // Blocking page scroll when drag is triggered
-        supportsTouch && (element.paper.canvas.style['touch-action'] = 'none');
+        if (supportsTouch) {
+            if (!supportsPointer) {
+                e.preventDefault();
+            } else {
+                selement.paper.canvas.style['touch-action'] = 'none';
+            }
+        }
         // In hybrid devices, sometimes the e.clientX and e.clientY is not defined
         element._drag.x = _dragX = (e.clientX !== UNDEF ? e.clientX : e.changedTouches && e.changedTouches[0].clientX) + scrollX;
         element._drag.y = _dragY = (e.clientY !== UNDEF ? e.clientY : e.changedTouches && e.changedTouches[0].clientY) + scrollY;
@@ -12358,7 +12364,7 @@ exports['default'] = function (R) {
                 if (eventType === 'click') {
                     fn = handler.fn = function (e) {
                         if (!elem._blockClick) {
-                            handler.call(this);
+                            handler.call(this, e);
                         }
                     };
                 }

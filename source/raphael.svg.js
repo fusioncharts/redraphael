@@ -1581,7 +1581,7 @@ export default function (R) {
                 if (eventType === 'click') {
                     fn = handler.fn = function (e) {
                         if (!elem._blockClick) {
-                            handler.call(this);
+                            handler.call(this, e);
                         }
                     }
                 }

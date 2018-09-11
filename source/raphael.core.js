@@ -660,13 +660,14 @@ var loaded,
                         elem.node.addEventListener('touchend', elem._clickStore.get(callback));
                         return true;
                     }
+                    break;
                 case 'clickremove':
                     if (elem._clickStore) {
                         handler = elem._clickStore.get(callback);
                         handler && elem.node.removeEventListener('touchend', handler);
                         return true;
                     }
-
+                    break;
                 case 'dragstart':
                     if (elem._clickStore) {
                         elem._clickStore.forEach(function (modifiedHandler, actualHandler) {
@@ -679,7 +680,7 @@ var loaded,
                                 elem._clickStore.set(actualHandler, function () {
                                     setTimeout(actualHandler,0);
                                 });
-                                elem.node.addEventListener('touchend', elem._clickStore.get(callback));
+                                elem.node.addEventListener('touchend', elem._clickStore.get(actualHandler));
                             }
                         });
                     }

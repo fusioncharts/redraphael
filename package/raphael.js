@@ -13000,6 +13000,9 @@ exports['default'] = function (R) {
                 return this;
             }
 
+            elem._actualListners || (elem._actualListners = []);
+            elem._derivedListeners || (elem._derivedListeners = []);
+
             switch (eventType) {
                 case 'fc-dragstart':
                     elem.drag(null, handler);
@@ -13028,9 +13031,9 @@ exports['default'] = function (R) {
 
                     // Mouse out event's handler is fired when the next element on the page is hovered.
                     if (actualEventType === 'mouseout') {
-                        fn = handler.fn = function (e) {
+                        fn = function fn(e) {
                             lastHoveredInfo.elementInfo.push({
-                                el: this,
+                                el: elem,
                                 callback: handler
                             });
                             lastHoveredInfo.srcElement = e.srcElement || e.target;
@@ -13042,9 +13045,9 @@ exports['default'] = function (R) {
                 // Click is not triggered immediately.
                 // It is checked if its execution is blocked due to drag operartion
                 if (eventType === 'click') {
-                    fn = handler.fn = function (e) {
+                    fn = function fn(e) {
                         if (!elem._blockClick) {
-                            handler.call(this, e);
+                            handler.call(elem, e);
                         }
                     };
                     // If the click addition has been managed by manageIOSclick fn then return
@@ -13064,6 +13067,14 @@ exports['default'] = function (R) {
             } else {
                 node = this.node;
             }
+            if (fn === handler) {
+                fn = function fn(e) {
+                    handler.call(elem, e);
+                };
+            }
+            elem._actualListners.push(handler);
+            elem._derivedListeners.push(fn);
+
             if (node.addEventListener) {
                 node.addEventListener(eventType, fn);
             } else {
@@ -13118,13 +13129,11 @@ exports['default'] = function (R) {
                     actualEventType = eventType;
                     eventType = (R.supportsPointer ? R.safePointerEventMapping[eventType] : safeMouseEventMapping[eventType]) || eventType;
                     if (actualEventType === 'mouseout') {
-                        fn = handler.fn;
                         eventType = R.supportsPointer ? 'pointerover' : 'touchstart';
                     }
                 }
 
                 if (eventType === 'click') {
-                    fn = handler.fn;
                     // If the click addition has been managed by manageIOSclick fn then return
                     if (R.manageIOSclick(elem, 'clickremove', fn)) {
                         return elem;
@@ -13137,6 +13146,14 @@ exports['default'] = function (R) {
             } else {
                 node = this.node;
             }
+            index = elem._actualListners.indexOf(fn);
+
+            if (index !== -1) {
+                fn = elem._derivedListeners[index];
+                elem._actualListners.splice(index, 1);
+                elem._derivedListeners.splice(index, 1);
+            }
+
             if (node.removeEventListener) {
                 node.removeEventListener(eventType, fn);
             } else {

@@ -1539,19 +1539,22 @@ export default function (R) {
                 return this;
             }
 
+            switch (eventType) {
+                case 'fc-dragstart':
+                    elem.drag(null, handler);
+                    return elem;
+                case 'fc-dragmove':
+                    elem.drag(handler);
+                    return elem;
+                case 'fc-dragend':
+                    elem.drag(null, null, handler);
+                    return elem;
+                case 'dbtap':
+                    return elem;
+            }
+
             // Setting the original event on which operations has to be done
             isSafe && (eventType = eventType.replace(/fc-/, ''));
-
-            if (eventType === 'dragstart') {
-                this.drag(null, handler);
-                return this;
-            } else if (eventType === 'dragmove') {
-                this.drag(handler);
-                return this;
-            } else if (eventType === 'dragend') {
-                this.drag(null, null, handler);
-                return this;
-            }
 
             /** 
              * Here we are implementing safe mouse events. All browsers for which pointer events are supported, we are using
@@ -1583,6 +1586,10 @@ export default function (R) {
                         if (!elem._blockClick) {
                             handler.call(this, e);
                         }
+                    }
+                    // If the click addition has been managed by manageIOSclick fn then return
+                    if (R.manageIOSclick(elem, 'clickadd', fn)) {
+                        return elem;
                     }
                 }
             }
@@ -1617,6 +1624,7 @@ export default function (R) {
             var elem = this,
                 fn = handler,
                 actualEventType,
+                index,
                 // an event is termed as safe if it is preceeded by fc
                 isSafe = eventType.match(/fc-/),
                 node;
@@ -1624,38 +1632,43 @@ export default function (R) {
                 return this;
             }
 
+            // Unbinding the drag events
+            switch (eventType) {
+                case 'fc-dragstart':
+                    elem.undragstart(handler);
+                    return elem;
+                case 'fc-dragmove':
+                    elem.undragmove(handler);
+                    return elem;
+                case 'fc-dragend':
+                    elem.undragend(handler);
+                    return elem;
+                case 'dbtap':
+                    return elem;
+            }
+
             // Setting the original event on which operations has to be done
             isSafe && (eventType = eventType.replace(/fc-/, ''));
-            // Unbinding the drag events
-            if (eventType === 'dragstart') {
-                elem.undragstart(handler);
-                return this;
-            } else if (eventType === 'dragmove') {
-                this.undragmove(handler);
-                return this;
-            } else if (eventType === 'dragend') {
-                this.undragend(handler);
-                return this;
-            }
 
             fn = handler;
 
-            if (R.supportsPointer && R.supportsTouch) {
-                eventType =  R.safePointerEventMapping[eventType] || eventType;
-                if (eventType === 'pointerout') {
-                    eventType = 'pointerover';
-                    fn = handler.fn;
+            if (isSafe) {
+                if (R.supportsTouch) {
+                    actualEventType = eventType;
+                    eventType = (R.supportsPointer ? R.safePointerEventMapping[eventType] : safeMouseEventMapping[eventType])
+                        || eventType;
+                    if (actualEventType === 'mouseout') {
+                        fn = handler.fn;
+                        eventType = R.supportsPointer ? 'pointerover' : 'touchstart';
+                    }
                 }
-            }
 
-            if (isSafe && R.supportsTouch) {
-                actualEventType = eventType;
-                eventType = (R.supportsPointer ? R.safePointerEventMapping[eventType] : safeMouseEventMapping[eventType])
-                    || eventType;
-                
-                if (actualEventType === 'mouseout') {
+                if (eventType === 'click') {
                     fn = handler.fn;
-
+                    // If the click addition has been managed by manageIOSclick fn then return
+                    if (R.manageIOSclick(elem, 'clickremove', fn)) {
+                        return elem;
+                    }
                 }
             }
             

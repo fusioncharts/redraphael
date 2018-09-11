@@ -622,6 +622,9 @@ var loaded,
                     }
                 return res;
             },
+        /**
+         * Function to manage the click 
+         */
         Node = _win.Node;
         //Adding pollyfill for IE11
         if (Node && !Node.prototype.contains) {
@@ -631,11 +634,58 @@ var loaded,
                 }
                 return false;
             }
-        };
+        }
     
     R._g = g;
     R.merge = merge;
     R.extend = extend;
+    /**
+     * Function to manage click for IOS touch device. If drag is associated with the elem then click is changed
+     * to touchend
+     * @param {*} elem 
+     * @param {*} action 
+     * @param {*} callback 
+     */
+    R.manageIOSclick = function (elem, action, callback) {
+        let handler;
+        if (!supportsPointer && R.supportsTouch) {
+            switch (action) {
+                case 'clickadd':
+                    elem._clickStore || (elem._clickStore = new Map());
+                    elem._clickStore.set(callback);
+                    if (elem.dragFn) {
+                        elem._clickStore.set(callback, function () {
+                            setTimeout(callback, 0);
+                        });
+                        elem.node.addEventListener('touchend', elem._clickStore.get(callback));
+                        return true;
+                    }
+                case 'clickremove':
+                    if (elem._clickStore) {
+                        handler = elem._clickStore.get(callback);
+                        handler && elem.node.removeEventListener('touchend', handler);
+                        return true;
+                    }
+
+                case 'dragstart':
+                    if (elem._clickStore) {
+                        elem._clickStore.forEach(function (modifiedHandler, actualHandler) {
+                            // For all those click events that has been attached before drag has
+                            // been attached.
+                            if (!modifiedHandler) {
+                                // Removing the click events
+                                elem.node.removeEventListener('click', actualHandler);
+                                // Creating the modified click events to be attached and storing it
+                                elem._clickStore.set(actualHandler, function () {
+                                    setTimeout(actualHandler,0);
+                                });
+                                elem.node.addEventListener('touchend', elem._clickStore.get(callback));
+                            }
+                        });
+                    }
+            }
+        }
+    };
     /*
       * Raphael.createUUID
       [ method ]
@@ -3342,7 +3392,8 @@ var loaded,
         onstart && dragInfo.onstart.push(onstart) && dragInfo.start_scope.push(start_scope);
         onend && dragInfo.onend.push(onend) && dragInfo.end_scope.push(end_scope);
 
-
+        // Function to manage the click event for ipad as prevent default is called on dragstart
+        R.manageIOSclick(element, 'dragstart');
         element.dragFn = element.dragFn || function (e) {
             var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
                 scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,

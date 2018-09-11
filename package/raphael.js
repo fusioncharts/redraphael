@@ -4227,11 +4227,13 @@ addEvent = R.addEvent = function () {
              * When dragged over an element then pointer up is not fired, so we have to associate
              * respective events for various browsers
              */
-            if (realName === 'pointerup') {
-                realName = 'mouseup';
-            } else if (realName === UNDEF) {
-                // for hybrid devices
-                realName = 'touchend';
+            if (element.dragFn) {
+                if (realName === 'pointerup') {
+                    realName = 'mouseup';
+                } else if (realName === UNDEF) {
+                    // for hybrid devices
+                    realName = 'touchend';
+                }
             }
 
             f = function f(e) {

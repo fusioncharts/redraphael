@@ -1520,6 +1520,53 @@ export default function (R) {
             }
         };
 
+        elproto.dbtap = function (handler) {
+            if (!R.supportsTouch) {
+                return;
+            }
+            let elem = this,
+                eventType,
+                isSingleFinger = function (event) {
+                    return !event.touches || (event.touches && event.touches.length === 1);
+                },
+                fn = function (e) {
+                    event && event.preventDefault();
+                    if (!isSingleFinger(e)) {
+                        return;
+                    }
+                    if (elem._tappedOnce) {
+                        handler.call(elem, e);
+                        elem._tappedOnce = false;
+                    } else {
+                        elem._tappedOnce = true;
+                        // 500ms time for double tap expiration
+                        setTimeout(function () {
+                            elem._tappedOnce = false;
+                        }, 500);
+                    }
+                };
+
+            elem._actualListners || (elem._actualListners = []);
+            elem._derivedListeners || (elem._derivedListeners = []);
+            eventType = R.supportsPointer ? 'pointerup' : 'touchstart';
+            
+            elem.node.addEventListener(eventType, fn);
+            elem._actualListners.push(handler);
+            elem._derivedListeners.push(fn);
+        };
+
+        elproto.undbtap = function (handler) {
+            var elem = this,
+                index = elem._actualListners.indexOf(handler);
+
+            if (index !== -1) {
+                elem.node.removeEventListener(R.supportsPointer ? 'pointerup' : 'touchstart',
+                    elem._derivedListeners[index]);
+                elem._actualListners.splice(index, 1);
+                elem._derivedListeners.splice(index, 1);
+            }
+        }
+
         /* \
         * Element.on
         [ method ]
@@ -1552,7 +1599,8 @@ export default function (R) {
                 case 'fc-dragend':
                     elem.drag(null, null, handler);
                     return elem;
-                case 'dbtap':
+                case 'fc-dbtap':
+                    elem.dbtap(handler);
                     return elem;
             }
 
@@ -1654,7 +1702,8 @@ export default function (R) {
                 case 'fc-dragend':
                     elem.undragend(handler);
                     return elem;
-                case 'dbtap':
+                case 'fc-dbtap':
+                    elem.undbtap(handler);
                     return elem;
             }
 

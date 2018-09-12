@@ -3226,7 +3226,7 @@ var loaded,
      |     paper.circle(10 + 15 * i, 10, 10)
      |          .attr({fill: "#000"})
      |          .data("i", i)
-     |          .click(function () {
+     |          .fcclick(function () {
      |             alert(this.data("i"));
      |          });
      | }
@@ -3331,7 +3331,7 @@ var loaded,
      = (object) @Element
     \*/
     elproto.hover = function(f_in, f_out, scope_in, scope_out) {
-        return this.mouseover(f_in, scope_in).mouseout(f_out, scope_out || scope_in);
+        return this.on('fc-mouseover', f_in, scope_in).on('fc-mouseout', f_out, scope_out);
     };
 
     /*\
@@ -3345,7 +3345,15 @@ var loaded,
      = (object) @Element
     \*/
     elproto.unhover = function(f_in, f_out) {
-        return this.unmouseover(f_in).unmouseout(f_out);
+        return this.off('fc-mouseover', f_in).off('fc-mouseout', f_out);
+    };
+
+    elproto.fcclick = function (handler, context) {
+        return this.on('fc-click', handler, context);
+    };
+
+    elproto.fcunclick = function (handler) {
+        return this.off('fc-click', handler);
     };
     var draggable = [];
 

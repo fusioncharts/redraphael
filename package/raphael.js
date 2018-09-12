@@ -4634,7 +4634,7 @@ for (var i = events.length; i--;) {
  |     paper.circle(10 + 15 * i, 10, 10)
  |          .attr({fill: "#000"})
  |          .data("i", i)
- |          .click(function () {
+ |          .fcclick(function () {
  |             alert(this.data("i"));
  |          });
  | }
@@ -4737,7 +4737,7 @@ elproto.unmouseup = function (fn) {
  = (object) @Element
 \*/
 elproto.hover = function (f_in, f_out, scope_in, scope_out) {
-    return this.mouseover(f_in, scope_in).mouseout(f_out, scope_out || scope_in);
+    return this.on('fc-mouseover', f_in, scope_in).on('fc-mouseout', f_out, scope_out);
 };
 
 /*\
@@ -4751,7 +4751,15 @@ elproto.hover = function (f_in, f_out, scope_in, scope_out) {
  = (object) @Element
 \*/
 elproto.unhover = function (f_in, f_out) {
-    return this.unmouseover(f_in).unmouseout(f_out);
+    return this.off('fc-mouseover', f_in).off('fc-mouseout', f_out);
+};
+
+elproto.fcclick = function (handler, context) {
+    return this.on('fc-click', handler, context);
+};
+
+elproto.fcunclick = function (handler) {
+    return this.off('fc-click', handler);
 };
 var draggable = [];
 
@@ -13034,7 +13042,10 @@ exports['default'] = function (R) {
         * @param eventType - Type of event
         * @param handler - Function to be called on the firing of the event
         \ */
-        elproto.on = function (eventType, handler) {
+        elproto.on = function (eventType, handler, context) {
+            if (!handler || !eventType) {
+                return;
+            }
             var elem = this,
                 node,
                 actualEventType,
@@ -13080,7 +13091,7 @@ exports['default'] = function (R) {
                     if (actualEventType === 'mouseout') {
                         fn = function fn(e) {
                             lastHoveredInfo.elementInfo.push({
-                                el: elem,
+                                el: context || elem,
                                 callback: handler
                             });
                             lastHoveredInfo.srcElement = e.srcElement || e.target;
@@ -13094,7 +13105,7 @@ exports['default'] = function (R) {
                 if (eventType === 'click') {
                     fn = function fn(e) {
                         if (!elem._blockClick) {
-                            handler.call(elem, e);
+                            handler.call(context || elem, e);
                         }
                     };
                     // If the click addition has been managed by manageIOSclick fn then return
@@ -13116,7 +13127,7 @@ exports['default'] = function (R) {
             }
             if (fn === handler) {
                 fn = function fn(e) {
-                    handler.call(elem, e);
+                    handler.call(context || elem, e);
                 };
             }
             elem._actualListners.push(handler);
@@ -13147,7 +13158,7 @@ exports['default'] = function (R) {
             // an event is termed as safe if it is preceeded by fc
             isSafe = eventType.match(/fc-/),
                 node;
-            if (this.removed) {
+            if (this.removed || !elem._actualListners || !eventType || !handler) {
                 return this;
             }
 

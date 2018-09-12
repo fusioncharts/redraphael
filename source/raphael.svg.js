@@ -1575,7 +1575,10 @@ export default function (R) {
         * @param eventType - Type of event
         * @param handler - Function to be called on the firing of the event
         \ */
-        elproto.on = function (eventType, handler) {
+        elproto.on = function (eventType, handler, context) {
+            if (!handler || !eventType) {
+                return;
+            }
             var elem = this,
                 node,
                 actualEventType,
@@ -1621,7 +1624,7 @@ export default function (R) {
                     if (actualEventType === 'mouseout') {
                         fn = function (e) {
                             lastHoveredInfo.elementInfo.push({
-                                el: elem,
+                                el: context || elem,
                                 callback: handler
                             });
                             lastHoveredInfo.srcElement = e.srcElement || e.target;
@@ -1635,7 +1638,7 @@ export default function (R) {
                 if (eventType === 'click') {
                     fn = function (e) {
                         if (!elem._blockClick) {
-                            handler.call(elem, e);
+                            handler.call(context || elem, e);
                         }
                     }
                     // If the click addition has been managed by manageIOSclick fn then return
@@ -1657,7 +1660,7 @@ export default function (R) {
             }
             if (fn === handler) {
                 fn = function (e) {
-                    handler.call(elem, e);
+                    handler.call(context || elem, e);
                 }
             }
             elem._actualListners.push(handler);
@@ -1687,7 +1690,7 @@ export default function (R) {
                 // an event is termed as safe if it is preceeded by fc
                 isSafe = eventType.match(/fc-/),
                 node;
-            if (this.removed) {
+            if (this.removed || !elem._actualListners || !eventType || !handler) {
                 return this;
             }
 

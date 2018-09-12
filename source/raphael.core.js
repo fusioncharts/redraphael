@@ -2780,7 +2780,7 @@ var loaded,
         layerX: true,
         layerY: true
     },
-    makeSelectiveCopy = function (target, source) {
+    makeSelectiveCopy = R.makeSelectiveCopy = function (target, source) {
         for (let eve in eventCopyList) {
             if (eventCopyList[eve] === 'fn') {
                 target[eve] = (function () {
@@ -2885,7 +2885,8 @@ var loaded,
             j = el.dragInfo.onmove.length;
 
         // Setting the minimum threshold of 2 pixels to trigger dragmove
-        if (el.dragStartFn && !(Math.abs(x - el._drag.x) >= 2.5 || Math.abs(y - el._drag.y) >= 2.5)) {
+        // el.blockDrag is true during pinch zoom
+        if ((el.dragStartFn && !(Math.abs(x - el._drag.x) >= 2.5 || Math.abs(y - el._drag.y) >= 2.5)) || el._blockDrag) {
             return;
         }
         // Blocking the click handler if any

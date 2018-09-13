@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Sample testing</title>
+	<script type="text/javascript" src="./raphael.js"></script>
+</head>
+<body>
+	<button onclick="detachMouseEvent()">Detach mouseOver event</button>
+	<button onclick="clearEventList()">Clear Event List</button>
+	<div id = "container" style="width: 500px; height: 300px;"></div>
+	<div id = "tooltip" style="width: 350px; height: 1500px; overflow-wrap: break-word;"></div>
+</body>
+<script type="text/javascript">
+	var paper = new RedRaphael(document.getElementById('container'), 500, 300),
+		group = paper.group('parent'),
+		tooltip = document.getElementById('tooltip'),
+		i,
+		acc = '',
+		rects = [],
+		refObj = {
+			detachFn: []
+		},
+		rect;
+	detachMouseEvent = function () {
+		for (i = 0; i < 5; i++) {
+			rects[i].off('fc-mouseover', refObj.detachFn[i], true);
+		}
+	};
+	clearEventList = function () {
+		tooltip.innerHTML = '';
+		acc= '';
+	};
+	for (i = 0; i < 5; i++) {
+		rect = paper.rect({
+			x: 100 + i * 80,
+			y: 100,
+			width: 50,
+			height: 100,
+			fill: '#00ff00',
+			stroke: '#ff0000'
+		}, group);
+		// rect.node.style['touch-action'] = 'none';
+		rect.on('fc-mouseover', (function (index) {
+			return refObj.detachFn[i] = function () {
+				acc += 'Hovered OVER rect' + index + '\t';
+				tooltip.innerHTML = acc;
+			}
+		})(i), true);
+
+		rect.on('fc-mouseout', (function (index) {
+			return function () {
+				acc += 'Hovered OUT rect' + index + '\t';
+				tooltip.innerHTML = acc;
+			}
+		})(i), true);
+
+		rect.on('fc-click', (function (index) {
+			return function () {
+				acc += 'CLICKED rect' + index + '\t';
+				tooltip.innerHTML = acc;
+			}
+		})(i), true);
+
+		/* rect.on('mousemove', (function (index) {
+			return function (e) {
+				acc += 'MOUSEMOVE rect' + index + e.clientX + '\t' + e.clientY + '\t';
+				tooltip.innerHTML = acc;
+			}
+		})(i), true); */
+
+		rect.on('fc-dragstart', (function (index) {
+			return function () {
+				acc += 'DRAG_START at rect' + index + '\t';
+				tooltip.innerHTML = acc;
+			}
+		})(i));
+
+		rect.on('fc-dragmove', (function (index) {
+			return function () {
+				acc += 'DRAG_MOVE at rect' + index + '\t';
+				tooltip.innerHTML = acc;
+			}
+		})(i));
+
+
+		rect.on('fc-dragend', (function (index) {
+			return function () {
+				acc += 'DRAG_END a rect' + index + '\t';
+				tooltip.innerHTML = acc;
+			}
+		})(i));
+
+		rects.push(rect);
+	}
+	
+
+</script>
+</html>

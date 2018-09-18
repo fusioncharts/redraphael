@@ -4679,6 +4679,42 @@ elproto.removeData = function (key) {
     return this;
 };
 
+elproto.dbclick = function (handler) {
+    var elem = this,
+        eventType = void 0,
+        isSingleFinger = function isSingleFinger(event) {
+        return !event.touches || event.touches && event.touches.length === 1;
+    },
+        fn = function fn(e) {
+        e && e.preventDefault();
+        if (!isSingleFinger(e)) {
+            return;
+        }
+        if (elem._tappedOnce) {
+            handler.call(elem, e);
+            elem._tappedOnce = false;
+        } else {
+            elem._tappedOnce = true;
+            // 500ms time for double tap expiration
+            setTimeout(function () {
+                elem._tappedOnce = false;
+            }, 500);
+        }
+    };
+
+    eventType = R.supportsPointer ? 'pointerup' : R.supportsTouch ? 'touchstart' : 'mouseup';
+
+    elem.node.addEventListener(eventType, fn);
+    storeHandlers(elem, handler, fn);
+};
+
+elproto.undbclick = function (handler) {
+    var elem = this,
+        derivedHandler = removeHandlers(elem, handler);
+
+    derivedHandler && elem.node.removeEventListener(R.supportsPointer ? 'pointerup' : R.supportsTouch ? 'touchstart' : 'mouseup', derivedHandler);
+};
+
 /*\
 * Element.getData
 [ method ]
@@ -13026,42 +13062,6 @@ exports['default'] = function (R) {
             }
         };
 
-        elproto.dbclick = function (handler) {
-            var elem = this,
-                eventType = void 0,
-                isSingleFinger = function isSingleFinger(event) {
-                return !event.touches || event.touches && event.touches.length === 1;
-            },
-                fn = function fn(e) {
-                e && e.preventDefault();
-                if (!isSingleFinger(e)) {
-                    return;
-                }
-                if (elem._tappedOnce) {
-                    handler.call(elem, e);
-                    elem._tappedOnce = false;
-                } else {
-                    elem._tappedOnce = true;
-                    // 500ms time for double tap expiration
-                    setTimeout(function () {
-                        elem._tappedOnce = false;
-                    }, 500);
-                }
-            };
-
-            eventType = R.supportsPointer ? 'pointerup' : R.supportsTouch ? 'touchstart' : 'mouseup';
-
-            elem.node.addEventListener(eventType, fn);
-            storeHandlers(elem, handler, fn);
-        };
-
-        elproto.undbclick = function (handler) {
-            var elem = this,
-                derivedHandler = removeHandlers(elem, handler);
-
-            derivedHandler && elem.node.removeEventListener(R.supportsPointer ? 'pointerup' : R.supportsTouch ? 'touchstart' : 'mouseup', derivedHandler);
-        };
-
         elproto.pinchstart = function (handler) {
             var elem = this,
                 dummyEve = {},
@@ -13096,6 +13096,7 @@ exports['default'] = function (R) {
             var elem = this,
                 derivedHandler = removeHandlers(elem, handler);
             elem.__blockDrag = false;
+            elem._pinchDragStarted = false;
             derivedHandler && elem.node.removeEventListener('touchstart', derivedHandler);
         };
 
@@ -13108,6 +13109,7 @@ exports['default'] = function (R) {
                     var touch1 = e.touches[0],
                         touch2 = e.touches[1];
                     e && e.preventDefault();
+                    elem._pinchDragStarted = true;
                     R.makeSelectiveCopy(dummyEve, e);
                     dummyEve.data = {
                         finger0: touch1,
@@ -13135,7 +13137,8 @@ exports['default'] = function (R) {
         elproto.pinchend = function (handler) {
             var elem = this,
                 fn = function fn(e) {
-                if (e.touches && e.touches.length === 2) {
+                if (elem._pinchDragStarted) {
+                    elem._pinchDragStarted = false;
                     handler.call(elem, e);
                 }
             };
@@ -13149,7 +13152,7 @@ exports['default'] = function (R) {
         elproto.unpinchend = function (handler) {
             var elem = this,
                 derivedHandler = removeHandlers(elem, handler);
-
+            elem._pinchDragStarted = false;
             derivedHandler && elem.node.removeEventListener('touchend', derivedHandler);
         };
 
@@ -14661,45 +14664,68 @@ exports["default"] = function (R) {
         * @param eventType - Type of event
         * @param handler - Function to be called on the firing of the event
         \*/
-        elproto.on = function (eventType, handler) {
-            var el = this,
-                _fn;
-            if (this.removed) {
-                return this;
+        elproto.on = function (eventType, handler, context) {
+            var elem = this,
+                fn;
+            if (elem.removed) {
+                return elem;
             }
 
-            if (eventType === 'dragstart') {
-                this.drag(null, handler);
-                return this;
-            } else if (eventType === 'dragmove') {
-                this.drag(handler);
-                return this;
-            } else if (eventType === 'dragend') {
-                this.drag(null, null, handler);
-                return this;
+            elem._actualListners || (elem._actualListners = []);
+            elem._derivedListeners || (elem._derivedListeners = []);
+
+            switch (eventType) {
+                case 'fc-dragstart':
+                    elem.drag(null, handler);
+                    return elem;
+                case 'fc-dragmove':
+                    elem.drag(handler);
+                    return elem;
+                case 'fc-dragend':
+                    elem.drag(null, null, handler);
+                    return elem;
+                case 'fc-dbclick':
+                    elem.dbclick(handler);
+                    return elem;
             }
+
+            eventType = eventType.replace(/fc-/, '');
+
             // There is discrepancy in IE-8 load and error event emmition,
             // that's why we are attaching the load and error events on the Reference Image
-            if (this._ && this._.RefImg && (eventType === 'load' || eventType === 'error')) {
-                node = this._.RefImg;
-                handler = function (el, _fn) {
+            if (elem._ && elem._.RefImg && (eventType === 'load' || eventType === 'error')) {
+                node = elem._.RefImg;
+                handler = function (el, fn) {
                     return function (e) {
                         !el.removed && _fn.call(el, e);
                     };
                 }(el, handler);
             } else {
-                node = this.node;
+                node = elem.node;
             }
-            if (node.attachEvent) {
-                node.attachEvent('on' + eventType, handler);
-            } else {
-                node['on' + eventType] = function () {
+
+            if (!node.attachEvent) {
+                fn = function fn() {
                     var evt = R._g.win.event;
                     evt.target = evt.srcElement;
                     handler(evt);
                 };
+            } else if (fn === handler) {
+                fn = function fn(e) {
+                    handler.call(context || elem, e);
+                };
             }
-            return this;
+
+            // Storing the actual and derived event for removing it later
+            elem._actualListners.push(handler);
+            elem._derivedListeners.push(fn);
+
+            if (node.attachEvent) {
+                node.attachEvent('on' + eventType, fn);
+            } else {
+                node['on' + eventType] = fn;
+            }
+            return elem;
         };
 
         /*\
@@ -14711,26 +14737,44 @@ exports["default"] = function (R) {
         * @param handler - Function to be removed from event
         \*/
         elproto.off = function (eventType, handler) {
-            if (this.removed) {
-                return this;
+            var elem = this,
+                fn,
+                index;
+            if (elem.removed) {
+                return elem;
             }
 
-            if (eventType === 'dragstart') {
-                this.undragstart(handler);
-                return this;
-            } else if (eventType === 'dragmove') {
-                this.undragmove(handler);
-                return this;
-            } else if (eventType === 'dragend') {
-                this.undragend(handler);
-                return this;
+            switch (eventType) {
+                case 'fc-dragstart':
+                    elem.undragstart(handler);
+                    return elem;
+                case 'fc-dragmove':
+                    elem.undragmove(handler);
+                    return elem;
+                case 'fc-dragend':
+                    elem.undragend(handler);
+                    return elem;
+                case 'fc-dbclick':
+                    elem.undbclick(handler);
+                    return elem;
             }
-            if (this.node.attachEvent) {
-                this.node.detachEvent('on' + eventType, handler);
+
+            eventType = eventType.replace(/fc-/, '');
+
+            index = elem._actualListners.indexOf(fn);
+
+            if (index !== -1) {
+                fn = elem._derivedListeners[index];
+                elem._actualListners.splice(index, 1);
+                elem._derivedListeners.splice(index, 1);
+            }
+
+            if (elem.node.attachEvent) {
+                elem.node.detachEvent('on' + eventType, fn);
             } else {
-                this.node['on' + eventType] = null;
+                elem.node['on' + eventType] = null;
             }
-            return this;
+            return elem;
         };
 
         R._engine.getNode = function (el) {

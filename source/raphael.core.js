@@ -3270,6 +3270,44 @@ var loaded,
         }
         return this;
     };
+    
+    elproto.dbclick = function (handler) {
+        let elem = this,
+            eventType,
+            isSingleFinger = function (event) {
+                return !event.touches || (event.touches && event.touches.length === 1);
+            },
+            fn = function (e) {
+                e && e.preventDefault();
+                if (!isSingleFinger(e)) {
+                    return;
+                }
+                if (elem._tappedOnce) {
+                    handler.call(elem, e);
+                    elem._tappedOnce = false;
+                } else {
+                    elem._tappedOnce = true;
+                    // 500ms time for double tap expiration
+                    setTimeout(function () {
+                        elem._tappedOnce = false;
+                    }, 500);
+                }
+            };
+
+        eventType = R.supportsPointer ? 'pointerup' : R.supportsTouch ? 'touchstart' : 'mouseup';
+        
+        elem.node.addEventListener(eventType, fn);
+        storeHandlers(elem, handler, fn);
+
+    };
+
+    elproto.undbclick = function (handler) {
+        var elem = this,
+            derivedHandler = removeHandlers(elem, handler);
+
+        derivedHandler && elem.node.removeEventListener(R.supportsPointer ? 'pointerup' : 
+            R.supportsTouch ? 'touchstart' : 'mouseup', derivedHandler);
+    };
 
      /*\
      * Element.getData

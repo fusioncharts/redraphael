@@ -1552,44 +1552,6 @@ export default function (R) {
             }
         };
 
-        elproto.dbclick = function (handler) {
-            let elem = this,
-                eventType,
-                isSingleFinger = function (event) {
-                    return !event.touches || (event.touches && event.touches.length === 1);
-                },
-                fn = function (e) {
-                    e && e.preventDefault();
-                    if (!isSingleFinger(e)) {
-                        return;
-                    }
-                    if (elem._tappedOnce) {
-                        handler.call(elem, e);
-                        elem._tappedOnce = false;
-                    } else {
-                        elem._tappedOnce = true;
-                        // 500ms time for double tap expiration
-                        setTimeout(function () {
-                            elem._tappedOnce = false;
-                        }, 500);
-                    }
-                };
-
-            eventType = R.supportsPointer ? 'pointerup' : R.supportsTouch ? 'touchstart' : 'mouseup';
-            
-            elem.node.addEventListener(eventType, fn);
-            storeHandlers(elem, handler, fn);
-
-        };
-
-        elproto.undbclick = function (handler) {
-            var elem = this,
-                derivedHandler = removeHandlers(elem, handler);
-
-            derivedHandler && elem.node.removeEventListener(R.supportsPointer ? 'pointerup' : 
-                R.supportsTouch ? 'touchstart' : 'mouseup', derivedHandler);
-        };
-
         elproto.pinchstart = function (handler) {
             var elem = this,
                 dummyEve = {},
@@ -1624,6 +1586,7 @@ export default function (R) {
             var elem = this,
                 derivedHandler = removeHandlers(elem, handler);
             elem.__blockDrag = false;
+            elem._pinchDragStarted = false;
             derivedHandler && elem.node.removeEventListener('touchstart', derivedHandler);
         };
 
@@ -1636,6 +1599,7 @@ export default function (R) {
                         let touch1 = e.touches[0],
                             touch2 = e.touches[1];
                         e && e.preventDefault();
+                        elem._pinchDragStarted = true;
                         R.makeSelectiveCopy(dummyEve, e);
                         dummyEve.data = {
                             finger0: touch1,
@@ -1663,8 +1627,9 @@ export default function (R) {
         elproto.pinchend = function (handler) {
             var elem = this,
                 fn = function (e) {
-                    if (e.touches && e.touches.length === 2) {
-                        handler.call(elem, e)
+                    if (elem._pinchDragStarted) {
+                        elem._pinchDragStarted = false;
+                        handler.call(elem, e);
                     }
                 };
 
@@ -1677,7 +1642,7 @@ export default function (R) {
         elproto.unpinchend = function (handler) {
             var elem = this,
                 derivedHandler = removeHandlers(elem, handler);
-
+            elem._pinchDragStarted = false;
             derivedHandler && elem.node.removeEventListener('touchend', derivedHandler);
         };
 

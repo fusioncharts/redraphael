@@ -2793,6 +2793,8 @@ var loaded,
             }
         }
         target.originalEvent = source;
+        // For IOS device
+        target.type || (target.type = source.originalEvent && source.originalEvent.type);
     },
     // This function is used to add drag related events and element.mouseover/element.mouseout event.
     // It is advised to use element.on instead

@@ -2136,8 +2136,10 @@ R.manageIOSclick = function (elem, action, callback) {
                             // Removing the click events
                             elem.node.removeEventListener('click', actualHandler);
                             // Creating the modified click events to be attached and storing it
-                            elem._clickStore.set(actualHandler, function () {
-                                setTimeout(actualHandler, 0);
+                            elem._clickStore.set(actualHandler, function (e) {
+                                setTimeout(function () {
+                                    actualHandler(e);
+                                }, 0);
                             });
                             elem.node.addEventListener('touchend', elem._clickStore.get(actualHandler));
                         }

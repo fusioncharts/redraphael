@@ -13024,10 +13024,7 @@ exports['default'] = function (R) {
             }
         };
 
-        elproto.dbtap = function (handler) {
-            if (!R.supportsTouch) {
-                return;
-            }
+        elproto.dbclick = function (handler) {
             var elem = this,
                 eventType = void 0,
                 isSingleFinger = function isSingleFinger(event) {
@@ -13050,17 +13047,17 @@ exports['default'] = function (R) {
                 }
             };
 
-            eventType = R.supportsPointer ? 'pointerup' : 'touchstart';
+            eventType = R.supportsPointer ? 'pointerup' : R.supportsTouch ? 'touchstart' : 'mouseup';
 
             elem.node.addEventListener(eventType, fn);
             storeHandlers(elem, handler, fn);
         };
 
-        elproto.undbtap = function (handler) {
+        elproto.undbclick = function (handler) {
             var elem = this,
                 derivedHandler = removeHandlers(elem, handler);
 
-            derivedHandler && elem.node.removeEventListener(R.supportsPointer ? 'pointerup' : 'touchstart', derivedHandler);
+            derivedHandler && elem.node.removeEventListener(R.supportsPointer ? 'pointerup' : R.supportsTouch ? 'touchstart' : 'mouseup', derivedHandler);
         };
 
         elproto.pinchstart = function (handler) {
@@ -13100,7 +13097,7 @@ exports['default'] = function (R) {
             derivedHandler && elem.node.removeEventListener('touchstart', derivedHandler);
         };
 
-        elproto.pinchin = function (handler) {
+        elproto.pinchmove = function (handler) {
             var elem = this,
                 dummyEve = {},
                 fn = function fn(e) {
@@ -13126,7 +13123,7 @@ exports['default'] = function (R) {
             elem.node.addEventListener('touchmove', fn);
         };
 
-        elproto.unpinchin = function (handler) {
+        elproto.unpinchmove = function (handler) {
             var elem = this,
                 derivedHandler = removeHandlers(elem, handler);
 
@@ -13144,7 +13141,7 @@ exports['default'] = function (R) {
             // Storing the handlers
             storeHandlers(elem, handler, fn);
 
-            elem.node.addEventListener('touchmove', fn);
+            elem.node.addEventListener('touchend', fn);
         };
 
         elproto.unpinchend = function (handler) {
@@ -13202,14 +13199,14 @@ exports['default'] = function (R) {
                 case 'fc-dragend':
                     elem.drag(null, null, handler);
                     return elem;
-                case 'fc-dbtap':
-                    elem.dbtap(handler);
+                case 'fc-dbclick':
+                    elem.dbclick(handler);
                     return elem;
                 case 'fc-pinchstart':
                     elem.pinchstart(handler);
                     return elem;
-                case 'fc-pinchin':
-                    elem.pinchin(handler);
+                case 'fc-pinchmove':
+                    elem.pinchmove(handler);
                     return elem;
                 case 'fc-pinchend':
                     elem.pinchend(handler);
@@ -13314,14 +13311,14 @@ exports['default'] = function (R) {
                 case 'fc-dragend':
                     elem.undragend(handler);
                     return elem;
-                case 'fc-dbtap':
-                    elem.undbtap(handler);
+                case 'fc-dbclick':
+                    elem.undbclick(handler);
                     return elem;
                 case 'fc-pinchstart':
                     elem.unpinchstart(handler);
                     return elem;
-                case 'fc-pinchin':
-                    elem.unpinchin(handler);
+                case 'fc-pinchmove':
+                    elem.unpinchmove(handler);
                     return elem;
                 case 'fc-pinchend':
                     elem.unpinchend(handler);

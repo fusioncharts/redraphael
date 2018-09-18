@@ -677,8 +677,10 @@ var loaded,
                                 // Removing the click events
                                 elem.node.removeEventListener('click', actualHandler);
                                 // Creating the modified click events to be attached and storing it
-                                elem._clickStore.set(actualHandler, function () {
-                                    setTimeout(actualHandler,0);
+                                elem._clickStore.set(actualHandler, function (e) {
+                                    setTimeout(function () {
+                                        actualHandler(e);
+                                    }, 0);
                                 });
                                 elem.node.addEventListener('touchend', elem._clickStore.get(actualHandler));
                             }
@@ -2793,6 +2795,8 @@ var loaded,
             }
         }
         target.originalEvent = source;
+        // For IOS device
+        target.type || (target.type = source.originalEvent && source.originalEvent.type);
     },
     // This function is used to add drag related events and element.mouseover/element.mouseout event.
     // It is advised to use element.on instead
@@ -3267,6 +3271,44 @@ var loaded,
             eldata[this.id] && delete eldata[this.id][key];
         }
         return this;
+    };
+    
+    elproto.dbclick = function (handler) {
+        let elem = this,
+            eventType,
+            isSingleFinger = function (event) {
+                return !event.touches || (event.touches && event.touches.length === 1);
+            },
+            fn = function (e) {
+                e && e.preventDefault();
+                if (!isSingleFinger(e)) {
+                    return;
+                }
+                if (elem._tappedOnce) {
+                    handler.call(elem, e);
+                    elem._tappedOnce = false;
+                } else {
+                    elem._tappedOnce = true;
+                    // 500ms time for double tap expiration
+                    setTimeout(function () {
+                        elem._tappedOnce = false;
+                    }, 500);
+                }
+            };
+
+        eventType = R.supportsPointer ? 'pointerup' : R.supportsTouch ? 'touchstart' : 'mouseup';
+        
+        elem.node.addEventListener(eventType, fn);
+        R.storeHandlers(elem, handler, fn);
+
+    };
+
+    elproto.undbclick = function (handler) {
+        var elem = this,
+            derivedHandler = removeHandlers(elem, handler);
+
+        derivedHandler && elem.node.removeEventListener(R.supportsPointer ? 'pointerup' : 
+            R.supportsTouch ? 'touchstart' : 'mouseup', derivedHandler);
     };
 
      /*\

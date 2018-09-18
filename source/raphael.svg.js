@@ -1220,7 +1220,7 @@ export default function (R) {
             /**
              * Function to store the various event handlers
              */
-            storeHandlers = function (elem, handler, fn) {
+            storeHandlers = R.storeHandlers = function (elem, handler, fn) {
                 // Storing the handlers
                 elem._actualListners || (elem._actualListners = []);
                 elem._derivedListeners || (elem._derivedListeners = []);
@@ -1552,47 +1552,6 @@ export default function (R) {
             }
         };
 
-        elproto.dbtap = function (handler) {
-            if (!R.supportsTouch) {
-                return;
-            }
-            let elem = this,
-                eventType,
-                isSingleFinger = function (event) {
-                    return !event.touches || (event.touches && event.touches.length === 1);
-                },
-                fn = function (e) {
-                    e && e.preventDefault();
-                    if (!isSingleFinger(e)) {
-                        return;
-                    }
-                    if (elem._tappedOnce) {
-                        handler.call(elem, e);
-                        elem._tappedOnce = false;
-                    } else {
-                        elem._tappedOnce = true;
-                        // 500ms time for double tap expiration
-                        setTimeout(function () {
-                            elem._tappedOnce = false;
-                        }, 500);
-                    }
-                };
-
-            eventType = R.supportsPointer ? 'pointerup' : 'touchstart';
-            
-            elem.node.addEventListener(eventType, fn);
-            storeHandlers(elem, handler, fn);
-
-        };
-
-        elproto.undbtap = function (handler) {
-            var elem = this,
-                derivedHandler = removeHandlers(elem, handler);
-
-            derivedHandler && elem.node.removeEventListener(R.supportsPointer ? 'pointerup' : 'touchstart',
-                derivedHandler);
-        };
-
         elproto.pinchstart = function (handler) {
             var elem = this,
                 dummyEve = {},
@@ -1627,10 +1586,11 @@ export default function (R) {
             var elem = this,
                 derivedHandler = removeHandlers(elem, handler);
             elem.__blockDrag = false;
+            elem._pinchDragStarted = false;
             derivedHandler && elem.node.removeEventListener('touchstart', derivedHandler);
         };
 
-        elproto.pinchin = function (handler) {
+        elproto.pinchmove = function (handler) {
             var elem = this,
                 dummyEve = {},
                 fn = function (e) {
@@ -1639,6 +1599,7 @@ export default function (R) {
                         let touch1 = e.touches[0],
                             touch2 = e.touches[1];
                         e && e.preventDefault();
+                        elem._pinchDragStarted = true;
                         R.makeSelectiveCopy(dummyEve, e);
                         dummyEve.data = {
                             finger0: touch1,
@@ -1656,7 +1617,7 @@ export default function (R) {
             elem.node.addEventListener('touchmove', fn);
         };
 
-        elproto.unpinchin = function (handler) {
+        elproto.unpinchmove = function (handler) {
             var elem = this,
                 derivedHandler = removeHandlers(elem, handler);
 
@@ -1666,21 +1627,22 @@ export default function (R) {
         elproto.pinchend = function (handler) {
             var elem = this,
                 fn = function (e) {
-                    if (e.touches && e.touches.length === 2) {
-                        handler.call(elem, e)
+                    if (elem._pinchDragStarted) {
+                        elem._pinchDragStarted = false;
+                        handler.call(elem, e);
                     }
                 };
 
             // Storing the handlers
             storeHandlers(elem, handler, fn);
 
-            elem.node.addEventListener('touchmove', fn);
+            elem.node.addEventListener('touchend', fn);
         };
 
         elproto.unpinchend = function (handler) {
             var elem = this,
                 derivedHandler = removeHandlers(elem, handler);
-
+            elem._pinchDragStarted = false;
             derivedHandler && elem.node.removeEventListener('touchend', derivedHandler);
         };
 
@@ -1731,14 +1693,14 @@ export default function (R) {
                 case 'fc-dragend':
                     elem.drag(null, null, handler);
                     return elem;
-                case 'fc-dbtap':
-                    elem.dbtap(handler);
+                case 'fc-dbclick':
+                    elem.dbclick(handler);
                     return elem;
                 case 'fc-pinchstart':
                     elem.pinchstart(handler);
                     return elem;
-                case 'fc-pinchin':
-                    elem.pinchin(handler);
+                case 'fc-pinchmove':
+                    elem.pinchmove(handler);
                     return elem;
                 case 'fc-pinchend':
                     elem.pinchend(handler);
@@ -1843,14 +1805,14 @@ export default function (R) {
                 case 'fc-dragend':
                     elem.undragend(handler);
                     return elem;
-                case 'fc-dbtap':
-                    elem.undbtap(handler);
+                case 'fc-dbclick':
+                    elem.undbclick(handler);
                     return elem;
                 case 'fc-pinchstart':
                     elem.unpinchstart(handler);
                     return elem;
-                case 'fc-pinchin':
-                    elem.unpinchin(handler);
+                case 'fc-pinchmove':
+                    elem.unpinchmove(handler);
                     return elem;
                 case 'fc-pinchend':
                     elem.unpinchend(handler);

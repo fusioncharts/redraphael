@@ -1220,7 +1220,7 @@ export default function (R) {
             /**
              * Function to store the various event handlers
              */
-            storeHandlers = function (elem, handler, fn) {
+            storeHandlers = R.storeHandlers = function (elem, handler, fn) {
                 // Storing the handlers
                 elem._actualListners || (elem._actualListners = []);
                 elem._derivedListeners || (elem._derivedListeners = []);

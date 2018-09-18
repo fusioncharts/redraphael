@@ -3297,7 +3297,7 @@ var loaded,
         eventType = R.supportsPointer ? 'pointerup' : R.supportsTouch ? 'touchstart' : 'mouseup';
         
         elem.node.addEventListener(eventType, fn);
-        storeHandlers(elem, handler, fn);
+        R.storeHandlers(elem, handler, fn);
 
     };
 

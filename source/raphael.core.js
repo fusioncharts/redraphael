@@ -656,8 +656,10 @@ var loaded,
                     elem._clickStore || (elem._clickStore = new Map());
                     elem._clickStore.set(callback);
                     if (elem.dragFn) {
-                        elem._clickStore.set(callback, function () {
-                            setTimeout(callback, 0);
+                        elem._clickStore.set(callback, function (e) {
+                            setTimeout(function () {
+                                callback(e);
+                            }, 0);
                         });
                         elem.node.addEventListener('touchend', elem._clickStore.get(callback));
                         return true;

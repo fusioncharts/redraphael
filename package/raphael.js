@@ -2115,8 +2115,10 @@ R.manageIOSclick = function (elem, action, callback) {
                 elem._clickStore || (elem._clickStore = new _map2['default']());
                 elem._clickStore.set(callback);
                 if (elem.dragFn) {
-                    elem._clickStore.set(callback, function () {
-                        setTimeout(callback, 0);
+                    elem._clickStore.set(callback, function (e) {
+                        setTimeout(function () {
+                            callback(e);
+                        }, 0);
                     });
                     elem.node.addEventListener('touchend', elem._clickStore.get(callback));
                     return true;

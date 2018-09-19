@@ -1962,6 +1962,15 @@ export default function (R) {
                 '-ms-user-select:none;user-select:none;-o-user-select:none;cursor:default;' +
                 'vertical-align:middle;',
                 isFloating;
+            // '-ms-touch-action : none' permits no default touch behaviors in IE (10 and 11) browser
+            // '-touch-action : none' permits no default touch behaviors in mozilla of windows
+            if (R.supportsTouch) {
+                if (R.isEdge || R.isIE11) {
+                    css += '-ms-touch-action:none';
+                } else if (R.isMozilla && R.isWindows) {
+                    css += 'touch-action:none;';
+                }
+            }
             x = x || 0;
             y = y || 0;
             width = width || 512;

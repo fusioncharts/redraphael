@@ -1644,6 +1644,8 @@ var loaded,
     supportsPointer = R.supportsPointer = "onpointerover" in doc,
     isEdge = R.isEdge = /Edge/.test(navigator.userAgent),
     isIE11 = R.isIE11 = /trident/i.test(navigator.userAgent) && /rv:11/i.test(navigator.userAgent) && !win.opera,
+    isMozilla = R.isMozilla = /Mozilla/.test(navigator.userAgent),
+    isWindows = R.isWindows = /Windows/.test(navigator.userAgent),
     mStr = 'm',
     lStr = 'l',
     strM = 'M',
@@ -4359,7 +4361,7 @@ addEvent = R.addEvent = function () {
         }
     }
     el.dragInfo._dragmove = undefined;
-    supportsTouch && (el.paper.canvas.style['touch-action'] = 'auto');
+    supportsTouch && !(isIE11 || isEdge) && !(isWindows && isMozilla) && (el.paper.canvas.style['touch-action'] = 'auto');
     // After execution of the callbacks the eventListeners are removed
     R.undragmove.call(el, dragMove);
     R.undragend.call(el, dragUp);
@@ -4875,7 +4877,7 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
         if (supportsTouch) {
             if (!supportsPointer) {
                 e.preventDefault();
-            } else {
+            } else if (!(isIE11 || isEdge) && !(isWindows && isMozilla)) {
                 element.paper.canvas.style['touch-action'] = 'none';
             }
         }
@@ -13471,6 +13473,15 @@ exports['default'] = function (R) {
             var cnvs = $('svg'),
                 css = 'overflow:hidden;-webkit-tap-highlight-color:rgba(0,0,0,0);' + '-webkit-user-select:none;-moz-user-select:-moz-none;-khtml-user-select:none;' + '-ms-user-select:none;user-select:none;-o-user-select:none;cursor:default;' + 'vertical-align:middle;',
                 isFloating;
+            // '-ms-touch-action : none' permits no default touch behaviors in IE (10 and 11) browser
+            // '-touch-action : none' permits no default touch behaviors in mozilla of windows
+            if (R.supportsTouch) {
+                if (R.isEdge || R.isIE11) {
+                    css += '-ms-touch-action:none';
+                } else if (R.isMozilla && R.isWindows) {
+                    css += 'touch-action:none;';
+                }
+            }
             x = x || 0;
             y = y || 0;
             width = width || 512;

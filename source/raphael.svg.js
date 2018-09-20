@@ -1950,10 +1950,12 @@ export default function (R) {
             // '-ms-touch-action : none' permits no default touch behaviors in IE (10 and 11) browser
             // '-touch-action : none' permits no default touch behaviors in mozilla of windows
             if (R.supportsTouch) {
-                if (R.isEdge || R.isIE11) {
-                    css += '-ms-touch-action:none';
+                if (R.isEdge) {
+                    css += 'touch-action:none;';
                 } else if (R.isMozilla && R.isWindows) {
                     css += 'touch-action:none;';
+                } else if (R.isIE11) {
+                    css += '-ms-touch-action:none;';
                 }
             }
             x = x || 0;

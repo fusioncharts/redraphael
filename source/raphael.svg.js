@@ -1705,6 +1705,9 @@ export default function (R) {
                 case 'fc-pinchend':
                     elem.pinchend(handler);
                     return elem;
+                case 'fc-click':
+                    elem.fcclick(handler);
+                    return elem;
             }
 
             // Setting the original event on which operations has to be done
@@ -1730,20 +1733,6 @@ export default function (R) {
                             lastHoveredInfo.srcElement = e.srcElement || e.target;
                         }
                         eventType = R.supportsPointer ? 'pointerover' : 'touchstart';
-                    }
-                }
-                
-                // Click is not triggered immediately.
-                // It is checked if its execution is blocked due to drag operartion
-                if (eventType === 'click') {
-                    fn = function (e) {
-                        if (!elem._blockClick) {
-                            handler.call(context || elem, e);
-                        }
-                    }
-                    // If the click addition has been managed by manageIOSclick fn then return
-                    if (R.manageIOSclick(elem, 'clickadd', fn)) {
-                        return elem;
                     }
                 }
             }
@@ -1817,6 +1806,9 @@ export default function (R) {
                 case 'fc-pinchend':
                     elem.unpinchend(handler);
                     return elem;
+                case 'fc-click':
+                    elem.fcunclick(handler);
+                    return elem;
             }
 
             // Setting the original event on which operations has to be done
@@ -1831,13 +1823,6 @@ export default function (R) {
                         || eventType;
                     if (actualEventType === 'mouseout') {
                         eventType = R.supportsPointer ? 'pointerover' : 'touchstart';
-                    }
-                }
-
-                if (eventType === 'click') {
-                    // If the click addition has been managed by manageIOSclick fn then return
-                    if (R.manageIOSclick(elem, 'clickremove', fn)) {
-                        return elem;
                     }
                 }
             }

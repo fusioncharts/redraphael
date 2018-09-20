@@ -4305,8 +4305,7 @@ addEvent = R.addEvent = function () {
     if (el.dragStartFn && !(Math.abs(x - el._drag.x) >= 2.5 || Math.abs(y - el._drag.y) >= 2.5) || el._blockDrag) {
         return;
     }
-    // Blocking the click handler if any
-    el._blockClick = true;
+
     while (j--) {
         if (supportsTouch && e.type === 'touchmove') {
             var i = e.touches.length,
@@ -4800,11 +4799,129 @@ elproto.unhover = function (f_in, f_out) {
 };
 
 elproto.fcclick = function (handler, context) {
-    return this.on('fc-click', handler, context);
+    var elem = this,
+        node = elem.node,
+        eventType,
+        fn,
+        x1,
+        y1,
+        downFn = function downFn(e) {
+        elem._lastEventTriggered = 'mousedown';
+        // Storing the mouse down coordinates
+        x1 = e.clientX !== UNDEF ? e.clientX : e.changedTouches && e.changedTouches[0].clientX;
+        y1 = e.clientY !== UNDEF ? e.clientY : e.changedTouches && e.changedTouches[0].clientY;
+    },
+        moveFn = function moveFn(e) {
+        var x2 = e.clientX !== UNDEF ? e.clientX : e.changedTouches && e.changedTouches[0].clientX,
+            y2 = e.clientY !== UNDEF ? e.clientY : e.changedTouches && e.changedTouches[0].clientY;
+        // maintaning a minimum pixel gap of 2.5 to trigger mousemove
+        if (Math.abs(x1 - x2) >= 2.5 || Math.abs(y1 - y2) >= 2.5) {
+            elem._lastEventTriggered = undefined;
+        }
+    },
+        content;
+    elem._clickStoreActual || (elem._clickStoreActual = []);
+    elem._clickStoreDerived || (elem._clickStoreDerived = []);
+
+    // Helper functions of click attached only once
+    if (!elem._clickHandlerHelper) {
+        // For devices that does not support pointer
+        if (!supportsPointer && R.supportsTouch) {
+            content = {
+                touchstart: function touchstart() {
+                    elem._lastEventTriggered = 'touchstart';
+                    elem._lastEventTriggeredAt = new Date().getTime();
+                },
+                touchmove: moveFn
+            };
+        } else if (supportsPointer && R.supportsTouch) {
+            // For touch device supporting pointers
+            content = {
+                pointerdown: downFn,
+                pointermove: moveFn
+            };
+        } else {
+            content = {
+                mousedown: downFn,
+                mousemove: moveFn
+            };
+        }
+
+        for (eventType in content) {
+            if (node.addEventListener) {
+                node.addEventListener(eventType, content[eventType]);
+            } else {
+                node.attachEvent('on' + eventType, content[eventType]);
+            }
+        }
+        elem._clickHandlerHelper = content;
+    }
+
+    // Creating the actual handler
+    if (!supportsPointer && R.supportsTouch) {
+        eventType = 'touchend', fn = function fn(e) {
+            // Restricting click to be called after touchmove followed by touchstart
+            // Restricting click to be triggered after long tap
+            if (elem._lastEventTriggered === 'touchstart' && new Date().getTime() - elem._lastEventTriggeredAt <= 500) {
+                setTimeout(function () {
+                    handler.call(context || elem, e);
+                }, 0);
+            }
+        };
+    } else {
+        eventType = 'click', fn = function fn(e) {
+            // Restricting click to be called after mousemove followed by mousedown
+            elem._lastEventTriggered === 'mousedown' && handler.call(context || elem, e);
+        };
+    }
+
+    if (node.addEventListener) {
+        node.addEventListener(eventType, fn);
+    } else {
+        node.attachEvent('on' + eventType, fn);
+    }
+
+    // Stroring the events for future removal
+    elem._clickStoreDerived.push(fn);
+    elem._clickStoreActual.push(handler);
+    return elem;
 };
 
 elproto.fcunclick = function (handler) {
-    return this.off('fc-click', handler);
+    var elem = this,
+        node = elem.node,
+        i,
+        eventType,
+        clickHandlerHelper = elem._clickHandlerHelper,
+        clickStoreActual = elem._clickStoreActual,
+        clickStoreDerived = elem._clickStoreDerived;
+
+    if (clickStoreActual) {
+        for (i = clickStoreActual.length - 1; i >= 0; i--) {
+            if (clickStoreActual[i] === handler) {
+                if (node.removeEventListener) {
+                    node.removeEventListener(!supportsPointer && R.supportsTouch ? 'touchend' : 'click', clickStoreDerived[i]);
+                } else {
+                    node.detachEvent('onclick', clickStoreDerived[i]);
+                }
+                clickStoreActual.splice(i, 1);
+                clickStoreDerived.splice(i, 1);
+            }
+        }
+
+        // When all click listeners are removed
+        if (!clickStoreActual.length) {
+            for (eventType in clickHandlerHelper) {
+                if (node.removeEventListener) {
+                    node.removeEventListener(eventType, clickHandlerHelper[eventType]);
+                } else {
+                    node.detachEvent('on' + eventType, clickHandlerHelper[eventType]);
+                }
+            }
+            elem._clickHandlerHelper = undefined;
+        }
+    }
+    return elem;
 };
 var draggable = [];
 
@@ -4854,8 +4971,6 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
     onstart && dragInfo.onstart.push(onstart) && dragInfo.start_scope.push(start_scope);
     onend && dragInfo.onend.push(onend) && dragInfo.end_scope.push(end_scope);
 
-    // Function to manage the click event for ipad as prevent default is called on dragstart
-    R.manageIOSclick(element, 'dragstart');
     element.dragFn = element.dragFn || function (e) {
         var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
             scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
@@ -4872,8 +4987,6 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
             _dragY,
             dragInfo = element.dragInfo,
             args = [dragMove, undef, g.doc];
-        // Setting info to block click immediately after drag
-        element._blockClick = false;
 
         // Blocking page scroll when drag is triggered
         if (supportsTouch) {
@@ -13222,6 +13335,9 @@ exports['default'] = function (R) {
                 case 'fc-pinchend':
                     elem.pinchend(handler);
                     return elem;
+                case 'fc-click':
+                    elem.fcclick(handler);
+                    return elem;
             }
 
             // Setting the original event on which operations has to be done
@@ -13246,20 +13362,6 @@ exports['default'] = function (R) {
                             lastHoveredInfo.srcElement = e.srcElement || e.target;
                         };
                         eventType = R.supportsPointer ? 'pointerover' : 'touchstart';
-                    }
-                }
-
-                // Click is not triggered immediately.
-                // It is checked if its execution is blocked due to drag operartion
-                if (eventType === 'click') {
-                    fn = function fn(e) {
-                        if (!elem._blockClick) {
-                            handler.call(context || elem, e);
-                        }
-                    };
-                    // If the click addition has been managed by manageIOSclick fn then return
-                    if (R.manageIOSclick(elem, 'clickadd', fn)) {
-                        return elem;
                     }
                 }
             }
@@ -13334,6 +13436,9 @@ exports['default'] = function (R) {
                 case 'fc-pinchend':
                     elem.unpinchend(handler);
                     return elem;
+                case 'fc-click':
+                    elem.fcunclick(handler);
+                    return elem;
             }
 
             // Setting the original event on which operations has to be done
@@ -13347,13 +13452,6 @@ exports['default'] = function (R) {
                     eventType = (R.supportsPointer ? R.safePointerEventMapping[eventType] : safeMouseEventMapping[eventType]) || eventType;
                     if (actualEventType === 'mouseout') {
                         eventType = R.supportsPointer ? 'pointerover' : 'touchstart';
-                    }
-                }
-
-                if (eventType === 'click') {
-                    // If the click addition has been managed by manageIOSclick fn then return
-                    if (R.manageIOSclick(elem, 'clickremove', fn)) {
-                        return elem;
                     }
                 }
             }
@@ -14702,6 +14800,9 @@ exports["default"] = function (R) {
                 case 'fc-dbclick':
                     elem.dbclick(handler);
                     return elem;
+                case 'fc-click':
+                    elem.fcclick(handler);
+                    return elem;
             }
 
             eventType = eventType.replace(/fc-/, '');
@@ -14771,6 +14872,9 @@ exports["default"] = function (R) {
                     return elem;
                 case 'fc-dbclick':
                     elem.undbclick(handler);
+                    return elem;
+                case 'fc-click':
+                    elem.fcunclick(handler);
                     return elem;
             }
 

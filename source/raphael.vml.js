@@ -1013,6 +1013,9 @@ export default function (R) {
                 case 'fc-dbclick':
                     elem.dbclick(handler);
                     return elem;
+                case 'fc-click':
+                    elem.fcclick(handler);
+                    return elem;
             }
 
             eventType = eventType.replace(/fc-/, '');
@@ -1083,6 +1086,9 @@ export default function (R) {
                     return elem;
                 case 'fc-dbclick':
                     elem.undbclick(handler);
+                    return elem;
+                case 'fc-click':
+                    elem.fcunclick(handler);
                     return elem;
             }
 

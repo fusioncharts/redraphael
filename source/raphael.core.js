@@ -641,58 +641,6 @@ var loaded,
     R._g = g;
     R.merge = merge;
     R.extend = extend;
-    /**
-     * Function to manage click for IOS touch device. If drag is associated with the elem then click is changed
-     * to touchend
-     * @param {*} elem 
-     * @param {*} action 
-     * @param {*} callback 
-     */
-    R.manageIOSclick = function (elem, action, callback) {
-        let handler;
-        if (!supportsPointer && R.supportsTouch) {
-            switch (action) {
-                case 'clickadd':
-                    elem._clickStore || (elem._clickStore = new Map());
-                    elem._clickStore.set(callback);
-                    if (elem.dragFn) {
-                        elem._clickStore.set(callback, function (e) {
-                            setTimeout(function () {
-                                callback(e);
-                            }, 0);
-                        });
-                        elem.node.addEventListener('touchend', elem._clickStore.get(callback));
-                        return true;
-                    }
-                    break;
-                case 'clickremove':
-                    if (elem._clickStore) {
-                        handler = elem._clickStore.get(callback);
-                        handler && elem.node.removeEventListener('touchend', handler);
-                        return true;
-                    }
-                    break;
-                case 'dragstart':
-                    if (elem._clickStore) {
-                        elem._clickStore.forEach(function (modifiedHandler, actualHandler) {
-                            // For all those click events that has been attached before drag has
-                            // been attached.
-                            if (!modifiedHandler) {
-                                // Removing the click events
-                                elem.node.removeEventListener('click', actualHandler);
-                                // Creating the modified click events to be attached and storing it
-                                elem._clickStore.set(actualHandler, function (e) {
-                                    setTimeout(function () {
-                                        actualHandler(e);
-                                    }, 0);
-                                });
-                                elem.node.addEventListener('touchend', elem._clickStore.get(actualHandler));
-                            }
-                        });
-                    }
-            }
-        }
-    };
     /*
       * Raphael.createUUID
       [ method ]

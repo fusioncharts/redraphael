@@ -166,6 +166,8 @@ var loaded,
     isEdge = R.isEdge = /Edge/.test(navigator.userAgent),
     isIE11 = R.isIE11 = /trident/i.test(navigator.userAgent) &&
         /rv:11/i.test(navigator.userAgent) && !win.opera,
+    isMozilla = R.isMozilla = /Mozilla/.test(navigator.userAgent),
+    isWindows = R.isWindows = /Windows/.test(navigator.userAgent),
     mStr = 'm',
     lStr = 'l',
     strM = 'M',
@@ -639,56 +641,6 @@ var loaded,
     R._g = g;
     R.merge = merge;
     R.extend = extend;
-    /**
-     * Function to manage click for IOS touch device. If drag is associated with the elem then click is changed
-     * to touchend
-     * @param {*} elem 
-     * @param {*} action 
-     * @param {*} callback 
-     */
-    R.manageIOSclick = function (elem, action, callback) {
-        let handler;
-        if (!supportsPointer && R.supportsTouch) {
-            switch (action) {
-                case 'clickadd':
-                    elem._clickStore || (elem._clickStore = new Map());
-                    elem._clickStore.set(callback);
-                    if (elem.dragFn) {
-                        elem._clickStore.set(callback, function () {
-                            setTimeout(callback, 0);
-                        });
-                        elem.node.addEventListener('touchend', elem._clickStore.get(callback));
-                        return true;
-                    }
-                    break;
-                case 'clickremove':
-                    if (elem._clickStore) {
-                        handler = elem._clickStore.get(callback);
-                        handler && elem.node.removeEventListener('touchend', handler);
-                        return true;
-                    }
-                    break;
-                case 'dragstart':
-                    if (elem._clickStore) {
-                        elem._clickStore.forEach(function (modifiedHandler, actualHandler) {
-                            // For all those click events that has been attached before drag has
-                            // been attached.
-                            if (!modifiedHandler) {
-                                // Removing the click events
-                                elem.node.removeEventListener('click', actualHandler);
-                                // Creating the modified click events to be attached and storing it
-                                elem._clickStore.set(actualHandler, function (e) {
-                                    setTimeout(function () {
-                                        actualHandler(e);
-                                    }, 0);
-                                });
-                                elem.node.addEventListener('touchend', elem._clickStore.get(actualHandler));
-                            }
-                        });
-                    }
-            }
-        }
-    };
     /*
       * Raphael.createUUID
       [ method ]
@@ -2893,8 +2845,7 @@ var loaded,
         if ((el.dragStartFn && !(Math.abs(x - el._drag.x) >= 2.5 || Math.abs(y - el._drag.y) >= 2.5)) || el._blockDrag) {
             return;
         }
-        // Blocking the click handler if any
-        el._blockClick = true;
+
         while (j--) {
             if (supportsTouch && e.type === 'touchmove') {
                 var i = e.touches.length,
@@ -2902,8 +2853,8 @@ var loaded,
                 while (i--) {
                     touch = e.touches[i];
                     if (touch.identifier === el._drag.id) {
-                        x = touch.clientX;
-                        y = touch.clientY;
+                        x = touch.clientX + scrollX;
+                        y = touch.clientY + scrollY;
                         break;
                     }
                 }
@@ -2952,7 +2903,8 @@ var loaded,
             }
         }
         el.dragInfo._dragmove = undefined;
-        supportsTouch && (el.paper.canvas.style['touch-action'] = 'auto');
+        supportsTouch && !(isIE11 || isEdge) && !(isWindows && isMozilla) &&
+            (el.paper.canvas.style['touch-action'] = 'auto');
         // After execution of the callbacks the eventListeners are removed
         R.undragmove.call(el, dragMove);
         R.undragend.call(el, dragUp);
@@ -3392,11 +3344,137 @@ var loaded,
     };
 
     elproto.fcclick = function (handler, context) {
-        return this.on('fc-click', handler, context);
+        var elem = this,
+            node = elem.node,
+            eventType,
+            fn,
+            x1,
+            y1,
+            downFn = function (e) {
+                elem._lastEventTriggered = 'mousedown';
+                // Storing the mouse down coordinates
+                x1 = e.clientX !== UNDEF ? e.clientX : (e.changedTouches &&
+                    e.changedTouches[0].clientX);
+                y1 = (e.clientY !== UNDEF ? e.clientY : (e.changedTouches &&
+                    e.changedTouches[0].clientY));
+            },
+            moveFn = function (e) {
+                let x2 = e.clientX !== UNDEF ? e.clientX : (e.changedTouches &&
+                    e.changedTouches[0].clientX),
+                y2 = (e.clientY !== UNDEF ? e.clientY : (e.changedTouches &&
+                    e.changedTouches[0].clientY));
+                // maintaning a minimum pixel gap of 2.5 to trigger mousemove
+                if (Math.abs(x1 - x2) >= 2.5 || Math.abs(y1 - y2) >= 2.5) {
+                    elem._lastEventTriggered = undefined;
+                }
+            },
+            content;
+        elem._clickStoreActual || (elem._clickStoreActual = []);
+        elem._clickStoreDerived || (elem._clickStoreDerived = []);
+
+        // Helper functions of click attached only once
+        if (!elem._clickHandlerHelper) {
+            // For devices that does not support pointer
+            if (!supportsPointer && R.supportsTouch) {
+                content = {
+                    touchstart: function () {
+                        elem._lastEventTriggered = 'touchstart';
+                        elem._lastEventTriggeredAt = new Date().getTime();
+                    },
+                    touchmove: moveFn
+                };
+            } else if (supportsPointer && R.supportsTouch) { // For touch device supporting pointers
+                content = {
+                    pointerdown: downFn,
+                    pointermove: moveFn
+                };
+            } else {
+                content = {
+                    mousedown: downFn,
+                    mousemove: moveFn
+                };
+            }
+
+            for (eventType in content) {
+                if (node.addEventListener) {
+                    node.addEventListener(eventType, content[eventType]);
+                } else {
+                    node.attachEvent('on'+ eventType, content[eventType]);
+                }
+            }
+            elem._clickHandlerHelper = content;
+        }
+
+        // Creating the actual handler
+        if (!supportsPointer && R.supportsTouch) {
+            eventType = 'touchend',
+            fn = function (e) {
+                // Restricting click to be called after touchmove followed by touchstart
+                // Restricting click to be triggered after long tap
+                if (elem._lastEventTriggered === 'touchstart' &&
+                    new Date().getTime() - elem._lastEventTriggeredAt <= 500) {
+                        setTimeout(function () {
+                            handler.call(context || elem, e);
+                        }, 0);
+                    }
+            };
+        } else {
+            eventType = 'click',
+            fn = function (e) {
+                // Restricting click to be called after mousemove followed by mousedown
+                elem._lastEventTriggered === 'mousedown' &&
+                    handler.call(context || elem, e);
+            };
+        }
+
+        if (node.addEventListener) {
+            node.addEventListener(eventType, fn);
+        } else {
+            node.attachEvent('on'+ eventType, fn);
+        }
+
+        // Stroring the events for future removal
+        elem._clickStoreDerived.push(fn);
+        elem._clickStoreActual.push(handler);
+        return elem;
     };
 
     elproto.fcunclick = function (handler) {
-        return this.off('fc-click', handler);
+        var elem = this,
+            node = elem.node,
+            i,
+            eventType,
+            clickHandlerHelper = elem._clickHandlerHelper,
+            clickStoreActual = elem._clickStoreActual,
+            clickStoreDerived = elem._clickStoreDerived;
+        
+        if (clickStoreActual) {
+            for (i = clickStoreActual.length - 1; i >= 0; i--) {
+                if (clickStoreActual[i] === handler) {
+                    if (node.removeEventListener) {
+                        node.removeEventListener(!supportsPointer && R.supportsTouch ?
+                            'touchend' : 'click', clickStoreDerived[i]);
+                    } else {
+                        node.detachEvent('onclick', clickStoreDerived[i]);
+                    }
+                    clickStoreActual.splice(i, 1);
+                    clickStoreDerived.splice(i, 1);
+                }   
+            }
+    
+            // When all click listeners are removed
+            if (!clickStoreActual.length) {
+                for (eventType in clickHandlerHelper) {
+                    if (node.removeEventListener) {
+                        node.removeEventListener(eventType, clickHandlerHelper[eventType]);
+                    } else {
+                        node.detachEvent('on'+ eventType, clickHandlerHelper[eventType]);                    
+                    }
+                }
+                elem._clickHandlerHelper = undefined;
+            }
+        }
+        return elem;
     };
     var draggable = [];
 
@@ -3446,8 +3524,6 @@ var loaded,
         onstart && dragInfo.onstart.push(onstart) && dragInfo.start_scope.push(start_scope);
         onend && dragInfo.onend.push(onend) && dragInfo.end_scope.push(end_scope);
 
-        // Function to manage the click event for ipad as prevent default is called on dragstart
-        R.manageIOSclick(element, 'dragstart');
         element.dragFn = element.dragFn || function (e) {
             var scrollY = g.doc.documentElement.scrollTop || g.doc.body.scrollTop,
                 scrollX = g.doc.documentElement.scrollLeft || g.doc.body.scrollLeft,
@@ -3464,14 +3540,12 @@ var loaded,
                 _dragY,
                 dragInfo = element.dragInfo,
                 args = [dragMove, undef, g.doc];
-            // Setting info to block click immediately after drag
-            element._blockClick = false;
 
             // Blocking page scroll when drag is triggered
             if (supportsTouch) {
                 if (!supportsPointer) {
                     e.preventDefault();
-                } else {
+                } else if (!(isIE11 || isEdge) && !(isWindows && isMozilla)){
                     element.paper.canvas.style['touch-action'] = 'none';
                 }
             }

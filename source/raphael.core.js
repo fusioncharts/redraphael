@@ -3225,7 +3225,7 @@ var loaded,
         return this;
     };
     
-    elproto.dbclick = function (handler) {
+    elproto.dbclick = function (handler, context) {
         let elem = this,
             eventType,
             isSingleFinger = function (event) {
@@ -3237,7 +3237,7 @@ var loaded,
                     return;
                 }
                 if (elem._tappedOnce) {
-                    handler.call(elem, e);
+                    handler.call(context || elem, e);
                     elem._tappedOnce = false;
                 } else {
                     elem._tappedOnce = true;

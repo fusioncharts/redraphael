@@ -3957,8 +3957,8 @@ addEvent = R.addEvent = function () {
             while (i--) {
                 touch = e.touches[i];
                 if (touch.identifier === el._drag.id) {
-                    x = touch.clientX;
-                    y = touch.clientY;
+                    x = touch.clientX + scrollX;
+                    y = touch.clientY + scrollY;
                     break;
                 }
             }

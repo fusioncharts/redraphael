@@ -1011,10 +1011,10 @@ export default function (R) {
                     elem.drag(null, null, handler);
                     return elem;
                 case 'fc-dbclick':
-                    elem.dbclick(handler);
+                    elem.dbclick(handler, context);
                     return elem;
                 case 'fc-click':
-                    elem.fcclick(handler);
+                    elem.fcclick(handler, context);
                     return elem;
             }
 

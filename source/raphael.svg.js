@@ -1552,7 +1552,7 @@ export default function (R) {
             }
         };
 
-        elproto.pinchstart = function (handler) {
+        elproto.pinchstart = function (handler, context) {
             var elem = this,
                 dummyEve = {},
                 fn = function (e) {
@@ -1571,7 +1571,7 @@ export default function (R) {
                             distanceX: getTouchDistance(touch1, touch2),
                             distanceY: getTouchDistance(touch1, touch2, true)
                         };
-                        handler.call(elem, dummyEve);
+                        handler.call(context || elem, dummyEve);
                     } else {
                         elem._blockDrag = false;
                     }
@@ -1590,7 +1590,7 @@ export default function (R) {
             derivedHandler && elem.node.removeEventListener('touchstart', derivedHandler);
         };
 
-        elproto.pinchmove = function (handler) {
+        elproto.pinchmove = function (handler, context) {
             var elem = this,
                 dummyEve = {},
                 fn = function (e) {
@@ -1607,7 +1607,7 @@ export default function (R) {
                             distanceX: getTouchDistance(touch1, touch2),
                             distanceY: getTouchDistance(touch1, touch2, true)
                         };
-                        handler.call(elem, dummyEve);
+                        handler.call(context || elem, dummyEve);
                     }
                 };
             
@@ -1624,12 +1624,12 @@ export default function (R) {
             derivedHandler && elem.node.removeEventListener('touchmove', derivedHandler);
         };
 
-        elproto.pinchend = function (handler) {
+        elproto.pinchend = function (handler, context) {
             var elem = this,
                 fn = function (e) {
                     if (elem._pinchDragStarted) {
                         elem._pinchDragStarted = false;
-                        handler.call(elem, e);
+                        handler.call(context || elem, e);
                     }
                 };
 
@@ -1694,19 +1694,19 @@ export default function (R) {
                     elem.drag(null, null, handler);
                     return elem;
                 case 'fc-dbclick':
-                    elem.dbclick(handler);
+                    elem.dbclick(handler, context);
                     return elem;
                 case 'fc-pinchstart':
-                    elem.pinchstart(handler);
+                    elem.pinchstart(handler, context);
                     return elem;
                 case 'fc-pinchmove':
-                    elem.pinchmove(handler);
+                    elem.pinchmove(handler, context);
                     return elem;
                 case 'fc-pinchend':
-                    elem.pinchend(handler);
+                    elem.pinchend(handler, context);
                     return elem;
                 case 'fc-click':
-                    elem.fcclick(handler);
+                    elem.fcclick(handler, context);
                     return elem;
             }
 

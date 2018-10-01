@@ -1340,7 +1340,7 @@ var loaded,
     supportsPointer = R.supportsPointer = "onpointerover" in doc,
     isEdge = R.isEdge = /Edge/.test(navigator.userAgent),
     isIE11 = R.isIE11 = /trident/i.test(navigator.userAgent) && /rv:11/i.test(navigator.userAgent) && !win.opera,
-    isMozilla = R.isMozilla = /Mozilla/.test(navigator.userAgent),
+    isFirefox = R.isFirefox = /Firefox/.test(navigator.userAgent),
     isWindows = R.isWindows = /Windows/.test(navigator.userAgent),
     mStr = 'm',
     lStr = 'l',
@@ -4006,7 +4006,7 @@ addEvent = R.addEvent = function () {
         }
     }
     el.dragInfo._dragmove = undefined;
-    supportsTouch && !(isIE11 || isEdge) && !(isWindows && isMozilla) && (el.paper.canvas.style['touch-action'] = 'auto');
+    supportsTouch && !(isIE11 || isEdge) && !(isWindows && isFirefox) && (el.paper.canvas.style['touch-action'] = 'auto');
     // After execution of the callbacks the eventListeners are removed
     R.undragmove.call(el, dragMove);
     R.undragend.call(el, dragUp);
@@ -4328,7 +4328,7 @@ elproto.removeData = function (key) {
     return this;
 };
 
-elproto.dbclick = function (handler) {
+elproto.dbclick = function (handler, context) {
     var elem = this,
         eventType = void 0,
         isSingleFinger = function isSingleFinger(event) {
@@ -4340,7 +4340,7 @@ elproto.dbclick = function (handler) {
             return;
         }
         if (elem._tappedOnce) {
-            handler.call(elem, e);
+            handler.call(context || elem, e);
             elem._tappedOnce = false;
         } else {
             elem._tappedOnce = true;
@@ -4636,7 +4636,7 @@ elproto.drag = function (onmove, onstart, onend, move_scope, start_scope, end_sc
         if (supportsTouch) {
             if (!supportsPointer) {
                 e.preventDefault();
-            } else if (!(isIE11 || isEdge) && !(isWindows && isMozilla)) {
+            } else if (!(isIE11 || isEdge) && !(isWindows && isFirefox)) {
                 element.paper.canvas.style['touch-action'] = 'none';
             }
         }
@@ -12508,7 +12508,7 @@ exports['default'] = function (R) {
             }
         };
 
-        elproto.pinchstart = function (handler) {
+        elproto.pinchstart = function (handler, context) {
             var elem = this,
                 dummyEve = {},
                 fn = function fn(e) {
@@ -12527,7 +12527,7 @@ exports['default'] = function (R) {
                         distanceX: getTouchDistance(touch1, touch2),
                         distanceY: getTouchDistance(touch1, touch2, true)
                     };
-                    handler.call(elem, dummyEve);
+                    handler.call(context || elem, dummyEve);
                 } else {
                     elem._blockDrag = false;
                 }
@@ -12546,7 +12546,7 @@ exports['default'] = function (R) {
             derivedHandler && elem.node.removeEventListener('touchstart', derivedHandler);
         };
 
-        elproto.pinchmove = function (handler) {
+        elproto.pinchmove = function (handler, context) {
             var elem = this,
                 dummyEve = {},
                 fn = function fn(e) {
@@ -12563,7 +12563,7 @@ exports['default'] = function (R) {
                         distanceX: getTouchDistance(touch1, touch2),
                         distanceY: getTouchDistance(touch1, touch2, true)
                     };
-                    handler.call(elem, dummyEve);
+                    handler.call(context || elem, dummyEve);
                 }
             };
 
@@ -12580,12 +12580,12 @@ exports['default'] = function (R) {
             derivedHandler && elem.node.removeEventListener('touchmove', derivedHandler);
         };
 
-        elproto.pinchend = function (handler) {
+        elproto.pinchend = function (handler, context) {
             var elem = this,
                 fn = function fn(e) {
                 if (elem._pinchDragStarted) {
                     elem._pinchDragStarted = false;
-                    handler.call(elem, e);
+                    handler.call(context || elem, e);
                 }
             };
 
@@ -12651,19 +12651,19 @@ exports['default'] = function (R) {
                     elem.drag(null, null, handler);
                     return elem;
                 case 'fc-dbclick':
-                    elem.dbclick(handler);
+                    elem.dbclick(handler, context);
                     return elem;
                 case 'fc-pinchstart':
-                    elem.pinchstart(handler);
+                    elem.pinchstart(handler, context);
                     return elem;
                 case 'fc-pinchmove':
-                    elem.pinchmove(handler);
+                    elem.pinchmove(handler, context);
                     return elem;
                 case 'fc-pinchend':
-                    elem.pinchend(handler);
+                    elem.pinchend(handler, context);
                     return elem;
                 case 'fc-click':
-                    elem.fcclick(handler);
+                    elem.fcclick(handler, context);
                     return elem;
             }
 
@@ -12905,7 +12905,7 @@ exports['default'] = function (R) {
             if (R.supportsTouch) {
                 if (R.isEdge) {
                     css += 'touch-action:none;';
-                } else if (R.isMozilla && R.isWindows) {
+                } else if (R.isFirefox && R.isWindows) {
                     css += 'touch-action:none;';
                 } else if (R.isIE11) {
                     css += '-ms-touch-action:none;';
@@ -14127,10 +14127,10 @@ exports["default"] = function (R) {
                     elem.drag(null, null, handler);
                     return elem;
                 case 'fc-dbclick':
-                    elem.dbclick(handler);
+                    elem.dbclick(handler, context);
                     return elem;
                 case 'fc-click':
-                    elem.fcclick(handler);
+                    elem.fcclick(handler, context);
                     return elem;
             }
 

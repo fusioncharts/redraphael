@@ -166,7 +166,7 @@ var loaded,
     isEdge = R.isEdge = /Edge/.test(navigator.userAgent),
     isIE11 = R.isIE11 = /trident/i.test(navigator.userAgent) &&
         /rv:11/i.test(navigator.userAgent) && !win.opera,
-    isMozilla = R.isMozilla = /Mozilla/.test(navigator.userAgent),
+    isFirefox = R.isFirefox = /Firefox/.test(navigator.userAgent),
     isWindows = R.isWindows = /Windows/.test(navigator.userAgent),
     mStr = 'm',
     lStr = 'l',
@@ -2903,7 +2903,7 @@ var loaded,
             }
         }
         el.dragInfo._dragmove = undefined;
-        supportsTouch && !(isIE11 || isEdge) && !(isWindows && isMozilla) &&
+        supportsTouch && !(isIE11 || isEdge) && !(isWindows && isFirefox) &&
             (el.paper.canvas.style['touch-action'] = 'auto');
         // After execution of the callbacks the eventListeners are removed
         R.undragmove.call(el, dragMove);
@@ -3545,7 +3545,7 @@ var loaded,
             if (supportsTouch) {
                 if (!supportsPointer) {
                     e.preventDefault();
-                } else if (!(isIE11 || isEdge) && !(isWindows && isMozilla)){
+                } else if (!(isIE11 || isEdge) && !(isWindows && isFirefox)){
                     element.paper.canvas.style['touch-action'] = 'none';
                 }
             }

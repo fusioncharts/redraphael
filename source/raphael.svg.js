@@ -1952,7 +1952,7 @@ export default function (R) {
             if (R.supportsTouch) {
                 if (R.isEdge) {
                     css += 'touch-action:none;';
-                } else if (R.isMozilla && R.isWindows) {
+                } else if (R.isFirefox && R.isWindows) {
                     css += 'touch-action:none;';
                 } else if (R.isIE11) {
                     css += '-ms-touch-action:none;';

@@ -24,7 +24,7 @@
   "scripts": {
     "test": "npm run build && karma start karma.conf.js --single-run=true",
     "watch": "webpack -w",
-    "start": "webpack-dev-server",
+    "start": "webpack-dev-server --host 0.0.0.0",
     "lint": "eslint ./src/ gulpfile.js",
     "build": "rm -rf package && webpack && webpack --env.min=true",
     "benchmark": "tests/benchmark/run.sh"

@@ -51,7 +51,7 @@ export default (function (glob) {
         Str = String,
         isArray = Array.isArray || function (ar) {
             return ar instanceof Array || objtos.call(ar) == "[object Array]";
-        },
+        };
     /*\
      * eve
      [ method ]
@@ -64,20 +64,20 @@ export default (function (glob) {
 
      = (object) array of returned values from the listeners. Array has two methods `.firstDefined()` and `.lastDefined()` to get first or last not `undefined` value.
     \*/
-        eve = function (name, scope) {
-            var e = events,
-                oldstop = stop,
-                arg = getArrayCopy(arguments),
-                args = Array.prototype.slice.call(arg, 2),
-                listeners = eve.listeners(name),
-                z = 0,
-                f = false,
-                l,
-                indexed = [],
-                queue = {},
-                out = [],
-                ce = current_event,
-                errors = [];
+    function eve(name, scope) {
+        var e = events,
+            oldstop = stop,
+            arg = getArrayCopy(arguments),
+            args = Array.prototype.slice.call(arg, 2),
+            listeners = eve.listeners(name),
+            z = 0,
+            f = false,
+            l,
+            indexed = [],
+            queue = {},
+            out = [],
+            ce = current_event,
+            errors = [];
             out.firstDefined = firstDefined;
             out.lastDefined = lastDefined;
             current_event = name;

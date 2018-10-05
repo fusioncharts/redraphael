@@ -1026,7 +1026,7 @@ export default function (R) {
                 node = elem._.RefImg;
                 handler = (function (el, fn) {
                     return function (e) {
-                        !el.removed && _fn.call(el, e);
+                        !el.removed && fn.call(el, e);
                     };
                 })(el, handler);
             } else {

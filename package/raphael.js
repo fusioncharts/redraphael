@@ -14152,7 +14152,7 @@ exports["default"] = function (R) {
                 node = elem._.RefImg;
                 handler = function (el, fn) {
                     return function (e) {
-                        !el.removed && _fn.call(el, e);
+                        !el.removed && fn.call(el, e);
                     };
                 }(el, handler);
             } else {
@@ -14193,7 +14193,6 @@ exports["default"] = function (R) {
         \*/
         elproto.off = function (eventType, handler) {
             var elem = this,
-                fn,
                 index;
             if (elem.removed) {
                 return elem;
@@ -14219,16 +14218,16 @@ exports["default"] = function (R) {
 
             eventType = eventType.replace(/fc-/, '');
 
-            index = elem._actualListners.indexOf(fn);
+            index = elem._actualListners.indexOf(handler);
 
             if (index !== -1) {
-                fn = elem._derivedListeners[index];
+                handler = elem._derivedListeners[index];
                 elem._actualListners.splice(index, 1);
                 elem._derivedListeners.splice(index, 1);
             }
 
             if (elem.node.attachEvent) {
-                elem.node.detachEvent('on' + eventType, fn);
+                elem.node.detachEvent('on' + eventType, handler);
             } else {
                 elem.node['on' + eventType] = null;
             }

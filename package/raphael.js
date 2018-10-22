@@ -1171,16 +1171,18 @@ var _symbol = __webpack_require__(8);
 
 var _symbol2 = _interopRequireDefault(_symbol);
 
-var _typeof = typeof _symbol2['default'] === "function" && typeof _iterator2['default'] === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof _symbol2['default'] === "function" && obj.constructor === _symbol2['default'] && obj !== _symbol2['default'].prototype ? "symbol" : typeof obj; }; /**!
-                                                                                                                                                                                                                                                                                                                                         * RedRaphael 1.0.0 - JavaScript Vector Library
-                                                                                                                                                                                                                                                                                                                                         * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
-                                                                                                                                                                                                                                                                                                                                         *
-                                                                                                                                                                                                                                                                                                                                         * Raphael 2.1.0
-                                                                                                                                                                                                                                                                                                                                         * Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
-                                                                                                                                                                                                                                                                                                                                         * Copyright © 2008-2012 Sencha Labs <http://sencha.com>
-                                                                                                                                                                                                                                                                                                                                         *
-                                                                                                                                                                                                                                                                                                                                         * Licensed under the MIT license.
-                                                                                                                                                                                                                                                                                                                                         */
+var _typeof = typeof _symbol2['default'] === "function" && typeof _iterator2['default'] === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof _symbol2['default'] === "function" && obj.constructor === _symbol2['default'] && obj !== _symbol2['default'].prototype ? "symbol" : typeof obj; };
+
+var _R$_availableAttrs; /**!
+                         * RedRaphael 1.0.0 - JavaScript Vector Library
+                         * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
+                         *
+                         * Raphael 2.1.0
+                         * Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
+                         * Copyright © 2008-2012 Sencha Labs <http://sencha.com>
+                         *
+                         * Licensed under the MIT license.
+                         */
 
 var _eve2 = __webpack_require__(71);
 
@@ -1300,6 +1302,8 @@ var loaded,
     BLACK = '#000',
     NULL = 'null',
     FUNCTION = 'function',
+    AUTO = 'auto',
+    NORMAL = 'normal',
     COMMA = ',',
     TOKEN1 = '$1',
     rCheckRegex = /R/i,
@@ -1529,7 +1533,7 @@ events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchsta
     hs: 1,
     rg: 1
 },
-    availableAttrs = R._availableAttrs = {
+    availableAttrs = R._availableAttrs = (_R$_availableAttrs = {
     "arrow-end": NONE,
     "arrow-start": NONE,
     blur: 0,
@@ -1543,7 +1547,7 @@ events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchsta
     font: '10px "Arial"',
     "font-family": '"Arial"',
     "font-size": "10",
-    "font-style": "normal",
+    "font-style": NORMAL,
     "font-weight": 400,
     gradient: 0,
     height: 0,
@@ -1573,9 +1577,21 @@ events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchsta
     width: 0,
     x: 0,
     y: 0,
-    "shape-rendering": "auto",
-    alpha: NU
-},
+    "shape-rendering": AUTO,
+    alpha: NU,
+    //Adding all the possible attributes for svg
+    "font-stretch": NORMAL,
+    "alignment-baseline": AUTO,
+    "baseline-shift": AUTO,
+    "clip-rule": "nonzero",
+    "direction": "ltr",
+    "dominant-baseline": AUTO,
+    "fill-rule": "nonzero",
+    "filter": NONE,
+    "flood-color": BLACK,
+    "flood-opacity": 1,
+    "font-size-adjust": NONE
+}, _R$_availableAttrs['font-stretch'] = NORMAL, _R$_availableAttrs["font-variant"] = NORMAL, _R$_availableAttrs["kerning"] = AUTO, _R$_availableAttrs["lighting-color"] = "white", _R$_availableAttrs["marker-end"] = NONE, _R$_availableAttrs["marker-mid"] = NONE, _R$_availableAttrs["marker-start"] = NONE, _R$_availableAttrs["mask"] = NONE, _R$_availableAttrs["pointer-events"] = "visiblePainted", _R$_availableAttrs["stop-color"] = BLACK, _R$_availableAttrs["stop-opacity"] = 1, _R$_availableAttrs["stroke-dashoffset"] = 0, _R$_availableAttrs["text-decoration"] = NONE, _R$_availableAttrs["vector-effect"] = E, _R$_availableAttrs['visibility'] = "visible", _R$_availableAttrs["word-spacing"] = NORMAL, _R$_availableAttrs["writing-mode"] = "lr-tb", _R$_availableAttrs),
     availableAnimAttrs = R._availableAnimAttrs = {
     blur: NU,
     "clip-rect": "csv",
@@ -4945,7 +4961,7 @@ paperproto.circle = function () {
     var paper = this,
         args = (0, _raphael.getArrayCopy)(arguments),
         group = lastArgIfGroup(args, true),
-        attrs = serializeArgs(args, "cx", 0, "cy", 0, "r", 0, "fill", NONE, "stroke", BLACK),
+        attrs = paper._addDefAttribs() ? serializeArgs(args, "cx", 0, "cy", 0, "r", 0, "fill", NONE, "stroke", BLACK) : serializeArgs(args),
         out = R._engine.circle(paper, attrs, group);
 
     return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
@@ -4976,7 +4992,7 @@ paperproto.rect = function () {
     var paper = this,
         args = (0, _raphael.getArrayCopy)(arguments),
         group = lastArgIfGroup(args, true),
-        attrs = serializeArgs(args, "x", 0, "y", 0, "width", 0, "height", 0, "r", 0, "fill", NONE, "stroke", BLACK),
+        attrs = paper._addDefAttribs() ? serializeArgs(args, "x", 0, "y", 0, "width", 0, "height", 0, "r", 0, "fill", NONE, "stroke", BLACK) : serializeArgs(args),
         out = R._engine.rect(paper, attrs, group);
 
     return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
@@ -5003,7 +5019,7 @@ paperproto.ellipse = function () {
     var paper = this,
         args = (0, _raphael.getArrayCopy)(arguments),
         group = lastArgIfGroup(args, true),
-        attrs = serializeArgs(args, "x", 0, "y", 0, "rx", 0, "ry", 0, "fill", NONE, "stroke", BLACK),
+        attrs = paper._addDefAttribs() ? serializeArgs(args, "x", 0, "y", 0, "rx", 0, "ry", 0, "fill", NONE, "stroke", BLACK) : serializeArgs(args),
         out = R._engine.ellipse(this, attrs, group);
 
     return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
@@ -5047,7 +5063,7 @@ paperproto.path = function () {
         group = lastArgIfGroup(args, true),
         paperConfig = paper.config,
         capStyle = paperConfig && paperConfig["stroke-linecap"] || "butt",
-        attrs = serializeArgs(args, "path", E, "fill", NONE, "stroke", BLACK, "stroke-linecap", capStyle),
+        attrs = paper._addDefAttribs() ? serializeArgs(args, "path", E, "fill", NONE, "stroke", BLACK, "stroke-linecap", capStyle) : serializeArgs(args),
         out = R._engine.path(paper, attrs, group);
     return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
 };
@@ -5074,9 +5090,9 @@ paperproto.image = function () {
     var paper = this,
         args = (0, _raphael.getArrayCopy)(arguments),
         group = lastArgIfGroup(args, true),
-        attrs = serializeArgs(args,
+        attrs = paper._addDefAttribs() ? serializeArgs(args,
     // "src", E,
-    "x", 0, "y", 0, "width", 0, "height", 0),
+    "x", 0, "y", 0, "width", 0, "height", 0) : serializeArgs(args),
         out = R._engine.image(paper, attrs, group);
     return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
 };
@@ -5101,9 +5117,20 @@ paperproto.text = function () {
     var paper = this,
         args = (0, _raphael.getArrayCopy)(arguments),
         group = lastArgIfGroup(args, true),
-        attrs = serializeArgs(args, "x", 0, "y", 0, "text", E, "stroke", NONE, "fill", BLACK, "text-anchor", "middle", "vertical-align", "middle"),
+        attrs = paper._addDefAttribs() ? serializeArgs(args, "x", 0, "y", 0, "text", E, "stroke", NONE, "fill", BLACK, "text-anchor", "middle", "vertical-align", "middle") : serializeArgs(args),
         out = R._engine.text(paper, attrs, group, args[1]);
     return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
+};
+
+/*\
+ * Paper._addDefAttribs
+ [ method ]
+ **
+ * Whether we need to set default attributes or not
+\*/
+paperproto._addDefAttribs = function () {
+    // For SVG browsers and if paper has flag set for not to use default attributes
+    return !(R.svg && this.config && this.config.noDefaultAttribs);
 };
 
 /*\
@@ -5121,7 +5148,6 @@ paperproto.setConfig = function (key, value) {
     var paper = this;
 
     if (key !== undefined && value !== undefined) {
-
         paper.config = paper.config || {};
         paper.config[key] = value;
     }
@@ -12120,7 +12146,7 @@ exports['default'] = function (R) {
             }
 
             // Update the node's attribute
-            if (updateNode) {
+            if (updateNode && (oldAttr.y || oldAttr.y === 0) && (oldAttr.shift || oldAttr.shift === 0)) {
                 $(node, { y: Math.round(oldAttr.y + oldAttr.shift) });
             }
         },

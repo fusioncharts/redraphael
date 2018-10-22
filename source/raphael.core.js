@@ -124,6 +124,8 @@ var loaded,
     BLACK = '#000',
     NULL = 'null',
     FUNCTION = 'function',
+    AUTO = 'auto',
+    NORMAL = 'normal',
     COMMA = ',',
     TOKEN1 = '$1',
     rCheckRegex = /R/i,
@@ -373,7 +375,7 @@ var loaded,
             font: '10px "Arial"',
             "font-family": '"Arial"',
             "font-size": "10",
-            "font-style": "normal",
+            "font-style": NORMAL,
             "font-weight": 400,
             gradient: 0,
             height: 0,
@@ -403,8 +405,37 @@ var loaded,
             width: 0,
             x: 0,
             y: 0,
-            "shape-rendering": "auto",
-            alpha: NU
+            "shape-rendering": AUTO,
+            alpha: NU,
+            //Adding all the possible attributes for svg
+            "font-stretch": NORMAL,
+            "alignment-baseline": AUTO,
+            "baseline-shift": AUTO,
+            "clip-rule": "nonzero",
+            "direction": "ltr",
+            "dominant-baseline": AUTO,
+            "fill-rule": "nonzero",
+            "filter": NONE,
+            "flood-color": BLACK,
+            "flood-opacity": 1,
+            "font-size-adjust": NONE,
+            "font-stretch": NORMAL,
+            "font-variant": NORMAL,
+            "kerning": AUTO,
+            "lighting-color": "white",
+            "marker-end": NONE,
+            "marker-mid": NONE,
+            "marker-start": NONE,
+            "mask": NONE,
+            "pointer-events": "visiblePainted",
+            "stop-color": BLACK,
+            "stop-opacity": 1,
+            "stroke-dashoffset": 0,
+            "text-decoration": NONE,
+            "vector-effect": E,
+            "visibility": "visible",
+            "word-spacing": NORMAL,
+            "writing-mode": "lr-tb"
         },
         availableAnimAttrs = R._availableAnimAttrs = {
             blur: NU,
@@ -3856,12 +3887,12 @@ var loaded,
         var paper = this,
             args = getArrayCopy(arguments),
             group = lastArgIfGroup(args, true),
-            attrs = serializeArgs(args,
+            attrs = paper._addDefAttribs() ? serializeArgs(args,
                 "cx", 0,
                 "cy", 0,
                 "r", 0,
                 "fill", NONE,
-                "stroke", BLACK),
+                "stroke", BLACK) : serializeArgs(args),
             out = R._engine.circle(paper, attrs, group);
 
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
@@ -3893,14 +3924,14 @@ var loaded,
         var paper = this,
             args = getArrayCopy(arguments),
             group = lastArgIfGroup(args, true),
-            attrs = serializeArgs(args,
+            attrs = paper._addDefAttribs() ? serializeArgs(args,
                 "x", 0,
                 "y", 0,
                 "width", 0,
                 "height", 0,
                 "r", 0,
                 "fill", NONE,
-                "stroke", BLACK),
+                "stroke", BLACK) : serializeArgs(args),
             out = R._engine.rect(paper, attrs, group);
 
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
@@ -3927,13 +3958,13 @@ var loaded,
         var paper = this,
             args = getArrayCopy(arguments),
             group = lastArgIfGroup(args, true),
-            attrs = serializeArgs(args,
+            attrs = paper._addDefAttribs() ? serializeArgs(args,
                 "x", 0,
                 "y", 0,
                 "rx", 0,
                 "ry", 0,
                 "fill", NONE,
-                "stroke", BLACK),
+                "stroke", BLACK) : serializeArgs(args),
             out = R._engine.ellipse(this, attrs, group);
 
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
@@ -3977,11 +4008,11 @@ var loaded,
             group = lastArgIfGroup(args, true),
             paperConfig = paper.config,
             capStyle = (paperConfig && paperConfig["stroke-linecap"]) || "butt",
-            attrs = serializeArgs(args,
+            attrs = paper._addDefAttribs() ? serializeArgs(args,
                 "path", E,
                 "fill", NONE,
                 "stroke", BLACK,
-                "stroke-linecap", capStyle),
+                "stroke-linecap", capStyle) : serializeArgs(args),
             out = R._engine.path(paper, attrs, group);
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
@@ -4008,12 +4039,12 @@ var loaded,
         var paper = this,
             args = getArrayCopy(arguments),
             group = lastArgIfGroup(args, true),
-            attrs = serializeArgs(args,
+            attrs = paper._addDefAttribs() ? serializeArgs(args,
                 // "src", E,
                 "x", 0,
                 "y", 0,
                 "width", 0,
-                "height", 0),
+                "height", 0) : serializeArgs(args),
             out = R._engine.image(paper, attrs, group);
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
@@ -4038,17 +4069,28 @@ var loaded,
         var paper = this,
             args = getArrayCopy(arguments),
             group = lastArgIfGroup(args, true),
-            attrs = serializeArgs(args,
+            attrs = paper._addDefAttribs() ? serializeArgs(args,
                 "x", 0,
                 "y", 0,
                 "text", E,
                 "stroke", NONE,
                 "fill", BLACK,
                 "text-anchor", "middle",
-                "vertical-align", "middle"),
+                "vertical-align", "middle"): serializeArgs(args),
 
             out = R._engine.text(paper, attrs, group, args[1]);
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
+    };
+
+    /*\
+     * Paper._addDefAttribs
+     [ method ]
+     **
+     * Whether we need to set default attributes or not
+    \*/
+    paperproto._addDefAttribs = function () {
+        // For SVG browsers and if paper has flag set for not to use default attributes
+        return !(R.svg && this.config && this.config.noDefaultAttribs)
     };
 
     /*\
@@ -4066,7 +4108,6 @@ var loaded,
         var paper = this;
 
         if ((key !== undefined) && (value !== undefined)) {
-
             paper.config = paper.config || {};
             paper.config[key] = value;
         }

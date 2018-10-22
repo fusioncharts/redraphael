@@ -1168,7 +1168,7 @@ export default function (R) {
                 }
 
                 // Update the node's attribute
-                if (updateNode) {
+                if (updateNode && (oldAttr.y || oldAttr.y === 0) && (oldAttr.shift || oldAttr.shift === 0)) {
                     $(node, {y: Math.round(oldAttr.y + oldAttr.shift)});
                 }
             },
@@ -1952,7 +1952,7 @@ export default function (R) {
             if (R.supportsTouch) {
                 if (R.isEdge) {
                     css += 'touch-action:none;';
-                } else if (R.isMozilla && R.isWindows) {
+                } else if (R.isFirefox && R.isWindows) {
                     css += 'touch-action:none;';
                 } else if (R.isIE11) {
                     css += '-ms-touch-action:none;';

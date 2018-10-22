@@ -1777,6 +1777,11 @@ clone = R.clone = hasPrototypeBug ? function (obj) {
     if (Object(obj) !== obj) {
         return obj;
     }
+    // when obj is a function then new obj.constructor is equal to calling new Function()
+    // which uses dynamic evaluation, that violates CSP for 'unsafe-eval'
+    if (obj instanceof Function) {
+        return obj;
+    }
     var res = new obj.constructor();
     for (var key in obj) {
         if (key !== "prototype" && obj[HAS](key)) {
@@ -1785,6 +1790,11 @@ clone = R.clone = hasPrototypeBug ? function (obj) {
     }return res;
 } : function (obj) {
     if (Object(obj) !== obj) {
+        return obj;
+    }
+    // when obj is a function then new obj.constructor is equal to calling new Function()
+    // which uses dynamic evaluation, that violates CSP for 'unsafe-eval'
+    if (obj instanceof Function) {
         return obj;
     }
     var res = new obj.constructor();

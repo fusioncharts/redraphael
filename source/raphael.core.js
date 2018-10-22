@@ -1382,9 +1382,7 @@ var loaded,
         if (rCheckRegex.test(pathStr)) {
             pathStr = R._pathToAbsolute(pathStr);
         } else {
-            if (p2s.test(pathCommaRegex)) {
-                pathStr = pathStr.replace(p2s, TOKEN1);
-            }
+            pathStr = pathStr.replace(p2s, TOKEN1);
         }
         return pathStr;
     };

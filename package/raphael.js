@@ -14142,7 +14142,7 @@ exports["default"] = function (R) {
         \*/
         elproto.on = function (eventType, handler, context) {
             var elem = this,
-                fn;
+                fn = handler;
             if (elem.removed) {
                 return elem;
             }

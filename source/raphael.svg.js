@@ -1657,6 +1657,38 @@ export default function (R) {
             elproto.unpinchin.call(this, pinchinhandler);
             elproto.unpinchend.call(this, pinchendhandler);
         };
+        elproto.fcwheel = function (handler, context) {
+            var elem = this,
+                dummyEve = {},
+                direction,
+                offset,
+                fn = function (e) {
+                    e && e.preventDefault();
+                    R.makeSelectiveCopy(dummyEve, e);
+                    if(Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                        direction = 'vertical';
+                        offset = e.deltaY;
+                    }
+                    else{
+                        direction = 'horizontal';
+                        offset = e.deltaX;
+                    }
+                    dummyEve.data = {
+                        direction,
+                        offset
+                    };
+                    handler.call(context || elem, dummyEve);
+                };
+            // Storing the handlers
+            storeHandlers(elem, handler, fn);
+
+            elem.node.addEventListener('wheel', fn);
+        };
+        elproto.fcunwheel = function (handler) {
+            var elem = this,
+                derivedHandler = removeHandlers(elem, handler);
+            derivedHandler && elem.node.removeEventListener('wheel', derivedHandler);
+        };
 
         /* \
         * Element.on
@@ -1708,6 +1740,9 @@ export default function (R) {
                 case 'fc-click':
                     elem.fcclick(handler, context);
                     return elem;
+                case 'fc-wheel':
+                    elem.fcwheel(handler, context);
+                    return elem;    
             }
 
             // Setting the original event on which operations has to be done
@@ -1809,6 +1844,9 @@ export default function (R) {
                 case 'fc-click':
                     elem.fcunclick(handler);
                     return elem;
+                case 'fc-wheel':
+                    elem.fcunwheel(handler);
+                    return elem;    
             }
 
             // Setting the original event on which operations has to be done

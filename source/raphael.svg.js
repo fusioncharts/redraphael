@@ -42,6 +42,8 @@ export default function (R) {
                 'font-size': '0px'
             },
             Str = String,
+            VERTICAL = 'vertical',
+            HORIZONTAL = 'horizontal',
             toFloat = parseFloat,
             toInt = parseInt,
             vAlignMultiplier = {
@@ -1666,11 +1668,11 @@ export default function (R) {
                     e && e.preventDefault();
                     R.makeSelectiveCopy(dummyEve, e);
                     if(Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-                        direction = 'vertical';
+                        direction = VERTICAL;
                         offset = e.deltaY;
                     }
                     else{
-                        direction = 'horizontal';
+                        direction = HORIZONTAL;
                         offset = e.deltaX;
                     }
                     dummyEve.data = {

@@ -1664,10 +1664,6 @@ export default function (R) {
                 fn = function (e) {
                     e && e.preventDefault();
                     R.makeSelectiveCopy(dummyEve, e);
-                    dummyEve.data = {
-                        deltaX: e.deltaX,
-                        deltaY: e.deltaY
-                    };
                     handler.call(context || elem, dummyEve);
                 };
             // Storing the handlers

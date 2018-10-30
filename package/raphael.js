@@ -3862,7 +3862,9 @@ var preventDefault = function preventDefault() {
     fromElement: true,
     changedTouches: true,
     layerX: true,
-    layerY: true
+    layerY: true,
+    deltaX: true,
+    deltaY: true
 },
     makeSelectiveCopy = R.makeSelectiveCopy = function (target, source) {
     var _loop = function _loop(_eve) {
@@ -12660,10 +12662,6 @@ exports['default'] = function (R) {
                 fn = function fn(e) {
                 e && e.preventDefault();
                 R.makeSelectiveCopy(dummyEve, e);
-                dummyEve.data = {
-                    deltaX: e.deltaX,
-                    deltaY: e.deltaY
-                };
                 handler.call(context || elem, dummyEve);
             };
             // Storing the handlers

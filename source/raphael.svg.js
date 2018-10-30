@@ -1563,7 +1563,6 @@ export default function (R) {
                         let touch1 = e.touches[0],
                             touch2 = e.touches[1];
                         // Flag to block drag events
-                        console.log('pinch');
                         elem._blockDrag = true;
                         e && e.preventDefault();
                         R.makeSelectiveCopy(dummyEve, e);
@@ -1662,28 +1661,17 @@ export default function (R) {
         elproto.fcwheel = function (handler, context) {
             var elem = this,
                 dummyEve = {},
-                direction,
-                offset,
                 fn = function (e) {
                     e && e.preventDefault();
                     R.makeSelectiveCopy(dummyEve, e);
-                    if(Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-                        direction = VERTICAL;
-                        offset = e.deltaY;
-                    }
-                    else{
-                        direction = HORIZONTAL;
-                        offset = e.deltaX;
-                    }
                     dummyEve.data = {
-                        direction,
-                        offset
+                        deltaX: e.deltaX,
+                        deltaY: e.deltaY
                     };
                     handler.call(context || elem, dummyEve);
                 };
             // Storing the handlers
             storeHandlers(elem, handler, fn);
-
             elem.node.addEventListener('wheel', fn);
         };
         elproto.fcunwheel = function (handler) {

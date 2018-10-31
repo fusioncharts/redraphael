@@ -2883,7 +2883,8 @@ var loaded,
 
         // Setting the minimum threshold of 2 pixels to trigger dragmove
         // el.blockDrag is true during pinch zoom
-        if ((el.dragStartFn && !(Math.abs(x - el._drag.x) >= 2.5 || Math.abs(y - el._drag.y) >= 2.5)) || el._blockDrag) {
+        if ((el.dragStartFn && !(Math.abs(x - el._drag.x) >= 2.5 || Math.abs(y - el._drag.y) >= 2.5)) ||
+            el._blockDrag || (supportsPointer && !e.isPrimary)) {
             return;
         }
 
@@ -3273,6 +3274,11 @@ var loaded,
                 return !event.touches || (event.touches && event.touches.length === 1);
             },
             fn = function (e) {
+                // Check for multi-touch devices. When 2 finger touch is done then pointerup
+                // is fired twice resulting into double click zoom
+                if ( R.supportsPointer && !e.isPrimary) {
+                    return;
+                }
                 e && e.preventDefault();
                 if (!isSingleFinger(e)) {
                     return;
@@ -3282,6 +3288,7 @@ var loaded,
                     elem._tappedOnce = false;
                 } else {
                     elem._tappedOnce = true;
+                    firstPointerId = e.pointerId;
                     // 500ms time for double tap expiration
                     setTimeout(function () {
                         elem._tappedOnce = false;
@@ -3581,7 +3588,10 @@ var loaded,
                 _dragY,
                 dragInfo = element.dragInfo,
                 args = [dragMove, undef, g.doc];
-
+            // Diabling drag incase of multi touch
+            if (supportsPointer && !e.isPrimary) {
+                return;
+            }
             // Blocking page scroll when drag is triggered
             if (supportsTouch) {
                 if (!supportsPointer) {

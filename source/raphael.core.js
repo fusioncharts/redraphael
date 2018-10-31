@@ -3276,7 +3276,7 @@ var loaded,
             fn = function (e) {
                 // Check for multi-touch devices. When 2 finger touch is done then pointerup
                 // is fired twice resulting into double click zoom
-                if ( R.supportsPointer && !e.isPrimary) {
+                if ( supportsPointer && !e.isPrimary) {
                     return;
                 }
                 e && e.preventDefault();
@@ -3295,7 +3295,7 @@ var loaded,
                 }
             };
 
-        eventType = R.supportsPointer ? 'pointerup' : R.supportsTouch ? 'touchstart' : 'mouseup';
+        eventType = supportsPointer ? 'pointerup' : R.supportsTouch ? 'touchstart' : 'mouseup';
         
         elem.node.addEventListener(eventType, fn);
         R.storeHandlers(elem, handler, fn);
@@ -3306,7 +3306,7 @@ var loaded,
         var elem = this,
             derivedHandler = removeHandlers(elem, handler);
 
-        derivedHandler && elem.node.removeEventListener(R.supportsPointer ? 'pointerup' : 
+        derivedHandler && elem.node.removeEventListener(supportsPointer ? 'pointerup' : 
             R.supportsTouch ? 'touchstart' : 'mouseup', derivedHandler);
     };
 

@@ -3288,7 +3288,6 @@ var loaded,
                     elem._tappedOnce = false;
                 } else {
                     elem._tappedOnce = true;
-                    firstPointerId = e.pointerId;
                     // 500ms time for double tap expiration
                     setTimeout(function () {
                         elem._tappedOnce = false;

@@ -42,6 +42,8 @@ export default function (R) {
                 'font-size': '0px'
             },
             Str = String,
+            VERTICAL = 'vertical',
+            HORIZONTAL = 'horizontal',
             toFloat = parseFloat,
             toInt = parseInt,
             vAlignMultiplier = {
@@ -1561,7 +1563,6 @@ export default function (R) {
                         let touch1 = e.touches[0],
                             touch2 = e.touches[1];
                         // Flag to block drag events
-                        console.log('pinch');
                         elem._blockDrag = true;
                         e && e.preventDefault();
                         R.makeSelectiveCopy(dummyEve, e);
@@ -1657,6 +1658,23 @@ export default function (R) {
             elproto.unpinchin.call(this, pinchinhandler);
             elproto.unpinchend.call(this, pinchendhandler);
         };
+        elproto.fcwheel = function (handler, context) {
+            var elem = this,
+                dummyEve = {},
+                fn = function (e) {
+                    e && e.preventDefault();
+                    R.makeSelectiveCopy(dummyEve, e);
+                    handler.call(context || elem, dummyEve);
+                };
+            // Storing the handlers
+            storeHandlers(elem, handler, fn);
+            elem.node.addEventListener('wheel', fn);
+        };
+        elproto.fcunwheel = function (handler) {
+            var elem = this,
+                derivedHandler = removeHandlers(elem, handler);
+            derivedHandler && elem.node.removeEventListener('wheel', derivedHandler);
+        };
 
         /* \
         * Element.on
@@ -1708,6 +1726,9 @@ export default function (R) {
                 case 'fc-click':
                     elem.fcclick(handler, context);
                     return elem;
+                case 'fc-wheel':
+                    elem.fcwheel(handler, context);
+                    return elem;    
             }
 
             // Setting the original event on which operations has to be done
@@ -1809,6 +1830,9 @@ export default function (R) {
                 case 'fc-click':
                     elem.fcunclick(handler);
                     return elem;
+                case 'fc-wheel':
+                    elem.fcunwheel(handler);
+                    return elem;    
             }
 
             // Setting the original event on which operations has to be done

@@ -2771,7 +2771,9 @@ var loaded,
         fromElement: true,
         changedTouches: true,
         layerX: true,
-        layerY: true
+        layerY: true,
+        deltaX: true,
+        deltaY: true
     },
     makeSelectiveCopy = R.makeSelectiveCopy = function (target, source) {
         for (let eve in eventCopyList) {

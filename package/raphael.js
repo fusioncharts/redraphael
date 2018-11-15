@@ -3971,8 +3971,8 @@ addEvent = R.addEvent = function () {
         j = el.dragInfo.onmove.length;
 
     // Setting the minimum threshold of 2 pixels to trigger dragmove
-    // el.blockDrag is true during pinch zoom
-    if (el.dragStartFn && !(Math.abs(x - el._drag.x) >= 2.5 || Math.abs(y - el._drag.y) >= 2.5) || el._blockDrag || supportsPointer && !e.isPrimary) {
+    // el.blockDrag is true during pinch zoom in touch devices
+    if (el.dragStartFn && !(Math.abs(x - el._drag.x) >= 2.5 || Math.abs(y - el._drag.y) >= 2.5) || el._blockDrag || supportsPointer && supportsTouch && !e.isPrimary) {
         return;
     }
 
@@ -11084,6 +11084,8 @@ exports['default'] = function (R) {
                 return false;
             }
         }(),
+            supportsPointer = R.supportsPointer,
+            supportsTouch = R.supportsTouch,
             markerCounter = {},
             preLoad = function preLoad(elem, ig, isURL, paper) {
             R._preload(isURL[1], function () {
@@ -11125,8 +11127,8 @@ exports['default'] = function (R) {
          * when ever any dom is tapped, this callback gets executed 1st and mouseout of the last event is
          * fired.
         */
-        if (R.supportsTouch) {
-            doc.addEventListener(R.supportsPointer ? 'pointerover' : 'touchstart', function (e) {
+        if (supportsTouch) {
+            doc.addEventListener(supportsPointer ? 'pointerover' : 'touchstart', function (e) {
                 if (lastHoveredInfo.srcElement && lastHoveredInfo.srcElement !== (e.srcElement || e.target)) {
                     var elementInfo = lastHoveredInfo.elementInfo,
                         ii = elementInfo.length,
@@ -12215,7 +12217,7 @@ exports['default'] = function (R) {
         */
         getTouchDistance = function getTouchDistance(touch1, touch2, isY) {
             var select = isY ? 'pageY' : 'pageX';
-            return touch2[select] - touch1[select];
+            return Math.abs(touch2[select] - touch1[select]);
         },
 
         /**
@@ -12740,20 +12742,23 @@ exports['default'] = function (R) {
              * pointer events for touch. For rest (non-hybrid ios device) we are using touch events.
              */
             if (isSafe) {
-                if (R.supportsTouch) {
+                if (supportsTouch) {
                     actualEventType = eventType;
-                    eventType = (R.supportsPointer ? R.safePointerEventMapping[eventType] : safeMouseEventMapping[eventType]) || eventType;
+                    eventType = (supportsPointer ? R.safePointerEventMapping[eventType] : safeMouseEventMapping[eventType]) || eventType;
 
                     // Mouse out event's handler is fired when the next element on the page is hovered.
                     if (actualEventType === 'mouseout') {
                         fn = function fn(e) {
-                            lastHoveredInfo.elementInfo.push({
-                                el: context || elem,
-                                callback: handler
-                            });
-                            lastHoveredInfo.srcElement = e.srcElement || e.target;
+                            // No action done if multi touch triggered in touch device supporting pointer
+                            if (!(supportsPointer && supportsTouch && !e.isPrimary)) {
+                                lastHoveredInfo.elementInfo.push({
+                                    el: context || elem,
+                                    callback: handler
+                                });
+                                lastHoveredInfo.srcElement = e.srcElement || e.target;
+                            }
                         };
-                        eventType = R.supportsPointer ? 'pointerover' : 'touchstart';
+                        eventType = supportsPointer ? 'pointerover' : 'touchstart';
                     }
                 }
             }
@@ -12763,14 +12768,16 @@ exports['default'] = function (R) {
             if (this._ && this._.RefImg && (eventType === 'load' || eventType === 'error')) {
                 node = this._.RefImg;
                 fn = function fn(e) {
-                    !elem.removed && handler.call(elem, e);
+                    // No action done if multi touch triggered in touch device supporting pointer
+                    !(supportsPointer && supportsTouch && !e.isPrimary) && !elem.removed && handler.call(elem, e);
                 };
             } else {
                 node = this.node;
             }
             if (fn === handler) {
                 fn = function fn(e) {
-                    handler.call(context || elem, e);
+                    // No action done if multi touch triggered in touch device supporting pointer
+                    !(supportsPointer && supportsTouch && !e.isPrimary) && handler.call(context || elem, e);
                 };
             }
             elem._actualListners.push(handler);
@@ -12842,11 +12849,11 @@ exports['default'] = function (R) {
             fn = handler;
 
             if (isSafe) {
-                if (R.supportsTouch) {
+                if (supportsTouch) {
                     actualEventType = eventType;
-                    eventType = (R.supportsPointer ? R.safePointerEventMapping[eventType] : safeMouseEventMapping[eventType]) || eventType;
+                    eventType = (supportsPointer ? R.safePointerEventMapping[eventType] : safeMouseEventMapping[eventType]) || eventType;
                     if (actualEventType === 'mouseout') {
-                        eventType = R.supportsPointer ? 'pointerover' : 'touchstart';
+                        eventType = supportsPointer ? 'pointerover' : 'touchstart';
                     }
                 }
             }
@@ -12970,7 +12977,7 @@ exports['default'] = function (R) {
                 isFloating;
             // '-ms-touch-action : none' permits no default touch behaviors in IE (10 and 11) browser
             // '-touch-action : none' permits no default touch behaviors in mozilla of windows
-            if (R.supportsTouch) {
+            if (supportsTouch) {
                 if (R.isEdge) {
                     css += 'touch-action:none;';
                 } else if (R.isFirefox && R.isWindows) {

@@ -2882,9 +2882,9 @@ var loaded,
             j = el.dragInfo.onmove.length;
 
         // Setting the minimum threshold of 2 pixels to trigger dragmove
-        // el.blockDrag is true during pinch zoom
+        // el.blockDrag is true during pinch zoom in touch devices
         if ((el.dragStartFn && !(Math.abs(x - el._drag.x) >= 2.5 || Math.abs(y - el._drag.y) >= 2.5)) ||
-            el._blockDrag || (supportsPointer && !e.isPrimary)) {
+            el._blockDrag || (supportsPointer && supportsTouch && !e.isPrimary)) {
             return;
         }
 

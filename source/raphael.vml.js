@@ -992,6 +992,7 @@ export default function (R) {
         \*/
         elproto.on = function(eventType, handler, context) {
             var elem = this,
+                dummyEve,
                 fn = handler;
             if (elem.removed) {
                 return elem;
@@ -1024,11 +1025,14 @@ export default function (R) {
             // that's why we are attaching the load and error events on the Reference Image
             if (elem._ && elem._.RefImg && (eventType === 'load' || eventType === 'error')) {
                 node = elem._.RefImg;
-                handler = (function (el, fn) {
+                fn = (function (el, handler) {
                     return function (e) {
-                        !el.removed && fn.call(el, e);
+                        dummyEve = {};
+                        R.makeSelectiveCopy(dummyEve, e);
+                        dummyEve.target = elem._.RefImg;
+                        !el.removed && handler.call(el, dummyEve);
                     };
-                })(el, handler);
+                })(elem, handler);
             } else {
                 node = elem.node;
             }

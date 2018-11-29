@@ -5215,6 +5215,26 @@ var loaded,
         return a;
     };
 
+    // Taking converToRadialIfOneRadial function out of colorNormalizer inorder to fix RED-8338
+    var converToRadialIfOneRadial = function (a, b, end) {
+        var angle = 0;
+        if(a.isRadial && !b.isRadial){
+            angle += +b[0];
+            b[0] = {
+                f1: 0,
+                f2: 0,
+                f3: 0,
+                f4: 0,
+                f5: 0,
+                f6: E
+            }
+            b.isRadial = true;
+        }
+
+        if(!end) {
+            converToRadialIfOneRadial(b, a, true);
+        }
+    };
     /*
     ** Function to convert two color string in array format such that
     ** it is animatabale
@@ -5300,25 +5320,6 @@ var loaded,
         return [newColArr, newColArr2];
         // Getting all unique points
 
-        function converToRadialIfOneRadial(a, b, end){
-            var angle = 0;
-            if(a.isRadial && !b.isRadial){
-                angle += +b[0];
-                b[0] = {
-                    f1: 0,
-                    f2: 0,
-                    f3: 0,
-                    f4: 0,
-                    f5: 0,
-                    f6: E
-                }
-                b.isRadial = true;
-            }
-
-            if(!end){
-                converToRadialIfOneRadial(b, a, true);
-            }
-        }
         // Function to convert color to array in linear format
         // and mark if any one of them is radial
         function allToLinear(arr) {

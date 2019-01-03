@@ -11562,7 +11562,9 @@ exports['default'] = function (R) {
             addDashes = function addDashes(o, value, params) {
             if (value !== undefined) {
                 if (typeof value === 'string') {
-                    var valueArr = value.split(' '),
+                    // initially triming the string if spaces are there then replacing the commas with space 
+                    // and then spliting the string to convert it to array
+                    var valueArr = value.replace(/^\s+|\s+$/g, '').replace(/,/g, ' ').split(' '),
                         arr = [];
                     for (var i = 0; i < valueArr.length; i++) {
                         arr.push(+valueArr[i]);

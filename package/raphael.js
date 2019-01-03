@@ -11561,6 +11561,14 @@ exports['default'] = function (R) {
         },
             addDashes = function addDashes(o, value, params) {
             if (value !== undefined) {
+                if (typeof value === 'string') {
+                    var valueArr = value.split(' '),
+                        arr = [];
+                    for (var i = 0; i < valueArr.length; i++) {
+                        arr.push(+valueArr[i]);
+                    }
+                    value = arr;
+                }
                 var predefValue = dasharray[value.toLowerCase && value.toLowerCase()],
                     calculatedValues,
                     width,

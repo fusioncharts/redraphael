@@ -6619,11 +6619,20 @@ var loaded,
         }
     }
 
-    function stopAnimation(paper) {
-        for (var i = 0; i < animationElements.length; i++)
-            if (animationElements[i].el.paper === paper) {
+    /**
+     * Function for stopping animation when paper is cleared or removed
+     * @param {Object} currPaper the current paper that is being removed/cleared
+     */
+    function stopAnimation(currPaper = this) {
+        let linkedPaper;
+        for (var i = 0; i < animationElements.length; i++) {
+            linkedPaper = animationElements[i].el.paper;
+            // All the elements associated with the current paper is removed if linkedPaper is already
+            // disposed of currentPaper matches the linked Paper
+            if (!linkedPaper || linkedPaper === currPaper) {
                 animationElements.splice(i--, 1);
             }
+        }
     }
     eve.on("raphael.remove", stopAnimation);
     eve.on("raphael.clear", stopAnimation);

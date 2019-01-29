@@ -7643,9 +7643,19 @@ function executeAnimQueue(queue) {
     }
 }
 
-function stopAnimation(paper) {
+/**
+ * Function for stopping animation when paper is cleared or removed
+ * @param {Object} currPaper the current paper that is being removed/cleared
+ */
+function stopAnimation() {
+    var currPaper = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this;
+
+    var linkedPaper = void 0;
     for (var i = 0; i < animationElements.length; i++) {
-        if (animationElements[i].el.paper === paper) {
+        linkedPaper = animationElements[i].el.paper;
+        // All the elements associated with the current paper is removed if linkedPaper is already
+        // disposed of currentPaper matches the linked Paper
+        if (!linkedPaper || linkedPaper === currPaper) {
             animationElements.splice(i--, 1);
         }
     }

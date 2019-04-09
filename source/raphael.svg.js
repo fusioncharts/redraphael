@@ -836,6 +836,12 @@ export default function (R) {
                         if (value === E && att in attrs) {
                             delete attrs[att];
                             node.removeAttribute(att === 'src' ? 'href' : att);
+                        } else if (value === null) {
+                            // when an attribute is provided as null, it will be removed from the element
+                            if (att in attrs) {
+                                delete attrs[att];
+                                node.removeAttribute(att === 'src' ? 'href' : att);
+                            }
                         } else {
                             attrs[att] = value;
                             switch (att) {

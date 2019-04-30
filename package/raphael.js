@@ -1584,7 +1584,8 @@ events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchsta
     "alignment-baseline": AUTO,
     "baseline-shift": AUTO,
     "clip-rule": "nonzero",
-    "direction": "ltr",
+    // @todo - need to validate whether direction is required here or not.
+    // "direction": "ltr",
     "dominant-baseline": AUTO,
     "fill-rule": "nonzero",
     "filter": NONE,

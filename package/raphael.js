@@ -1584,7 +1584,8 @@ events = "click dblclick mousedown mousemove mouseout mouseover mouseup touchsta
     "alignment-baseline": AUTO,
     "baseline-shift": AUTO,
     "clip-rule": "nonzero",
-    "direction": "ltr",
+    // @todo - need to validate whether direction is required here or not.
+    // "direction": "ltr",
     "dominant-baseline": AUTO,
     "fill-rule": "nonzero",
     "filter": NONE,
@@ -12226,7 +12227,10 @@ exports['default'] = function (R) {
                 tspans,
                 text,
                 textChanged = false,
-                removeAllChild = !!(!isIE && oldAttr.direction && direction !== oldAttr.direction);
+
+            // @todo: Comment the below lines of code in order to fix RED-8282
+            // removeAllChild = !!(!isIE && oldAttr.direction && direction !== oldAttr.direction);
+            removeAllChild;
 
             oldAttr.direction = direction;
 

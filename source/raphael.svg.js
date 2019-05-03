@@ -1227,7 +1227,9 @@ export default function (R) {
                     tspans,
                     text,
                     textChanged = false,
-                    removeAllChild = !!(!isIE && oldAttr.direction && direction !== oldAttr.direction);
+                    // @todo: Comment the below lines of code in order to fix RED-8282
+                    // removeAllChild = !!(!isIE && oldAttr.direction && direction !== oldAttr.direction);
+                    removeAllChild;
 
                 oldAttr.direction = direction;
 

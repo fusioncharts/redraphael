@@ -1982,7 +1982,8 @@ export default function (R) {
                 node = this._.RefImg;
                 fn = function (e) {
                     // No action done if multi touch triggered in touch device supporting pointer
-                    !(supportsPointer && supportsTouch && !e.isPrimary) && !elem.removed && handler.call(elem, e);
+                    // !(supportsPointer && supportsTouch && !e.isPrimary) && !elem.removed && handler.call(elem, e);
+                    !elem.removed && handler.call(elem, e);
                 };
             } else {
                 node = this.node;

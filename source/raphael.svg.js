@@ -821,6 +821,7 @@ export default function (R) {
                     att,
                     finalAttr = {},
                     finalS = {},
+                    ignoreAttrs = {'clip-rect': true},
                     value,
                     pathClip,
                     urlArr,
@@ -836,7 +837,7 @@ export default function (R) {
                         if (value === E && att in attrs) {
                             delete attrs[att];
                             node.removeAttribute(att === 'src' ? 'href' : att);
-                        } else if (value === null) {
+                        } else if (value === null && !ignoreAttrs[att]) {
                             // when an attribute is provided as null, it will be removed from the element
                             if (att in attrs) {
                                 delete attrs[att];

@@ -11058,6 +11058,7 @@ exports['default'] = function (R) {
             navigator = win.navigator,
             isIE = /* @cc_on!@ */false || !!document.documentMode,
             math = Math,
+            UNDEF,
             mmax = math.max,
             abs = math.abs,
             pow = math.pow,
@@ -11375,7 +11376,9 @@ exports['default'] = function (R) {
         R._url = E;
 
         var updateGradientReference = function updateGradientReference(element, newGradient) {
-            var gradient = element.gradient;
+            var attr = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'fill';
+
+            var gradient = attr === 'fill' ? element.gradient : element['stroke-gradient'];
 
             if (gradient) {
                 if (gradient === newGradient) {
@@ -11386,12 +11389,12 @@ exports['default'] = function (R) {
                 if (!gradient.refCount) {
                     gradient.parentNode.removeChild(gradient);
                 }
-                delete element.gradient;
+                attr === 'fill' ? delete element.gradient : delete element['stroke-gradient'];
             }
 
             if (newGradient) {
                 // add new gradient
-                element.gradient = newGradient;
+                attr === 'fill' ? element.gradient = newGradient : element['stroke-gradient'] = newGradient;
                 newGradient.refCount++;
             }
         };
@@ -11426,6 +11429,8 @@ exports['default'] = function (R) {
             repeat: 'repeat'
         },
             addGradientFill = function addGradientFill(element, gradient) {
+            var attr = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'fill';
+
             if (!element.paper || !element.paper.defs) {
                 return 0;
             }
@@ -11578,14 +11583,19 @@ exports['default'] = function (R) {
                 }
                 SVG.defs.appendChild(el);
             }
-
-            updateGradientReference(element, el);
-
-            $(o, {
-                fill: "url('" + R._url + '#' + id + "')",
-                'fill-opacity': 1
-            });
-
+            if (attr === 'stroke') {
+                updateGradientReference(element, el, 'stroke');
+                $(o, {
+                    stroke: "url('" + R._url + '#' + id + "')",
+                    'stroke-opacity': 1
+                });
+            } else {
+                updateGradientReference(element, el);
+                $(o, {
+                    fill: "url('" + R._url + '#' + id + "')",
+                    'fill-opacity': 1
+                });
+            }
             s.fill = E;
             return 1;
         },
@@ -11817,6 +11827,7 @@ exports['default'] = function (R) {
                 att,
                 finalAttr = {},
                 finalS = {},
+                ignoreAttrs = { 'clip-rect': true },
                 value,
                 pathClip,
                 urlArr,
@@ -11832,7 +11843,7 @@ exports['default'] = function (R) {
                     if (value === E && att in attrs) {
                         delete attrs[att];
                         node.removeAttribute(att === 'src' ? 'href' : att);
-                    } else if (value === null) {
+                    } else if (value === null && !ignoreAttrs[att]) {
                         // when an attribute is provided as null, it will be removed from the element
                         if (att in attrs) {
                             delete attrs[att];
@@ -12086,7 +12097,14 @@ exports['default'] = function (R) {
                             // falls through
                             case 'stroke':
                                 clr = R.getRGB(value);
-                                finalAttr[att] = clr.hex;
+                                if (clr.error) {
+                                    if (o.type === 'circle' || o.type === 'ellipse' || Str(value).charAt() !== 'r') {
+                                        addGradientFill(o, value, 'stroke');
+                                    }
+                                } else {
+                                    finalAttr[att] = clr.hex;
+                                    updateGradientReference(o, UNDEF, 'stroke');
+                                }
                                 if (att === 'stroke') {
                                     // remove stroke opacity when stroke is set to none
                                     if (clr[has]('opacity')) {
@@ -12609,6 +12627,10 @@ exports['default'] = function (R) {
             if (o.gradient && defs) {
                 updateGradientReference(o);
             }
+            if (o['stroke-gradient'] && defs) {
+                updateGradientReference(o, UNDEF, 'stroke');
+            }
+
             while (i = o.followers.pop()) {
                 i.el.remove();
             }

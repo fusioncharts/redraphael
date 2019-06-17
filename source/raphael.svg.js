@@ -425,7 +425,7 @@ export default function (R) {
                 redlect: 'reflect',
                 repeat: 'repeat'
             },
-            addGradientFill = function (element, gradient, attr = 'fill') {
+            addGradient = function (element, gradient, attr = 'fill') {
                 if (!element.paper || !element.paper.defs) {
                     return 0;
                 }
@@ -584,20 +584,24 @@ export default function (R) {
                     }
                     SVG.defs.appendChild(el);
                 }
-                if(attr === 'stroke') {
-                  updateGradientReference(element, el, 'stroke');
-                  $(o, {
-                    stroke: "url('" + R._url + '#' + id + "')",
-                    'stroke-opacity': 1
-                  });
-                } else {
-                  updateGradientReference(element, el);
-                  $(o, {
-                    fill: "url('" + R._url + '#' + id + "')",
-                    'fill-opacity': 1
-                  });
-                  
-                }
+                updateGradientReference(element, el, attr);
+                $(o, {
+                    [attr]: "url('" + R._url + '#' + id + "')",
+                    [attr + '-opacity']: 1
+                });
+                // if(attr === 'stroke') {
+                //   updateGradientReference(element, el, 'stroke');
+                //   $(o, {
+                //     stroke: "url('" + R._url + '#' + id + "')",
+                //     'stroke-opacity': 1
+                //   });
+                // } else {
+                //   updateGradientReference(element, el);
+                //   $(o, {
+                //     fill: "url('" + R._url + '#' + id + "')",
+                //     'fill-opacity': 1
+                //   });
+                // }
                 s.fill = E;
                 return 1;
             },
@@ -1070,7 +1074,7 @@ export default function (R) {
                                     //     finalAttr[opacity] = attrs.opacity;
                                     !R.is(attrs['fill-opacity'], 'undefined') && R.is(params['fill-opacity'], 'undefined') && (finalAttr['fill-opacity'] = attrs['fill-opacity']);
                                     o.gradient && updateGradientReference(o);
-                                } else if ((o.type === 'circle' || o.type === 'ellipse' || Str(value).charAt() !== 'r') && addGradientFill(o, value)) {
+                                } else if ((o.type === 'circle' || o.type === 'ellipse' || Str(value).charAt() !== 'r') && addGradient(o, value)) {
                                     // The reason for this block of code is not known, hence it is commented out as it is causeing issues in
                                     // IE8 browser for gradient color
                                     /* if ("opacity" in attrs || "fill-opacity" in attrs) {
@@ -1103,7 +1107,7 @@ export default function (R) {
                                     o.type === 'ellipse' ||
                                     Str(value).charAt() !== 'r'
                                   ) {
-                                    addGradientFill(o, value, 'stroke');
+                                    addGradient(o, value, 'stroke');
                                   }
                                 } else {
                                   finalAttr[att] = clr.hex;
@@ -1125,7 +1129,7 @@ export default function (R) {
                                 }
                                 break;
                             case 'gradient':
-                                (o.type === 'circle' || o.type === 'ellipse' || Str(value).charAt() !== 'r') && addGradientFill(o, value);
+                                (o.type === 'circle' || o.type === 'ellipse' || Str(value).charAt() !== 'r') && addGradient(o, value);
                                 break;
                             case 'visibility':
                                 value === hiddenStr ? o.hide() : o.show();

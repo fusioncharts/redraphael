@@ -26,7 +26,7 @@ describe('Applying gradient to stroke attribute', function () {
     expect(defs.childNodes.length).toEqual(0);
   });
 
-  it ("Must create a gradient definition if stroke is solid", function () {
+  it ("Must create a gradient definition if stroke is a gradient", function () {
     path1.attr('stroke', '90-#ff0000-#0000ff');
     expect(defs.childNodes.length).toEqual(1);
     expect(path1['stroke-gradient'].parentNode).toEqual(defs);

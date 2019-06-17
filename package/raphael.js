@@ -11587,19 +11587,6 @@ exports['default'] = function (R) {
             }
             updateGradientReference(element, el, attr);
             $(o, (_$ = {}, _$[attr] = "url('" + R._url + '#' + id + "')", _$[attr + '-opacity'] = 1, _$));
-            // if(attr === 'stroke') {
-            //   updateGradientReference(element, el, 'stroke');
-            //   $(o, {
-            //     stroke: "url('" + R._url + '#' + id + "')",
-            //     'stroke-opacity': 1
-            //   });
-            // } else {
-            //   updateGradientReference(element, el);
-            //   $(o, {
-            //     fill: "url('" + R._url + '#' + id + "')",
-            //     'fill-opacity': 1
-            //   });
-            // }
             s.fill = E;
             return 1;
         },

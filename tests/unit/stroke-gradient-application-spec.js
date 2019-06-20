@@ -26,6 +26,13 @@ describe('Applying gradient to stroke attribute', function () {
     expect(defs.childNodes.length).toEqual(0);
   });
 
+  it ("Must create a gradient definition if stroke is a gradient and fill is none", function () {
+    path1.attr('fill', 'none');
+    path1.attr('stroke', '90-#ff0000-#0000ff');
+    expect(defs.childNodes.length).toEqual(1);
+    expect(path1['stroke-gradient'].parentNode).toEqual(defs);
+  });
+
   it ("Must create a gradient definition if stroke is a gradient", function () {
     path1.attr('stroke', '90-#ff0000-#0000ff');
     expect(defs.childNodes.length).toEqual(1);
@@ -81,7 +88,7 @@ describe('Applying gradient to stroke attribute', function () {
 
   it("Must remove gradient definitions when switched to solid stroke", function () {
     var strokeGradient = path2['stroke-gradient'];
-    path2.attr('fill', '#ff0000');
+    path2.attr('stroke', '#ff0000');
     expect(defs.childNodes.length).toEqual(0);
     expect(path2['stroke-gradient']).not.toBeDefined();
     expect(strokeGradient.parentNode).toBeNull();

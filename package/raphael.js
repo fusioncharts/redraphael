@@ -12090,7 +12090,7 @@ exports['default'] = function (R) {
                                 clr = R.getRGB(value);
                                 if (clr.error) {
                                     if (o.type === 'circle' || o.type === 'ellipse' || Str(value).charAt() !== 'r') {
-                                        addGradient(o, value, 'stroke');
+                                        addGradient(o, value, att);
                                     }
                                 } else {
                                     finalAttr[att] = clr.hex;

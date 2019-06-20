@@ -1094,11 +1094,11 @@ export default function (R) {
                                     o.type === 'ellipse' ||
                                     Str(value).charAt() !== 'r'
                                   ) {
-                                    addGradient(o, value, att);
+                                    addGradient(o, value, 'stroke');
                                   }
                                 } else {
                                   finalAttr[att] = clr.hex;
-                                  updateGradientReference(o, UNDEF, 'stroke')
+                                  updateGradientReference(o, UNDEF, att)
                                 }
                                 if (att === 'stroke') { // remove stroke opacity when stroke is set to none
                                     if (clr[has]('opacity')) {

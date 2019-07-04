@@ -11067,6 +11067,7 @@ exports['default'] = function (R) {
             separator = /[, ]+/,
             textBreakRegx = /\n|<br\s*?\/?>/i,
             ltgtbrRegex = /&lt|&gt|<br/i,
+            nbspRegex = /&nbsp|&#160|&#xA0/i,
             arrayShift = Array.prototype.shift,
             zeroStrokeFix = !!(/AppleWebKit/.test(navigator.userAgent) && (!/Chrome/.test(navigator.userAgent) || navigator.appVersion.match(/Chrome\/(\d+)\./)[1] < 29)),
             eve = R.eve,
@@ -12222,6 +12223,7 @@ exports['default'] = function (R) {
                 updateNode = false,
                 tspanAttr,
                 updateTspan = false,
+                hasnbsp = false,
                 i,
                 l,
                 ii,
@@ -12260,6 +12262,11 @@ exports['default'] = function (R) {
                     // then converting them into <<br/> and ><br/> respectively.
                     if (text && ltgtbrRegex.test(text)) {
                         text = text.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&<br\/>lt;|&l<br\/>t;|&lt<br\/>;/g, '<<br/>').replace(/&<br\/>gt;|&g<br\/>t;|&gt<br\/>;/g, '><br/>');
+                    }
+                    //Convert all &nbsp; and related force-spaces to ' ' 
+                    if (text && nbspRegex.test(text)) {
+                        hasnbsp = true;
+                        text = text.replace(/&nbsp;|&#160;|&#xA0;/g, ' ');
                     }
                     oldAttr.text = a.text = text;
                     if (textBreakRegx.test(text)) {
@@ -12360,6 +12367,10 @@ exports['default'] = function (R) {
                         }
                         // create and append the text node
                         tspan.appendChild(R._g.doc.createTextNode(texts[i]));
+                        //If text has &nbsp; then change the white-space style of the node to 'preserve' for disabling space collapse
+                        if (hasnbsp) {
+                            tspan.style.whiteSpace = 'pre';
+                        }
                     }
 
                     ii = l * j;
@@ -12381,6 +12392,10 @@ exports['default'] = function (R) {
                 // ** single line mode
                 // create and append the text node
                 node.appendChild(R._g.doc.createTextNode(text));
+                //If text has &nbsp; then change the white-space style of the node to 'preserve' for disabling space collapse
+                if (hasnbsp) {
+                    node.style.whiteSpace = 'pre';
+                }
             }
 
             if (params[vAignStr]) {

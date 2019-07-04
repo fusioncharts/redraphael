@@ -11,7 +11,6 @@ import {getArrayCopy, dashedAttr2CSSMap, loadRefImage, showRecursively} from './
 * Licensed under the MIT license.
 */
 // Define _window as window object in case of indivual file inclusion.
-
 export default function (R) {
     if (R.svg) {
         var has = 'hasOwnProperty',
@@ -44,6 +43,8 @@ export default function (R) {
             Str = String,
             VERTICAL = 'vertical',
             HORIZONTAL = 'horizontal',
+            PRESERVESTRING = 'pre',
+            BLANKSTRING = '',
             toFloat = parseFloat,
             toInt = parseInt,
             vAlignMultiplier = {
@@ -64,6 +65,7 @@ export default function (R) {
             separator = /[, ]+/,
             textBreakRegx = /\n|<br\s*?\/?>/i,
             ltgtbrRegex = /&lt|&gt|<br/i,
+            nbspRegex = /&nbsp;|&#160;|&#xA0;/i,
             arrayShift = Array.prototype.shift,
             zeroStrokeFix = !!(/AppleWebKit/.test(navigator.userAgent) &&
                     (!/Chrome/.test(navigator.userAgent) ||
@@ -1239,7 +1241,11 @@ export default function (R) {
                     textChanged = false,
                     // @todo: Comment the below lines of code in order to fix RED-8282
                     // removeAllChild = !!(!isIE && oldAttr.direction && direction !== oldAttr.direction);
-                    removeAllChild;
+                    removeAllChild,
+                    //Check whether a string has &nbsp; or similar non-breaking space
+                    hasnbsp = function(text){
+                        return(text && nbspRegex.test(text));
+                    };
 
                 oldAttr.direction = direction;
 
@@ -1300,6 +1306,10 @@ export default function (R) {
 
                 // ** If multiline text mode
                 if (oldAttr.lineCount > 1) {
+                    //Remove white-space preserve property from parent text node
+                    if(node.style.whiteSpace === PRESERVESTRING){
+                        node.style.whiteSpace = BLANKSTRING;
+                    }
                     tspanAttr = {};
                     if (!oldAttr.tspanAttr) {
                         oldAttr.tspanAttr = {};
@@ -1352,8 +1362,18 @@ export default function (R) {
                                 tspan.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
                                 texts[i] = S;
                             }
+                            
+                            //If text has &nbsp; then change the white-space style of the node to 'preserve' for disabling space collapse
+                            if(hasnbsp(texts[i])){
+                                texts[i] = texts[i].replace(/&nbsp;|&#160;|&#xA0;/g, ' ');   
+                                tspan.style.whiteSpace = PRESERVESTRING;
+                            }
+                            else if(tspan.style.whiteSpace === PRESERVESTRING){
+                                    tspan.style.whiteSpace = BLANKSTRING;
+                                 
+                            }
                             // create and append the text node
-                            tspan.appendChild(R._g.doc.createTextNode(texts[i]));
+                            tspan.appendChild(R._g.doc.createTextNode(texts[i])); 
                         }
 
                         ii = l * j;
@@ -1371,6 +1391,14 @@ export default function (R) {
                         }
                     }
                 } else if (textChanged) { // ** single line mode
+                    //If text has &nbsp; then change the white-space style of the node to 'preserve' for disabling space collapse
+                    if(hasnbsp(text)){
+                        text = text.replace(/&nbsp;|&#160;|&#xA0;/g, ' ');
+                        node.style.whiteSpace = PRESERVESTRING;
+                    }
+                    else if(node.style.whiteSpace === PRESERVESTRING){
+                            node.style.whiteSpace = BLANKSTRING;
+                    }
                     // create and append the text node
                     node.appendChild(R._g.doc.createTextNode(text));
                 }

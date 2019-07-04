@@ -1225,7 +1225,6 @@ export default function (R) {
                     updateNode = false,
                     tspanAttr,
                     updateTspan = false,
-                    hasnbsp = false,
                     i,
                     l,
                     ii,
@@ -1241,7 +1240,15 @@ export default function (R) {
                     textChanged = false,
                     // @todo: Comment the below lines of code in order to fix RED-8282
                     // removeAllChild = !!(!isIE && oldAttr.direction && direction !== oldAttr.direction);
-                    removeAllChild;
+                    removeAllChild,
+                    hasnbsp = function(text){
+                        if(text && nbspRegex.test(text)){
+                            return(true);
+                        }
+                        else{
+                            return(false);
+                        }
+                    };
 
                 oldAttr.direction = direction;
 
@@ -1264,11 +1271,6 @@ export default function (R) {
                             text = text.replace(/&lt;/g, '<').replace(/&gt;/g, '>')
                                 .replace(/&<br\/>lt;|&l<br\/>t;|&lt<br\/>;/g, '<<br/>')
                                 .replace(/&<br\/>gt;|&g<br\/>t;|&gt<br\/>;/g, '><br/>');
-                        }
-                        //Convert all &nbsp; and related force-spaces to ' ' 
-                        if(text && nbspRegex.test(text)){
-                            hasnbsp = true;
-                            text = text.replace(/&nbsp;|&#160;|&#xA0;/g, ' ');
                         }
                         oldAttr.text = a.text = text;
                         if (textBreakRegx.test(text)) { // if multiline text
@@ -1307,6 +1309,9 @@ export default function (R) {
 
                 // ** If multiline text mode
                 if (oldAttr.lineCount > 1) {
+                    if(node.style.whiteSpace === 'pre'){
+                        node.style.whiteSpace = '';
+                    }
                     tspanAttr = {};
                     if (!oldAttr.tspanAttr) {
                         oldAttr.tspanAttr = {};
@@ -1359,11 +1364,17 @@ export default function (R) {
                                 tspan.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
                                 texts[i] = S;
                             }
-                            // create and append the text node
-                            tspan.appendChild(R._g.doc.createTextNode(texts[i]));
+                            
                             //If text has &nbsp; then change the white-space style of the node to 'preserve' for disabling space collapse
-                            if(hasnbsp){
+                            if(hasnbsp(texts[i])){
+                                texts[i] = texts[i].replace(/&nbsp;|&#160;|&#xA0;/g, ' ');
+                                // create and append the text node
+                                tspan.appendChild(R._g.doc.createTextNode(texts[i]));    
                                 tspan.style.whiteSpace = 'pre';
+                            }
+                            else{
+                                // create and append the text node
+                                tspan.appendChild(R._g.doc.createTextNode(texts[i]));   
                             }
                         }
 
@@ -1382,11 +1393,19 @@ export default function (R) {
                         }
                     }
                 } else if (textChanged) { // ** single line mode
-                    // create and append the text node
-                    node.appendChild(R._g.doc.createTextNode(text));
+                    if(node.style.whiteSpace === 'pre'){
+                        node.style.whiteSpace = '';
+                    }
                     //If text has &nbsp; then change the white-space style of the node to 'preserve' for disabling space collapse
-                    if(hasnbsp){
+                    if(hasnbsp(text)){
+                        text = text.replace(/&nbsp;|&#160;|&#xA0;/g, ' ');
+                        // create and append the text node
+                        node.appendChild(R._g.doc.createTextNode(text));
                         node.style.whiteSpace = 'pre';
+                    }
+                    else{
+                        // create and append the text node
+                        node.appendChild(R._g.doc.createTextNode(text));
                     }
                 }
 

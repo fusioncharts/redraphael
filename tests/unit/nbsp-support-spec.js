@@ -8,6 +8,7 @@ describe('nbsp support', function () {
 		paper = Raphael(0, 0, 400, 400);
 		text = paper.text(50, 50, 'Fusion&nbsp;&nbsp;&nbsp;Charts');
 		expect(text.node.innerHTML).toBe('Fusion   Charts');
+		expect(text.node.style.whiteSpace).toBe('pre');
 	});
 });
 

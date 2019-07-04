@@ -64,7 +64,7 @@ export default function (R) {
             separator = /[, ]+/,
             textBreakRegx = /\n|<br\s*?\/?>/i,
             ltgtbrRegex = /&lt|&gt|<br/i,
-            nbspRegex = /&nbsp|&#160|&#xA0/i,
+            nbspRegex = /&nbsp;|&#160;|&#xA0;/i,
             arrayShift = Array.prototype.shift,
             zeroStrokeFix = !!(/AppleWebKit/.test(navigator.userAgent) &&
                     (!/Chrome/.test(navigator.userAgent) ||

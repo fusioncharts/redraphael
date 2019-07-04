@@ -11014,6 +11014,7 @@ var _typeof = typeof _symbol2['default'] === "function" && typeof _iterator2['de
 */
 // Define _window as window object in case of indivual file inclusion.
 
+
 exports['default'] = function (R) {
     if (R.svg) {
         var has = 'hasOwnProperty',
@@ -11047,6 +11048,8 @@ exports['default'] = function (R) {
             Str = String,
             VERTICAL = 'vertical',
             HORIZONTAL = 'horizontal',
+            PRESERVESTRING = 'pre',
+            BLANKSTRING = '',
             toFloat = parseFloat,
             toInt = parseInt,
             vAlignMultiplier = {
@@ -12241,12 +12244,10 @@ exports['default'] = function (R) {
             // @todo: Comment the below lines of code in order to fix RED-8282
             // removeAllChild = !!(!isIE && oldAttr.direction && direction !== oldAttr.direction);
             removeAllChild,
-                hasnbsp = function hasnbsp(text) {
-                if (text && nbspRegex.test(text)) {
-                    return true;
-                } else {
-                    return false;
-                }
+
+            //Check whether a string has &nbsp; or similar non-breaking space
+            hasnbsp = function hasnbsp(text) {
+                return text && nbspRegex.test(text);
             };
 
             oldAttr.direction = direction;
@@ -12310,8 +12311,9 @@ exports['default'] = function (R) {
 
             // ** If multiline text mode
             if (oldAttr.lineCount > 1) {
-                if (node.style.whiteSpace === 'pre') {
-                    node.style.whiteSpace = '';
+                //Remove white-space preserve property from parent text node
+                if (node.style.whiteSpace === PRESERVESTRING) {
+                    node.style.whiteSpace = BLANKSTRING;
                 }
                 tspanAttr = {};
                 if (!oldAttr.tspanAttr) {
@@ -12373,13 +12375,12 @@ exports['default'] = function (R) {
                         //If text has &nbsp; then change the white-space style of the node to 'preserve' for disabling space collapse
                         if (hasnbsp(texts[i])) {
                             texts[i] = texts[i].replace(/&nbsp;|&#160;|&#xA0;/g, ' ');
-                            // create and append the text node
-                            tspan.appendChild(R._g.doc.createTextNode(texts[i]));
-                            tspan.style.whiteSpace = 'pre';
-                        } else {
-                            // create and append the text node
-                            tspan.appendChild(R._g.doc.createTextNode(texts[i]));
+                            tspan.style.whiteSpace = PRESERVESTRING;
+                        } else if (tspan.style.whiteSpace === PRESERVESTRING) {
+                            tspan.style.whiteSpace = BLANKSTRING;
                         }
+                        // create and append the text node
+                        tspan.appendChild(R._g.doc.createTextNode(texts[i]));
                     }
 
                     ii = l * j;
@@ -12399,19 +12400,15 @@ exports['default'] = function (R) {
                 }
             } else if (textChanged) {
                 // ** single line mode
-                if (node.style.whiteSpace === 'pre') {
-                    node.style.whiteSpace = '';
-                }
                 //If text has &nbsp; then change the white-space style of the node to 'preserve' for disabling space collapse
                 if (hasnbsp(text)) {
                     text = text.replace(/&nbsp;|&#160;|&#xA0;/g, ' ');
-                    // create and append the text node
-                    node.appendChild(R._g.doc.createTextNode(text));
-                    node.style.whiteSpace = 'pre';
-                } else {
-                    // create and append the text node
-                    node.appendChild(R._g.doc.createTextNode(text));
+                    node.style.whiteSpace = PRESERVESTRING;
+                } else if (node.style.whiteSpace === PRESERVESTRING) {
+                    node.style.whiteSpace = BLANKSTRING;
                 }
+                // create and append the text node
+                node.appendChild(R._g.doc.createTextNode(text));
             }
 
             if (params[vAignStr]) {

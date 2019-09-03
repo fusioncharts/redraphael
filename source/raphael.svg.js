@@ -65,7 +65,7 @@ export default function (R) {
             separator = /[, ]+/,
             textBreakRegx = /\n|<br\s*?\/?>/i,
             ltgtbrRegex = /&lt|&gt|<br/i,
-            nbspRegex = /&nbsp;|&#160;|&#xA0;/i,
+            nbspRegex = /&nbsp;|&#160;|&#xA0;/g,
             arrayShift = Array.prototype.shift,
             zeroStrokeFix = !!(/AppleWebKit/.test(navigator.userAgent) &&
                     (!/Chrome/.test(navigator.userAgent) ||
@@ -1242,9 +1242,20 @@ export default function (R) {
                     // @todo: Comment the below lines of code in order to fix RED-8282
                     // removeAllChild = !!(!isIE && oldAttr.direction && direction !== oldAttr.direction);
                     removeAllChild,
-                    //Check whether a string has &nbsp; or similar non-breaking space
-                    hasnbsp = function(text){
-                        return(text && nbspRegex.test(text));
+                    // Check whether a string has &nbsp; or similar non-breaking space
+                    hasnbsp = function (text) {
+                        return (text && nbspRegex.test(text));
+                    },
+                    /**
+                     * replaces multiple spaces and different codes of nbsp
+                     * with single white space so that it simulates the behaviour of dom
+                     * rendering for text
+                     * @param {string} text
+                     * @returns {string} processed text
+                     */
+                    spacify = function (text) {
+                        return text.replace(/\s+/g, ' ').trim()
+                            .replace(nbspRegex, ' ');
                     };
 
                 oldAttr.direction = direction;
@@ -1306,8 +1317,8 @@ export default function (R) {
 
                 // ** If multiline text mode
                 if (oldAttr.lineCount > 1) {
-                    //Remove white-space preserve property from parent text node
-                    if(node.style.whiteSpace === PRESERVESTRING){
+                    // Remove white-space preserve property from parent text node
+                    if (node.style.whiteSpace === PRESERVESTRING) {
                         node.style.whiteSpace = BLANKSTRING;
                     }
                     tspanAttr = {};
@@ -1363,15 +1374,12 @@ export default function (R) {
                                 texts[i] = S;
                             }
 
-                            //If text has &nbsp; then change the white-space style of the node to 'preserve' for disabling space collapse
-                            if(hasnbsp(texts[i])){
-                                texts[i] = texts[i].replace(/\s+/g, ' ').trim();
-                                texts[i] = texts[i].replace(/&nbsp;|&#160;|&#xA0;/g, ' ');
+                            // If text has &nbsp; then change the white-space style of the node to 'preserve' for disabling space collapse
+                            if (hasnbsp(texts[i])) {
+                                texts[i] = spacify(texts[i]);
                                 tspan.style.whiteSpace = PRESERVESTRING;
-                            }
-                            else if(tspan.style.whiteSpace === PRESERVESTRING){
-                                    tspan.style.whiteSpace = BLANKSTRING;
-
+                            } else if (tspan.style.whiteSpace === PRESERVESTRING) {
+                                tspan.style.whiteSpace = BLANKSTRING;
                             }
                             // create and append the text node
                             tspan.appendChild(R._g.doc.createTextNode(texts[i]));
@@ -1392,14 +1400,12 @@ export default function (R) {
                         }
                     }
                 } else if (textChanged) { // ** single line mode
-                    //If text has &nbsp; then change the white-space style of the node to 'preserve' for disabling space collapse
-                    if(hasnbsp(text)){
-                        text = text.replace(/\s+/g, ' ').trim();
-                        text = text.replace(/&nbsp;|&#160;|&#xA0;/g, ' ');
+                    // If text has &nbsp; then change the white-space style of the node to 'preserve' for disabling space collapse
+                    if (hasnbsp(text)) {
+                        text = spacify(text);
                         node.style.whiteSpace = PRESERVESTRING;
-                    }
-                    else if(node.style.whiteSpace === PRESERVESTRING){
-                            node.style.whiteSpace = BLANKSTRING;
+                    } else if (node.style.whiteSpace === PRESERVESTRING) {
+                        node.style.whiteSpace = BLANKSTRING;
                     }
                     // create and append the text node
                     node.appendChild(R._g.doc.createTextNode(text));

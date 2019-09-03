@@ -1,4 +1,8 @@
 module.exports = {
+    'root': true,
+    env: {
+        jasmine: true
+      },
     'extends': 'standard',
     'plugins': [
         'standard',

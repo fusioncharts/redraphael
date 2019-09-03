@@ -330,7 +330,7 @@ export default function (R) {
                 "y": true,
                 "z": true
             };
-        
+
         /** External function to fire mouseOut for various elements for touch supported devices
          * TouchStart/Pointer Over event is attached in the capturing phase on the document so that
          * when ever any dom is tapped, this callback gets executed 1st and mouseout of the last event is
@@ -1362,18 +1362,19 @@ export default function (R) {
                                 tspan.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
                                 texts[i] = S;
                             }
-                            
+
                             //If text has &nbsp; then change the white-space style of the node to 'preserve' for disabling space collapse
                             if(hasnbsp(texts[i])){
-                                texts[i] = texts[i].replace(/&nbsp;|&#160;|&#xA0;/g, ' ');   
+                                texts[i] = texts[i].replace(/\s+/g, ' ').trim();
+                                texts[i] = texts[i].replace(/&nbsp;|&#160;|&#xA0;/g, ' ');
                                 tspan.style.whiteSpace = PRESERVESTRING;
                             }
                             else if(tspan.style.whiteSpace === PRESERVESTRING){
                                     tspan.style.whiteSpace = BLANKSTRING;
-                                 
+
                             }
                             // create and append the text node
-                            tspan.appendChild(R._g.doc.createTextNode(texts[i])); 
+                            tspan.appendChild(R._g.doc.createTextNode(texts[i]));
                         }
 
                         ii = l * j;
@@ -1393,6 +1394,7 @@ export default function (R) {
                 } else if (textChanged) { // ** single line mode
                     //If text has &nbsp; then change the white-space style of the node to 'preserve' for disabling space collapse
                     if(hasnbsp(text)){
+                        text = text.replace(/\s+/g, ' ').trim();
                         text = text.replace(/&nbsp;|&#160;|&#xA0;/g, ' ');
                         node.style.whiteSpace = PRESERVESTRING;
                     }
@@ -1465,7 +1467,7 @@ export default function (R) {
                 parent.top = o;
                 o.next = null;
             },
-            /* 
+            /*
              * Function to get the distance between two touches
             */
             getTouchDistance = function (touch1, touch2, isY) {
@@ -1868,7 +1870,7 @@ export default function (R) {
                         handler.call(context || elem, dummyEve);
                     }
                 };
-            
+
             // Storing the handlers
             storeHandlers(elem, handler, fn);
 
@@ -1985,13 +1987,13 @@ export default function (R) {
                     return elem;
                 case 'fc-wheel':
                     elem.fcwheel(handler, context);
-                    return elem;    
+                    return elem;
             }
 
             // Setting the original event on which operations has to be done
             isSafe && (eventType = eventType.replace(/fc-/, ''));
 
-            /** 
+            /**
              * Here we are implementing safe mouse events. All browsers for which pointer events are supported, we are using
              * pointer events for touch. For rest (non-hybrid ios device) we are using touch events.
              */
@@ -2000,7 +2002,7 @@ export default function (R) {
                     actualEventType = eventType;
                     eventType = (supportsPointer ? R.safePointerEventMapping[eventType] : safeMouseEventMapping[eventType])
                         || eventType;
-                    
+
                     // Mouse out event's handler is fired when the next element on the page is hovered.
                     if (actualEventType === 'mouseout') {
                         fn = function (e) {
@@ -2017,7 +2019,7 @@ export default function (R) {
                     }
                 }
             }
-            
+
             // IE-11 cannot emit load and error event,
             // that's why we are attaching the load and error events on the Reference Image
             if (this._ && this._.RefImg && (eventType === 'load' || eventType === 'error')) {
@@ -2095,7 +2097,7 @@ export default function (R) {
                     return elem;
                 case 'fc-wheel':
                     elem.fcunwheel(handler);
-                    return elem;    
+                    return elem;
             }
 
             // Setting the original event on which operations has to be done
@@ -2113,7 +2115,7 @@ export default function (R) {
                     }
                 }
             }
-            
+
             if (this._ && this._.RefImg) {
                 node = this._.RefImg;
             } else {

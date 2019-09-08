@@ -192,14 +192,14 @@ var loaded,
         } else if (__params.length >= paramCounts[name]) {
                 while (i < __params.length) {
                     if (i % paramCounts[name]) {
-                        // push the rest of the co-ordinates into the path sub array. 
+                        // push the rest of the co-ordinates into the path sub array.
                         subArr.push(__params[i]);
                     } else {
-                        // if any path is previously parsed then push it 
+                        // if any path is previously parsed then push it
                         subArr.length && __data.push(subArr) && (subArr = []);
                         // new path array for the last known path command
                         subArr.push(b,__params[i]);
-                    } 
+                    }
                     i++;
                 }
                 // push the last parsed path sub array
@@ -667,7 +667,7 @@ var loaded,
                 return res;
             },
         /**
-         * Function to manage the click 
+         * Function to manage the click
          */
         Node = _win.Node;
         //Adding pollyfill for IE11
@@ -679,7 +679,7 @@ var loaded,
                 return false;
             }
         }
-    
+
     R._g = g;
     R.merge = merge;
     R.extend = extend;
@@ -3267,7 +3267,7 @@ var loaded,
         }
         return this;
     };
-    
+
     elproto.dbclick = function (handler, context) {
         let elem = this,
             eventType,
@@ -3297,7 +3297,7 @@ var loaded,
             };
 
         eventType = supportsPointer ? 'pointerup' : R.supportsTouch ? 'touchstart' : 'mouseup';
-        
+
         elem.node.addEventListener(eventType, fn);
         R.storeHandlers(elem, handler, fn);
 
@@ -3307,7 +3307,7 @@ var loaded,
         var elem = this,
             derivedHandler = removeHandlers(elem, handler);
 
-        derivedHandler && elem.node.removeEventListener(supportsPointer ? 'pointerup' : 
+        derivedHandler && elem.node.removeEventListener(supportsPointer ? 'pointerup' :
             R.supportsTouch ? 'touchstart' : 'mouseup', derivedHandler);
     };
 
@@ -3495,7 +3495,7 @@ var loaded,
             clickHandlerHelper = elem._clickHandlerHelper,
             clickStoreActual = elem._clickStoreActual,
             clickStoreDerived = elem._clickStoreDerived;
-        
+
         if (clickStoreActual) {
             for (i = clickStoreActual.length - 1; i >= 0; i--) {
                 if (clickStoreActual[i] === handler) {
@@ -3507,16 +3507,16 @@ var loaded,
                     }
                     clickStoreActual.splice(i, 1);
                     clickStoreDerived.splice(i, 1);
-                }   
+                }
             }
-    
+
             // When all click listeners are removed
             if (!clickStoreActual.length) {
                 for (eventType in clickHandlerHelper) {
                     if (node.removeEventListener) {
                         node.removeEventListener(eventType, clickHandlerHelper[eventType]);
                     } else {
-                        node.detachEvent('on'+ eventType, clickHandlerHelper[eventType]);                    
+                        node.detachEvent('on'+ eventType, clickHandlerHelper[eventType]);
                     }
                 }
                 elem._clickHandlerHelper = undefined;
@@ -3612,9 +3612,9 @@ var loaded,
                 R.dragmove.apply(element, args);
             } else  {
                 R.mousemove.apply(element, args).mouseup.call(element, dragUp, undef, undef, g.doc)
-                
+
             }
-            
+
             if (supportsTouch) {
                 // dragEnd is added for hybrid devices and other touch devices
                 R.dragend.call(element, dragUp, undef, g.doc);
@@ -3648,7 +3648,7 @@ var loaded,
                 dragInfo.onmove.push(dummydragMoveFn);
                 eve.on("raphael.drag.end." + element.id, dummydragMoveFn);
             }
-            
+
             // Queuing up the dragStartFn. It is fired if dragmove is fired after dragStart
             element.dragStartFn = function (i) {
                 eve("raphael.drag.start." + element.id, element.dragInfo.start_scope[i] || element.dragInfo.move_scope[i] ||
@@ -3759,7 +3759,7 @@ var loaded,
             i,
             ii,
             move_scope = dragInfo && dragInfo.move_scope;
-                    
+
         if (handler) {
             for (i = 0, ii = onmove && onmove.length; i < ii; i++) {
                 if (onmove[i] === handler) {
@@ -3885,7 +3885,7 @@ var loaded,
         var paper = this,
             args = getArrayCopy(arguments),
             group = lastArgIfGroup(args, true),
-            out = R._engine.group(paper, args[0], group);
+            out = R._engine.group(paper, args[0], group, !!args[1]);
         return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
     };
 

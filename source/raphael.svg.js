@@ -2153,7 +2153,7 @@ export default function (R) {
             return res;
         };
 
-        R._engine.group = function (svg, id, group) {
+        R._engine.group = function (svg, id, group, overrideId) {
             var el = $('g'),
                 res = new Element(el, svg, group);
 
@@ -2161,7 +2161,15 @@ export default function (R) {
             res.canvas = res.node;
             res.top = res.bottom = null;
             res._id = id || E;
-            id && el.setAttribute('class', 'raphael-group-' + res.id + '-' + id);
+
+            if (id) {
+                if (overrideId) {
+                    el.setAttribute('class', 'raphael-group-' + id);
+                } else {
+                    el.setAttribute('class', 'raphael-group-' + res.id + '-' + id);
+                }
+            }
+
             return res;
         };
 

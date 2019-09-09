@@ -1385,10 +1385,10 @@ var loaded,
     } else if (__params.length >= paramCounts[name]) {
         while (i < __params.length) {
             if (i % paramCounts[name]) {
-                // push the rest of the co-ordinates into the path sub array. 
+                // push the rest of the co-ordinates into the path sub array.
                 subArr.push(__params[i]);
             } else {
-                // if any path is previously parsed then push it 
+                // if any path is previously parsed then push it
                 subArr.length && __data.push(subArr) && (subArr = []);
                 // new path array for the last known path command
                 subArr.push(b, __params[i]);
@@ -1824,7 +1824,7 @@ clone = R.clone = hasPrototypeBug ? function (obj) {
 },
 
 /**
- * Function to manage the click 
+ * Function to manage the click
  */
 Node = _win.Node;
 //Adding pollyfill for IE11
@@ -4974,7 +4974,7 @@ paperproto.group = function () {
     var paper = this,
         args = (0, _raphael.getArrayCopy)(arguments),
         group = lastArgIfGroup(args, true),
-        out = R._engine.group(paper, args[0], group);
+        out = R._engine.group(paper, args[0], group, !!args[1]);
     return paper.__set__ && paper.__set__.push(out), paper._elementsById[out.id] = out;
 };
 
@@ -13186,7 +13186,7 @@ exports['default'] = function (R) {
             return res;
         };
 
-        R._engine.group = function (svg, id, group) {
+        R._engine.group = function (svg, id, group, overrideId) {
             var el = $('g'),
                 res = new Element(el, svg, group);
 
@@ -13194,7 +13194,15 @@ exports['default'] = function (R) {
             res.canvas = res.node;
             res.top = res.bottom = null;
             res._id = id || E;
-            id && el.setAttribute('class', 'raphael-group-' + res.id + '-' + id);
+
+            if (id) {
+                if (overrideId) {
+                    el.setAttribute('class', 'raphael-group-' + id);
+                } else {
+                    el.setAttribute('class', 'raphael-group-' + res.id + '-' + id);
+                }
+            }
+
             return res;
         };
 
@@ -14609,7 +14617,7 @@ exports["default"] = function (R) {
             return node.clipRect || node;
         };
 
-        R._engine.group = function (vml, id, group) {
+        R._engine.group = function (vml, id, group, overrideId) {
             var el = R._g.doc.createElement("div"),
                 className,
                 universalClassName = vml._HTMLClassName,
@@ -14617,7 +14625,15 @@ exports["default"] = function (R) {
 
             el.style.cssText = cssDot;
             p._id = id || E;
-            id && (className = el.className = 'raphael-group-' + p.id + '-' + id);
+
+            if (id) {
+                if (overrideId) {
+                    className = el.className = 'raphael-group-' + id;
+                } else {
+                    className = el.className = 'raphael-group-' + p.id + '-' + id;
+                }
+            }
+
             if (universalClassName) {
                 el.className = className ? className + ' ' + universalClassName : universalClassName;
             }

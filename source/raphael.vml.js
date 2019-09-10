@@ -1123,7 +1123,7 @@ export default function (R) {
             return node.clipRect || node;
         };
 
-        R._engine.group = function(vml, id, group) {
+        R._engine.group = function(vml, id, group, overrideId) {
             var el = R._g.doc.createElement("div"),
                 className,
                 universalClassName = vml._HTMLClassName,
@@ -1131,7 +1131,15 @@ export default function (R) {
 
             el.style.cssText = cssDot;
             p._id = id || E;
-            id && (className = el.className = 'raphael-group-' + p.id + '-' + id);
+
+            if (id) {
+                if (overrideId) {
+                    className = el.className = 'raphael-group-' + id;
+                } else {
+                    className = el.className = 'raphael-group-' + p.id + '-' + id;
+                }
+            }
+
             if (universalClassName) {
                 el.className = className ? className + ' ' + universalClassName : universalClassName;
             }

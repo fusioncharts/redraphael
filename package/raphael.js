@@ -180,7 +180,7 @@ module.exports = { "default": __webpack_require__(45), __esModule: true };
 /* 8 */
 /***/ (function(module, exports) {
 
-var core = module.exports = { version: '2.6.9' };
+var core = module.exports = { version: '2.6.10' };
 if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
 
 

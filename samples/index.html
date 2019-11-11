@@ -1,46 +1,75 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<title></title>
-</head>
-<body>
+  <head>
+    <title>RedRaphael</title>
+    <style>
+      svg {
+        border: 1px solid;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="static">
+      <svg
+        version="1.1"
+        width="600"
+        height="600"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          id="path"
+          d="
+            M 80 270
+            L 130 160
+            Q 180 135 230 110
+            C 200 190 250 190 220 270
+            A 50 50 0 1 1 190 230
+            "
+          fill="none"
+          stroke="#000000"
+        />
 
-
-	<script type="text/javascript" src="./raphael.js"></script>
-	<!-- <script type="text/javascript" src="../../package/raphael.js"></script> -->
-
-	<script type="text/javascript">
-		var rect;
-
-		RedRaphael(10, 10, 600, 400, function () {
-		    var paper = window.pap = this;
-
-		    // Draw a red rectangle with red fill color.
-		    rect = paper.rect({
-		    	x: 0,
-		    	y: 0,
-		    	width: 500,
-		    	height: 200
-		    })
-		    .attr({
-		    	fill: '#FF0000'
-		    });
-
-		    // Draw text on top of rectangle with white fill color.
-		    paper.text({
-		        text: ['Use index.html as a template to work on temporary workspace!',
-		               '',
-		               'Ensure that your test files are named spec-<somename>.html'],
-		        x: 10,
-		        y: 20,
-		        fill: '#FFFFFF',
-		        'text-anchor': 'left',
-		        'vertical-align': 'top'
-		    });
-
-		});
-
-	</script>
-
-</body>
+        <text text-anchor="middle" dy="0em">
+          <textPath
+            path="
+              M 80 270
+              L 130 160
+              Q 180 135 230 110
+              C 200 190 250 190 220 270
+              A 50 50 0 1 1 190 230
+              "
+            startOffset="50%"
+          >
+            The quick brown fox jumps over the lazy dog. The quick brown fox
+            jumps over the lazy dog.
+          </textPath>
+        </text>
+      </svg>
+    </div>
+    <div id="dynamic"></div>
+    <script
+      type="text/javascript"
+      src="https://unpkg.com/snapsvg@0.5.1/dist/snap.svg.js"
+    ></script>
+    <script type="text/javascript" src="./raphael.js"></script>
+    <script type="text/javascript">
+      const paper = RedRaphael('dynamic', 600, 600);
+      debugger;
+      const text = paper.text({
+        textpath: {
+          path:
+            'M 80 270 L 130 160 Q 180 135 230 110 C 200 190 250 190 220 270 A 50 50 0 1 1 190 230',
+          startOffset: '50%'
+        },
+        'vertical-align': 'middle',
+        'text-anchor': 'middle',
+        text:
+          'The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.'
+      });
+      // text.attr({
+      //   text: 'Yo'
+      // });
+      // text.remove();
+    </script>
+  </body>
 </html>

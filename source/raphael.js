@@ -14,5 +14,4 @@ svg(Raphael);
 vml(Raphael);
 canvas(Raphael);
 
-export default Raphael
-
+export default Raphael;

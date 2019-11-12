@@ -2279,38 +2279,6 @@ export default function (R) {
             return res;
         };
 
-        R._engine.textPath = function (svg, attrs, group, css) {
-            var pathId = R.getElementID(R.createUUID()),
-                textPathAttr = Object.assign({}, attrs && attrs.textPath, {
-                    href: '#' + pathId
-                }),
-                d = attrs && attrs.path,
-                text = E,
-                textEl = $(textStr),
-                textPathEl = $(textPathStr, textPathAttr),
-                resText = new Element(textEl, svg, group);
-            resText.type = textStr;
-            // Ideally this code should not be here as .css() is not a function of rapheal.
-
-            if (attrs && attrs.text) {
-                text = attrs.text;
-                attrs.text = UNDEF;
-            }
-
-            css && resText.css && resText.css(css, undefined, true);
-            // Apply the attribute if provided
-            attrs && resText.attr(attrs);
-
-            textPathEl.appendChild(R._g.doc.createTextNode(text));
-            textEl.appendChild(textPathEl);
-
-            svg.defs.appendChild($('path', {
-                d: d || E,
-                id: pathId
-            }));
-            return resText;
-        };
-
         R._engine.setSize = function (width, height) {
             this.width = width || this.width;
             this.height = height || this.height;

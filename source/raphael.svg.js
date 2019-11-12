@@ -20,7 +20,7 @@ export default function (R) {
     if (R.svg) {
         var has = 'hasOwnProperty',
             tSpanStr = 'tspan',
-            vAignStr = 'vertical-align',
+            vAlignStr = 'vertical-align',
             lineHeightStr = 'line-height',
             fontSizeStr = 'font-size',
             // fontFamilyStr = 'font-family',
@@ -32,6 +32,7 @@ export default function (R) {
             rtlStr = 'rtl',
             arrayStr = 'array',
             middleStr = 'middle',
+            bottomStr = 'bottom',
             pxStr = 'px',
             initialStr = 'initial',
             fnStr = 'function',
@@ -1218,7 +1219,7 @@ export default function (R) {
             tuneText = function (el, params) {
                 // If there is no effective change in new attributes then ignore
                 if (el.type !== textStr || !(params[has](textStr) || params[has]('font') || params[has](fontSizeStr) ||
-                    params[has]('x') || params[has]('y') || params[has](lineHeightStr) || params[has](vAignStr))) {
+                    params[has]('x') || params[has]('y') || params[has](lineHeightStr) || params[has](vAlignStr))) {
                     return;
                 }
                 var a = el.attrs,
@@ -1265,13 +1266,15 @@ export default function (R) {
                             .replace(nbspRegex, ' ');
                     };
 
-                if (params[textPathStr]) {
+                if (params[has](textPathStr)) {
                     const rUUID = R.getElementID(R.createUUID()),
                         textPathParams = params[textPathStr],
                         txtNode = R._g.doc.createTextNode(params[textStr] || E);
 
                     let path,
                         textPath,
+                        tSpan,
+                        dy = 0,
                         textPathProps = {};
 
                     for (const key in textPathParams) {
@@ -1291,9 +1294,19 @@ export default function (R) {
                         }
                     }
 
+                    if (params[has](vAlignStr)) {
+                        if (params[vAlignStr] === middleStr) {
+                            dy = 0.3;
+                        } else if (params[vAlignStr] === bottomStr) {
+                            dy = 0.7;
+                        }
+                        tSpan = $('tspan', { dy: `${dy}em` });
+                        tSpan.appendChild(txtNode);
+                    }
+
                     textPath = $('textPath', textPathProps);
 
-                    textPath.appendChild(txtNode);
+                    textPath.appendChild(tSpan || txtNode);
 
                     while (node.firstChild) {
                         node.removeChild(node.firstChild);
@@ -1462,8 +1475,8 @@ export default function (R) {
                         node.appendChild(R._g.doc.createTextNode(text));
                     }
 
-                    if (params[vAignStr]) { // vAlign change
-                        valign = vAlignMultiplier[a[vAignStr]] || 0; // default v-alignment is middle but for wrong alignment value it will be top.
+                    if (params[vAlignStr]) { // vAlign change
+                        valign = vAlignMultiplier[a[vAlignStr]] || 0; // default v-alignment is middle but for wrong alignment value it will be top.
                         if (valign !== oldAttr.valign) {
                             oldAttr.valign = valign;
                             updateAlignment = true;
@@ -1766,8 +1779,8 @@ export default function (R) {
 
                     if (bbox.y === undefined) {
                         bbox.isCalculated = true;
-                        align = a[vAignStr];
-                        bbox.y = (a.y || 0) - (bbox.height * ((align === 'bottom')
+                        align = a[vAlignStr];
+                        bbox.y = (a.y || 0) - (bbox.height * ((align === bottomStr)
                             ? 1 : (align === middleStr) ? 0.5 : 0));
                     }
                 }

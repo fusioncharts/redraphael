@@ -384,25 +384,25 @@ export default function (R) {
         R._url = E;
 
         var updateGradientReference = function (element, newGradient, attr = 'fill') {
-          var gradient = attr === 'fill' ? element.gradient : element['stroke-gradient'];
+            var gradient = attr === 'fill' ? element.gradient : element['stroke-gradient'];
 
-          if (gradient) {
-              if (gradient === newGradient) {
-                  return; // no change
-              }
-              // else gradient is specified and it is not same as newGradient, implying a dereference
-              gradient.refCount--;
-              if (!gradient.refCount) {
-                  gradient.parentNode.removeChild(gradient);
-              }
-              attr === 'fill' ? delete element.gradient : delete element['stroke-gradient'];
-          }
+            if (gradient) {
+                if (gradient === newGradient) {
+                    return; // no change
+                }
+                // else gradient is specified and it is not same as newGradient, implying a dereference
+                gradient.refCount--;
+                if (!gradient.refCount) {
+                    gradient.parentNode.removeChild(gradient);
+                }
+                attr === 'fill' ? delete element.gradient : delete element['stroke-gradient'];
+            }
 
-          if (newGradient) { // add new gradient
-              attr === 'fill' ? element.gradient = newGradient : element['stroke-gradient'] = newGradient;
-              newGradient.refCount++;
-          }
-      };
+            if (newGradient) { // add new gradient
+                attr === 'fill' ? element.gradient = newGradient : element['stroke-gradient'] = newGradient;
+                newGradient.refCount++;
+            }
+        };
 
         var $ = R._createNode = function (el, attr) {
                 // Create the element
@@ -411,7 +411,7 @@ export default function (R) {
                 }
                 if (attr) {
                     var key,
-                      value;
+                        value;
                     for (key in attr) {
                         // IE9 cannot convert the value to string while applying 'transform' attribute
                         value = isIE9 ? Str(attr[key]) : attr[key];
@@ -1222,6 +1222,7 @@ export default function (R) {
                     return;
                 }
                 var a = el.attrs,
+                    defs = el.paper.defs,
                     group = el.parent,
                     node = el.node,
                     fontSize,
@@ -1265,12 +1266,45 @@ export default function (R) {
                     };
 
                 if (params[textPathStr]) {
-                    const textPath = $('textPath', params[textPathStr]),
+                    const rUUID = R.getElementID(R.createUUID()),
+                        textPathParams = params[textPathStr],
                         txtNode = R._g.doc.createTextNode(params[textStr] || E);
+
+                    let path,
+                        textPath,
+                        textPathProps = {};
+
+                    for (const key in textPathParams) {
+                        if (textPathParams.hasOwnProperty(key)) {
+                            if (key === 'path' && !('href' in textPathParams)) {
+                                path = defs.appendChild(
+                                    $('path', {
+                                        id: rUUID,
+                                        d: textPathParams[key] || E
+                                    })
+                                );
+
+                                textPathProps.href = `#${rUUID}`;
+                            } else {
+                                textPathProps[key] = textPathParams[key];
+                            }
+                        }
+                    }
+
+                    textPath = $('textPath', textPathProps);
+
                     textPath.appendChild(txtNode);
                     el.node.appendChild(textPath);
+                    el.pathDefinition = path;
                 } else {
                     oldAttr.direction = direction;
+
+                    if (el.pathDefinition && defs) {
+                        el.pathDefinition.parentNode.removeChild(
+                            el.pathDefinition
+                        );
+                        delete el.pathDefinition;
+                    }
 
                     // If line height is not valid (0, NaN, undefuned), then derive it from fontSize
                     if (!lineHeight) {
@@ -1657,6 +1691,10 @@ export default function (R) {
             }
             if (o['stroke-gradient'] && defs) {
                 updateGradientReference(o, UNDEF, 'stroke');
+            }
+            if (o.pathDefinition && defs) {
+                o.pathDefinition.parentNode.removeChild(o.pathDefinition);
+                delete o.pathDefinition;
             }
 
             while ((i = o.followers.pop())) {

@@ -54,7 +54,7 @@
     <script type="text/javascript" src="./raphael.js"></script>
     <script type="text/javascript">
       const paper = RedRaphael('dynamic', 600, 600);
-      debugger;
+
       const text = paper.text({
         textpath: {
           path:
@@ -66,10 +66,12 @@
         text:
           'The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.'
       });
-      // text.attr({
-      //   text: 'Yo'
-      // });
-      // text.remove();
+      text.attr({
+        x: 40,
+        y: 40,
+        text: 'Yo'
+      });
+      text.remove();
     </script>
   </body>
 </html>

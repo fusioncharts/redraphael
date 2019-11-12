@@ -1218,9 +1218,20 @@ export default function (R) {
             leading = 1.2,
             tuneText = function (el, params) {
                 // If there is no effective change in new attributes then ignore
-                if (el.type !== textStr || !(params[has](textStr) || params[has]('font') || params[has](fontSizeStr) ||
-                    params[has]('x') || params[has]('y') || params[has](lineHeightStr) || params[has](vAlignStr))) {
-                    return;
+                if (
+                  el.type !== textStr ||
+                  !(
+                    params[has](textStr) ||
+                    params[has]('font') ||
+                    params[has](fontSizeStr) ||
+                    params[has]('x') ||
+                    params[has]('y') ||
+                    params[has](lineHeightStr) ||
+                    params[has](vAlignStr) ||
+                    params[has](textPathStr)
+                  )
+                ) {
+                  return;
                 }
                 var a = el.attrs,
                     defs = el.paper.defs,
@@ -1268,30 +1279,64 @@ export default function (R) {
 
                 if (params[has](textPathStr)) {
                     const rUUID = R.getElementID(R.createUUID()),
-                        textPathParams = params[textPathStr],
-                        txtNode = R._g.doc.createTextNode(params[textStr] || E);
+                        textPathParams = params[textPathStr];
 
-                    let path,
-                        textPath,
+                    let textPath,
                         tSpan,
+                        txtNode,
                         dy = 0,
                         textPathProps = {};
 
                     for (const key in textPathParams) {
                         if (textPathParams.hasOwnProperty(key)) {
                             if (key === 'path' && !('href' in textPathParams)) {
-                                path = defs.appendChild(
-                                    $('path', {
+                                if (
+                                  oldAttr.textPathStr !== textPathParams[key]
+                                ) {
+                                  if (el.textPathDef) {
+                                    el.textPathDef.setAttributeNS(
+                                      R.svgNSStr,
+                                      'd',
+                                      textPathParams[key] || E
+                                    );
+
+                                    textPathProps.href = `#${el.textPathDef.getAttributeNS(
+                                      R.svgNSStr,
+                                      'id'
+                                    )}`;
+                                  } else {
+                                    el.textPathDef = defs.appendChild(
+                                      $('path', {
                                         id: rUUID,
                                         d: textPathParams[key] || E
-                                    })
-                                );
+                                      })
+                                    );
 
-                                textPathProps.href = `#${rUUID}`;
+                                    textPathProps.href = `#${rUUID}`;
+                                  }
+
+                                  oldAttr.textPathStr = textPathParams[key];
+                                } else {
+                                  textPathProps.href = `#${el.textPathDef.getAttributeNS(
+                                    R.svgNSStr,
+                                    'id'
+                                  )}`;
+                                }
                             } else {
                                 textPathProps[key] = textPathParams[key];
                             }
                         }
+                    }
+
+                    if (params[has](textStr)) {
+                        txtNode = R._g.doc.createTextNode(params[textStr] || E);
+                        oldAttr.pathText = params[textStr] || E;
+                    } else {
+                        txtNode = R._g.doc.createTextNode(
+                          oldAttr.pathText || oldAttr.text
+                        );
+                        oldAttr.pathText = oldAttr.pathText || oldAttr.text;
+                        delete oldAttr.text;
                     }
 
                     if (params[has](vAlignStr)) {
@@ -1302,27 +1347,48 @@ export default function (R) {
                         }
                         tSpan = $('tspan', { dy: `${dy}em` });
                         tSpan.appendChild(txtNode);
+
+                        oldAttr.tSpan = tSpan;
+                    } else {
+                        if (oldAttr.tSpan) {
+                            tSpan = oldAttr.tSpan;
+                        } else {
+                            if (oldAttr.valign === -0.5) {
+                                dy = 0.3;
+                            } else if (oldAttr.valign === -1) {
+                                dy = 0.7;
+                            } else {
+                                dy = 0;
+                            }
+
+                            tSpan = $('tspan', { dy: `${dy}em` });
+                            tSpan.appendChild(txtNode);
+
+                            oldAttr.tSpan = tSpan;
+                        }
                     }
 
                     textPath = $('textPath', textPathProps);
-
                     textPath.appendChild(tSpan || txtNode);
 
                     while (node.firstChild) {
                         node.removeChild(node.firstChild);
                     }
                     node.appendChild(textPath);
-
-                    el.pathDefinition = path;
                 } else {
                     oldAttr.direction = direction;
 
-                    if (el.pathDefinition && defs) {
-                        el.pathDefinition.parentNode.removeChild(
-                            el.pathDefinition
+                    // cleanup old attr remnants from rendering a text path
+                    if (el.textPathDef && defs) {
+                        el.textPathDef.parentNode.removeChild(
+                            el.textPathDef
                         );
-                        delete el.pathDefinition;
+                        delete el.textPathDef;
                     }
+
+                    delete oldAttr.txtNode;
+                    delete oldAttr.tSpan;
+                    delete oldAttr.textPathStr;
 
                     // If line height is not valid (0, NaN, undefuned), then derive it from fontSize
                     if (!lineHeight) {
@@ -1331,9 +1397,12 @@ export default function (R) {
                         lineHeight = fontSize * leading;
                     }
                     // If the containing text got changed
-                    if (params[has](textStr)) {
+                    if (params[has](textStr) || oldAttr.pathText) {
                         // If the text is an arra then join with <br>
-                        text = R.is(params.text, arrayStr) ? params.text.join(brStr) : params.text;
+                        text = (R.is(params.text, arrayStr) ? params.text.join(brStr) : params.text) || oldAttr.pathText;
+
+                        delete oldAttr.pathText;
+
                         // If it is a new text applied
                         if (text !== oldAttr.text) {
                             textChanged = true;
@@ -1710,9 +1779,9 @@ export default function (R) {
             if (o['stroke-gradient'] && defs) {
                 updateGradientReference(o, UNDEF, 'stroke');
             }
-            if (o.pathDefinition && defs) {
-                o.pathDefinition.parentNode.removeChild(o.pathDefinition);
-                delete o.pathDefinition;
+            if (o.textPathDef && defs) {
+                o.textPathDef.parentNode.removeChild(o.textPathDef);
+                delete o.textPathDef;
             }
 
             while ((i = o.followers.pop())) {

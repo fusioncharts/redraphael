@@ -4105,36 +4105,6 @@ var loaded,
     };
 
     /*\
-     * Paper.text
-     [ method ]
-     **
-     * Draws a text string. If you need line breaks, put “\n” in the string.
-     **
-     > Parameters
-     **
-     - x (number) x coordinate position
-     - y (number) y coordinate position
-     - text (string) The text string to draw
-     = (object) Raphaël element object with type “text”
-     **
-     > Usage
-     | var t = paper.text(50, 50, "Raphaël\nkicks\nbutt!");
-    \*/
-    paperproto.textPath = function() {
-        var paper = this,
-            args = getArrayCopy(arguments),
-            group = lastArgIfGroup(args, true),
-            attrs = paper._addDefAttribs() ? serializeArgs(args,
-                "text", E,
-                "stroke", NONE,
-                "fill", BLACK,
-                "path", E): serializeArgs(args),
-
-            out = R._engine.textPath(paper, attrs, group, args[1]);
-        return (paper.__set__ && paper.__set__.push(out), (paper._elementsById[out.id] = out));
-    };
-
-    /*\
      * Paper._addDefAttribs
      [ method ]
      **

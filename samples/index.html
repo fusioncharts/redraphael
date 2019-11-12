@@ -56,6 +56,12 @@
       const paper = RedRaphael('dynamic', 600, 600);
 
       const text = paper.text({
+        x: 40,
+        y: 40,
+        fill: '#0000ff',
+        text: 'Yo'
+      });
+      text.attr({
         textpath: {
           path:
             'M 80 270 L 130 160 Q 180 135 230 110 C 200 190 250 190 220 270 A 50 50 0 1 1 190 230',
@@ -63,13 +69,9 @@
         },
         'vertical-align': 'middle',
         'text-anchor': 'middle',
+        fill: '#00ff00',
         text:
           'The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.'
-      });
-      text.attr({
-        x: 40,
-        y: 40,
-        text: 'Yo'
       });
       text.remove();
     </script>

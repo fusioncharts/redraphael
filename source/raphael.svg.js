@@ -1294,7 +1294,12 @@ export default function (R) {
                     textPath = $('textPath', textPathProps);
 
                     textPath.appendChild(txtNode);
-                    el.node.appendChild(textPath);
+
+                    while (node.firstChild) {
+                        node.removeChild(node.firstChild);
+                    }
+                    node.appendChild(textPath);
+
                     el.pathDefinition = path;
                 } else {
                     oldAttr.direction = direction;

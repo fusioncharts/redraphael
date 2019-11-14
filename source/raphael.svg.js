@@ -1278,16 +1278,16 @@ export default function (R) {
                     };
 
                 if (params[has](textPathStr)) {
-                    const rUUID = R.getElementID(R.createUUID()),
+                    var rUUID = R.getElementID(R.createUUID()),
                         textPathParams = params[textPathStr];
 
-                    let textPath,
+                    var textPath,
                         tSpan,
                         txtNode,
                         dy = 0,
                         textPathProps = {};
 
-                    for (const key in textPathParams) {
+                    for (var key in textPathParams) {
                         if (textPathParams.hasOwnProperty(key)) {
                             if (key === 'path' && !('href' in textPathParams)) {
                                 if (
@@ -1300,10 +1300,10 @@ export default function (R) {
                                       textPathParams[key] || E
                                     );
 
-                                    textPathProps.href = `#${el.textPathDef.getAttributeNS(
+                                    textPathProps.href = '#' + el.textPathDef.getAttributeNS(
                                       R.svgNSStr,
                                       'id'
-                                    )}`;
+                                    );
                                   } else {
                                     el.textPathDef = defs.appendChild(
                                       $('path', {
@@ -1312,15 +1312,15 @@ export default function (R) {
                                       })
                                     );
 
-                                    textPathProps.href = `#${rUUID}`;
+                                    textPathProps.href = '#' + rUUID;
                                   }
 
                                   oldAttr.textPathStr = textPathParams[key];
                                 } else {
-                                  textPathProps.href = `#${el.textPathDef.getAttributeNS(
+                                  textPathProps.href = '#' + el.textPathDef.getAttributeNS(
                                     R.svgNSStr,
                                     'id'
-                                  )}`;
+                                  );
                                 }
                             } else {
                                 textPathProps[key] = textPathParams[key];
@@ -1345,7 +1345,7 @@ export default function (R) {
                         } else if (params[vAlignStr] === bottomStr) {
                             dy = 0.7;
                         }
-                        tSpan = $('tspan', { dy: `${dy}em` });
+                        tSpan = $('tspan', { dy: dy + 'em' });
                         tSpan.appendChild(txtNode);
 
                         oldAttr.tSpan = tSpan;
@@ -1361,7 +1361,7 @@ export default function (R) {
                                 dy = 0;
                             }
 
-                            tSpan = $('tspan', { dy: `${dy}em` });
+                            tSpan = $('tspan', { dy: dy + 'em' });
                             tSpan.appendChild(txtNode);
 
                             oldAttr.tSpan = tSpan;
@@ -1963,7 +1963,7 @@ export default function (R) {
                 fn = function (e) {
                     // Pinchstart is triggered only if 2 fingers are used.
                     if (e.touches && e.touches.length === 2) {
-                        let touch1 = e.touches[0],
+                        var touch1 = e.touches[0],
                             touch2 = e.touches[1];
                         // Flag to block drag events
                         elem._blockDrag = true;
@@ -2000,7 +2000,7 @@ export default function (R) {
                 fn = function (e) {
                     // Pinchin is triggered only if 2 fingers are used.
                     if (e.touches && e.touches.length === 2) {
-                        let touch1 = e.touches[0],
+                        var touch1 = e.touches[0],
                             touch2 = e.touches[1];
                         e && e.preventDefault();
                         elem._pinchDragStarted = true;

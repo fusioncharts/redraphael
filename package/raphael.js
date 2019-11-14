@@ -12286,9 +12286,9 @@ exports['default'] = function (R) {
                 var rUUID = R.getElementID(R.createUUID()),
                     textPathParams = params[textPathStr];
 
-                var textPath = void 0,
-                    tSpan = void 0,
-                    txtNode = void 0,
+                var textPath,
+                    tSpan,
+                    txtNode,
                     dy = 0,
                     textPathProps = {};
 

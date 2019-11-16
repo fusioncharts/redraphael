@@ -12323,8 +12323,8 @@ exports['default'] = function (R) {
                     txtNode = R._g.doc.createTextNode(params[textStr] || E);
                     oldAttr.pathText = params[textStr] || E;
                 } else {
-                    txtNode = R._g.doc.createTextNode(oldAttr.pathText || oldAttr.text);
-                    oldAttr.pathText = oldAttr.pathText || oldAttr.text;
+                    txtNode = R._g.doc.createTextNode(oldAttr.pathText || oldAttr.text || E);
+                    oldAttr.pathText = oldAttr.pathText || oldAttr.text || E;
                     delete oldAttr.text;
                 }
 
@@ -12386,7 +12386,13 @@ exports['default'] = function (R) {
                 // If the containing text got changed
                 if (params[has](textStr) || oldAttr.pathText) {
                     // If the text is an arra then join with <br>
-                    text = (R.is(params.text, arrayStr) ? params.text.join(brStr) : params.text) || oldAttr.pathText;
+                    if (R.is(params.text, arrayStr)) {
+                        text = params.text.join(brStr);
+                    } else if (params.text == null) {
+                        text = oldAttr.pathText;
+                    } else {
+                        text = params.text;
+                    }
 
                     delete oldAttr.pathText;
 

@@ -1,4 +1,9 @@
-import {getArrayCopy, dashedAttr2CSSMap, loadRefImage, showRecursively} from './raphael.lib';
+import {
+    getArrayCopy,
+    loadRefImage,
+    showRecursively,
+    dashedAttr2CSSMap
+} from './raphael.lib';
 
 /** !
 * RedRaphael 1.0.0 - JavaScript Vector Library SVG Module
@@ -15,7 +20,7 @@ export default function (R) {
     if (R.svg) {
         var has = 'hasOwnProperty',
             tSpanStr = 'tspan',
-            vAignStr = 'vertical-align',
+            vAlignStr = 'vertical-align',
             lineHeightStr = 'line-height',
             fontSizeStr = 'font-size',
             // fontFamilyStr = 'font-family',
@@ -23,9 +28,11 @@ export default function (R) {
             noneStr = 'none',
             notToTuneStr = '_do-not-tune',
             textStr = 'text',
+            textPathStr = 'textpath',
             rtlStr = 'rtl',
             arrayStr = 'array',
             middleStr = 'middle',
+            bottomStr = 'bottom',
             pxStr = 'px',
             initialStr = 'initial',
             fnStr = 'function',
@@ -378,25 +385,25 @@ export default function (R) {
         R._url = E;
 
         var updateGradientReference = function (element, newGradient, attr = 'fill') {
-          var gradient = attr === 'fill' ? element.gradient : element['stroke-gradient'];
+            var gradient = attr === 'fill' ? element.gradient : element['stroke-gradient'];
 
-          if (gradient) {
-              if (gradient === newGradient) {
-                  return; // no change
-              }
-              // else gradient is specified and it is not same as newGradient, implying a dereference
-              gradient.refCount--;
-              if (!gradient.refCount) {
-                  gradient.parentNode.removeChild(gradient);
-              }
-              attr === 'fill' ? delete element.gradient : delete element['stroke-gradient'];
-          }
+            if (gradient) {
+                if (gradient === newGradient) {
+                    return; // no change
+                }
+                // else gradient is specified and it is not same as newGradient, implying a dereference
+                gradient.refCount--;
+                if (!gradient.refCount) {
+                    gradient.parentNode.removeChild(gradient);
+                }
+                attr === 'fill' ? delete element.gradient : delete element['stroke-gradient'];
+            }
 
-          if (newGradient) { // add new gradient
-              attr === 'fill' ? element.gradient = newGradient : element['stroke-gradient'] = newGradient;
-              newGradient.refCount++;
-          }
-      };
+            if (newGradient) { // add new gradient
+                attr === 'fill' ? element.gradient = newGradient : element['stroke-gradient'] = newGradient;
+                newGradient.refCount++;
+            }
+        };
 
         var $ = R._createNode = function (el, attr) {
                 // Create the element
@@ -405,7 +412,7 @@ export default function (R) {
                 }
                 if (attr) {
                     var key,
-                      value;
+                        value;
                     for (key in attr) {
                         // IE9 cannot convert the value to string while applying 'transform' attribute
                         value = isIE9 ? Str(attr[key]) : attr[key];
@@ -1211,15 +1218,27 @@ export default function (R) {
             leading = 1.2,
             tuneText = function (el, params) {
                 // If there is no effective change in new attributes then ignore
-                if (el.type !== textStr || !(params[has](textStr) || params[has]('font') || params[has](fontSizeStr) ||
-                    params[has]('x') || params[has]('y') || params[has](lineHeightStr) || params[has](vAignStr))) {
-                    return;
+                if (
+                  el.type !== textStr ||
+                  !(
+                    params[has](textStr) ||
+                    params[has]('font') ||
+                    params[has](fontSizeStr) ||
+                    params[has]('x') ||
+                    params[has]('y') ||
+                    params[has](lineHeightStr) ||
+                    params[has](vAlignStr) ||
+                    params[has](textPathStr)
+                  )
+                ) {
+                  return;
                 }
                 var a = el.attrs,
+                    defs = el.paper.defs,
                     group = el.parent,
                     node = el.node,
                     fontSize,
-                    oldAttr = el._oldAttr = el._oldAttr || {baseLineDiff: 8, valign: -0.5}, // Store all the attributes that are getting applied. This will help us to apply deferential information only.
+                    oldAttr = el._oldAttr = el._oldAttr || { baseLineDiff: 8, valign: -0.5 }, // Store all the attributes that are getting applied. This will help us to apply deferential information only.
                     lineHeight = toFloat(params[lineHeightStr] || a[lineHeightStr]),
                     direction = params.direction || a.direction || (group && group.attrs && group.attrs.direction) || oldAttr.direction || initialStr,
                     valign,
@@ -1258,181 +1277,302 @@ export default function (R) {
                             .replace(nbspRegex, ' ');
                     };
 
-                oldAttr.direction = direction;
+                if (params[has](textPathStr)) {
+                    var rUUID = R.getElementID(R.createUUID()),
+                        textPathParams = params[textPathStr];
 
-                // If line height is not valid (0, NaN, undefuned), then derive it from fontSize
-                if (!lineHeight) {
-                    fontSize = params.fontSize || params[fontSizeStr] || a[fontSizeStr] || (group && group.attrs && group.attrs.fontSize);
-                    fontSize = fontSize ? fontSize.toString().replace(pxStr, E) : 10;
-                    lineHeight = fontSize * leading;
-                }
-                // If the containing text got changed
-                if (params[has](textStr)) {
-                    // If the text is an arra then join with <br>
-                    text = R.is(params.text, arrayStr) ? params.text.join(brStr) : params.text;
-                    // If it is a new text applied
-                    if (text !== oldAttr.text) {
-                        textChanged = true;
-                        // Convert all the &lt; and &gt; to < and > and if there is any <br/> tag in between &lt; and &gt;
-                        // then converting them into <<br/> and ><br/> respectively.
-                        if (text && ltgtbrRegex.test(text)) {
-                            text = text.replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-                                .replace(/&<br\/>lt;|&l<br\/>t;|&lt<br\/>;/g, '<<br/>')
-                                .replace(/&<br\/>gt;|&g<br\/>t;|&gt<br\/>;/g, '><br/>');
-                        }
-                        oldAttr.text = a.text = text;
-                        if (textBreakRegx.test(text)) { // if multiline text
-                            if (oldAttr.noTSpan) { // previously it was single line
-                                oldAttr.noTSpan = !(removeAllChild = true);
+                    var textPath,
+                        tSpan,
+                        txtNode,
+                        dy = 0,
+                        textPathProps = {};
+
+                    for (var key in textPathParams) {
+                        if (textPathParams.hasOwnProperty(key)) {
+                            if (key === 'path' && !('href' in textPathParams)) {
+                                if (
+                                  oldAttr.textPathStr !== textPathParams[key]
+                                ) {
+                                  if (el.textPathDef) {
+                                    el.textPathDef.setAttributeNS(
+                                      R.svgNSStr,
+                                      'd',
+                                      textPathParams[key] || E
+                                    );
+
+                                    textPathProps.href = '#' + el.textPathDef.getAttributeNS(
+                                      R.svgNSStr,
+                                      'id'
+                                    );
+                                  } else {
+                                    el.textPathDef = defs.appendChild(
+                                      $('path', {
+                                        id: rUUID,
+                                        d: textPathParams[key] || E
+                                      })
+                                    );
+
+                                    textPathProps.href = '#' + rUUID;
+                                  }
+
+                                  oldAttr.textPathStr = textPathParams[key];
+                                } else {
+                                  textPathProps.href = '#' + el.textPathDef.getAttributeNS(
+                                    R.svgNSStr,
+                                    'id'
+                                  );
+                                }
+                            } else {
+                                textPathProps[key] = textPathParams[key];
                             }
-                            texts = Str(text).split(textBreakRegx);
-                            l = texts.length;
-                        } else { // single line
-                            // If it is a single line text then always remove the children
-                            removeAllChild = true;
-                            oldAttr.noTSpan = true; // Always remove old text node
-                            l = 1;
-                        }
-                        // if no if lines are changed
-                        if (oldAttr.lineCount !== l) {
-                            oldAttr.lineCount = l;
-                            updateAlignment = true;
                         }
                     }
-                }
 
-                if (lineHeight !== oldAttr.lineHeight) { // lineHeight change
-                    oldAttr.lineHeight = lineHeight;
-                    oldAttr.baseLineDiff = lineHeight * 0.75; // Approximate calculation
-                    updateAlignment = true;
-                }
+                    if (params[has](textStr)) {
+                        txtNode = R._g.doc.createTextNode(params[textStr] || E);
+                        oldAttr.pathText = params[textStr] || E;
+                    } else {
+                        txtNode = R._g.doc.createTextNode(
+                            oldAttr.pathText || oldAttr.text || E
+                        );
+                        oldAttr.pathText = oldAttr.pathText || oldAttr.text || E;
+                        delete oldAttr.text;
+                    }
 
-                // If the text was RTL earlier and now changed or vice versa
-                if (removeAllChild) {
-                    // remove all children
+                    if (params[has](vAlignStr)) {
+                        if (params[vAlignStr] === middleStr) {
+                            dy = 0.3;
+                        } else if (params[vAlignStr] === bottomStr) {
+                            dy = 0.7;
+                        }
+                        tSpan = $('tspan', { dy: dy + 'em' });
+                        tSpan.appendChild(txtNode);
+
+                        oldAttr.tSpan = tSpan;
+                    } else {
+                        if (oldAttr.tSpan) {
+                            tSpan = oldAttr.tSpan;
+                        } else {
+                            if (oldAttr.valign === -0.5) {
+                                dy = 0.3;
+                            } else if (oldAttr.valign === -1) {
+                                dy = 0.7;
+                            } else {
+                                dy = 0;
+                            }
+
+                            tSpan = $('tspan', { dy: dy + 'em' });
+                            tSpan.appendChild(txtNode);
+
+                            oldAttr.tSpan = tSpan;
+                        }
+                    }
+
+                    textPath = $('textPath', textPathProps);
+                    textPath.appendChild(tSpan || txtNode);
+
                     while (node.firstChild) {
                         node.removeChild(node.firstChild);
                     }
-                }
+                    node.appendChild(textPath);
+                } else {
+                    oldAttr.direction = direction;
 
-                // ** If multiline text mode
-                if (oldAttr.lineCount > 1) {
-                    // Remove white-space preserve property from parent text node
-                    if (node.style.whiteSpace === PRESERVESTRING) {
-                        node.style.whiteSpace = BLANKSTRING;
-                    }
-                    tspanAttr = {};
-                    if (!oldAttr.tspanAttr) {
-                        oldAttr.tspanAttr = {};
-                        oldAttr.tspan0Attr = {};
-                    }
-                    // If the dy needs to be changed
-                    if (oldAttr.tspanAttr.dy !== oldAttr.lineHeight) {
-                        oldAttr.tspanAttr.dy = tspanAttr.dy = oldAttr.lineHeight;
-                        updateTspan = true;
+                    // cleanup old attr remnants from rendering a text path
+                    if (el.textPathDef && defs) {
+                        el.textPathDef.parentNode.removeChild(
+                            el.textPathDef
+                        );
+                        delete el.textPathDef;
                     }
 
-                    // if x is getting changed
-                    if (params[has]('x') && oldAttr.tspanAttr.x !== params.x) { // X change
-                        // If the x is getting changed, then the tspan need to be updated
-                        // Note: we don't need to update the node as it is already updated during setFillAndStroke
-                        oldAttr.tspan0Attr.x = oldAttr.tspanAttr.x = tspanAttr.x = a.x;
-                        updateTspan = true;
-                    }
+                    delete oldAttr.txtNode;
+                    delete oldAttr.tSpan;
+                    delete oldAttr.textPathStr;
 
-                    // Note for the first tspan (i === 0), we will add only the x attribute. No dy
+                    // If line height is not valid (0, NaN, undefuned), then derive it from fontSize
+                    if (!lineHeight) {
+                        fontSize = params.fontSize || params[fontSizeStr] || a[fontSizeStr] || (group && group.attrs && group.attrs.fontSize);
+                        fontSize = fontSize ? fontSize.toString().replace(pxStr, E) : 10;
+                        lineHeight = fontSize * leading;
+                    }
                     // If the containing text got changed
-                    if (textChanged) {
-                        tspans = node.getElementsByTagName(tSpanStr);
-                        for (i = 0; i < l; i++) {
-                            tspan = tspans[i * j];
-                            if (tspan) { // If already there is a tspan then remove the text
-                                tspan.innerHTML = E;
-                                if (isIE) {
-                                    // For IE, setting the innerHTML of tspan to blank string doesnot remove
-                                    // the child nodes. Child nodes should be removed explicitly.
-                                    while (tspan.firstChild) {
-                                        tspan.removeChild(tspan.firstChild);
-                                    }
-                                }
-                                if (updateTspan) { // If update required, update here
-                                    $(tspan, i ? tspanAttr : oldAttr.tspan0Attr);
-                                }
-                            } else { // Else create a new span
-                                tspan = $(tSpanStr, i ? oldAttr.tspanAttr : oldAttr.tspan0Attr);
-                                node.appendChild(tspan);
-                                // Special fix for RTL texts in IE-SVG browsers
-                                if (!isIE && direction === rtlStr) {
-                                    tempIESpan = $(tSpanStr, IESplTspanAttr);
-                                    tempIESpan.appendChild(R._g.doc.createTextNode('i'));
-                                    node.appendChild(tempIESpan);
-                                }
-                            }
-                            // If it is a blank line, preserve it
-                            if (!texts[i]) {
-                                tspan.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
-                                texts[i] = S;
-                            }
-
-                            // If text has &nbsp; then change the white-space style of the node to 'preserve' for disabling space collapse
-                            if (hasnbsp(texts[i])) {
-                                texts[i] = spacify(texts[i]);
-                                tspan.style.whiteSpace = PRESERVESTRING;
-                            } else if (tspan.style.whiteSpace === PRESERVESTRING) {
-                                tspan.style.whiteSpace = BLANKSTRING;
-                            }
-                            // create and append the text node
-                            tspan.appendChild(R._g.doc.createTextNode(texts[i]));
+                    if (params[has](textStr) || oldAttr.pathText) {
+                        // If the text is an arra then join with <br>
+                        if (R.is(params.text, arrayStr)) {
+                            text = params.text.join(brStr);
+                        } else if (params.text == null) {
+                            text = oldAttr.pathText;
+                        } else {
+                            text = params.text
                         }
 
-                        ii = l * j;
-                        // If there are already more tspan than required, then remove the extra tspans
-                        if (tspans.length > ii) {
-                            for (i = tspans.length - 1; i >= ii; i -= 1) {
-                                node.removeChild(tspans[i]);
+                        delete oldAttr.pathText;
+
+                        // If it is a new text applied
+                        if (text !== oldAttr.text) {
+                            textChanged = true;
+                            // Convert all the &lt; and &gt; to < and > and if there is any <br/> tag in between &lt; and &gt;
+                            // then converting them into <<br/> and ><br/> respectively.
+                            if (text && ltgtbrRegex.test(text)) {
+                                text = text.replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+                                    .replace(/&<br\/>lt;|&l<br\/>t;|&lt<br\/>;/g, '<<br/>')
+                                    .replace(/&<br\/>gt;|&g<br\/>t;|&gt<br\/>;/g, '><br/>');
                             }
-                        }
-                    } else if (updateTspan) { // else if the tspans needs to be updated
-                        tspans = node.getElementsByTagName(tSpanStr); // @note: don't count on tspan, rather store the previous count
-                        ii = tspans.length;
-                        for (i = 0; i < ii; i += j) {
-                            $(tspans[i], i ? tspanAttr : oldAttr.tspan0Attr);
+                            oldAttr.text = a.text = text;
+                            if (textBreakRegx.test(text)) { // if multiline text
+                                if (oldAttr.noTSpan) { // previously it was single line
+                                    oldAttr.noTSpan = !(removeAllChild = true);
+                                }
+                                texts = Str(text).split(textBreakRegx);
+                                l = texts.length;
+                            } else { // single line
+                                // If it is a single line text then always remove the children
+                                removeAllChild = true;
+                                oldAttr.noTSpan = true; // Always remove old text node
+                                l = 1;
+                            }
+                            // if no if lines are changed
+                            if (oldAttr.lineCount !== l) {
+                                oldAttr.lineCount = l;
+                                updateAlignment = true;
+                            }
                         }
                     }
-                } else if (textChanged) { // ** single line mode
-                    // If text has &nbsp; then change the white-space style of the node to 'preserve' for disabling space collapse
-                    if (hasnbsp(text)) {
-                        text = spacify(text);
-                        node.style.whiteSpace = PRESERVESTRING;
-                    } else if (node.style.whiteSpace === PRESERVESTRING) {
-                        node.style.whiteSpace = BLANKSTRING;
-                    }
-                    // create and append the text node
-                    node.appendChild(R._g.doc.createTextNode(text));
-                }
 
-                if (params[vAignStr]) { // vAlign change
-                    valign = vAlignMultiplier[a[vAignStr]] || 0; // default v-alignment is middle but for wrong alignment value it will be top.
-                    if (valign !== oldAttr.valign) {
-                        oldAttr.valign = valign;
+                    if (lineHeight !== oldAttr.lineHeight) { // lineHeight change
+                        oldAttr.lineHeight = lineHeight;
+                        oldAttr.baseLineDiff = lineHeight * 0.75; // Approximate calculation
                         updateAlignment = true;
                     }
-                }
 
-                // Update the dy of the first tspan according to the v-alignment
-                if (updateAlignment) {
-                    oldAttr.shift = oldAttr.baseLineDiff + (oldAttr.lineCount * oldAttr.lineHeight * oldAttr.valign);
-                    updateNode = true;
-                }
-                // if y is getting changed
-                if ((params.y || params.y === 0) && oldAttr.y !== params.y) { // Y change
-                    oldAttr.y = a.y;
-                    updateNode = true;
-                }
+                    // If the text was RTL earlier and now changed or vice versa
+                    if (removeAllChild) {
+                        // remove all children
+                        while (node.firstChild) {
+                            node.removeChild(node.firstChild);
+                        }
+                    }
 
-                // Update the node's attribute
-                if (updateNode && (oldAttr.y || oldAttr.y === 0) && (oldAttr.shift || oldAttr.shift === 0)) {
-                    $(node, {y: Math.round(oldAttr.y + oldAttr.shift)});
+                    // ** If multiline text mode
+                    if (oldAttr.lineCount > 1) {
+                        // Remove white-space preserve property from parent text node
+                        if (node.style.whiteSpace === PRESERVESTRING) {
+                            node.style.whiteSpace = BLANKSTRING;
+                        }
+                        tspanAttr = {};
+                        if (!oldAttr.tspanAttr) {
+                            oldAttr.tspanAttr = {};
+                            oldAttr.tspan0Attr = {};
+                        }
+                        // If the dy needs to be changed
+                        if (oldAttr.tspanAttr.dy !== oldAttr.lineHeight) {
+                            oldAttr.tspanAttr.dy = tspanAttr.dy = oldAttr.lineHeight;
+                            updateTspan = true;
+                        }
+
+                        // if x is getting changed
+                        if (params[has]('x') && oldAttr.tspanAttr.x !== params.x) { // X change
+                            // If the x is getting changed, then the tspan need to be updated
+                            // Note: we don't need to update the node as it is already updated during setFillAndStroke
+                            oldAttr.tspan0Attr.x = oldAttr.tspanAttr.x = tspanAttr.x = a.x;
+                            updateTspan = true;
+                        }
+
+                        // Note for the first tspan (i === 0), we will add only the x attribute. No dy
+                        // If the containing text got changed
+                        if (textChanged) {
+                            tspans = node.getElementsByTagName(tSpanStr);
+                            for (i = 0; i < l; i++) {
+                                tspan = tspans[i * j];
+                                if (tspan) { // If already there is a tspan then remove the text
+                                    tspan.innerHTML = E;
+                                    if (isIE) {
+                                        // For IE, setting the innerHTML of tspan to blank string doesnot remove
+                                        // the child nodes. Child nodes should be removed explicitly.
+                                        while (tspan.firstChild) {
+                                            tspan.removeChild(tspan.firstChild);
+                                        }
+                                    }
+                                    if (updateTspan) { // If update required, update here
+                                        $(tspan, i ? tspanAttr : oldAttr.tspan0Attr);
+                                    }
+                                } else { // Else create a new span
+                                    tspan = $(tSpanStr, i ? oldAttr.tspanAttr : oldAttr.tspan0Attr);
+                                    node.appendChild(tspan);
+                                    // Special fix for RTL texts in IE-SVG browsers
+                                    if (!isIE && direction === rtlStr) {
+                                        tempIESpan = $(tSpanStr, IESplTspanAttr);
+                                        tempIESpan.appendChild(R._g.doc.createTextNode('i'));
+                                        node.appendChild(tempIESpan);
+                                    }
+                                }
+                                // If it is a blank line, preserve it
+                                if (!texts[i]) {
+                                    tspan.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
+                                    texts[i] = S;
+                                }
+
+                                // If text has &nbsp; then change the white-space style of the node to 'preserve' for disabling space collapse
+                                if (hasnbsp(texts[i])) {
+                                    texts[i] = spacify(texts[i]);
+                                    tspan.style.whiteSpace = PRESERVESTRING;
+                                } else if (tspan.style.whiteSpace === PRESERVESTRING) {
+                                    tspan.style.whiteSpace = BLANKSTRING;
+                                }
+                                // create and append the text node
+                                tspan.appendChild(R._g.doc.createTextNode(texts[i]));
+                            }
+
+                            ii = l * j;
+                            // If there are already more tspan than required, then remove the extra tspans
+                            if (tspans.length > ii) {
+                                for (i = tspans.length - 1; i >= ii; i -= 1) {
+                                    node.removeChild(tspans[i]);
+                                }
+                            }
+                        } else if (updateTspan) { // else if the tspans needs to be updated
+                            tspans = node.getElementsByTagName(tSpanStr); // @note: don't count on tspan, rather store the previous count
+                            ii = tspans.length;
+                            for (i = 0; i < ii; i += j) {
+                                $(tspans[i], i ? tspanAttr : oldAttr.tspan0Attr);
+                            }
+                        }
+                    } else if (textChanged) { // ** single line mode
+                        // If text has &nbsp; then change the white-space style of the node to 'preserve' for disabling space collapse
+                        if (hasnbsp(text)) {
+                            text = spacify(text);
+                            node.style.whiteSpace = PRESERVESTRING;
+                        } else if (node.style.whiteSpace === PRESERVESTRING) {
+                            node.style.whiteSpace = BLANKSTRING;
+                        }
+                        // create and append the text node
+                        node.appendChild(R._g.doc.createTextNode(text));
+                    }
+
+                    if (params[vAlignStr]) { // vAlign change
+                        valign = vAlignMultiplier[a[vAlignStr]] || 0; // default v-alignment is middle but for wrong alignment value it will be top.
+                        if (valign !== oldAttr.valign) {
+                            oldAttr.valign = valign;
+                            updateAlignment = true;
+                        }
+                    }
+
+                    // Update the dy of the first tspan according to the v-alignment
+                    if (updateAlignment) {
+                        oldAttr.shift = oldAttr.baseLineDiff + (oldAttr.lineCount * oldAttr.lineHeight * oldAttr.valign);
+                        updateNode = true;
+                    }
+                    // if y is getting changed
+                    if ((params.y || params.y === 0) && oldAttr.y !== params.y) { // Y change
+                        oldAttr.y = a.y;
+                        updateNode = true;
+                    }
+
+                    // Update the node's attribute
+                    if (updateNode && (oldAttr.y || oldAttr.y === 0) && (oldAttr.shift || oldAttr.shift === 0)) {
+                        $(node, { y: Math.round(oldAttr.y + oldAttr.shift) });
+                    }
                 }
             },
             Element = function (node, svg, group/*, dontAppend */) {
@@ -1645,6 +1785,10 @@ export default function (R) {
             if (o['stroke-gradient'] && defs) {
                 updateGradientReference(o, UNDEF, 'stroke');
             }
+            if (o.textPathDef && defs) {
+                o.textPathDef.parentNode.removeChild(o.textPathDef);
+                delete o.textPathDef;
+            }
 
             while ((i = o.followers.pop())) {
                 i.el.remove();
@@ -1710,8 +1854,8 @@ export default function (R) {
 
                     if (bbox.y === undefined) {
                         bbox.isCalculated = true;
-                        align = a[vAignStr];
-                        bbox.y = (a.y || 0) - (bbox.height * ((align === 'bottom')
+                        align = a[vAlignStr];
+                        bbox.y = (a.y || 0) - (bbox.height * ((align === bottomStr)
                             ? 1 : (align === middleStr) ? 0.5 : 0));
                     }
                 }
@@ -1825,7 +1969,7 @@ export default function (R) {
                 fn = function (e) {
                     // Pinchstart is triggered only if 2 fingers are used.
                     if (e.touches && e.touches.length === 2) {
-                        let touch1 = e.touches[0],
+                        var touch1 = e.touches[0],
                             touch2 = e.touches[1];
                         // Flag to block drag events
                         elem._blockDrag = true;
@@ -1862,7 +2006,7 @@ export default function (R) {
                 fn = function (e) {
                     // Pinchin is triggered only if 2 fingers are used.
                     if (e.touches && e.touches.length === 2) {
-                        let touch1 = e.touches[0],
+                        var touch1 = e.touches[0],
                             touch2 = e.touches[1];
                         e && e.preventDefault();
                         elem._pinchDragStarted = true;

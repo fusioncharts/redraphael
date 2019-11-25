@@ -12357,6 +12357,13 @@ exports['default'] = function (R) {
                     }
                 }
 
+                // Since y is not handled in setFillAndStroke we are explicitly handling
+                // y for textPath
+                if ((params.y || params.y === 0) && oldAttr.y !== params.y) {
+                    oldAttr.y = a.y;
+                    $(node, { y: a.y });
+                }
+
                 textPath = $('textPath', textPathProps);
                 textPath.appendChild(tSpan || txtNode);
 

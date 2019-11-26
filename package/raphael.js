@@ -615,7 +615,7 @@ module.exports = true;
 /* 12 */
 /***/ (function(module, exports) {
 
-var core = module.exports = { version: '2.6.10' };
+var core = module.exports = { version: '2.6.9' };
 if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
 
 
@@ -11051,6 +11051,7 @@ exports['default'] = function (R) {
             arrayStr = 'array',
             middleStr = 'middle',
             bottomStr = 'bottom',
+            topStr = 'top',
             pxStr = 'px',
             initialStr = 'initial',
             fnStr = 'function',
@@ -12334,15 +12335,19 @@ exports['default'] = function (R) {
                 if (params[has](vAlignStr)) {
                     if (params[vAlignStr] === middleStr) {
                         dy = 0.3;
+                        oldAttr.valign = -0.5;
                     } else if (params[vAlignStr] === bottomStr) {
                         dy = 0.7;
+                        oldAttr.valign = -1;
+                    } else if (params[vAlignStr] === topStr) {
+                        oldAttr.valign = 0;
                     }
                     tSpan = $('tspan', { dy: dy + 'em' });
                     tSpan.appendChild(txtNode);
 
                     oldAttr.tSpan = tSpan;
                 } else {
-                    if (oldAttr.tSpan && oldAttr.tSpan.textContent === params[textStr]) {
+                    if (oldAttr.tSpan && (oldAttr.tSpan.textContent === params[textStr] || _typeof(params[textStr]) !== typeStringSTR)) {
                         tSpan = oldAttr.tSpan;
                     } else {
                         if (oldAttr.valign === -0.5) {

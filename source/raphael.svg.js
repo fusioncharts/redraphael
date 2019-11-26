@@ -1294,11 +1294,7 @@ export default function (R) {
                                     oldAttr.textPathStr !== textPathParams[key]
                                 ) {
                                     if (el.textPathDef) {
-                                        el.textPathDef.setAttributeNS(
-                                            svgNSStr,
-                                            'd',
-                                            textPathParams[key] || E
-                                        );
+                                        el.textPathDef.setAttribute('d',textPathParams[key] || E);
 
                                         textPathProps.href = '#' + el.textPathDef.getAttribute('id');
                                         textPathProps['xlink:href'] = '#' + el.textPathDef.getAttribute('id');
@@ -1347,7 +1343,7 @@ export default function (R) {
 
                         oldAttr.tSpan = tSpan;
                     } else {
-                        if (oldAttr.tSpan) {
+                        if (oldAttr.tSpan && oldAttr.tSpan.textContent === params[textStr]) {
                             tSpan = oldAttr.tSpan;
                         } else {
                             if (oldAttr.valign === -0.5) {

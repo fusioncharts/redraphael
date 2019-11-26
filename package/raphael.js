@@ -12325,7 +12325,7 @@ exports['default'] = function (R) {
 
                 if (params[has](textStr)) {
                     txtNode = R._g.doc.createTextNode(params[textStr] || E);
-                    oldAttr.pathText = params[textStr] || E;
+                    oldAttr.pathText = a.text = params[textStr] || E;
                 } else {
                     txtNode = R._g.doc.createTextNode(oldAttr.pathText || oldAttr.text || E);
                     oldAttr.pathText = oldAttr.pathText || oldAttr.text || E;

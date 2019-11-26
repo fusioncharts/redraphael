@@ -12297,9 +12297,10 @@ exports['default'] = function (R) {
                         if (key === 'path' && !('href' in textPathParams)) {
                             if (oldAttr.textPathStr !== textPathParams[key]) {
                                 if (el.textPathDef) {
-                                    el.textPathDef.setAttributeNS(R.svgNSStr, 'd', textPathParams[key] || E);
+                                    el.textPathDef.setAttributeNS(svgNSStr, 'd', textPathParams[key] || E);
 
-                                    textPathProps.href = '#' + el.textPathDef.getAttributeNS(R.svgNSStr, 'id');
+                                    textPathProps.href = '#' + el.textPathDef.getAttribute('id');
+                                    textPathProps['xlink:href'] = '#' + el.textPathDef.getAttribute('id');
                                 } else {
                                     el.textPathDef = defs.appendChild($('path', {
                                         id: rUUID,
@@ -12307,11 +12308,13 @@ exports['default'] = function (R) {
                                     }));
 
                                     textPathProps.href = '#' + rUUID;
+                                    textPathProps['xlink:href'] = '#' + rUUID;
                                 }
 
                                 oldAttr.textPathStr = textPathParams[key];
                             } else {
-                                textPathProps.href = '#' + el.textPathDef.getAttributeNS(R.svgNSStr, 'id');
+                                textPathProps.href = '#' + el.textPathDef.getAttribute('id');
+                                textPathProps['xlink:href'] = '#' + el.textPathDef.getAttribute('id');
                             }
                         } else {
                             textPathProps[key] = textPathParams[key];
@@ -12357,12 +12360,12 @@ exports['default'] = function (R) {
                     }
                 }
 
-                // Since y is not handled in setFillAndStroke we are explicitly handling
-                // y for textPath
-                if ((params.y || params.y === 0) && oldAttr.y !== params.y) {
-                    oldAttr.y = a.y;
-                    $(node, { y: a.y });
-                }
+                // IE 11 does not support x and y with textPath
+                // hence removing x and y
+                delete oldAttr.x;
+                delete oldAttr.y;
+                node.removeAttribute('x');
+                node.removeAttribute('y');
 
                 textPath = $('textPath', textPathProps);
                 textPath.appendChild(tSpan || txtNode);

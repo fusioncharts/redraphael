@@ -1,7 +1,11 @@
-var Raphael = require('./raphael.core');
+import Raphael from './raphael.core';
+import extended from './raphael.core-extend';
 
-var svg = require('./raphael.svg');
-var vml = require('./raphael.vml');
-var canvas = require('./raphael.canvas');
+import svg from './raphael.svg';
+import vml from './raphael.vml';
+import canvas from './raphael.canvas';
 
-module.exports = Raphael;
+export {svg, vml, canvas, extended}
+
+export default Raphael
+

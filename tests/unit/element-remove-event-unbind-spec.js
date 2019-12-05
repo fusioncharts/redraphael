@@ -1,4 +1,4 @@
-var Raphael = require('../../lib/raphael');
+import Raphael from '../../source/raphael';
 
 describe("Events on elements", function () {
     var paper,

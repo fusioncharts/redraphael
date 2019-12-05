@@ -19,7 +19,7 @@ var pkgJSON = JSON.parse(require('fs').readFileSync('./package.json'));
 var BANNER = `
 /**!
  * RedRaphael <%= version %> - JavaScript Vector Library
- * Copyright (c) 2012-2013 FusionCharts Technologies <http://www.fusioncharts.com>
+ * Copyright (c) 2012-2013 InfoSoft Global Pvt. Ltd. <http://www.fusioncharts.com>
  *
  * Raphael <%= rversion %>
  * Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
@@ -40,9 +40,7 @@ gulp.task('create:dist', ['clean:dist'], function () {
 
     var standalone = browserify(pkgJSON.source.src + '/' + pkgJSON.source.name, {
     })
-    .transform(babelify.configure({
-	    // presets: ["es2015"]
-    }))
+    .transform(babelify.configure({}))
 
 
     return standalone.bundle()
@@ -66,8 +64,7 @@ gulp.task('clean:lib', function () {
 
 gulp.task('create:lib', ['clean:lib'], function () {
     return gulp.src([ pkgJSON.source.src  + '/**/*.js' ])
-        .pipe(babel({
-        }))
+        .pipe(babel({}))
         .pipe(gulp.dest(pkgJSON.lib));
 });
 
@@ -122,4 +119,3 @@ gulp.task('watch:samples', ['create:dist', 'create:lib', 'build:sample'], functi
 gulp.task('build', [ 'create:dist', 'create:lib' ]);
 
 gulp.task('start', ['start:server', 'watch:samples']);
-

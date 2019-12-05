@@ -1,3 +1,5 @@
+import { getArrayCopy } from "../raphael.lib";
+
 // Copyright (c) 2017 Adobe Systems Incorporated. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +19,7 @@
 // │ Author Dmitry Baranovskiy (http://dmitry.baranovskiy.com/) │ \\
 // └────────────────────────────────────────────────────────────┘ \\
 
-(function (glob) {
+export default (function (glob) {
     var version = "0.5.3",
         has = "hasOwnProperty",
         separator = /[\.\/]/,
@@ -49,7 +51,7 @@
         Str = String,
         isArray = Array.isArray || function (ar) {
             return ar instanceof Array || objtos.call(ar) == "[object Array]";
-        },
+        };
     /*\
      * eve
      [ method ]
@@ -62,19 +64,20 @@
 
      = (object) array of returned values from the listeners. Array has two methods `.firstDefined()` and `.lastDefined()` to get first or last not `undefined` value.
     \*/
-        eve = function (name, scope) {
-            var e = events,
-                oldstop = stop,
-                args = Array.prototype.slice.call(arguments, 2),
-                listeners = eve.listeners(name),
-                z = 0,
-                f = false,
-                l,
-                indexed = [],
-                queue = {},
-                out = [],
-                ce = current_event,
-                errors = [];
+    function eve(name, scope) {
+        var e = events,
+            oldstop = stop,
+            arg = getArrayCopy(arguments),
+            args = Array.prototype.slice.call(arg, 2),
+            listeners = eve.listeners(name),
+            z = 0,
+            f = false,
+            l,
+            indexed = [],
+            queue = {},
+            out = [],
+            ce = current_event,
+            errors = [];
             out.firstDefined = firstDefined;
             out.lastDefined = lastDefined;
             current_event = name;
@@ -255,9 +258,10 @@
      = (function) possible event handler function
     \*/
     eve.f = function (event) {
-        var attrs = [].slice.call(arguments, 1);
+        var args = getArrayCopy(arguments),
+            attrs = [].slice.call(args, 1);
         return function () {
-            eve.apply(null, [event, null].concat(attrs).concat([].slice.call(arguments, 0)));
+            eve.apply(null, [event, null].concat(attrs).concat([].slice.call(args, 0)));
         };
     };
     /*\
@@ -435,5 +439,6 @@
         return "You are running Eve " + version;
     };
     glob.eve = eve;
-    typeof module != "undefined" && module.exports ? module.exports = eve : typeof define === "function" && define.amd ? define("eve", [], function() { return eve; }) : glob.eve = eve;
-})(typeof window != "undefined" ? window : this);
+    // typeof module != "undefined" && module.exports ? module.exports = eve : typeof define === "function" && define.amd ? define("eve", [], function() { return eve; }) : glob.eve = eve;
+    return eve;
+})(typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : null);

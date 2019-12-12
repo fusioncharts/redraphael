@@ -1884,6 +1884,7 @@ var loaded,
         large_arc_flag = large_arc_flag && +large_arc_flag;
         // for more information of where this math came from visit:
         // http://www.w3.org/TR/SVG11/implnote.html#ArcImplementationNotes
+        // If rx = 0 or ry = 0 then this arc is treated as a straight line segment (a "lineto") joining the endpoints
         if (rx === 0 || ry === 0){
             return l2c(x1, y1, x2, y2);
         }

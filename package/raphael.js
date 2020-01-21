@@ -2992,6 +2992,9 @@ var pathDimensions = R.pathBBox = function (path) {
     large_arc_flag = large_arc_flag && +large_arc_flag;
     // for more information of where this math came from visit:
     // http://www.w3.org/TR/SVG11/implnote.html#ArcImplementationNotes
+    if (rx === 0 || ry === 0) {
+        return l2c(x1, y1, x2, y2);
+    }
     var _120 = PI * 120 / 180,
         rad = deg2rad * (+angle || 0),
         res = [],
@@ -11090,7 +11093,7 @@ exports['default'] = function (R) {
             xlinkRegx = /^xlink:/,
             separator = /[, ]+/,
             textBreakRegx = /\n|<br\s*?\/?>/i,
-            ltgtbrRegex = /&lt|&gt|<br/i,
+            ltgtbrRegex = /&lt|&gt|&quot|&#039|&#034|<br/i,
             nbspRegex = /&nbsp;|&#160;|&#xA0;/g,
             arrayShift = Array.prototype.shift,
             zeroStrokeFix = !!(/AppleWebKit/.test(navigator.userAgent) && (!/Chrome/.test(navigator.userAgent) || navigator.appVersion.match(/Chrome\/(\d+)\./)[1] < 29)),
@@ -12417,7 +12420,7 @@ exports['default'] = function (R) {
                         // Convert all the &lt; and &gt; to < and > and if there is any <br/> tag in between &lt; and &gt;
                         // then converting them into <<br/> and ><br/> respectively.
                         if (text && ltgtbrRegex.test(text)) {
-                            text = text.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&<br\/>lt;|&l<br\/>t;|&lt<br\/>;/g, '<<br/>').replace(/&<br\/>gt;|&g<br\/>t;|&gt<br\/>;/g, '><br/>');
+                            text = text.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;|&#034;/g, '"').replace(/&#039;/g, '\'').replace(/&<br\/>lt;|&l<br\/>t;|&lt<br\/>;/g, '<<br/>').replace(/&<br\/>gt;|&g<br\/>t;|&gt<br\/>;/g, '><br/>');
                         }
                         oldAttr.text = a.text = text;
                         if (textBreakRegx.test(text)) {

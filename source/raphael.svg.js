@@ -2403,12 +2403,10 @@ export default function (R) {
             // '-ms-touch-action : none' permits no default touch behaviors in IE (10 and 11) browser
             // '-touch-action : none' permits no default touch behaviors in mozilla of windows
             if (supportsTouch) {
-                if (R.isEdge) {
-                    css += 'touch-action:none;';
-                } else if (R.isFirefox && R.isWindows) {
-                    css += 'touch-action:none;';
-                } else if (R.isIE11) {
+                if (R.isIE10) {
                     css += '-ms-touch-action:none;';
+                } else {
+                    css += 'touch-action:none;';
                 }
             }
             x = x || 0;

@@ -168,6 +168,7 @@ var loaded,
     isEdge = R.isEdge = /Edge/.test(navigator.userAgent),
     isIE11 = R.isIE11 = /trident/i.test(navigator.userAgent) &&
         /rv:11/i.test(navigator.userAgent) && !win.opera,
+    isIE10 = R.isIE10 = navigator.appVersion.indexOf('MSIE 10') !== -1,
     isFirefox = R.isFirefox = /Firefox/.test(navigator.userAgent),
     isWindows = R.isWindows = /Windows/.test(navigator.userAgent),
     mStr = 'm',

@@ -1361,6 +1361,7 @@ var loaded,
     supportsPointer = R.supportsPointer = "onpointerover" in doc,
     isEdge = R.isEdge = /Edge/.test(navigator.userAgent),
     isIE11 = R.isIE11 = /trident/i.test(navigator.userAgent) && /rv:11/i.test(navigator.userAgent) && !win.opera,
+    isIE10 = R.isIE10 = navigator.appVersion.indexOf('MSIE 10') !== -1,
     isFirefox = R.isFirefox = /Firefox/.test(navigator.userAgent),
     isWindows = R.isWindows = /Windows/.test(navigator.userAgent),
     mStr = 'm',
@@ -2992,10 +2993,7 @@ var pathDimensions = R.pathBBox = function (path) {
     large_arc_flag = large_arc_flag && +large_arc_flag;
     // for more information of where this math came from visit:
     // http://www.w3.org/TR/SVG11/implnote.html#ArcImplementationNotes
-<<<<<<< HEAD
-=======
     // If rx = 0 or ry = 0 then this arc is treated as a straight line segment (a "lineto") joining the endpoints
->>>>>>> 046fce38bdd55ef3ed788b801d1f2fb3105266fc
     if (rx === 0 || ry === 0) {
         return l2c(x1, y1, x2, y2);
     }
@@ -13415,12 +13413,10 @@ exports['default'] = function (R) {
             // '-ms-touch-action : none' permits no default touch behaviors in IE (10 and 11) browser
             // '-touch-action : none' permits no default touch behaviors in mozilla of windows
             if (supportsTouch) {
-                if (R.isEdge) {
-                    css += 'touch-action:none;';
-                } else if (R.isFirefox && R.isWindows) {
-                    css += 'touch-action:none;';
-                } else if (R.isIE11) {
+                if (R.isIE10) {
                     css += '-ms-touch-action:none;';
+                } else {
+                    css += 'touch-action:none;';
                 }
             }
             x = x || 0;

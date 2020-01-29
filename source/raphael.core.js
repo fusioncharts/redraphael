@@ -168,6 +168,7 @@ var loaded,
     isEdge = R.isEdge = /Edge/.test(navigator.userAgent),
     isIE11 = R.isIE11 = /trident/i.test(navigator.userAgent) &&
         /rv:11/i.test(navigator.userAgent) && !win.opera,
+    isIE10 = R.isIE10 = navigator.appVersion.indexOf('MSIE 10') !== -1,
     isFirefox = R.isFirefox = /Firefox/.test(navigator.userAgent),
     isWindows = R.isWindows = /Windows/.test(navigator.userAgent),
     mStr = 'm',
@@ -1884,6 +1885,7 @@ var loaded,
         large_arc_flag = large_arc_flag && +large_arc_flag;
         // for more information of where this math came from visit:
         // http://www.w3.org/TR/SVG11/implnote.html#ArcImplementationNotes
+        // If rx = 0 or ry = 0 then this arc is treated as a straight line segment (a "lineto") joining the endpoints
         if (rx === 0 || ry === 0){
             return l2c(x1, y1, x2, y2);
         }

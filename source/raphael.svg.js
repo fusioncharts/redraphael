@@ -72,7 +72,7 @@ export default function (R) {
             xlinkRegx = /^xlink:/,
             separator = /[, ]+/,
             textBreakRegx = /\n|<br\s*?\/?>/i,
-            ltgtbrRegex = /&lt|&gt|<br/i,
+            ltgtbrRegex = /&lt|&gt|&quot|&#039|&#034|<br/i,
             nbspRegex = /&nbsp;|&#160;|&#xA0;/g,
             arrayShift = Array.prototype.shift,
             zeroStrokeFix = !!(/AppleWebKit/.test(navigator.userAgent) &&
@@ -1422,6 +1422,8 @@ export default function (R) {
                             // then converting them into <<br/> and ><br/> respectively.
                             if (text && ltgtbrRegex.test(text)) {
                                 text = text.replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+                                    .replace(/&quot;|&#034;/g, '"')
+                                    .replace(/&#039;/g, '\'')
                                     .replace(/&<br\/>lt;|&l<br\/>t;|&lt<br\/>;/g, '<<br/>')
                                     .replace(/&<br\/>gt;|&g<br\/>t;|&gt<br\/>;/g, '><br/>');
                             }

@@ -1,6 +1,6 @@
 /**!
  * RedRaphael @VERSION - JavaScript Vector Library
- * Copyright (c) 2012-2013 InfoSoft Global Pvt. Ltd. <http://www.fusioncharts.com>
+ * Copyright (c) 2012-2013 FusionCharts, Inc. <http://www.fusioncharts.com>
  *
  * Raphael @RVERSION
  * Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>

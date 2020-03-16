@@ -1,7 +1,7 @@
 {
   "name": "redraphael",
   "filename": "raphael",
-  "version": "1.1.27",
+  "version": "1.1.28",
   "rversion": "2.1.0",
   "description": "RedRaphael",
   "main": "./package/raphael.js",
@@ -33,7 +33,7 @@
     "type": "git",
     "url": "https://github.com/fusioncharts/redraphael.git"
   },
-  "author": "InfoSoft Global Pvt. Ltd.",
+  "author": "FusionCharts, Inc.",
   "bugs": {
     "url": "https://github.com/fusioncharts/redraphael/issues"
   },

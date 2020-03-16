@@ -19,7 +19,7 @@ var pkgJSON = JSON.parse(require('fs').readFileSync('./package.json'));
 var BANNER = `
 /**!
  * RedRaphael <%= version %> - JavaScript Vector Library
- * Copyright (c) 2012-2013 InfoSoft Global Pvt. Ltd. <http://www.fusioncharts.com>
+ * Copyright (c) 2012-2013 FusionCharts, Inc. <http://www.fusioncharts.com>
  *
  * Raphael <%= rversion %>
  * Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>

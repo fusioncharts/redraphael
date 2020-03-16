@@ -7,7 +7,7 @@ import {
 
 /** !
 * RedRaphael 1.0.0 - JavaScript Vector Library SVG Module
-* Copyright (c) 2012-2013 InfoSoft Global Pvt. Ltd. <http://www.fusioncharts.com>
+* Copyright (c) 2012-2013 FusionCharts, Inc. <http://www.fusioncharts.com>
 *
 * Raphael 2.1.0 - JavaScript Vector Library SVG Module
 * Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
@@ -72,7 +72,7 @@ export default function (R) {
             xlinkRegx = /^xlink:/,
             separator = /[, ]+/,
             textBreakRegx = /\n|<br\s*?\/?>/i,
-            ltgtbrRegex = /&lt|&gt|<br/i,
+            ltgtbrRegex = /&lt|&gt|&quot|&#039|&#034|<br/i,
             nbspRegex = /&nbsp;|&#160;|&#xA0;/g,
             arrayShift = Array.prototype.shift,
             zeroStrokeFix = !!(/AppleWebKit/.test(navigator.userAgent) &&
@@ -1422,6 +1422,8 @@ export default function (R) {
                             // then converting them into <<br/> and ><br/> respectively.
                             if (text && ltgtbrRegex.test(text)) {
                                 text = text.replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+                                    .replace(/&quot;|&#034;/g, '"')
+                                    .replace(/&#039;/g, '\'')
                                     .replace(/&<br\/>lt;|&l<br\/>t;|&lt<br\/>;/g, '<<br/>')
                                     .replace(/&<br\/>gt;|&g<br\/>t;|&gt<br\/>;/g, '><br/>');
                             }
@@ -2403,12 +2405,10 @@ export default function (R) {
             // '-ms-touch-action : none' permits no default touch behaviors in IE (10 and 11) browser
             // '-touch-action : none' permits no default touch behaviors in mozilla of windows
             if (supportsTouch) {
-                if (R.isEdge) {
-                    css += 'touch-action:none;';
-                } else if (R.isFirefox && R.isWindows) {
-                    css += 'touch-action:none;';
-                } else if (R.isIE11) {
+                if (R.isIE10) {
                     css += '-ms-touch-action:none;';
+                } else {
+                    css += 'touch-action:none;';
                 }
             }
             x = x || 0;

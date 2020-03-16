@@ -1,6 +1,6 @@
 /**!
  * RedRaphael 1.0.0 - JavaScript Vector Library
- * Copyright (c) 2012-2013 InfoSoft Global Pvt. Ltd. <http://www.fusioncharts.com>
+ * Copyright (c) 2012-2013 FusionCharts, Inc. <http://www.fusioncharts.com>
  *
  * Raphael 2.1.0
  * Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>
@@ -168,6 +168,7 @@ var loaded,
     isEdge = R.isEdge = /Edge/.test(navigator.userAgent),
     isIE11 = R.isIE11 = /trident/i.test(navigator.userAgent) &&
         /rv:11/i.test(navigator.userAgent) && !win.opera,
+    isIE10 = R.isIE10 = navigator.appVersion.indexOf('MSIE 10') !== -1,
     isFirefox = R.isFirefox = /Firefox/.test(navigator.userAgent),
     isWindows = R.isWindows = /Windows/.test(navigator.userAgent),
     mStr = 'm',
@@ -1884,6 +1885,10 @@ var loaded,
         large_arc_flag = large_arc_flag && +large_arc_flag;
         // for more information of where this math came from visit:
         // http://www.w3.org/TR/SVG11/implnote.html#ArcImplementationNotes
+        // If rx = 0 or ry = 0 then this arc is treated as a straight line segment (a "lineto") joining the endpoints
+        if (rx === 0 || ry === 0){
+            return l2c(x1, y1, x2, y2);
+        }
         var _120 = PI * 120 / 180,
         rad = deg2rad * (+angle || 0),
         res = [],

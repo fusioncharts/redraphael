@@ -2,7 +2,7 @@ import { getArrayCopy } from "./raphael.lib";
 
 /**!
 * RedRaphael 1.0.0 - JavaScript Vector Library VML Module
-* Copyright (c) 2012-2013 InfoSoft Global Pvt. Ltd. <http://www.fusioncharts.com>
+* Copyright (c) 2012-2013 FusionCharts, Inc. <http://www.fusioncharts.com>
 *
 * Raphael 2.1.0 - JavaScript Vector Library VML Module
 * Copyright (c) 2008-2012 Dmitry Baranovskiy <http://raphaeljs.com>

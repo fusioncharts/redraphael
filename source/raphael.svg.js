@@ -144,7 +144,7 @@ export default function (R) {
                 mousemove: "touchmove",
                 mouseout: "touchend" // to handle mouseout event
             },
-            createValidTextNode = function(text) {
+            createValidTextNode = function(text, abbrArr) {
                 var underlineRegex = /<under>/g,
                     underlineEndRegex = /<\/under>/g,
                     boldRegex = /<bold>/g,
@@ -181,7 +181,7 @@ export default function (R) {
                     if(sortedIndices.length) {
                         if(sortedIndices[0].index > startIndex) {
                                 subtext = text.substring(startIndex, sortedIndices[0].index);
-                                tspanArray = createtspanArray(tspanArray, subtext, lastAttrList);                            
+                                tspanArray = createtspanArray(tspanArray, subtext, lastAttrList, abbrArr);                            
                                 startIndex = sortedIndices[0].index + sortedIndices[0].tagName.length;
                         }
                         for (index = 0; index < sortedIndices.length; index++) {
@@ -192,14 +192,14 @@ export default function (R) {
                                 } else {
                                     subtext = text.substring(startIndex, sortedIndices[index + 1].index);
                                 }
-                                tspanArray = createtspanArray(tspanArray, subtext, lastAttrList, sortedIndices[index]);
+                                tspanArray = createtspanArray(tspanArray, subtext, lastAttrList, sortedIndices[index], abbrArr);
                                 startIndex = sortedIndices[index + 1].index + sortedIndices[index + 1].tagName.length;
                             }
                             
                         }
                         if(startIndex < text.length) {
                             subtext = text.substring(startIndex, text.length);
-                            tspanArray = createtspanArray(tspanArray, subtext, []);
+                            tspanArray = createtspanArray(tspanArray, subtext, [], abbrArr);
                         }
                 }
                 return tspanArray;
@@ -244,16 +244,13 @@ export default function (R) {
                 }
                 return attrArr;
             },
-            createtspanArray = function(tspanArray, str, lastAttr, indicesObj) {
+            createtspanArray = function(tspanArray, str, lastAttr, indicesObj, abbrArr) {
                 var textNode = R._g.doc.createTextNode(str),
                     obj = {},
                     hasAnchor = false,
                     hasAbbr = false,
                     anchor,
                     tspan, i;
-                    function funcdada() {
-                        console.log(arguments);
-                    };
                     if(!lastAttr.length) {
                         tspan = $('tspan');
                         tspan.appendChild(textNode);
@@ -264,12 +261,22 @@ export default function (R) {
                                 hasAbbr = true;
                                 //obj['onmouseover'] = func;
                             } else if(lastAttr[i] === '<a>') {
-                                hasAnchor = true;                                
-                                obj['href'] = indicesObj.href;
-                                obj['target'] = indicesObj.target;
-                                obj['hreflang'] = indicesObj.hreflang;
-                                obj['referrerpolicy'] = indicesObj.referrerpolicy;
-                                obj['rel'] = indicesObj.rel;
+                                hasAnchor = true;
+                                if(indicesObj.href!=='') {                                
+                                    obj['href'] = indicesObj.href;
+                                }
+                                if(indicesObj.target!=='') {
+                                    obj['target'] = indicesObj.target;
+                                }
+                                if(indicesObj.hreflang!=='') {
+                                    obj['hreflang'] = indicesObj.hreflang;
+                                }
+                                if(indicesObj.referrerpolicy!=='') {
+                                    obj['referrerpolicy'] = indicesObj.referrerpolicy;
+                                }
+                                if(indicesObj.rel!=='') {
+                                    obj['rel'] = indicesObj.rel;
+                                }
                                 anchor = $('a', obj);
                             }
                             if(tagHash[lastAttr[i]].tagAttr && tagHash[lastAttr[i]].tagAttrVal) {                 
@@ -278,11 +285,11 @@ export default function (R) {
                         }
                             if(hasAbbr) {
                                 tspan = $('tspan', obj);
-                                tspan.addEventListener("click", function(){console.log("hello")});
                                 tspan.appendChild(textNode);
+                                abbrArr.push({'tspan': tspan, title:indicesObj.title})
                                 tspanArray.push(tspan);
                             }
-                            if(hasAnchor) {
+                            else if(hasAnchor) {
                                 tspan = $('tspan', {});
                                 tspan.appendChild(textNode);
                                 anchor.appendChild(tspan);
@@ -1478,7 +1485,10 @@ export default function (R) {
                     updateTspan = false,
                     i,
                     spanArr = [],
+                    abbrindx,
+                    dummyEl,
                     tspanArr = [],
+                    abbrArr = [],
                     hasTags = false,
                     l,
                     ii,
@@ -1745,7 +1755,7 @@ export default function (R) {
                             tspans = node.childNodes;
                             for(i = 0;i < l; i++) {
                                 tspan = tspans[i * j];
-                                spanArr = createValidTextNode(texts[i]);
+                                spanArr = createValidTextNode(texts[i], abbrArr);
                                 if(tspan) {
                                     tspan.innerHTML = E;
                                     if (isIE) {
@@ -2019,13 +2029,23 @@ export default function (R) {
                         }
                         // create and append the text node
                         //node.appendChild(R._g.doc.createTextNode(text));
-                        tspanArr = createValidTextNode(text);
+                        tspanArr = createValidTextNode(text, abbrArr);
                         if(tspanArr.length) {
                             for(var index = 0;index < tspanArr.length; index++) {
                                 node.appendChild(tspanArr[index]);
                             }
                         } else {
                             node.appendChild(R._g.doc.createTextNode(text));
+                        }
+                        if(abbrArr.length) {
+                            for(abbrindx = 0;abbrindx< abbrArr.length; abbrindx++) {
+                                dummyEl = el.paper["text"]({display: 'none'});
+                                dummyEl.node = abbrArr[abbrindx].tspan;
+                                if(!el.abbrArr) {
+                                    el.abbrArr = [];   
+                                }
+                                el.abbrArr.push({'el':dummyEl, title: abbrArr[abbrindx].title});
+                            }
                         }
                     }
 
@@ -2573,7 +2593,7 @@ export default function (R) {
         * @param handler - Function to be called on the firing of the event
         \ */
         elproto.on = function (eventType, handler, context) {
-            debugger;
+
             if (!handler || !eventType) {
                 return;
             }

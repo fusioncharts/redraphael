@@ -1797,6 +1797,16 @@ export default function (R) {
                                 } else {
                                     tspan.appendChild(R._g.doc.createTextNode(texts[i]));
                                 }
+                                if(abbrArr.length) {
+                                    for(abbrindx = 0;abbrindx< abbrArr.length; abbrindx++) {
+                                        dummyEl = el.paper["text"]({display: 'none'});
+                                        dummyEl.node = abbrArr[abbrindx].tspan;
+                                        if(!el.abbrArr) {
+                                            el.abbrArr = [];   
+                                        }
+                                        el.abbrArr.push({'el':dummyEl, title: abbrArr[abbrindx].title});
+                                    }
+                                }
                             }
                         }
                         ii = l * j;

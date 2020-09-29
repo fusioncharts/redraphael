@@ -159,6 +159,8 @@ export default function (R) {
                     superscriptEndRegex = /<\/superscript>/g,
                     abbrRegex = /<abbr[\s]+([^>]+)>/g,
                     abbrEndRegex = /<\/abbr>/g,
+                    spanRegex = /<span[\s]+([^>]+)>/g,
+                    spanEndRegex = /<\/span>/g,
                     anchorRegex = /<a[\s]+([^>]+)>/g,
                     anchorEndRegex = /<\/a>/g,
                     lastAttrList = [],
@@ -176,8 +178,9 @@ export default function (R) {
                     superscriptTagIndices = getTagIndices(superscriptRegex, superscriptEndRegex, text, '<superscript>', '</superscript>'),
                     abbrTagIndices = getAbbrTagIndices(abbrRegex, abbrEndRegex, text, '<abbr>', '</abbr>'),
                     anchorTagIndices = getAnchorTagIndices(anchorRegex, anchorEndRegex, text, '<a>', '</a>'),
+                    spanTagIndices = getSpanTagIndices(spanRegex, spanEndRegex, text, '<span>', '</span>'),
                     //Sort the tsgIndices
-                    sortedIndices = sortTags(underlinetagIndices, boldtagIndices, emtagIndices, strikeTagIndices, subscriptTagIndices, superscriptTagIndices, abbrTagIndices, anchorTagIndices);
+                    sortedIndices = sortTags(underlinetagIndices, boldtagIndices, emtagIndices, strikeTagIndices, subscriptTagIndices, superscriptTagIndices, abbrTagIndices, anchorTagIndices, spanTagIndices);
                     if(sortedIndices.length) {
                         if(sortedIndices[0].index > startIndex) {
                                 subtext = text.substring(startIndex, sortedIndices[0].index);
@@ -220,17 +223,23 @@ export default function (R) {
                     '<abbr>' : {action:'add', tagAttr:'text-decoration', tagAttrVal: 'underline'},
                     '</abbr>' : {action:'remove', actionTag: '<abbr>'},
                     '<a>' : {action:'add'},
-                    '</a>' : {action:'remove', actionTag: '<a>'},     
+                    '</a>' : {action:'remove', actionTag: '<a>'},
+                    '<span>' : {action:'add'},
+                    '</span>' : {action:'remove', actionTag: '<span>'}     
                 },
             createAttrList = function(attrArr, tagName) {
                 var i,
                     abbrReg = /<abbr[\s]+([^>]+)>/g,
-                    anchorReg = /<a[\s]+([^>]+)>/g;
+                    anchorReg = /<a[\s]+([^>]+)>/g,
+                    spanReg = /<span[\s]+([^>]+)>/g;
                 if(tagName.match(abbrReg)) {
                     attrArr.push('<abbr>');
                 } 
                 else if(tagName.match(anchorReg)) {
                     attrArr.push('<a>');
+                }
+                else if(tagName.match(spanReg)) {
+                    attrArr.push('<span>')
                 }
                 else if(tagHash[tagName].action === 'add') {
                     attrArr.push(tagName);
@@ -249,6 +258,7 @@ export default function (R) {
                     obj = {},
                     hasAnchor = false,
                     hasAbbr = false,
+                    hasSpan = false,
                     anchor,
                     tspan, i;
                     if(!lastAttr.length) {
@@ -259,7 +269,6 @@ export default function (R) {
                         for (i = 0; i< lastAttr.length;i++) {     
                             if(lastAttr[i] === '<abbr>') {
                                 hasAbbr = true;
-                                //obj['onmouseover'] = func;
                             } else if(lastAttr[i] === '<a>') {
                                 hasAnchor = true;
                                 if(indicesObj.href!=='') {                                
@@ -278,6 +287,8 @@ export default function (R) {
                                     obj['rel'] = indicesObj.rel;
                                 }
                                 anchor = $('a', obj);
+                            } else if(lastAttr[i] === '<span>'){
+                                hasSpan = true;
                             }
                             if(tagHash[lastAttr[i]].tagAttr && tagHash[lastAttr[i]].tagAttrVal) {                 
                                 obj[tagHash[lastAttr[i]].tagAttr] = tagHash[lastAttr[i]].tagAttrVal;
@@ -288,12 +299,19 @@ export default function (R) {
                                 tspan.appendChild(textNode);
                                 abbrArr.push({'tspan': tspan, title:indicesObj.title})
                                 tspanArray.push(tspan);
+                            } 
+                            else if(hasSpan) {
+                                obj = MergeRecursive(obj, indicesObj.style);
+                                tspan = $('tspan', obj);
+                                tspan.appendChild(textNode);
+                                tspanArray.push(tspan);
                             }
                             else if(hasAnchor) {
                                 tspan = $('tspan', {});
                                 tspan.appendChild(textNode);
                                 anchor.appendChild(tspan);
                                 tspanArray.push(anchor);
+                                hasAnchor = false;
                             } else{
                                 tspan = $('tspan', obj);
                                 tspan.appendChild(textNode);
@@ -304,10 +322,34 @@ export default function (R) {
                 
                 return tspanArray;
             },
-            
-            sortTags = function(u, b, em, strike,sub, sup, abbr, a) {
+        /*
+        * Recursively merge properties of two objects 
+        */
+        MergeRecursive = function(obj1, obj2) {
+
+            for (var p in obj2) {
+            try {
+                // Property in destination object set; update its value.
+                if ( obj2[p].constructor==Object ) {
+                obj1[p] = MergeRecursive(obj1[p], obj2[p]);
+        
+                } else {
+                obj1[p] = obj2[p];
+        
+                }
+        
+            } catch(e) {
+                // Property in destination object not set; create it and set its value.
+                obj1[p] = obj2[p];
+        
+            }
+            }
+        
+            return obj1;
+        },
+            sortTags = function(u, b, em, strike,sub, sup, abbr, a, sp) {
                 var i,j,
-                    tagArr = [u, b, em, strike, sub, sup, abbr, a],
+                    tagArr = [u, b, em, strike, sub, sup, abbr, a, sp],
                     res = [];
                 for (j = 0;j< tagArr.length; j++) {
                     for (var key in tagArr[j]) {
@@ -336,6 +378,57 @@ export default function (R) {
                     tagindices.push({tagName:result[0],index:result.index,title:dummyNode.childNodes[0].title ? dummyNode.childNodes[0].title : ''});
                 }
                 while ( (result = abbrEndRegex.exec(text)) ) {
+                    endtagindices.push({tagName:endtagText,index:result.index});
+                }
+
+                return({
+                    tag: tagindices,
+                    endtag: endtagindices
+                })
+            },
+            getStyles = function(el) {  ///Get Styles as an array of objects
+                var output = {};
+            
+                if (!el || !el.style || !el.style.cssText) {
+                    return output;
+                }
+            
+                var camelize = function camelize(str) {
+                    return str.replace (/(?:^|[-])(\w)/g, function (a, c) {
+                        c = a.substr(0, 1) === '-' ? c.toUpperCase () : c;
+                        return c ? c : '';
+                    });
+                }
+            
+                var style = el.style.cssText.split(';');
+            
+                for (var i = 0; i < style.length; ++i) {
+                    var rule = style[i].trim();
+            
+                    if (rule) {
+                        var ruleParts = rule.split(':');
+                        var key = camelize(ruleParts[0].trim());
+                        output[key] = ruleParts[1].trim();
+                    }
+                }
+            
+                return output;
+            },
+            getSpanTagIndices = function(spanRegex, spanEndRegex, text, tagText, endtagText) {
+                var tagindices = [],
+                result,
+                dummyNode,
+                testAbbr,
+                styleObj,
+                endtagindices = [];
+                while ( (result = spanRegex.exec(text)) ) {
+                        dummyNode = document.createElement('p');
+                        testAbbr = result[0] + 'Dummy</span>';
+                        dummyNode.innerHTML = testAbbr;
+                        styleObj = getStyles(dummyNode.childNodes[0]);
+                        tagindices.push({tagName:result[0],index:result.index,style: styleObj ? styleObj : ''});
+                }
+                while ( (result = spanEndRegex.exec(text)) ) {
                     endtagindices.push({tagName:endtagText,index:result.index});
                 }
 
@@ -1809,226 +1902,14 @@ export default function (R) {
                                 }
                             }
                         }
-                        ii = l * j;
-                            //if(hasTags) {
+                                ii = l * j;
+
                                 if (node.childNodes.length > ii) {
                                     for (i = node.childNodes.length - 1; i >= ii; i -= 1) {
                                             node.removeChild(node.childNodes[i]);
                                     }
                                 }
-                            // } else {
-                            //     if (tspans.length > ii) {
-                            //         for (i = tspans.length - 1; i >= ii; i -= 1) {
-                            //                 node.removeChild(tspans[i]);
-                            //         }
-                            //     }
-                            // }
 
-                        /*
-
-                        // Note for the first tspan (i === 0), we will add only the x attribute. No dy
-                        // If the containing text got changed
-                        if (textChanged) {
-                            //tspans = node.getElementsByTagName(tSpanStr);
-                            tspans = node.childNodes;
-                            for (i = 0; i < l; i++) {
-                                tspan = tspans[i * j];
-                                spanArr = createValidTextNode(texts[i]);
-                                console.log(texts[i]);
-                                if(spanArr.length) {
-                                    hasTags = true;
-                                    if(tspan) {
-                                    tspan.innerHTML = E;
-                                    if (isIE) {
-                                        // For IE, setting the innerHTML of tspan to blank string doesnot remove
-                                        // the child nodes. Child nodes should be removed explicitly.
-                                        while (tspan.firstChild) {
-                                            tspan.removeChild(tspan.firstChild);
-                                        }
-                                    }
-                                    node.removeChild(tspan);
-                                    // if (updateTspan) { // If update required, update here
-                                    //     $(tspan, i ? tspanAttr : oldAttr.tspan0Attr);
-                                    // }
-
-                                    }
-                                    tspan = $(tSpanStr,i ? tspanAttr : oldAttr.tspan0Attr);
-                                    node.appendChild(tspan);                                  
-                                // Special fix for RTL texts in IE-SVG browsers
-                                if (!isIE && direction === rtlStr) {
-                                    tempIESpan = $(tSpanStr, IESplTspanAttr);
-                                    tempIESpan.appendChild(R._g.doc.createTextNode('i'));
-                                    node.appendChild(tempIESpan);
-                                }
-                                // If it is a blank line, preserve it
-                                if (!texts[i]) {
-                                    tspan.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
-                                    texts[i] = S;
-                                }
-
-                                // If text has &nbsp; then change the white-space style of the node to 'preserve' for disabling space collapse
-                                if (hasnbsp(texts[i])) {
-                                    texts[i] = spacify(texts[i]);
-                                    tspan.style.whiteSpace = PRESERVESTRING;
-                                } else if (tspan.style.whiteSpace === PRESERVESTRING) {
-                                    tspan.style.whiteSpace = BLANKSTRING;
-                                }
-                                for(var indx = 0;indx < spanArr.length;indx++) {
-                                    tspan.appendChild(spanArr[indx]);
-                                }   
-                                } else {
-                                // if (tspan) {
-                                //     // If already there is a tspan then remove the text
-                                //     //tspan.innerHTML = E;
-                                //     if (isIE) {
-                                //         // For IE, setting the innerHTML of tspan to blank string doesnot remove
-                                //         // the child nodes. Child nodes should be removed explicitly.
-                                //         while (tspan.firstChild) {
-                                //             tspan.removeChild(tspan.firstChild);
-                                //         }
-                                //     }
-                                //     // if (updateTspan) { // If update required, update here
-                                //     //     $(tspan, i ? tspanAttr : oldAttr.tspan0Attr);
-                                //     // }
-                                // } else 
-                                //{ // Else create a new span
-                                    tspan = $(tSpanStr,i ? tspanAttr : oldAttr.tspan0Attr);
-                                    node.appendChild(tspan);                                  
-                                    // Special fix for RTL texts in IE-SVG browsers
-                                    if (!isIE && direction === rtlStr) {
-                                        tempIESpan = $(tSpanStr, IESplTspanAttr);
-                                        tempIESpan.appendChild(R._g.doc.createTextNode('i'));
-                                        node.appendChild(tempIESpan);
-                                    }
-                                //}
-                                // If it is a blank line, preserve it
-                                if (!texts[i]) {
-                                    tspan.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
-                                    texts[i] = S;
-                                }
-
-                                // If text has &nbsp; then change the white-space style of the node to 'preserve' for disabling space collapse
-                                if (hasnbsp(texts[i])) {
-                                    texts[i] = spacify(texts[i]);
-                                    tspan.style.whiteSpace = PRESERVESTRING;
-                                } else if (tspan.style.whiteSpace === PRESERVESTRING) {
-                                    tspan.style.whiteSpace = BLANKSTRING;
-                                }
-                                // create and append the text node
-                                tspan.appendChild(R._g.doc.createTextNode(texts[i]));
-                            }
-                            }
-
-                            ii = l * j;
-                            //if(hasTags) {
-                                if (node.childNodes.length > ii) {
-                                    for (i = node.childNodes.length - 1; i >= ii; i -= 1) {
-                                            node.removeChild(node.childNodes[i]);
-                                    }
-                                }
-                            // } else {
-                            //     if (tspans.length > ii) {
-                            //         for (i = tspans.length - 1; i >= ii; i -= 1) {
-                            //                 node.removeChild(tspans[i]);
-                            //         }
-                            //     }
-                            // }
-                            //If there are already more tspan than required, then remove the extra tspans
-                            
-                        } else if (updateTspan) {
-                                // else if the tspans needs to be updated
-                            //tspans = node.getElementsByTagName(tSpanStr); // @note: don't count on tspan, rather store the previous count
-                            ii = node.childNodes.length;
-                            for (i = 0; i < ii; i += j) {
-                                $(node.childNodes[i], i ? tspanAttr : oldAttr.tspan0Attr);
-                            }
-                             
-                        }*/
-
-                        /*
-                            // Remove white-space preserve property from parent text node
-                        if (node.style.whiteSpace === PRESERVESTRING) {
-                            node.style.whiteSpace = BLANKSTRING;
-                        }
-                        tspanAttr = {};
-                        if (!oldAttr.tspanAttr) {
-                            oldAttr.tspanAttr = {};
-                            oldAttr.tspan0Attr = {};
-                        }
-                        // If the dy needs to be changed
-                        if (oldAttr.tspanAttr.dy !== oldAttr.lineHeight) {
-                            oldAttr.tspanAttr.dy = tspanAttr.dy = oldAttr.lineHeight;
-                            updateTspan = true;
-                        }
-
-                        // if x is getting changed
-                        if (params[has]('x') && oldAttr.tspanAttr.x !== params.x) { // X change
-                            // If the x is getting changed, then the tspan need to be updated
-                            // Note: we don't need to update the node as it is already updated during setFillAndStroke
-                            oldAttr.tspan0Attr.x = oldAttr.tspanAttr.x = tspanAttr.x = a.x;
-                            updateTspan = true;
-                        }
-
-                        // Note for the first tspan (i === 0), we will add only the x attribute. No dy
-                        // If the containing text got changed
-                        if (textChanged) {
-                            tspans = node.getElementsByTagName(tSpanStr);
-                            for (i = 0; i < l; i++) {
-                                tspan = tspans[i * j];
-                                if (tspan) { // If already there is a tspan then remove the text
-                                    tspan.innerHTML = E;
-                                    if (isIE) {
-                                        // For IE, setting the innerHTML of tspan to blank string doesnot remove
-                                        // the child nodes. Child nodes should be removed explicitly.
-                                        while (tspan.firstChild) {
-                                            tspan.removeChild(tspan.firstChild);
-                                        }
-                                    }
-                                    if (updateTspan) { // If update required, update here
-                                        $(tspan, i ? tspanAttr : oldAttr.tspan0Attr);
-                                    }
-                                } else { // Else create a new span
-                                    tspan = $(tSpanStr, i ? oldAttr.tspanAttr : oldAttr.tspan0Attr);
-                                    node.appendChild(tspan);
-                                    // Special fix for RTL texts in IE-SVG browsers
-                                    if (!isIE && direction === rtlStr) {
-                                        tempIESpan = $(tSpanStr, IESplTspanAttr);
-                                        tempIESpan.appendChild(R._g.doc.createTextNode('i'));
-                                        node.appendChild(tempIESpan);
-                                    }
-                                }
-                                // If it is a blank line, preserve it
-                                if (!texts[i]) {
-                                    tspan.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
-                                    texts[i] = S;
-                                }
-
-                                // If text has &nbsp; then change the white-space style of the node to 'preserve' for disabling space collapse
-                                if (hasnbsp(texts[i])) {
-                                    texts[i] = spacify(texts[i]);
-                                    tspan.style.whiteSpace = PRESERVESTRING;
-                                } else if (tspan.style.whiteSpace === PRESERVESTRING) {
-                                    tspan.style.whiteSpace = BLANKSTRING;
-                                }
-                                // create and append the text node
-                                tspan.appendChild(R._g.doc.createTextNode(texts[i]));
-                            }
-
-                            ii = l * j;
-                            // If there are already more tspan than required, then remove the extra tspans
-                            if (tspans.length > ii) {
-                                for (i = tspans.length - 1; i >= ii; i -= 1) {
-                                    node.removeChild(tspans[i]);
-                                }
-                            }
-                        } else if (updateTspan) { // else if the tspans needs to be updated
-                            tspans = node.getElementsByTagName(tSpanStr); // @note: don't count on tspan, rather store the previous count
-                            ii = tspans.length;
-                            for (i = 0; i < ii; i += j) {
-                                $(tspans[i], i ? tspanAttr : oldAttr.tspan0Attr);
-                            }
-                        }
-                        */
                     } else if (textChanged) { // ** single line mode
                         // If text has &nbsp; then change the white-space style of the node to 'preserve' for disabling space collapse
                         if (hasnbsp(text)) {

@@ -1657,7 +1657,7 @@ export default function (R) {
                             }
                         }
                     }
-
+                   
                     if (params[has](textStr)) {
                         txtNode = R._g.doc.createTextNode(params[textStr] || E);
                         oldAttr.pathText = a.text = params[textStr] || E;
@@ -1679,6 +1679,7 @@ export default function (R) {
                         } else if (params[vAlignStr] === topStr) {
                             oldAttr.valign = 0;
                         }
+
                         tSpan = $('tspan', { dy: dy + 'em' });
                         tSpan.appendChild(txtNode);
 
@@ -1701,6 +1702,7 @@ export default function (R) {
                             oldAttr.tSpan = tSpan;
                         }
                     }
+                    if(params[textStr] !== UNDEF) {  //Only attach node when text is created or updated
 
                     // IE 11 does not support x and y with textPath
                     // hence removing x and y
@@ -1712,11 +1714,12 @@ export default function (R) {
 
                     textPath = $('textPath', textPathProps);
                     textPath.appendChild(tSpan || txtNode);
-
+                    
                     while (node.firstChild) {
                         node.removeChild(node.firstChild);
                     }
                     node.appendChild(textPath);
+                }
                 } else {
                     oldAttr.direction = direction;
 

@@ -1901,6 +1901,12 @@ export default function (R) {
                                     }
                                 }
                             }
+                        } else if (updateTspan) { // else if the tspans needs to be updated
+                            tspans = node.getElementsByTagName(tSpanStr); // @note: don't count on tspan, rather store the previous count
+                            ii = tspans.length;
+                            for (i = 0; i < ii; i += j) {
+                                $(tspans[i], i ? tspanAttr : oldAttr.tspan0Attr);
+                            }
                         }
                                 ii = l * j;
 

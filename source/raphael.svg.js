@@ -1,3 +1,4 @@
+import { last } from '../../../../../../fusioncharts/node_modules/@fusioncharts/datatable/src/aggregators/aggregators';
 import {
     getArrayCopy,
     loadRefImage,
@@ -142,6 +143,335 @@ export default function (R) {
                 mouseup: "touchend",
                 mousemove: "touchmove",
                 mouseout: "touchend" // to handle mouseout event
+            },
+            createValidTextNode = function(text, abbrArr) {
+                var underlineRegex = /<under>/g,
+                    underlineEndRegex = /<\/under>/g,
+                    boldRegex = /<bold>/g,
+                    boldEndRegex = /<\/bold>/g,
+                    emphasisRegex = /<em>/g,
+                    emphasisEndRegex = /<\/em>/g,
+                    strikeRegex = /<strike>/g,
+                    strikeEndRegex = /<\/strike>/g,
+                    subscriptRegex = /<subscript>/g,
+                    subscriptEndRegex = /<\/subscript>/g,
+                    superscriptRegex = /<superscript>/g,
+                    superscriptEndRegex = /<\/superscript>/g,
+                    abbrRegex = /<abbr[\s]+([^>]+)>/g,
+                    abbrEndRegex = /<\/abbr>/g,
+                    spanRegex = /<span[\s]+([^>]+)>/g,
+                    spanEndRegex = /<\/span>/g,
+                    anchorRegex = /<a[\s]+([^>]+)>/g,
+                    anchorEndRegex = /<\/a>/g,
+                    lastAttrList = [],
+                    index,
+                    subtext,
+                    tspanArray = [],
+                    startIndex = 0,
+                    sortedIndices,
+                    //Get indices of possible tags and endTags
+                    underlinetagIndices = getTagIndices(underlineRegex, underlineEndRegex, text, '<under>', '</under>'),
+                    boldtagIndices = getTagIndices(boldRegex, boldEndRegex, text, '<bold>', '</bold>'),
+                    emtagIndices = getTagIndices(emphasisRegex, emphasisEndRegex, text, '<em>', '</em>'),
+                    strikeTagIndices = getTagIndices(strikeRegex, strikeEndRegex, text, '<strike>', '</strike>'),
+                    subscriptTagIndices = getTagIndices(subscriptRegex, subscriptEndRegex, text, '<subscript>', '</subscript>'),
+                    superscriptTagIndices = getTagIndices(superscriptRegex, superscriptEndRegex, text, '<superscript>', '</superscript>'),
+                    abbrTagIndices = getAbbrTagIndices(abbrRegex, abbrEndRegex, text, '<abbr>', '</abbr>'),
+                    anchorTagIndices = getAnchorTagIndices(anchorRegex, anchorEndRegex, text, '<a>', '</a>'),
+                    spanTagIndices = getSpanTagIndices(spanRegex, spanEndRegex, text, '<span>', '</span>'),
+                    //Sort the tsgIndices
+                    sortedIndices = sortTags(underlinetagIndices, boldtagIndices, emtagIndices, strikeTagIndices, subscriptTagIndices, superscriptTagIndices, abbrTagIndices, anchorTagIndices, spanTagIndices);
+                    if(sortedIndices.length) {
+                        if(sortedIndices[0].index > startIndex) {
+                                subtext = text.substring(startIndex, sortedIndices[0].index);
+                                tspanArray = createtspanArray(tspanArray, subtext, lastAttrList, abbrArr);                            
+                                startIndex = sortedIndices[0].index + sortedIndices[0].tagName.length;
+                        }
+                        for (index = 0; index < sortedIndices.length; index++) {
+                            if(sortedIndices[index + 1] !== UNDEF){
+                                lastAttrList = createAttrList(lastAttrList, sortedIndices[index].tagName);
+                                if(startIndex === 0 && sortedIndices[index].index === 0) {
+                                    subtext = text.substring(startIndex + sortedIndices[index].tagName.length, sortedIndices[index + 1].index);
+                                } else {
+                                    subtext = text.substring(startIndex, sortedIndices[index + 1].index);
+                                }
+                                tspanArray = createtspanArray(tspanArray, subtext, lastAttrList, sortedIndices[index], abbrArr);
+                                startIndex = sortedIndices[index + 1].index + sortedIndices[index + 1].tagName.length;
+                            }
+                            
+                        }
+                        if(startIndex < text.length) {
+                            subtext = text.substring(startIndex, text.length);
+                            tspanArray = createtspanArray(tspanArray, subtext, [], abbrArr);
+                        }
+                }
+                return tspanArray;
+            },
+            tagHash = {
+                    '<bold>': {action:'add', tagAttr:'font-weight', tagAttrVal: 'bold'},
+                    '</bold>':{action:'remove', actionTag: '<bold>'}, 
+                    '<under>': {action:'add', tagAttr:'text-decoration', tagAttrVal: 'underline'},
+                    '</under>':{action:'remove', actionTag: '<under>'},
+                    '<em>' : {action: 'add', tagAttr: 'font-style', tagAttrVal: 'italic'},
+                    '</em>' : {action:'remove', actionTag: '<em>'},
+                    '<strike>' : {action: 'add', tagAttr: 'text-decoration', tagAttrVal: 'line-through'},
+                    '</strike>' : {action:'remove', actionTag: '<strike>'},
+                    '<subscript>' : {action: 'add',tagAttr: 'baseline-shift', tagAttrVal: 'sub'},
+                    '</subscript>' : {action:'remove', actionTag: '<subscript>'},
+                    '<superscript>' : {action: 'add',tagAttr: 'baseline-shift', tagAttrVal: 'super'},
+                    '</superscript>' : {action:'remove', actionTag: '<superscript>'},
+                    '<abbr>' : {action:'add', tagAttr:'text-decoration', tagAttrVal: 'underline'},
+                    '</abbr>' : {action:'remove', actionTag: '<abbr>'},
+                    '<a>' : {action:'add'},
+                    '</a>' : {action:'remove', actionTag: '<a>'},
+                    '<span>' : {action:'add'},
+                    '</span>' : {action:'remove', actionTag: '<span>'}     
+                },
+            createAttrList = function(attrArr, tagName) {
+                var i,
+                    abbrReg = /<abbr[\s]+([^>]+)>/g,
+                    anchorReg = /<a[\s]+([^>]+)>/g,
+                    spanReg = /<span[\s]+([^>]+)>/g;
+                if(tagName.match(abbrReg)) {
+                    attrArr.push('<abbr>');
+                } 
+                else if(tagName.match(anchorReg)) {
+                    attrArr.push('<a>');
+                }
+                else if(tagName.match(spanReg)) {
+                    attrArr.push('<span>')
+                }
+                else if(tagHash[tagName].action === 'add') {
+                    attrArr.push(tagName);
+                } else if(tagHash[tagName].action === 'remove') {
+                    for(i = attrArr.length - 1; i >= 0; i--) {
+                        if(attrArr[i] === tagHash[tagName].actionTag) {
+                            attrArr.splice(i, 1);
+                            break;
+                        }
+                    }
+                }
+                return attrArr;
+            },
+            createtspanArray = function(tspanArray, str, lastAttr, indicesObj, abbrArr) {
+                var textNode = R._g.doc.createTextNode(str),
+                    obj = {},
+                    hasAnchor = false,
+                    hasAbbr = false,
+                    hasSpan = false,
+                    anchor,
+                    tspan, i;
+                    if(!lastAttr.length) {
+                        tspan = $('tspan');
+                        tspan.appendChild(textNode);
+                        tspanArray.push(tspan);
+                    } else {
+                        for (i = 0; i< lastAttr.length;i++) {     
+                            if(lastAttr[i] === '<abbr>') {
+                                hasAbbr = true;
+                            } else if(lastAttr[i] === '<a>') {
+                                hasAnchor = true;
+                                if(indicesObj.href!=='') {                                
+                                    obj['href'] = indicesObj.href;
+                                }
+                                if(indicesObj.target!=='') {
+                                    obj['target'] = indicesObj.target;
+                                }
+                                if(indicesObj.hreflang!=='') {
+                                    obj['hreflang'] = indicesObj.hreflang;
+                                }
+                                if(indicesObj.referrerpolicy!=='') {
+                                    obj['referrerpolicy'] = indicesObj.referrerpolicy;
+                                }
+                                if(indicesObj.rel!=='') {
+                                    obj['rel'] = indicesObj.rel;
+                                }
+                                anchor = $('a', obj);
+                            } else if(lastAttr[i] === '<span>'){
+                                hasSpan = true;
+                            }
+                            if(tagHash[lastAttr[i]].tagAttr && tagHash[lastAttr[i]].tagAttrVal) {                 
+                                obj[tagHash[lastAttr[i]].tagAttr] = tagHash[lastAttr[i]].tagAttrVal;
+                            }
+                        }
+                            if(hasAbbr) {
+                                tspan = $('tspan', obj);
+                                tspan.appendChild(textNode);
+                                abbrArr.push({'tspan': tspan, title:indicesObj.title})
+                                tspanArray.push(tspan);
+                            } 
+                            else if(hasSpan) {
+                                obj = MergeRecursive(obj, indicesObj.style);
+                                tspan = $('tspan', obj);
+                                tspan.appendChild(textNode);
+                                tspanArray.push(tspan);
+                            }
+                            else if(hasAnchor) {
+                                tspan = $('tspan', {});
+                                tspan.appendChild(textNode);
+                                anchor.appendChild(tspan);
+                                tspanArray.push(anchor);
+                                hasAnchor = false;
+                            } else{
+                                tspan = $('tspan', obj);
+                                tspan.appendChild(textNode);
+                                tspanArray.push(tspan);
+                            }
+                            
+                    }
+                
+                return tspanArray;
+            },
+        /*
+        * Recursively merge properties of two objects 
+        */
+        MergeRecursive = function(obj1, obj2) {
+
+            for (var p in obj2) {
+            try {
+                // Property in destination object set; update its value.
+                if ( obj2[p].constructor==Object ) {
+                obj1[p] = MergeRecursive(obj1[p], obj2[p]);
+        
+                } else {
+                obj1[p] = obj2[p];
+        
+                }
+        
+            } catch(e) {
+                // Property in destination object not set; create it and set its value.
+                obj1[p] = obj2[p];
+        
+            }
+            }
+        
+            return obj1;
+        },
+            sortTags = function(u, b, em, strike,sub, sup, abbr, a, sp) {
+                var i,j,
+                    tagArr = [u, b, em, strike, sub, sup, abbr, a, sp],
+                    res = [];
+                for (j = 0;j< tagArr.length; j++) {
+                    for (var key in tagArr[j]) {
+                        if(tagArr[j][key].length) {
+                            for(i = 0;i<tagArr[j][key].length;i++) {
+                                res.push(tagArr[j][key][i]);
+                            }
+                        }
+                    }
+                }
+                res = res.sort(function(a, b) {
+                    return(a.index - b.index)
+                })
+                return res;
+            },
+            getAbbrTagIndices = function(abbrRegex, abbrEndRegex, text, tagText, endtagText) {
+                var tagindices = [],
+                result,
+                dummyNode,
+                testAbbr,
+                endtagindices = [];
+                while ( (result = abbrRegex.exec(text)) ) {
+                        dummyNode = document.createElement('p');
+                        testAbbr = result[0] + 'Dummy</abbr>';
+                        dummyNode.innerHTML = testAbbr;
+                    tagindices.push({tagName:result[0],index:result.index,title:dummyNode.childNodes[0].title ? dummyNode.childNodes[0].title : ''});
+                }
+                while ( (result = abbrEndRegex.exec(text)) ) {
+                    endtagindices.push({tagName:endtagText,index:result.index});
+                }
+
+                return({
+                    tag: tagindices,
+                    endtag: endtagindices
+                })
+            },
+            getStyles = function(el) {  ///Get Styles as an array of objects
+                var output = {};
+            
+                if (!el || !el.style || !el.style.cssText) {
+                    return output;
+                }
+            
+                var camelize = function camelize(str) {
+                    return str.replace (/(?:^|[-])(\w)/g, function (a, c) {
+                        c = a.substr(0, 1) === '-' ? c.toUpperCase () : c;
+                        return c ? c : '';
+                    });
+                }
+            
+                var style = el.style.cssText.split(';');
+            
+                for (var i = 0; i < style.length; ++i) {
+                    var rule = style[i].trim();
+            
+                    if (rule) {
+                        var ruleParts = rule.split(':');
+                        var key = camelize(ruleParts[0].trim());
+                        output[key] = ruleParts[1].trim();
+                    }
+                }
+            
+                return output;
+            },
+            getSpanTagIndices = function(spanRegex, spanEndRegex, text, tagText, endtagText) {
+                var tagindices = [],
+                result,
+                dummyNode,
+                testAbbr,
+                styleObj,
+                endtagindices = [];
+                while ( (result = spanRegex.exec(text)) ) {
+                        dummyNode = document.createElement('p');
+                        testAbbr = result[0] + 'Dummy</span>';
+                        dummyNode.innerHTML = testAbbr;
+                        styleObj = getStyles(dummyNode.childNodes[0]);
+                        tagindices.push({tagName:result[0],index:result.index,style: styleObj ? styleObj : ''});
+                }
+                while ( (result = spanEndRegex.exec(text)) ) {
+                    endtagindices.push({tagName:endtagText,index:result.index});
+                }
+
+                return({
+                    tag: tagindices,
+                    endtag: endtagindices
+                })
+            },
+            getAnchorTagIndices = function(anchorRegex, anchorEndRegex, text, tagText, endtagText) {
+                var tagindices = [],
+                result,
+                dummyNode,
+                testAbbr,
+                endtagindices = [];
+                while ( (result = anchorRegex.exec(text)) ) {
+                        dummyNode = document.createElement('p');
+                        testAbbr = result[0] + '</a>';
+                        dummyNode.innerHTML = testAbbr;
+                    tagindices.push({tagName:result[0],index:result.index,href:dummyNode.childNodes[0].href ? dummyNode.childNodes[0].href: '',target:dummyNode.childNodes[0].target ? dummyNode.childNodes[0].target:'',hreflang: dummyNode.childNodes[0].hreflang?dummyNode.childNodes[0].hreflang:'',referrerpolicy: dummyNode.childNodes[0].referrerpolicy ? dummyNode.childNodes[0].referrerpolicy: '',rel:dummyNode.childNodes[0].rel ? dummyNode.childNodes[0].rel : '' });
+                }
+                while ( (result = anchorEndRegex.exec(text)) ) {
+                    endtagindices.push({tagName:endtagText,index:result.index});
+                }
+
+                return({
+                    tag: tagindices,
+                    endtag: endtagindices
+                })
+            },
+            getTagIndices = function(tagRegex, endTagRegex, text, tagText, endtagText) {
+               var tagindices = [],
+                result,
+                endtagindices = [];
+                while ( (result = tagRegex.exec(text)) ) {
+                    tagindices.push({tagName:tagText,index:result.index});
+                }
+                while ( (result = endTagRegex.exec(text)) ) {
+                    endtagindices.push({tagName:endtagText,index:result.index});
+                }
+                return({
+                    tag: tagindices,
+                    endtag: endtagindices
+                })
             },
             allPossibleAttrs = {
                 "accent-height": true,
@@ -1247,6 +1577,12 @@ export default function (R) {
                     tspanAttr,
                     updateTspan = false,
                     i,
+                    spanArr = [],
+                    abbrindx,
+                    dummyEl,
+                    tspanArr = [],
+                    abbrArr = [],
+                    hasTags = false,
                     l,
                     ii,
                     // For rtl text in IE there is a blank tspan to fix RTL rendering issues in IE.
@@ -1427,6 +1763,28 @@ export default function (R) {
                                     .replace(/&<br\/>lt;|&l<br\/>t;|&lt<br\/>;/g, '<<br/>')
                                     .replace(/&<br\/>gt;|&g<br\/>t;|&gt<br\/>;/g, '><br/>');
                             }
+                            
+                            //Replace all possible tags
+                            text = text.replace(/<u>/g,'<under>')
+                                    .replace(/<\/u>/g, '</under>')
+                                    .replace(/<b>/g,'<bold>')
+                                    .replace(/<\/b>/g, '</bold>')
+                                    .replace(/<strong>/g,'<bold>')
+                                    .replace(/<\/strong>/g, '</bold>')
+                                    .replace(/<em>/g,'<em>')
+                                    .replace(/<\/em>/g, '</em>')
+                                    .replace(/<i>/g,'<em>')
+                                    .replace(/<\/i>/g, '</em>')
+                                    .replace(/<strike>/g,'<strike>')
+                                    .replace(/<\/strike>/g, '</strike>')
+                                    .replace(/<s>/g,'<strike>')
+                                    .replace(/<\/s>/g, '</strike>')
+                                    .replace(/<del>/g,'<strike>')
+                                    .replace(/<\/del>/g, '</strike>')
+                                    .replace(/<sub>/g,'<subscript>')
+                                    .replace(/<\/sub>/g, '</subscript>')
+                                    .replace(/<sup>/g,'<superscript>')
+                                    .replace(/<\/sup>/g, '</superscript>');
                             oldAttr.text = a.text = text;
                             if (textBreakRegx.test(text)) { // if multiline text
                                 if (oldAttr.noTSpan) { // previously it was single line
@@ -1486,14 +1844,12 @@ export default function (R) {
                             oldAttr.tspan0Attr.x = oldAttr.tspanAttr.x = tspanAttr.x = a.x;
                             updateTspan = true;
                         }
-
-                        // Note for the first tspan (i === 0), we will add only the x attribute. No dy
-                        // If the containing text got changed
                         if (textChanged) {
-                            tspans = node.getElementsByTagName(tSpanStr);
-                            for (i = 0; i < l; i++) {
+                            tspans = node.childNodes;
+                            for(i = 0;i < l; i++) {
                                 tspan = tspans[i * j];
-                                if (tspan) { // If already there is a tspan then remove the text
+                                spanArr = createValidTextNode(texts[i], abbrArr);
+                                if(tspan) {
                                     tspan.innerHTML = E;
                                     if (isIE) {
                                         // For IE, setting the innerHTML of tspan to blank string doesnot remove
@@ -1520,7 +1876,6 @@ export default function (R) {
                                     tspan.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
                                     texts[i] = S;
                                 }
-
                                 // If text has &nbsp; then change the white-space style of the node to 'preserve' for disabling space collapse
                                 if (hasnbsp(texts[i])) {
                                     texts[i] = spacify(texts[i]);
@@ -1528,15 +1883,22 @@ export default function (R) {
                                 } else if (tspan.style.whiteSpace === PRESERVESTRING) {
                                     tspan.style.whiteSpace = BLANKSTRING;
                                 }
-                                // create and append the text node
-                                tspan.appendChild(R._g.doc.createTextNode(texts[i]));
-                            }
-
-                            ii = l * j;
-                            // If there are already more tspan than required, then remove the extra tspans
-                            if (tspans.length > ii) {
-                                for (i = tspans.length - 1; i >= ii; i -= 1) {
-                                    node.removeChild(tspans[i]);
+                                if(spanArr.length) {
+                                    for(var indx = 0;indx < spanArr.length;indx++) {
+                                        tspan.appendChild(spanArr[indx]);
+                                    }
+                                } else {
+                                    tspan.appendChild(R._g.doc.createTextNode(texts[i]));
+                                }
+                                if(abbrArr.length) {
+                                    for(abbrindx = 0;abbrindx< abbrArr.length; abbrindx++) {
+                                        dummyEl = el.paper["text"]({display: 'none'});
+                                        dummyEl.node = abbrArr[abbrindx].tspan;
+                                        if(!el.abbrArr) {
+                                            el.abbrArr = [];   
+                                        }
+                                        el.abbrArr.push({'el':dummyEl, title: abbrArr[abbrindx].title});
+                                    }
                                 }
                             }
                         } else if (updateTspan) { // else if the tspans needs to be updated
@@ -1546,6 +1908,14 @@ export default function (R) {
                                 $(tspans[i], i ? tspanAttr : oldAttr.tspan0Attr);
                             }
                         }
+                                ii = l * j;
+
+                                if (node.childNodes.length > ii) {
+                                    for (i = node.childNodes.length - 1; i >= ii; i -= 1) {
+                                            node.removeChild(node.childNodes[i]);
+                                    }
+                                }
+
                     } else if (textChanged) { // ** single line mode
                         // If text has &nbsp; then change the white-space style of the node to 'preserve' for disabling space collapse
                         if (hasnbsp(text)) {
@@ -1555,7 +1925,25 @@ export default function (R) {
                             node.style.whiteSpace = BLANKSTRING;
                         }
                         // create and append the text node
-                        node.appendChild(R._g.doc.createTextNode(text));
+                        //node.appendChild(R._g.doc.createTextNode(text));
+                        tspanArr = createValidTextNode(text, abbrArr);
+                        if(tspanArr.length) {
+                            for(var index = 0;index < tspanArr.length; index++) {
+                                node.appendChild(tspanArr[index]);
+                            }
+                        } else {
+                            node.appendChild(R._g.doc.createTextNode(text));
+                        }
+                        if(abbrArr.length) {
+                            for(abbrindx = 0;abbrindx< abbrArr.length; abbrindx++) {
+                                dummyEl = el.paper["text"]({display: 'none'});
+                                dummyEl.node = abbrArr[abbrindx].tspan;
+                                if(!el.abbrArr) {
+                                    el.abbrArr = [];   
+                                }
+                                el.abbrArr.push({'el':dummyEl, title: abbrArr[abbrindx].title});
+                            }
+                        }
                     }
 
                     if (params[vAlignStr]) { // vAlign change
@@ -2102,6 +2490,7 @@ export default function (R) {
         * @param handler - Function to be called on the firing of the event
         \ */
         elproto.on = function (eventType, handler, context) {
+
             if (!handler || !eventType) {
                 return;
             }

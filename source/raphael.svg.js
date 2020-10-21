@@ -417,12 +417,14 @@ export default function (R) {
                 result,
                 dummyNode,
                 testAbbr,
+                title,
                 endtagindices = [];
                 while ( (result = abbrRegex.exec(text)) ) {
                         dummyNode = document.createElement('p');
                         testAbbr = result[0] + 'Dummy</abbr>';
                         dummyNode.innerHTML = testAbbr;
-                    tagindices.push({tagName:result[0],index:result.index,title:dummyNode.childNodes[0].title ? dummyNode.childNodes[0].title : ''});
+                        title = dummyNode.childNodes[0] ? dummyNode.childNodes[0].title : '';
+                    tagindices.push({tagName:result[0],index:result.index,title:title ? title : ''});
                 }
                 while ( (result = abbrEndRegex.exec(text)) ) {
                     endtagindices.push({tagName:endtagText,index:result.index});
@@ -486,7 +488,7 @@ export default function (R) {
             },
             isUrlValid = function(userInput) {
                 var res = userInput.match(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&=]*)/g);
-                if(res == null)
+                if(!res)
                     return false;
                 else
                     return true;
@@ -502,7 +504,7 @@ export default function (R) {
                         dummyAnchor = document.createElement('p');
                         testAnchor = result[0] + '</a>';
                         dummyAnchor.innerHTML = testAnchor;
-                        isValidHref = isUrlValid(dummyAnchor.childNodes[0].href) 
+                        isValidHref = isUrlValid(encodeURIComponent(dummyAnchor.childNodes[0].href));
                     tagindices.push({tagName:result[0],index:result.index,href: isValidHref ? dummyAnchor.childNodes[0].href: '',target:dummyAnchor.childNodes[0].target ? dummyAnchor.childNodes[0].target:'',hreflang: dummyAnchor.childNodes[0].hreflang?dummyAnchor.childNodes[0].hreflang:'',referrerpolicy: dummyAnchor.childNodes[0].referrerpolicy ? dummyAnchor.childNodes[0].referrerpolicy: '',rel:dummyAnchor.childNodes[0].rel ? dummyAnchor.childNodes[0].rel : ''});
                 }
                 while ( (result = anchorEndRegex.exec(text)) ) {
@@ -1963,7 +1965,7 @@ export default function (R) {
                                 }
                             }
                         } else if (updateTspan) { // else if the tspans needs to be updated
-                            tspans = node.getElementsByTagName(tSpanStr); // @note: don't count on tspan, rather store the previous count
+                            tspans = node.childNodes; // @note: don't count on tspan, rather store the previous count
                             ii = tspans.length;
                             for (i = 0; i < ii; i += j) {
                                 $(tspans[i], i ? tspanAttr : oldAttr.tspan0Attr);

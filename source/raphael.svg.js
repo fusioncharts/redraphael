@@ -1810,6 +1810,8 @@ export default function (R) {
 
                         delete oldAttr.pathText;
 
+                        text = text.toString();
+
                         // If it is a new text applied
                         if (text !== oldAttr.text) {
                             textChanged = true;

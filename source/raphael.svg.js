@@ -1,4 +1,4 @@
-import { last } from '../../../../../../fusioncharts/node_modules/@fusioncharts/datatable/src/aggregators/aggregators';
+//import { last } from '../../../../../../fusioncharts/node_modules/@fusioncharts/datatable/src/aggregators/aggregators';
 import { isFirefox } from '../../../../lib';
 import {
     getArrayCopy,

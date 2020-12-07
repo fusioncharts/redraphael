@@ -1,11 +1,10 @@
-//import { last } from '../../../../../../fusioncharts/node_modules/@fusioncharts/datatable/src/aggregators/aggregators';
-import { isFirefox } from '../../../../lib';
 import {
     getArrayCopy,
     loadRefImage,
     showRecursively,
     dashedAttr2CSSMap
 } from './raphael.lib';
+import { isFirefox } from '../../../../lib';
 
 /** !
 * RedRaphael 1.0.0 - JavaScript Vector Library SVG Module

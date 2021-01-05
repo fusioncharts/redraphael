@@ -2853,13 +2853,13 @@ export default function (R) {
                 '-ms-user-select:none;user-select:none;-o-user-select:none;cursor:default;' +
                 'vertical-align:middle;',
                 isFloating;
-            // '-ms-touch-action : none' permits no default touch behaviors in IE (10 and 11) browser
-            // '-touch-action : none' permits no default touch behaviors in mozilla of windows
+            // '-ms-touch-action : pan-y' permits single-finger vertical panning gestures in IE (10 and 11) browser
+            // '-touch-action : pan-y' permits single-finger vertical panning gestures in mozilla and chrome browser
             if (supportsTouch) {
                 if (R.isIE10) {
-                    css += '-ms-touch-action:none;';
+                    css += '-ms-touch-action:pan-y;';
                 } else {
-                    css += 'touch-action:none;';
+                    css += 'touch-action:pan-y;';
                 }
             }
             x = x || 0;

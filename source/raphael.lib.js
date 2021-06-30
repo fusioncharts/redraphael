@@ -6,6 +6,7 @@ let UNDEF,
     arrayToStr = '[object Array]',
     objectToStr = '[object Object]',
     objectStr = 'object',
+    isFirefox = /Firefox/i.test(window.navigator.userAgent),
     // Map of SVG attribute to CSS styles for all attributes that are in R._availableAttrs
     // but fall through to the default case in R._setFillAndStroke.
     dashedAttr2CSSMap = {

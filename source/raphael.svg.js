@@ -2,9 +2,9 @@ import {
     getArrayCopy,
     loadRefImage,
     showRecursively,
-    dashedAttr2CSSMap
+    dashedAttr2CSSMap,
+    isFirefox
 } from './raphael.lib';
-import { isFirefox } from '../../../../lib';
 
 /** !
 * RedRaphael 1.0.0 - JavaScript Vector Library SVG Module

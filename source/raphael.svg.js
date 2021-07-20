@@ -2857,9 +2857,9 @@ export default function (R) {
             // '-touch-action : pan-y' permits single-finger vertical panning gestures in mozilla and chrome browser
             if (supportsTouch) {
                 if (R.isIE10) {
-                    css += '-ms-touch-action:pan-y;';
+                    css += '-ms-touch-action:pan-x,pan-y;';
                 } else {
-                    css += 'touch-action:pan-y;';
+                    css += 'touch-action:pan-x,pan-y;';
                 }
             }
             x = x || 0;

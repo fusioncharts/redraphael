@@ -377,4 +377,4 @@ var cacher = function (f, scope, postprocessor, key, maxCache, sharedCache, firs
     return cachedfunction;
 };
 
-export {merge, getArrayCopy, dashedAttr2CSSMap, loadRefImage, showRecursively, cacher};
+export {merge, getArrayCopy, dashedAttr2CSSMap, loadRefImage, showRecursively, cacher, isFirefox};

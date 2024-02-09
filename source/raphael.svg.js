@@ -155,13 +155,13 @@ export default function (R) {
                     emphasisEndRegex = /<\/em>/g,
                     strikeRegex = /<strike>/g,
                     strikeEndRegex = /<\/strike>/g,
-                    subscriptRegex = /<sub>/g,
+                    subscriptRegex = /<sub[\s]+([^>]+)>|<sub>/g,   // regex pattern update for check either styles attribute exists or not in subscript tag
                     subscriptEndRegex = /<\/sub>/g,
-                    superscriptRegex = /<sup>/g,
+                    superscriptRegex = /<sup[\s]+([^>]+)>|<sup>/g, // regex pattern update for check either styles attribute exists or not in superscript tag
                     superscriptEndRegex = /<\/sup>/g,
                     abbrRegex = /<abbr[\s]+([^>]+)>/g,
                     abbrEndRegex = /<\/abbr>/g,
-                    spanRegex = /<span[\s]+([^>]+)>/g,
+                    spanRegex = /<span[\s]+([^>]+)>|<span>/g, // regex pattern update for check either styles attribute exists or not in span tag
                     spanEndRegex = /<\/span>/g,
                     anchorRegex = /<a[\s]+([^>]+)>/g,
                     anchorEndRegex = /<\/a>/g,
@@ -176,8 +176,8 @@ export default function (R) {
                     boldtagIndices = getTagIndices(boldRegex, boldEndRegex, text, '<bold>', '</bold>'),
                     emtagIndices = getTagIndices(emphasisRegex, emphasisEndRegex, text, '<em>', '</em>'),
                     strikeTagIndices = getTagIndices(strikeRegex, strikeEndRegex, text, '<strike>', '</strike>'),
-                    subscriptTagIndices = getTagIndices(subscriptRegex, subscriptEndRegex, text, '<sub>', '</sub>'),
-                    superscriptTagIndices = getTagIndices(superscriptRegex, superscriptEndRegex, text, '<sup>', '</sup>'),
+                    subscriptTagIndices = getSubSupTagIndices(subscriptRegex, subscriptEndRegex, text, '<sub>', '</sub>'),
+                    superscriptTagIndices = getSubSupTagIndices(superscriptRegex, superscriptEndRegex, text, '<sup>', '</sup>'),
                     abbrTagIndices = getAbbrTagIndices(abbrRegex, abbrEndRegex, text, '<abbr>', '</abbr>'),
                     anchorTagIndices = getAnchorTagIndices(anchorRegex, anchorEndRegex, text, '<a>', '</a>'),
                     spanTagIndices = getSpanTagIndices(spanRegex, spanEndRegex, text, '<span>', '</span>'),
@@ -235,6 +235,8 @@ export default function (R) {
                     abbrReg = /<abbr[\s]+([^>]+)>/g,
                     anchorReg = /<a[\s]+([^>]+)>/g,
                     spanReg = /<span[\s]+([^>]+)>/g,
+                    subReg = /<sub[\s]+([^>]+)>/g,
+                    supReg = /<sup[\s]+([^>]+)>/g,
                     obj;
                 if(sortedIndex.tagName.match(abbrReg)) {
                     obj = MergeRecursive({tag: '<abbr>', sortedIndex})
@@ -246,6 +248,14 @@ export default function (R) {
                 }
                 else if(sortedIndex.tagName.match(spanReg)) {
                     obj = MergeRecursive({tag: '<span>', sortedIndex})
+                    attrArr.push(obj);
+                }
+                else if(sortedIndex.tagName.match(subReg)) { // check subscript pattern for styles and add attribute to tag
+                    obj = MergeRecursive({tag: '<sub>', sortedIndex})
+                    attrArr.push(obj);
+                }
+                else if(sortedIndex.tagName.match(supReg)) { // check superscript pattern for styles and add attribute to tag
+                    obj = MergeRecursive({tag: '<sup>', sortedIndex})
                     attrArr.push(obj);
                 }
                 else if(tagHash[sortedIndex.tagName].action === 'add') {
@@ -313,6 +323,14 @@ export default function (R) {
                                 hasSpan = true;
                                 style = lastAttr[i].sortedIndex.style;
                             }
+                            else if(lastAttr[i].tag === '<sub>') { // added styles to subscript tag
+                                hasSub = true;
+                                style = lastAttr[i].sortedIndex.style;
+                            }
+                            else if(lastAttr[i].tag === '<sup>') { // added styles to superscript tag
+                                hasSup = true;
+                                style = lastAttr[i].sortedIndex.style;
+                            }
                             if(tagHash[lastAttr[i].tag].tagAttr && tagHash[lastAttr[i].tag].tagAttrVal) {
                                 if(isIE || isFirefox) {
                                     if(lastAttr[i].tag === '<sup>') {
@@ -344,6 +362,14 @@ export default function (R) {
                                 }
                             } 
                             else if(hasSpan) {
+                                if(str!=='') {
+                                    obj = MergeRecursive(obj, style);
+                                    tspan = $('tspan', obj);
+                                    tspan.appendChild(textNode);
+                                    tspanArray.push(tspan);
+                                }
+                            }
+                            else if(hasSub || hasSup) { // merge style to tspan and append in node
                                 if(str!=='') {
                                     obj = MergeRecursive(obj, style);
                                     tspan = $('tspan', obj);
@@ -455,7 +481,7 @@ export default function (R) {
             
                     if (rule) {
                         var ruleParts = rule.split(':');
-                        var key = camelize(ruleParts[0].trim());
+                        var key = ruleParts[0].trim(); // remove camelize method to set attribute with dash sepration like - font-size, font-family etc.
                         output[key] = ruleParts[1].trim();
                     }
                 }
@@ -477,6 +503,29 @@ export default function (R) {
                         tagindices.push({tagName:result[0],index:result.index,style: styleObj ? styleObj : ''});
                 }
                 while ( (result = spanEndRegex.exec(text)) ) {
+                    endtagindices.push({tagName:endtagText,index:result.index});
+                }
+
+                return({
+                    tag: tagindices,
+                    endtag: endtagindices
+                })
+            },
+            getSubSupTagIndices = function(subSupRegex, subSupEndRegex, text, tagText, endtagText) {  // method to seprate the styles from text with regex pattern
+                var tagindices = [],
+                result,
+                dummySpan,
+                testSpan,
+                styleObj,
+                endtagindices = [];
+                while ( (result = subSupRegex.exec(text)) ) {
+                        dummySpan = document.createElement('p');
+                        testSpan = result[0] + 'Dummy'+endtagText;
+                        dummySpan.innerHTML = testSpan;
+                        styleObj = getStyles(dummySpan.childNodes[0]);
+                        tagindices.push({tagName:result[0],index:result.index,style: styleObj ? styleObj : ''});
+                }
+                while ( (result = subSupEndRegex.exec(text)) ) {
                     endtagindices.push({tagName:endtagText,index:result.index});
                 }
 

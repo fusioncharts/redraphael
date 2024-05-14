@@ -1416,7 +1416,8 @@ export default function (R) {
                                 // falls through
                             case 'y':
                                 // For text don't apply y attribute as it will be applied during tuneText
-                                if (o.type === textStr) {
+                                // For text with a background, set y value, as "text-bound" element update is not handled in tuneText {{SUPPORT-2356}}
+                                if (o.type === textStr && !o.attrs['text-bound']) {
                                     break;
                                 }
                                 if (attrs.fy) {

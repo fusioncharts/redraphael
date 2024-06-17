@@ -1417,7 +1417,8 @@ export default function (R) {
                             case 'y':
                                 // For text don't apply y attribute as it will be applied during tuneText
                                 // For text with a background, set y value, as "text-bound" element update is not handled in tuneText {{SUPPORT-2356}}
-                                if (o.type === textStr && !o.attrs['text-bound']) {
+                                let isTextBound = o.attrs['text-bound'] && o.parent && o.parent.attrs && o.parent.attrs.class === 'fusioncharts-datalabels';
+                                if ((o.type === textStr && !isTextBound )) {
                                     break;
                                 }
                                 if (attrs.fy) {

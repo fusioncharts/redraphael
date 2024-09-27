@@ -1,3 +1,5 @@
+import trustedPolicy from '../../../../../../../../../fc-features/src/utils/trusted-policy';
+
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -1439,7 +1441,7 @@ if (R.type == "VML") {
     var d = doc.createElement("div"),
         b;
 
-    d.innerHTML = '<v:shape adj="1"/>';
+    d.innerHTML = trustedPolicy.createHTML('<v:shape adj="1"/>');
     b = d.firstChild;
     b.style.behavior = "url(#default#VML)";
     if (!(b && _typeof(b.adj) == object)) {
@@ -13429,7 +13431,7 @@ exports["default"] = function (R) {
             while (c = this.bottom) {
                 c.remove();
             }
-            this.canvas.innerHTML = E;
+            this.canvas.innerHTML = trustedPolicy.createHTML(E);
             this.span = R._g.doc.createElement("span");
             this.span.style.cssText = "position:absolute;left:-9999em;top:-9999em;padding:0;margin:0;line-height:1;display:inline;";
             this.canvas.appendChild(this.span);

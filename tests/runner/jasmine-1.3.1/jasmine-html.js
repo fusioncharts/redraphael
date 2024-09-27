@@ -1,3 +1,5 @@
+import trustedPolicy from '../../../../../../../../fc-features/src/utils/trusted-policy';
+
 jasmine.HtmlReporterHelpers = {};
 
 jasmine.HtmlReporterHelpers.createDom = function(type, attrs, childrenVarArgs) {
@@ -309,14 +311,14 @@ jasmine.HtmlReporter.ReporterView = function(dom) {
       this.runningAlert = this.createDom('a', { href: jasmine.HtmlReporter.sectionLink(), className: "runningAlert bar" });
       dom.alert.appendChild(this.runningAlert);
     }
-    this.runningAlert.innerHTML = "Running " + this.completeSpecCount + " of " + specPluralizedFor(this.totalSpecCount);
+    this.runningAlert.innerHTML = trustedPolicy.createHTML("Running " + this.completeSpecCount + " of " + specPluralizedFor(this.totalSpecCount));
 
     // skipped specs UI
     if (isUndefined(this.skippedAlert)) {
       this.skippedAlert = this.createDom('a', { href: jasmine.HtmlReporter.sectionLink(), className: "skippedAlert bar" });
     }
 
-    this.skippedAlert.innerHTML = "Skipping " + this.skippedCount + " of " + specPluralizedFor(this.totalSpecCount) + " - run all";
+    this.skippedAlert.innerHTML = trustedPolicy.createHTML("Skipping " + this.skippedCount + " of " + specPluralizedFor(this.totalSpecCount) + " - run all");
 
     if (this.skippedCount === 1 && isDefined(dom.alert)) {
       dom.alert.appendChild(this.skippedAlert);
@@ -326,13 +328,13 @@ jasmine.HtmlReporter.ReporterView = function(dom) {
     if (isUndefined(this.passedAlert)) {
       this.passedAlert = this.createDom('span', { href: jasmine.HtmlReporter.sectionLink(), className: "passingAlert bar" });
     }
-    this.passedAlert.innerHTML = "Passing " + specPluralizedFor(this.passedCount);
+    this.passedAlert.innerHTML = trustedPolicy.createHTML("Passing " + specPluralizedFor(this.passedCount));
 
     // failing specs UI
     if (isUndefined(this.failedAlert)) {
       this.failedAlert = this.createDom('span', {href: "?", className: "failingAlert bar"});
     }
-    this.failedAlert.innerHTML = "Failing " + specPluralizedFor(this.failedCount);
+    this.failedAlert.innerHTML = trustedPolicy.createHTML("Failing " + specPluralizedFor(this.failedCount));
 
     if (this.failedCount === 1 && isDefined(dom.alert)) {
       dom.alert.appendChild(this.failedAlert);
@@ -340,14 +342,14 @@ jasmine.HtmlReporter.ReporterView = function(dom) {
     }
 
     // summary info
-    this.summaryMenuItem.innerHTML = "" + specPluralizedFor(this.runningSpecCount);
-    this.detailsMenuItem.innerHTML = "" + this.failedCount + " failing";
+    this.summaryMenuItem.innerHTML = trustedPolicy.createHTML("" + specPluralizedFor(this.runningSpecCount));
+    this.detailsMenuItem.innerHTML = trustedPolicy.createHTML("" + this.failedCount + " failing");
   };
 
   this.complete = function() {
     dom.alert.removeChild(this.runningAlert);
 
-    this.skippedAlert.innerHTML = "Ran " + this.runningSpecCount + " of " + specPluralizedFor(this.totalSpecCount) + " - run all";
+    this.skippedAlert.innerHTML = trustedPolicy.createHTML("Ran " + this.runningSpecCount + " of " + specPluralizedFor(this.totalSpecCount) + " - run all");
 
     if (this.failedCount === 0) {
       dom.alert.appendChild(this.createDom('span', {className: 'passingAlert bar'}, "Passing " + specPluralizedFor(this.passedCount)));

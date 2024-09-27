@@ -1,4 +1,5 @@
 //(function(){
+import trustedPolicy from '../../../../../../../fc-features/src/utils/trusted-policy';
 
 var testBtn = document.getElementById("test-btn"),
     testSelect = document.getElementById("test-select"),
@@ -39,7 +40,7 @@ function populateOptions(json) {
     jsontext.value = JSON.stringify(json, null, 4);
     // Storing the json
     jsonData = json;
-    testSelect.innerHTML = string;
+    testSelect.innerHTML = trustedPolicy.createHTML(string);
     lastTestKey && (testSelect.value = lastTestKey);
 }
 
@@ -108,7 +109,7 @@ function addEventListener (el, fn) {
 addEventListener(testBtn, testPath);
 
 addEventListener(getAttr, function () {
-    attrDisplay.innerHTML += '</br><hr>' + stringifyPath(path.attrs.path);
+    attrDisplay.innerHTML += trustedPolicy.createHTML('</br><hr>' + stringifyPath(path.attrs.path));
 });
 
 function pauseAnim () {
@@ -137,20 +138,20 @@ function stringifyPath (arr) {
 function raphaelFn(paper, start, end, time, el) {
     var path = paper[el](start);
     window.path = path;
-    attrDisplay.innerHTML = "Start </br>" + stringifyPath(path.attrs.path);
+    attrDisplay.innerHTML = trustedPolicy.createHTML("Start </br>" + stringifyPath(path.attrs.path));
     path.attr(start);
     time = time || defTime;
     // Animation test
     setTimeout(function pathAnimate() {
         path.animate(end, time);
         setTimeout (function () {
-            attrDisplay.innerHTML += '<hr>End</br>' + stringifyPath(path.attrs.path);
+            attrDisplay.innerHTML += trustedPolicy.createHTML('<hr>End</br>' + stringifyPath(path.attrs.path));
         }, time * 1.1);
     }, timeOut);
 }
 function raphaelFnSetStart(paper, start, end, time, el) {
     var path = paper[el](start);
-    attrDisplay.innerHTML = "Start </br>" + stringifyPath(path.attrs.path);
+    attrDisplay.innerHTML = trustedPolicy.createHTML("Start </br>" + stringifyPath(path.attrs.path));
     path.attr(start);
     window.savePath = path;
     window.savePathData = start;
@@ -182,7 +183,7 @@ function raphaelFnAnimateSaved(paper, start, end, time, el) {
     setTimeout(function () {
         savePath.animate(end, time);
         setTimeout (function () {
-            attrDisplay.innerHTML += '<hr>End</br>' + stringifyPath(savePath.attrs.path);
+            attrDisplay.innerHTML += trustedPolicy.createHTML('<hr>End</br>' + stringifyPath(savePath.attrs.path));
         }, time * 1.1);
     }, 500);
 }

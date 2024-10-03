@@ -5,6 +5,7 @@ import {
     dashedAttr2CSSMap,
     isFirefox
 } from './raphael.lib';
+import trustedPolicy from '../../../../../../fc-features/src/utils/trusted-policy';
 
 /** !
 * RedRaphael 1.0.0 - JavaScript Vector Library SVG Module
@@ -447,7 +448,7 @@ export default function (R) {
                 while ( (result = abbrRegex.exec(text)) ) {
                         dummyNode = document.createElement('p');
                         testAbbr = result[0] + 'Dummy</abbr>';
-                        dummyNode.innerHTML = testAbbr;
+                        dummyNode.innerHTML = trustedPolicy.createHTML(testAbbr);
                         title = dummyNode.childNodes[0] ? dummyNode.childNodes[0].title : '';
                     tagindices.push({tagName:result[0],index:result.index,title:title ? title : ''});
                 }
@@ -498,7 +499,7 @@ export default function (R) {
                 while ( (result = spanRegex.exec(text)) ) {
                         dummySpan = document.createElement('p');
                         testSpan = result[0] + 'Dummy</span>';
-                        dummySpan.innerHTML = testSpan;
+                        dummySpan.innerHTML = trustedPolicy.createHTML(testSpan);
                         styleObj = getStyles(dummySpan.childNodes[0]);
                         tagindices.push({tagName:result[0],index:result.index,style: styleObj ? styleObj : ''});
                 }
@@ -521,7 +522,7 @@ export default function (R) {
                 while ( (result = subSupRegex.exec(text)) ) {
                         dummySpan = document.createElement('p');
                         testSpan = result[0] + 'Dummy'+endtagText;
-                        dummySpan.innerHTML = testSpan;
+                        dummySpan.innerHTML = trustedPolicy.createHTML(testSpan);
                         styleObj = getStyles(dummySpan.childNodes[0]);
                         tagindices.push({tagName:result[0],index:result.index,style: styleObj ? styleObj : ''});
                 }
@@ -551,7 +552,7 @@ export default function (R) {
                 while ( (result = anchorRegex.exec(text)) ) {
                         dummyAnchor = document.createElement('p');
                         testAnchor = result[0] + '</a>';
-                        dummyAnchor.innerHTML = testAnchor;
+                        dummyAnchor.innerHTML = trustedPolicy.createHTML(testAnchor);
                         isValidHref = isUrlValid(encodeURIComponent(dummyAnchor.childNodes[0].href));
                     tagindices.push({tagName:result[0],index:result.index,href: isValidHref ? dummyAnchor.childNodes[0].href: '',target:dummyAnchor.childNodes[0].target ? dummyAnchor.childNodes[0].target:'',hreflang: dummyAnchor.childNodes[0].hreflang?dummyAnchor.childNodes[0].hreflang:'',referrerpolicy: dummyAnchor.childNodes[0].referrerpolicy ? dummyAnchor.childNodes[0].referrerpolicy: '',rel:dummyAnchor.childNodes[0].rel ? dummyAnchor.childNodes[0].rel : ''});
                 }
@@ -1962,7 +1963,7 @@ export default function (R) {
                                 tspan = tspans[i * j];
                                 spanArr = createValidTextNode(texts[i], abbrArr);
                                 if(tspan) {
-                                    tspan.innerHTML = E;
+                                    tspan.innerHTML = trustedPolicy.createHTML(E);
                                     if (isIE) {
                                         // For IE, setting the innerHTML of tspan to blank string doesnot remove
                                         // the child nodes. Child nodes should be removed explicitly.

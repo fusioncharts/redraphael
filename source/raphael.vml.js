@@ -1,5 +1,5 @@
 import { getArrayCopy } from "./raphael.lib";
-
+import trustedPolicy from '../../../../../../fc-features/src/utils/trusted-policy';
 /**!
 * RedRaphael 1.0.0 - JavaScript Vector Library VML Module
 * Copyright (c) 2012-2013 FusionCharts, Inc. <http://www.fusioncharts.com>
@@ -142,7 +142,7 @@ export default function (R) {
             }
             s.visibility = "visible";
         };
-        f.innerHTML = '<v:shape adj="1"/>';
+        f.innerHTML = trustedPolicy.createHTML('<v:shape adj="1"/>');
         b = f.firstChild;
         b.style.behavior = "url(#default#VML)";
         if (!(b && typeof b.adj == 'object')) {
@@ -1442,7 +1442,7 @@ export default function (R) {
             while (c = this.bottom) {
                 c.remove();
             }
-            this.canvas.innerHTML = E;
+            this.canvas.innerHTML = trustedPolicy.createHTML(E);
             this.span = R._g.doc.createElement("span");
             this.span.style.cssText = "position:absolute;left:-9999em;top:-9999em;padding:0;margin:0;line-height:1;display:inline;";
             this.canvas.appendChild(this.span);

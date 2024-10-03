@@ -1,3 +1,6 @@
+
+import trustedPolicy from '../../../../../../fc-features/src/utils/trusted-policy';
+
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -12497,7 +12500,7 @@ exports['default'] = function (R) {
                             tspan = tspans[i * j];
                             if (tspan) {
                                 // If already there is a tspan then remove the text
-                                tspan.innerHTML = E;
+                                tspan.innerHTML = trustedPolicy.createHTML(E);
                                 if (isIE) {
                                     // For IE, setting the innerHTML of tspan to blank string doesnot remove
                                     // the child nodes. Child nodes should be removed explicitly.
@@ -13791,7 +13794,7 @@ exports["default"] = function (R) {
             }
             s.visibility = "visible";
         };
-        f.innerHTML = '<v:shape adj="1"/>';
+        f.innerHTML = trustedPolicy.createHTML('<v:shape adj="1"/>');
         b = f.firstChild;
         b.style.behavior = "url(#default#VML)";
         if (!(b && _typeof(b.adj) == 'object')) {
@@ -15051,7 +15054,7 @@ exports["default"] = function (R) {
             while (c = this.bottom) {
                 c.remove();
             }
-            this.canvas.innerHTML = E;
+            this.canvas.innerHTML = trustedPolicy.createHTML(E);
             this.span = R._g.doc.createElement("span");
             this.span.style.cssText = "position:absolute;left:-9999em;top:-9999em;padding:0;margin:0;line-height:1;display:inline;";
             this.canvas.appendChild(this.span);

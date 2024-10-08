@@ -1,4 +1,4 @@
-import trustedPolicy from '../../../../../../../../fc-features/src/utils/trusted-policy';
+import trustedPolicy from '@fusioncharts/utils/src/trusted-policy';
 
 jasmine.HtmlReporterHelpers = {};
 

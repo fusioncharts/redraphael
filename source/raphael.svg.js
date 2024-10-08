@@ -5,7 +5,7 @@ import {
     dashedAttr2CSSMap,
     isFirefox
 } from './raphael.lib';
-import trustedPolicy from '../../../../../../fc-features/src/utils/trusted-policy';
+import trustedPolicy from '@fusioncharts/utils/src/trusted-policy';
 
 /** !
 * RedRaphael 1.0.0 - JavaScript Vector Library SVG Module

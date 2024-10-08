@@ -26,7 +26,7 @@
 // ├────────────────────────────────────────────────────────────┤ \\
 // │ Author Dmitry Baranovskiy (http://dmitry.baranovskiy.com/) │ \\
 // └────────────────────────────────────────────────────────────┘ \\
-import trustedPolicy from '../../../../../../../fc-features/src/utils/trusted-policy';
+import trustedPolicy from '@fusioncharts/utils/src/trusted-policy';
 
 (function (glob, optOutModulePattern) {
     var version = "0.4.2",

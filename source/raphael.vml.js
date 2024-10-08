@@ -1,5 +1,5 @@
 import { getArrayCopy } from "./raphael.lib";
-import trustedPolicy from '../../../../../../fc-features/src/utils/trusted-policy';
+import trustedPolicy from '@fusioncharts/utils/src/trusted-policy';
 /**!
 * RedRaphael 1.0.0 - JavaScript Vector Library VML Module
 * Copyright (c) 2012-2013 FusionCharts, Inc. <http://www.fusioncharts.com>

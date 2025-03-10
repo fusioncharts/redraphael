@@ -1,75 +1,80 @@
-# RedRaphael - A JavaScript graphics library on steroids!
-
-[![Build Status](https://travis-ci.org/fusioncharts/redraphael.png?branch=master)](https://travis-ci.org/fusioncharts/redraphael)
+# RedRaphael
 
 ## Install from npm
+
 ```sh
 npm install redraphael
 ```
 
 ## Draw a basic rectangle using `RedRaphael`
+
 ```javascript
-var RedRaphael = require('redraphael');
+var RedRaphael = require("redraphael")
 
 RedRaphael(10, 10, 600, 400, function () {
-    var paper = window.pap = this;
+  var paper = (window.pap = this)
 
-    // Draw a red rectangle with red fill color.
-    rect = paper.rect({
-    	x: 0,
-    	y: 0,
-    	width: 500,
-    	height: 200
+  // Draw a red rectangle with red fill color.
+  rect = paper
+    .rect({
+      x: 0,
+      y: 0,
+      width: 500,
+      height: 200,
     })
     .attr({
-    	fill: '#FF0000'
-    });
-});
+      fill: "#FF0000",
+    })
+})
 ```
 
-
 ## Usage
+
 RedRaphael is a fork of Raphael with a number of added features and slightly changed development philosophy.
-The best place to start is the API and usage docuentation.
+The best place to start is the API and usage documentation.
 
 To learn how to use RedRaphael visit [documentation page](http://fusioncharts.github.io/redraphael/)
 
 ## RedRaphael specific features
 
-Here is a brief overview of added benefits of using RedRaphael.
+Here is a brief overview of added benefits of using RedRaphael:
 
 ### Group
 
 Creating a RedRaphael group
+
 ```js
-var mygroup = paper.group([optional_group_name]);
+var mygroup = paper.group([optional_group_name])
 ```
 
 Adding elements to a group
+
 ```js
-var myrect = paper.rect(x, y, width, height, mygroup);
+var myrect = paper.rect(x, y, width, height, mygroup)
 ```
 
-```
+```js
+/*
 NOTE: Irrespective of the number of arguments needed to be passed to the Element construtor,
 passing the group element as the last argument will ensure that the element gets added to the group.
 So the following are all valid ways of adding elements to groups.
+*/
 
-var myrect = paper.rect(mygroup);
+var myrect = paper.rect(mygroup)
 
-var myrect = paper.rect(x, y, mygroup);
+var myrect = paper.rect(x, y, mygroup)
 ```
 
 You can also add an existing element to a group using the `appendChild` method.
 
 ```js
-var mycircle = paper.circle(x, y, radius); // Added directly to the paper
+// Added directly to the paper
+var mycircle = paper.circle(x, y, radius)
 
-mygroup.appendChild(mycircle);
+mygroup.appendChild(mycircle)
 ```
 
 Groups come in especially handy when you have to perform transformations on the collection as a whole.
-
 
 ### Followers & Stalkers
 
@@ -89,54 +94,53 @@ it.
 
 [Check out a demo here](http://jsfiddle.net/sushantbs/xZrwe/4/)
 
-
 ### Custom Attributes
 
 With RedRaphaelel, custom attributes can be added per element using `element.ca` object.
 
 ```js
-var rectEl = paper.rect(x, y, width, height);
+var rectEl = paper.rect(x, y, width, height)
 
 rectEl.ca.borderWidth = function (value) {
-	this.attr('stroke-width', value);
+  this.attr("stroke-width", value)
 
-	// Returning false will prevent the attribute from being processed
-	// any further by the element.attr method
-	return false;
+  // Returning false will prevent the attribute from being processed
+  // any further by the element.attr method
+  return false
 }
 
 // Using the custom attributes
-rectEl.attr('borderWidth', '5');
+rectEl.attr("borderWidth", "5")
 ```
 
 Note: The original Raphael way of adding [custom attributes](http://raphaeljs.com/reference.html#Paper.ca) is also supported.
-
 
 ### Raphael.define
 
 RedRaphel has encapsulated all the ways of extending the framework in the `define` API.
 
 ```js
-Raphael.define(
-	name,
-	initializing_funciton,
-	custom_attributes,
-	element_specific_methods,
-	pre_defined_eventlisteners
-);
+Raphael.define(name, initializing_funciton, custom_attributes, element_specific_methods, pre_defined_eventlisteners)
 
 Raphael.define({
-    name: 'componentName',
-    componentName: initializing_funciton,
-    ca: { /* custom_attributes */ },
-    fn: { /* element_specific_methods */ },
-    e: { /* pre_defined_eventlisteners */ },
-    data: { /* element_specific_data */ }
-});
+  name: "componentName",
+  componentName: initializing_funciton,
+  ca: {
+    /* custom_attributes */
+  },
+  fn: {
+    /* element_specific_methods */
+  },
+  e: {
+    /* pre_defined_eventlisteners */
+  },
+  data: {
+    /* element_specific_data */
+  },
+})
 ```
 
 [See it in action](http://jsfiddle.net/sushantbs/khBQj/6/)
-
 
 ## Undocumented features and improvements
 
@@ -149,18 +153,10 @@ Raphael.define({
 - `R.cispBound` amd `Element.crisp` for avoiding sub-pixel blurring
 - Global mouseUp tracking using el.mouseup(fn, scope, true);
 - Support for customizable dash-style
-- Support for attribute `key` in attr.* events
+- Support for attribute `key` in attr.\* events
 - Support for Raphael.ca for common customAttributes across papers
 - Support for text-bound: [stroke, fill, stroke-width, padding, corner-radius, dash-style] on texts
 - Support for opacity in fill color (rgba, hsla, etc) for elements
 - Support for `visibility` on elements via attr
 - Support for element rotation via rotation attr
 - Support for `vertical-align` attr on text
-
-
-## Guidelines for contribution
-
-Fork and send PR!
-
-
-[![Analytics](https://ga-beacon.appspot.com/UA-45124206-2/redraphael/index)](https://github.com/igrigorik/ga-beacon)

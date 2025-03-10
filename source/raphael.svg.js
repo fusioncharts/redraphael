@@ -1706,6 +1706,8 @@ export default function (R) {
                     // @todo: Comment the below lines of code in order to fix RED-8282
                     // removeAllChild = !!(!isIE && oldAttr.direction && direction !== oldAttr.direction);
                     removeAllChild,
+                    yPosUpdated = false,
+                    alignmentUpdated = false,
                     // Check whether a string has &nbsp; or similar non-breaking space
                     hasnbsp = function (text) {
                         return (text && nbspRegex.test(text));
@@ -1842,13 +1844,7 @@ export default function (R) {
                     delete oldAttr.txtNode;
                     delete oldAttr.tSpan;
                     delete oldAttr.textPathStr;
-
-                    // If line height is not valid (0, NaN, undefuned), then derive it from fontSize
-                    if (!lineHeight) {
-                        fontSize = params.fontSize || params[fontSizeStr] || a[fontSizeStr] || (group && group.attrs && group.attrs.fontSize);
-                        fontSize = fontSize ? fontSize.toString().replace(pxStr, E) : 10;
-                        lineHeight = fontSize * leading;
-                    }
+                    
                     // If the containing text got changed
                     if (params[has](textStr) || oldAttr.pathText) {
                         // If the text is an arra then join with <br>
@@ -1919,18 +1915,26 @@ export default function (R) {
                         }
                     }
 
-                    if (lineHeight !== oldAttr.lineHeight) { // lineHeight change
-                        oldAttr.lineHeight = lineHeight;
-                        oldAttr.baseLineDiff = lineHeight * 0.75; // Approximate calculation
-                        updateAlignment = true;
-                    }
-
                     // If the text was RTL earlier and now changed or vice versa
                     if (removeAllChild) {
                         // remove all children
                         while (node.firstChild) {
                             node.removeChild(node.firstChild);
                         }
+                    }
+
+                    // If line height is not valid (0, NaN, undefuned), then derive it from fontSize
+                    if (!lineHeight) {
+                        fontSize = params.fontSize || params[fontSizeStr] || a[fontSizeStr] || (group && group.attrs && group.attrs.fontSize);
+                        fontSize = fontSize ? fontSize.toString().replace(pxStr, E) : 10;
+                        lineHeight = fontSize * leading;
+                    }
+
+
+                    if (lineHeight !== oldAttr.lineHeight) { // lineHeight change
+                        oldAttr.lineHeight = lineHeight;
+                        oldAttr.baseLineDiff = lineHeight * 0.75; // Approximate calculation
+                        updateAlignment = true;
                     }
 
                     // ** If multiline text mode
@@ -2069,18 +2073,34 @@ export default function (R) {
 
                     // Update the dy of the first tspan according to the v-alignment
                     if (updateAlignment) {
+                        // recalculate shift if the lineheight or vertical-align was changed
                         oldAttr.shift = oldAttr.baseLineDiff + (oldAttr.lineCount * oldAttr.lineHeight * oldAttr.valign);
-                        updateNode = true;
-                    }
-                    // if y is getting changed
-                    if ((params.y || params.y === 0) && oldAttr.y !== params.y) { // Y change
-                        oldAttr.y = a.y;
-                        updateNode = true;
+                        alignmentUpdated = true;
                     }
 
-                    // Update the node's attribute
-                    if (updateNode && (oldAttr.y || oldAttr.y === 0) && (oldAttr.shift || oldAttr.shift === 0)) {
-                        $(node, { y: Math.round(oldAttr.y + oldAttr.shift) });
+                    // // old code for reference while the code is still in beta
+                    // // if y is getting changed
+                    // if ((params.y || params.y === 0) && oldAttr.y !== params.y) { // Y change
+                    //     oldAttr.y = a.y;
+                    //     updateNode = true;
+                    // }
+
+                    // // Update the node's attribute
+                    // if (updateNode && (oldAttr.y || oldAttr.y === 0) && (oldAttr.shift || oldAttr.shift === 0)) {
+                    //     $(node, { y: Math.round(oldAttr.y + oldAttr.shift) });
+                    // }
+                    
+                    // // new corrected and simplified code
+                    // // if y changes, olddAttr can still be undefined/null whether it is creating or applying css
+                    // // caption creation happens in 2 phases, check call stack and inspect the draw fn
+                    if (typeof params.y === 'number' && (params.y !== oldAttr.y)) {
+                        yPosUpdated = true
+                    }
+                    
+                    // update the svg node
+                    if (alignmentUpdated || yPosUpdated) {
+                        oldAttr.y = Math.round(a.y + oldAttr.shift)
+                        $(node, { y: oldAttr.y });
                     }
                 }
             },
